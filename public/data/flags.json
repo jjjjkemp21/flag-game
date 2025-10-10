@@ -1,0 +1,2647 @@
+[
+  {
+    "country": "Afghanistan",
+    "code": "AF",
+    "flag": "🇦🇫",
+    "tags": [
+      "layout:single_field",
+      "symbol:building",
+      "feature:text_inscription",
+      "colors:black_white",
+      "theme:islamic",
+      "region:asia",
+      "history:taliban"
+    ]
+  },
+  {
+    "country": "Albania",
+    "code": "AL",
+    "flag": "🇦🇱",
+    "tags": [
+      "layout:single_field",
+      "symbol:eagle",
+      "symbol:double_headed_eagle",
+      "colors:black_red",
+      "region:europe",
+      "history:byzantine_empire"
+    ]
+  },
+  {
+    "country": "Algeria",
+    "code": "DZ",
+    "flag": "🇩🇿",
+    "tags": [
+      "layout:bicolour",
+      "pattern:vertical_stripes",
+      "symbol:star_and_crescent",
+      "colors:red_white_green",
+      "theme:pan_arab_colors",
+      "theme:islamic",
+      "region:africa",
+      "history:former_french_colony"
+    ]
+  },
+  {
+    "country": "Andorra",
+    "code": "AD",
+    "flag": "🇦🇩",
+    "tags": [
+      "layout:tricolour",
+      "pattern:vertical_stripes",
+      "pattern:unequal_stripes",
+      "symbol:coat_of_arms",
+      "colors:red_yellow_blue",
+      "region:europe",
+      "history:french_influence",
+      "history:spanish_influence"
+    ]
+  },
+  {
+    "country": "Angola",
+    "code": "AO",
+    "flag": "🇦🇴",
+    "tags": [
+      "layout:bicolour",
+      "pattern:horizontal_stripes",
+      "symbol:star",
+      "symbol:weapon",
+      "symbol:machete",
+      "symbol:cogwheel",
+      "colors:red_yellow_black",
+      "theme:communist_influence",
+      "region:africa"
+    ]
+  },
+  {
+    "country": "Antigua and Barbuda",
+    "code": "AG",
+    "flag": "🇦🇬",
+    "tags": [
+      "layout:multicolour",
+      "symbol:sun",
+      "colors:red_white_blue_black_yellow",
+      "region:north_america",
+      "history:commonwealth"
+    ]
+  },
+  {
+    "country": "Argentina",
+    "code": "AR",
+    "flag": "🇦🇷",
+    "tags": [
+      "layout:triband",
+      "pattern:horizontal_stripes",
+      "symbol:sun",
+      "symbol:sun_of_may",
+      "colors:blue_white_yellow",
+      "region:south_america",
+      "history:belgrano_flag"
+    ]
+  },
+  {
+    "country": "Armenia",
+    "code": "AM",
+    "flag": "🇦🇲",
+    "tags": [
+      "layout:tricolour",
+      "pattern:horizontal_stripes",
+      "colors:red_blue_orange",
+      "region:asia",
+      "history:former_soviet_union"
+    ]
+  },
+  {
+    "country": "Australia",
+    "code": "AU",
+    "flag": "🇦🇺",
+    "tags": [
+      "layout:canton",
+      "symbol:union_jack",
+      "symbol:southern_cross",
+      "symbol:star",
+      "symbol:star_count_6",
+      "colors:red_white_blue",
+      "region:oceania",
+      "history:commonwealth",
+      "history:british_ensign"
+    ]
+  },
+  {
+    "country": "Austria",
+    "code": "AT",
+    "flag": "🇦🇹",
+    "tags": [
+      "layout:triband",
+      "pattern:horizontal_stripes",
+      "colors:red_white",
+      "region:europe",
+      "history:austro_hungarian_empire"
+    ]
+  },
+  {
+    "country": "Azerbaijan",
+    "code": "AZ",
+    "flag": "🇦🇿",
+    "tags": [
+      "layout:tricolour",
+      "pattern:horizontal_stripes",
+      "symbol:star_and_crescent",
+      "symbol:star_count_1",
+      "colors:red_white_blue_green",
+      "theme:islamic",
+      "region:asia",
+      "history:former_soviet_union"
+    ]
+  },
+  {
+    "country": "Bahamas",
+    "code": "BS",
+    "flag": "🇧🇸",
+    "tags": [
+      "layout:triband",
+      "pattern:horizontal_stripes",
+      "layout:hoist_triangle",
+      "colors:blue_yellow_black",
+      "region:north_america",
+      "history:commonwealth"
+    ]
+  },
+  {
+    "country": "Bahrain",
+    "code": "BH",
+    "flag": "🇧🇭",
+    "tags": [
+      "layout:bicolour",
+      "feature:serrated_edge",
+      "colors:red_white",
+      "region:asia",
+      "theme:islamic"
+    ]
+  },
+  {
+    "country": "Bangladesh",
+    "code": "BD",
+    "flag": "🇧🇩",
+    "tags": [
+      "layout:single_field",
+      "symbol:circle",
+      "colors:red_green",
+      "region:asia",
+      "history:commonwealth"
+    ]
+  },
+  {
+    "country": "Barbados",
+    "code": "BB",
+    "flag": "🇧🇧",
+    "tags": [
+      "layout:tricolour",
+      "pattern:vertical_stripes",
+      "symbol:trident",
+      "colors:blue_yellow_black",
+      "region:north_america",
+      "history:commonwealth"
+    ]
+  },
+  {
+    "country": "Belarus",
+    "code": "BY",
+    "flag": "🇧🇾",
+    "tags": [
+      "layout:bicolour",
+      "pattern:horizontal_stripes",
+      "pattern:unequal_stripes",
+      "pattern:hoist_pattern",
+      "colors:red_white_green",
+      "region:europe",
+      "history:former_soviet_union"
+    ]
+  },
+  {
+    "country": "Belgium",
+    "code": "BE",
+    "flag": "🇧🇪",
+    "tags": [
+      "layout:tricolour",
+      "pattern:vertical_stripes",
+      "colors:red_yellow_black",
+      "region:europe",
+      "feature:aspect_ratio_uncommon"
+    ]
+  },
+  {
+    "country": "Belize",
+    "code": "BZ",
+    "flag": "🇧🇿",
+    "tags": [
+      "layout:triband",
+      "pattern:horizontal_stripes",
+      "symbol:coat_of_arms",
+      "colors:red_white_blue",
+      "region:north_america",
+      "history:commonwealth"
+    ]
+  },
+  {
+    "country": "Benin",
+    "code": "BJ",
+    "flag": "🇧🇯",
+    "tags": [
+      "layout:tricolour",
+      "pattern:hoist_band",
+      "colors:red_yellow_green",
+      "theme:pan_african_colors",
+      "region:africa",
+      "history:former_french_colony"
+    ]
+  },
+  {
+    "country": "Bhutan",
+    "code": "BT",
+    "flag": "🇧🇹",
+    "tags": [
+      "layout:diagonal",
+      "symbol:dragon",
+      "colors:yellow_orange_white",
+      "region:asia"
+    ]
+  },
+  {
+    "country": "Bolivia",
+    "code": "BO",
+    "flag": "🇧🇴",
+    "tags": [
+      "layout:tricolour",
+      "pattern:horizontal_stripes",
+      "symbol:coat_of_arms",
+      "colors:red_yellow_green",
+      "theme:pan_african_colors",
+      "region:south_america"
+    ]
+  },
+  {
+    "country": "Bosnia and Herzegovina",
+    "code": "BA",
+    "flag": "🇧🇦",
+    "tags": [
+      "layout:diagonal",
+      "symbol:star",
+      "colors:blue_white_yellow",
+      "region:europe",
+      "history:former_yugoslavia"
+    ]
+  },
+  {
+    "country": "Botswana",
+    "code": "BW",
+    "flag": "🇧🇼",
+    "tags": [
+      "layout:triband",
+      "pattern:horizontal_stripes",
+      "feature:fimbriation",
+      "colors:blue_white_black",
+      "region:africa",
+      "history:commonwealth"
+    ]
+  },
+  {
+    "country": "Brazil",
+    "code": "BR",
+    "flag": "🇧🇷",
+    "tags": [
+      "layout:single_field",
+      "symbol:rhombus",
+      "symbol:circle",
+      "symbol:star",
+      "symbol:southern_cross",
+      "feature:text_inscription",
+      "colors:green_yellow_blue_white",
+      "region:south_america"
+    ]
+  },
+  {
+    "country": "Brunei",
+    "code": "BN",
+    "flag": "🇧🇳",
+    "tags": [
+      "layout:diagonal",
+      "symbol:coat_of_arms",
+      "colors:yellow_white_black_red",
+      "region:asia",
+      "history:commonwealth"
+    ]
+  },
+  {
+    "country": "Bulgaria",
+    "code": "BG",
+    "flag": "🇧🇬",
+    "tags": [
+      "layout:tricolour",
+      "pattern:horizontal_stripes",
+      "colors:red_white_green",
+      "theme:pan_slavic_colors",
+      "region:europe",
+      "history:ottoman_empire"
+    ]
+  },
+  {
+    "country": "Burkina Faso",
+    "code": "BF",
+    "flag": "🇧🇫",
+    "tags": [
+      "layout:bicolour",
+      "pattern:horizontal_stripes",
+      "symbol:star",
+      "symbol:star_count_1",
+      "colors:red_yellow_green",
+      "theme:pan_african_colors",
+      "region:africa"
+    ]
+  },
+  {
+    "country": "Burundi",
+    "code": "BI",
+    "flag": "🇧🇮",
+    "tags": [
+      "layout:saltire",
+      "symbol:star",
+      "symbol:star_count_3",
+      "symbol:circle",
+      "colors:red_white_green",
+      "theme:pan_african_colors",
+      "region:africa"
+    ]
+  },
+  {
+    "country": "Cambodia",
+    "code": "KH",
+    "flag": "🇰🇭",
+    "tags": [
+      "layout:triband",
+      "pattern:horizontal_stripes",
+      "pattern:unequal_stripes",
+      "symbol:building",
+      "symbol:angkor_wat",
+      "colors:red_white_blue",
+      "region:asia"
+    ]
+  },
+  {
+    "country": "Cameroon",
+    "code": "CM",
+    "flag": "🇨🇲",
+    "tags": [
+      "layout:tricolour",
+      "pattern:vertical_stripes",
+      "symbol:star",
+      "symbol:star_count_1",
+      "colors:red_yellow_green",
+      "theme:pan_african_colors",
+      "region:africa"
+    ]
+  },
+  {
+    "country": "Canada",
+    "code": "CA",
+    "flag": "🇨🇦",
+    "tags": [
+      "layout:triband",
+      "pattern:vertical_stripes",
+      "pattern:canadian_pale",
+      "symbol:maple_leaf",
+      "colors:red_white",
+      "region:north_america",
+      "history:commonwealth"
+    ]
+  },
+  {
+    "country": "Cape Verde",
+    "code": "CV",
+    "flag": "🇨🇻",
+    "tags": [
+      "layout:multicolour",
+      "pattern:horizontal_stripes",
+      "pattern:unequal_stripes",
+      "symbol:star",
+      "symbol:star_ring",
+      "symbol:star_count_10",
+      "colors:red_white_blue_yellow",
+      "region:africa"
+    ]
+  },
+  {
+    "country": "Central African Republic",
+    "code": "CF",
+    "flag": "🇨🇫",
+    "tags": [
+      "layout:quadricolour",
+      "pattern:horizontal_stripes",
+      "pattern:vertical_stripe_superimposed",
+      "layout:canton",
+      "symbol:star",
+      "symbol:star_count_1",
+      "colors:red_white_blue_green_yellow",
+      "theme:pan_african_colors",
+      "history:french_influence",
+      "region:africa"
+    ]
+  },
+  {
+    "country": "Chad",
+    "code": "TD",
+    "flag": "🇹🇩",
+    "tags": [
+      "layout:tricolour",
+      "pattern:vertical_stripes",
+      "colors:red_yellow_blue",
+      "theme:pan_african_colors",
+      "history:french_influence",
+      "region:africa"
+    ]
+  },
+  {
+    "country": "Chile",
+    "code": "CL",
+    "flag": "🇨🇱",
+    "tags": [
+      "layout:bicolour",
+      "pattern:horizontal_stripes",
+      "layout:canton",
+      "symbol:star",
+      "symbol:star_count_1",
+      "colors:red_white_blue",
+      "region:south_america"
+    ]
+  },
+  {
+    "country": "China",
+    "code": "CN",
+    "flag": "🇨🇳",
+    "tags": [
+      "layout:single_field",
+      "layout:canton",
+      "symbol:star",
+      "symbol:star_count_5",
+      "colors:red_yellow",
+      "theme:communist",
+      "region:asia"
+    ]
+  },
+  {
+    "country": "Colombia",
+    "code": "CO",
+    "flag": "🇨🇴",
+    "tags": [
+      "layout:tricolour",
+      "pattern:horizontal_stripes",
+      "pattern:unequal_stripes",
+      "colors:red_yellow_blue",
+      "region:south_america",
+      "history:gran_colombia"
+    ]
+  },
+  {
+    "country": "Comoros",
+    "code": "KM",
+    "flag": "🇰🇲",
+    "tags": [
+      "layout:quadricolour",
+      "pattern:horizontal_stripes",
+      "layout:hoist_triangle",
+      "symbol:star_and_crescent",
+      "symbol:star_count_4",
+      "colors:red_white_blue_green_yellow",
+      "theme:islamic",
+      "region:africa"
+    ]
+  },
+  {
+    "country": "Democratic Republic of the Congo",
+    "code": "CD",
+    "flag": "🇨🇩",
+    "tags": [
+      "layout:diagonal",
+      "layout:canton",
+      "symbol:star",
+      "symbol:star_count_1",
+      "feature:fimbriation",
+      "colors:red_yellow_blue",
+      "region:africa"
+    ]
+  },
+  {
+    "country": "Republic of the Congo",
+    "code": "CG",
+    "flag": "🇨🇬",
+    "tags": [
+      "layout:diagonal",
+      "layout:tricolour",
+      "colors:red_yellow_green",
+      "theme:pan_african_colors",
+      "region:africa"
+    ]
+  },
+  {
+    "country": "Costa Rica",
+    "code": "CR",
+    "flag": "🇨🇷",
+    "tags": [
+      "layout:multicolour",
+      "pattern:horizontal_stripes",
+      "pattern:unequal_stripes",
+      "symbol:coat_of_arms",
+      "colors:red_white_blue",
+      "region:north_america",
+      "history:central_american_federation"
+    ]
+  },
+  {
+    "country": "Croatia",
+    "code": "HR",
+    "flag": "🇭🇷",
+    "tags": [
+      "layout:tricolour",
+      "pattern:horizontal_stripes",
+      "symbol:coat_of_arms",
+      "pattern:checkerboard",
+      "colors:red_white_blue",
+      "theme:pan_slavic_colors",
+      "region:europe",
+      "history:former_yugoslavia"
+    ]
+  },
+  {
+    "country": "Cuba",
+    "code": "CU",
+    "flag": "🇨🇺",
+    "tags": [
+      "layout:multicolour",
+      "pattern:horizontal_stripes",
+      "layout:hoist_triangle",
+      "symbol:star",
+      "symbol:star_count_1",
+      "colors:red_white_blue",
+      "region:north_america"
+    ]
+  },
+  {
+    "country": "Cyprus",
+    "code": "CY",
+    "flag": "🇨🇾",
+    "tags": [
+      "layout:single_field",
+      "symbol:map",
+      "symbol:olive_branch",
+      "colors:white_orange_green",
+      "region:europe"
+    ]
+  },
+  {
+    "country": "Czech Republic",
+    "code": "CZ",
+    "flag": "🇨🇿",
+    "tags": [
+      "layout:bicolour",
+      "pattern:horizontal_stripes",
+      "layout:hoist_triangle",
+      "colors:red_white_blue",
+      "theme:pan_slavic_colors",
+      "region:europe",
+      "history:czechoslovakia"
+    ]
+  },
+  {
+    "country": "Denmark",
+    "code": "DK",
+    "flag": "🇩🇰",
+    "tags": [
+      "layout:cross",
+      "group:nordic_cross",
+      "colors:red_white",
+      "region:europe"
+    ]
+  },
+  {
+    "country": "Djibouti",
+    "code": "DJ",
+    "flag": "🇩🇯",
+    "tags": [
+      "layout:bicolour",
+      "pattern:horizontal_stripes",
+      "layout:hoist_triangle",
+      "symbol:star",
+      "symbol:star_count_1",
+      "colors:red_white_blue_green",
+      "region:africa"
+    ]
+  },
+  {
+    "country": "Dominica",
+    "code": "DM",
+    "flag": "🇩🇲",
+    "tags": [
+      "layout:single_field",
+      "layout:cross",
+      "feature:fimbriation",
+      "symbol:circle",
+      "symbol:star",
+      "symbol:star_ring",
+      "symbol:star_count_10",
+      "symbol:animal",
+      "symbol:parrot",
+      "colors:red_white_green_yellow_black",
+      "region:north_america",
+      "history:commonwealth"
+    ]
+  },
+  {
+    "country": "Dominican Republic",
+    "code": "DO",
+    "flag": "🇩🇴",
+    "tags": [
+      "layout:cross",
+      "layout:quartered",
+      "symbol:coat_of_arms",
+      "colors:red_white_blue",
+      "region:north_america"
+    ]
+  },
+  {
+    "country": "Ecuador",
+    "code": "EC",
+    "flag": "🇪🇨",
+    "tags": [
+      "layout:tricolour",
+      "pattern:horizontal_stripes",
+      "pattern:unequal_stripes",
+      "symbol:coat_of_arms",
+      "colors:red_yellow_blue",
+      "region:south_america",
+      "history:gran_colombia"
+    ]
+  },
+  {
+    "country": "Egypt",
+    "code": "EG",
+    "flag": "🇪🇬",
+    "tags": [
+      "layout:tricolour",
+      "pattern:horizontal_stripes",
+      "symbol:eagle",
+      "symbol:eagle_of_saladin",
+      "colors:red_white_black_gold",
+      "theme:arab_liberation_colors",
+      "region:africa"
+    ]
+  },
+  {
+    "country": "El Salvador",
+    "code": "SV",
+    "flag": "🇸🇻",
+    "tags": [
+      "layout:triband",
+      "pattern:horizontal_stripes",
+      "symbol:coat_of_arms",
+      "colors:blue_white",
+      "region:north_america",
+      "history:central_american_federation"
+    ]
+  },
+  {
+    "country": "Equatorial Guinea",
+    "code": "GQ",
+    "flag": "🇬🇶",
+    "tags": [
+      "layout:tricolour",
+      "pattern:horizontal_stripes",
+      "layout:hoist_triangle",
+      "symbol:coat_of_arms",
+      "symbol:tree",
+      "symbol:star",
+      "symbol:star_count_6",
+      "colors:red_white_blue_green",
+      "region:africa"
+    ]
+  },
+  {
+    "country": "Eritrea",
+    "code": "ER",
+    "flag": "🇪🇷",
+    "tags": [
+      "layout:hoist_triangle",
+      "symbol:olive_branch",
+      "colors:red_blue_green_yellow",
+      "theme:pan_african_colors",
+      "region:africa"
+    ]
+  },
+  {
+    "country": "Estonia",
+    "code": "EE",
+    "flag": "🇪🇪",
+    "tags": [
+      "layout:tricolour",
+      "pattern:horizontal_stripes",
+      "colors:blue_white_black",
+      "region:europe",
+      "history:former_soviet_union"
+    ]
+  },
+  {
+    "country": "Eswatini",
+    "code": "SZ",
+    "flag": "🇸🇿",
+    "tags": [
+      "layout:multicolour",
+      "pattern:horizontal_stripes",
+      "pattern:unequal_stripes",
+      "symbol:shield",
+      "symbol:weapon",
+      "colors:red_blue_yellow_black_white",
+      "region:africa"
+    ]
+  },
+  {
+    "country": "Ethiopia",
+    "code": "ET",
+    "flag": "🇪🇹",
+    "tags": [
+      "layout:tricolour",
+      "pattern:horizontal_stripes",
+      "symbol:star",
+      "symbol:pentagram",
+      "symbol:circle",
+      "colors:red_yellow_green_blue",
+      "theme:pan_african_colors",
+      "region:africa"
+    ]
+  },
+  {
+    "country": "Fiji",
+    "code": "FJ",
+    "flag": "🇫🇯",
+    "tags": [
+      "layout:canton",
+      "symbol:union_jack",
+      "symbol:coat_of_arms",
+      "colors:blue_white_red",
+      "region:oceania",
+      "history:commonwealth",
+      "history:british_ensign"
+    ]
+  },
+  {
+    "country": "Finland",
+    "code": "FI",
+    "flag": "🇫🇮",
+    "tags": [
+      "layout:cross",
+      "group:nordic_cross",
+      "colors:blue_white",
+      "region:europe"
+    ]
+  },
+  {
+    "country": "France",
+    "code": "FR",
+    "flag": "🇫🇷",
+    "tags": [
+      "layout:tricolour",
+      "pattern:vertical_stripes",
+      "colors:red_white_blue",
+      "region:europe",
+      "history:revolutionary_tricolor"
+    ]
+  },
+  {
+    "country": "Gabon",
+    "code": "GA",
+    "flag": "🇬🇦",
+    "tags": [
+      "layout:tricolour",
+      "pattern:horizontal_stripes",
+      "colors:green_yellow_blue",
+      "region:africa"
+    ]
+  },
+  {
+    "country": "Gambia",
+    "code": "GM",
+    "flag": "🇬🇲",
+    "tags": [
+      "layout:multicolour",
+      "pattern:horizontal_stripes",
+      "feature:fimbriation",
+      "colors:red_white_blue_green",
+      "region:africa",
+      "history:commonwealth"
+    ]
+  },
+  {
+    "country": "Georgia",
+    "code": "GE",
+    "flag": "🇬🇪",
+    "tags": [
+      "layout:cross",
+      "symbol:cross",
+      "colors:red_white",
+      "region:asia",
+      "history:former_soviet_union"
+    ]
+  },
+  {
+    "country": "Germany",
+    "code": "DE",
+    "flag": "🇩🇪",
+    "tags": [
+      "layout:tricolour",
+      "pattern:horizontal_stripes",
+      "colors:red_yellow_black",
+      "region:europe"
+    ]
+  },
+  {
+    "country": "Ghana",
+    "code": "GH",
+    "flag": "🇬🇭",
+    "tags": [
+      "layout:tricolour",
+      "pattern:horizontal_stripes",
+      "symbol:star",
+      "symbol:star_count_1",
+      "colors:red_yellow_green_black",
+      "theme:pan_african_colors",
+      "region:africa",
+      "history:commonwealth"
+    ]
+  },
+  {
+    "country": "Greece",
+    "code": "GR",
+    "flag": "🇬🇷",
+    "tags": [
+      "layout:canton",
+      "layout:cross",
+      "pattern:horizontal_stripes",
+      "colors:blue_white",
+      "region:europe"
+    ]
+  },
+  {
+    "country": "Grenada",
+    "code": "GD",
+    "flag": "🇬🇩",
+    "tags": [
+      "layout:bordered",
+      "layout:quartered",
+      "layout:diagonal",
+      "symbol:star",
+      "symbol:star_count_7",
+      "symbol:nutmeg",
+      "colors:red_yellow_green",
+      "region:north_america",
+      "history:commonwealth"
+    ]
+  },
+  {
+    "country": "Guatemala",
+    "code": "GT",
+    "flag": "🇬🇹",
+    "tags": [
+      "layout:triband",
+      "pattern:vertical_stripes",
+      "symbol:coat_of_arms",
+      "symbol:bird",
+      "symbol:weapon",
+      "colors:blue_white",
+      "region:north_america",
+      "history:central_american_federation"
+    ]
+  },
+  {
+    "country": "Guinea",
+    "code": "GN",
+    "flag": "🇬🇳",
+    "tags": [
+      "layout:tricolour",
+      "pattern:vertical_stripes",
+      "colors:red_yellow_green",
+      "theme:pan_african_colors",
+      "region:africa"
+    ]
+  },
+  {
+    "country": "Guinea-Bissau",
+    "code": "GW",
+    "flag": "🇬🇼",
+    "tags": [
+      "layout:tricolour",
+      "pattern:hoist_band",
+      "symbol:star",
+      "symbol:star_count_1",
+      "colors:red_yellow_green_black",
+      "theme:pan_african_colors",
+      "region:africa"
+    ]
+  },
+  {
+    "country": "Guyana",
+    "code": "GY",
+    "flag": "🇬🇾",
+    "tags": [
+      "layout:single_field",
+      "layout:hoist_triangle",
+      "feature:fimbriation",
+      "colors:red_white_green_yellow_black",
+      "theme:pan_african_colors",
+      "region:south_america",
+      "history:commonwealth"
+    ]
+  },
+  {
+    "country": "Haiti",
+    "code": "HT",
+    "flag": "🇭🇹",
+    "tags": [
+      "layout:bicolour",
+      "pattern:horizontal_stripes",
+      "symbol:coat_of_arms",
+      "colors:red_blue",
+      "region:north_america"
+    ]
+  },
+  {
+    "country": "Honduras",
+    "code": "HN",
+    "flag": "🇭🇳",
+    "tags": [
+      "layout:triband",
+      "pattern:horizontal_stripes",
+      "symbol:star",
+      "symbol:star_count_5",
+      "colors:blue_white",
+      "region:north_america",
+      "history:central_american_federation"
+    ]
+  },
+  {
+    "country": "Hungary",
+    "code": "HU",
+    "flag": "🇭🇺",
+    "tags": [
+      "layout:tricolour",
+      "pattern:horizontal_stripes",
+      "colors:red_white_green",
+      "region:europe",
+      "history:austro_hungarian_empire"
+    ]
+  },
+  {
+    "country": "Iceland",
+    "code": "IS",
+    "flag": "🇮🇸",
+    "tags": [
+      "layout:cross",
+      "group:nordic_cross",
+      "feature:fimbriation",
+      "colors:red_white_blue",
+      "region:europe"
+    ]
+  },
+  {
+    "country": "India",
+    "code": "IN",
+    "flag": "🇮🇳",
+    "tags": [
+      "layout:tricolour",
+      "pattern:horizontal_stripes",
+      "symbol:wheel",
+      "symbol:ashoka_chakra",
+      "colors:orange_white_green_blue",
+      "region:asia",
+      "history:commonwealth"
+    ]
+  },
+  {
+    "country": "Indonesia",
+    "code": "ID",
+    "flag": "🇮🇩",
+    "tags": [
+      "layout:bicolour",
+      "pattern:horizontal_stripes",
+      "colors:red_white",
+      "region:asia"
+    ]
+  },
+  {
+    "country": "Iran",
+    "code": "IR",
+    "flag": "🇮🇷",
+    "tags": [
+      "layout:tricolour",
+      "pattern:horizontal_stripes",
+      "symbol:coat_of_arms",
+      "feature:text_inscription",
+      "feature:fimbriation",
+      "colors:red_white_green",
+      "theme:islamic",
+      "region:asia"
+    ]
+  },
+  {
+    "country": "Iraq",
+    "code": "IQ",
+    "flag": "🇮🇶",
+    "tags": [
+      "layout:tricolour",
+      "pattern:horizontal_stripes",
+      "feature:text_inscription",
+      "colors:red_white_black_green",
+      "theme:arab_liberation_colors",
+      "region:asia"
+    ]
+  },
+  {
+    "country": "Ireland",
+    "code": "IE",
+    "flag": "🇮🇪",
+    "tags": [
+      "layout:tricolour",
+      "pattern:vertical_stripes",
+      "colors:green_white_orange",
+      "region:europe"
+    ]
+  },
+  {
+    "country": "Israel",
+    "code": "IL",
+    "flag": "🇮🇱",
+    "tags": [
+      "layout:single_field",
+      "pattern:horizontal_stripes",
+      "symbol:star",
+      "symbol:star_of_david",
+      "colors:blue_white",
+      "region:asia"
+    ]
+  },
+  {
+    "country": "Italy",
+    "code": "IT",
+    "flag": "🇮🇹",
+    "tags": [
+      "layout:tricolour",
+      "pattern:vertical_stripes",
+      "colors:red_white_green",
+      "region:europe"
+    ]
+  },
+  {
+    "country": "Ivory Coast",
+    "code": "CI",
+    "flag": "🇨🇮",
+    "tags": [
+      "layout:tricolour",
+      "pattern:vertical_stripes",
+      "colors:orange_white_green",
+      "region:africa"
+    ]
+  },
+  {
+    "country": "Jamaica",
+    "code": "JM",
+    "flag": "🇯🇲",
+    "tags": [
+      "layout:saltire",
+      "colors:green_yellow_black",
+      "theme:pan_african_colors",
+      "region:north_america",
+      "history:commonwealth"
+    ]
+  },
+  {
+    "country": "Japan",
+    "code": "JP",
+    "flag": "🇯🇵",
+    "tags": [
+      "layout:single_field",
+      "symbol:sun",
+      "symbol:circle",
+      "colors:red_white",
+      "region:asia"
+    ]
+  },
+  {
+    "country": "Jordan",
+    "code": "JO",
+    "flag": "🇯🇴",
+    "tags": [
+      "layout:tricolour",
+      "pattern:horizontal_stripes",
+      "layout:hoist_triangle",
+      "symbol:star",
+      "symbol:star_count_1",
+      "colors:red_white_black_green",
+      "theme:pan_arab_colors",
+      "region:asia"
+    ]
+  },
+  {
+    "country": "Kazakhstan",
+    "code": "KZ",
+    "flag": "🇰🇿",
+    "tags": [
+      "layout:single_field",
+      "symbol:sun",
+      "symbol:eagle",
+      "pattern:hoist_pattern",
+      "colors:blue_yellow",
+      "region:asia",
+      "history:former_soviet_union"
+    ]
+  },
+  {
+    "country": "Kenya",
+    "code": "KE",
+    "flag": "🇰🇪",
+    "tags": [
+      "layout:tricolour",
+      "pattern:horizontal_stripes",
+      "feature:fimbriation",
+      "symbol:shield",
+      "symbol:weapon",
+      "colors:red_white_black_green",
+      "theme:pan_african_colors",
+      "region:africa",
+      "history:commonwealth"
+    ]
+  },
+  {
+    "country": "Kiribati",
+    "code": "KI",
+    "flag": "🇰🇮",
+    "tags": [
+      "layout:bicolour",
+      "pattern:horizontal_stripes",
+      "symbol:sun",
+      "symbol:bird",
+      "pattern:wavy_lines",
+      "colors:red_white_blue_yellow",
+      "region:oceania",
+      "history:commonwealth"
+    ]
+  },
+  {
+    "country": "Kosovo",
+    "code": "XK",
+    "flag": "🇽🇰",
+    "tags": [
+      "layout:single_field",
+      "symbol:map",
+      "symbol:star",
+      "symbol:star_arc",
+      "symbol:star_count_6",
+      "colors:blue_white_yellow",
+      "region:europe"
+    ]
+  },
+  {
+    "country": "Kuwait",
+    "code": "KW",
+    "flag": "🇰🇼",
+    "tags": [
+      "layout:tricolour",
+      "pattern:horizontal_stripes",
+      "layout:hoist_trapezoid",
+      "colors:red_white_black_green",
+      "theme:pan_arab_colors",
+      "region:asia"
+    ]
+  },
+  {
+    "country": "Kyrgyzstan",
+    "code": "KG",
+    "flag": "🇰🇬",
+    "tags": [
+      "layout:single_field",
+      "symbol:sun",
+      "colors:red_yellow",
+      "region:asia",
+      "history:former_soviet_union"
+    ]
+  },
+  {
+    "country": "Laos",
+    "code": "LA",
+    "flag": "🇱🇦",
+    "tags": [
+      "layout:triband",
+      "pattern:horizontal_stripes",
+      "pattern:unequal_stripes",
+      "symbol:circle",
+      "colors:red_white_blue",
+      "region:asia"
+    ]
+  },
+  {
+    "country": "Latvia",
+    "code": "LV",
+    "flag": "🇱🇻",
+    "tags": [
+      "layout:triband",
+      "pattern:horizontal_stripes",
+      "pattern:unequal_stripes",
+      "colors:red_white",
+      "region:europe",
+      "history:former_soviet_union"
+    ]
+  },
+  {
+    "country": "Lebanon",
+    "code": "LB",
+    "flag": "🇱🇧",
+    "tags": [
+      "layout:triband",
+      "pattern:horizontal_stripes",
+      "pattern:unequal_stripes",
+      "symbol:tree",
+      "symbol:cedar_tree",
+      "colors:red_white_green",
+      "region:asia"
+    ]
+  },
+  {
+    "country": "Lesotho",
+    "code": "LS",
+    "flag": "🇱🇸",
+    "tags": [
+      "layout:tricolour",
+      "pattern:horizontal_stripes",
+      "pattern:unequal_stripes",
+      "symbol:mokorotlo_hat",
+      "colors:blue_white_green_black",
+      "region:africa",
+      "history:commonwealth"
+    ]
+  },
+  {
+    "country": "Liberia",
+    "code": "LR",
+    "flag": "🇱🇷",
+    "tags": [
+      "layout:canton",
+      "pattern:horizontal_stripes",
+      "symbol:star",
+      "symbol:star_count_1",
+      "colors:red_white_blue",
+      "history:us_influence",
+      "region:africa"
+    ]
+  },
+  {
+    "country": "Libya",
+    "code": "LY",
+    "flag": "🇱🇾",
+    "tags": [
+      "layout:triband",
+      "pattern:horizontal_stripes",
+      "pattern:unequal_stripes",
+      "symbol:star_and_crescent",
+      "colors:red_white_black_green",
+      "theme:pan_arab_colors",
+      "theme:islamic",
+      "region:africa"
+    ]
+  },
+  {
+    "country": "Liechtenstein",
+    "code": "LI",
+    "flag": "🇱🇮",
+    "tags": [
+      "layout:bicolour",
+      "pattern:horizontal_stripes",
+      "layout:canton",
+      "symbol:crown",
+      "colors:red_blue_yellow",
+      "region:europe"
+    ]
+  },
+  {
+    "country": "Lithuania",
+    "code": "LT",
+    "flag": "🇱🇹",
+    "tags": [
+      "layout:tricolour",
+      "pattern:horizontal_stripes",
+      "colors:red_yellow_green",
+      "region:europe",
+      "history:former_soviet_union"
+    ]
+  },
+  {
+    "country": "Luxembourg",
+    "code": "LU",
+    "flag": "🇱🇺",
+    "tags": [
+      "layout:tricolour",
+      "pattern:horizontal_stripes",
+      "colors:red_white_blue",
+      "region:europe"
+    ]
+  },
+  {
+    "country": "Madagascar",
+    "code": "MG",
+    "flag": "🇲🇬",
+    "tags": [
+      "layout:tricolour",
+      "pattern:hoist_band",
+      "colors:red_white_green",
+      "region:africa"
+    ]
+  },
+  {
+    "country": "Malawi",
+    "code": "MW",
+    "flag": "🇲🇼",
+    "tags": [
+      "layout:tricolour",
+      "pattern:horizontal_stripes",
+      "symbol:sun",
+      "colors:red_black_green",
+      "theme:pan_african_colors",
+      "region:africa",
+      "history:commonwealth"
+    ]
+  },
+  {
+    "country": "Malaysia",
+    "code": "MY",
+    "flag": "🇲🇾",
+    "tags": [
+      "layout:canton",
+      "pattern:horizontal_stripes",
+      "symbol:star_and_crescent",
+      "symbol:star_count_14",
+      "colors:red_white_blue_yellow",
+      "theme:islamic",
+      "region:asia",
+      "history:commonwealth"
+    ]
+  },
+  {
+    "country": "Maldives",
+    "code": "MV",
+    "flag": "🇲🇻",
+    "tags": [
+      "layout:bordered",
+      "symbol:crescent",
+      "colors:red_white_green",
+      "theme:islamic",
+      "region:asia"
+    ]
+  },
+  {
+    "country": "Mali",
+    "code": "ML",
+    "flag": "🇲🇱",
+    "tags": [
+      "layout:tricolour",
+      "pattern:vertical_stripes",
+      "colors:red_yellow_green",
+      "theme:pan_african_colors",
+      "region:africa"
+    ]
+  },
+  {
+    "country": "Malta",
+    "code": "MT",
+    "flag": "🇲🇹",
+    "tags": [
+      "layout:bicolour",
+      "pattern:vertical_stripes",
+      "layout:canton",
+      "symbol:george_cross",
+      "colors:red_white",
+      "region:europe",
+      "history:commonwealth"
+    ]
+  },
+  {
+    "country": "Marshall Islands",
+    "code": "MH",
+    "flag": "🇲🇭",
+    "tags": [
+      "layout:diagonal",
+      "layout:canton",
+      "symbol:star",
+      "symbol:star_count_24",
+      "colors:blue_white_orange",
+      "region:oceania"
+    ]
+  },
+  {
+    "country": "Mauritania",
+    "code": "MR",
+    "flag": "🇲🇷",
+    "tags": [
+      "layout:triband",
+      "pattern:horizontal_stripes",
+      "symbol:star_and_crescent",
+      "colors:red_green_yellow",
+      "theme:pan_african_colors",
+      "theme:islamic",
+      "region:africa"
+    ]
+  },
+  {
+    "country": "Mauritius",
+    "code": "MU",
+    "flag": "🇲🇺",
+    "tags": [
+      "layout:quadricolour",
+      "pattern:horizontal_stripes",
+      "colors:red_blue_yellow_green",
+      "region:africa",
+      "history:commonwealth"
+    ]
+  },
+  {
+    "country": "Mexico",
+    "code": "MX",
+    "flag": "🇲🇽",
+    "tags": [
+      "layout:tricolour",
+      "pattern:vertical_stripes",
+      "symbol:coat_of_arms",
+      "symbol:eagle",
+      "symbol:snake",
+      "symbol:cactus",
+      "colors:red_white_green",
+      "region:north_america"
+    ]
+  },
+  {
+    "country": "Micronesia",
+    "code": "FM",
+    "flag": "🇫🇲",
+    "tags": [
+      "layout:single_field",
+      "symbol:star",
+      "symbol:star_count_4",
+      "colors:blue_white",
+      "region:oceania"
+    ]
+  },
+  {
+    "country": "Moldova",
+    "code": "MD",
+    "flag": "🇲🇩",
+    "tags": [
+      "layout:tricolour",
+      "pattern:vertical_stripes",
+      "symbol:coat_of_arms",
+      "symbol:eagle",
+      "colors:red_yellow_blue",
+      "region:europe",
+      "history:romanian_influence",
+      "history:former_soviet_union"
+    ]
+  },
+  {
+    "country": "Monaco",
+    "code": "MC",
+    "flag": "🇲🇨",
+    "tags": [
+      "layout:bicolour",
+      "pattern:horizontal_stripes",
+      "colors:red_white",
+      "region:europe"
+    ]
+  },
+  {
+    "country": "Mongolia",
+    "code": "MN",
+    "flag": "🇲🇳",
+    "tags": [
+      "layout:tricolour",
+      "pattern:vertical_stripes",
+      "symbol:soyombo",
+      "colors:red_blue_yellow",
+      "region:asia",
+      "history:communist"
+    ]
+  },
+  {
+    "country": "Montenegro",
+    "code": "ME",
+    "flag": "🇲🇪",
+    "tags": [
+      "layout:bordered",
+      "symbol:coat_of_arms",
+      "symbol:eagle",
+      "symbol:double_headed_eagle",
+      "colors:red_gold",
+      "region:europe",
+      "history:former_yugoslavia"
+    ]
+  },
+  {
+    "country": "Morocco",
+    "code": "MA",
+    "flag": "🇲🇦",
+    "tags": [
+      "layout:single_field",
+      "symbol:star",
+      "symbol:pentagram",
+      "colors:red_green",
+      "region:africa"
+    ]
+  },
+  {
+    "country": "Mozambique",
+    "code": "MZ",
+    "flag": "🇲🇿",
+    "tags": [
+      "layout:tricolour",
+      "pattern:horizontal_stripes",
+      "layout:hoist_triangle",
+      "feature:fimbriation",
+      "symbol:star",
+      "symbol:weapon",
+      "symbol:ak_47",
+      "symbol:book",
+      "symbol:hoe",
+      "colors:red_white_green_yellow_black",
+      "theme:pan_african_colors",
+      "region:africa"
+    ]
+  },
+  {
+    "country": "Myanmar",
+    "code": "MM",
+    "flag": "🇲🇲",
+    "tags": [
+      "layout:tricolour",
+      "pattern:horizontal_stripes",
+      "symbol:star",
+      "symbol:star_count_1",
+      "colors:red_yellow_green_white",
+      "region:asia"
+    ]
+  },
+  {
+    "country": "Namibia",
+    "code": "NA",
+    "flag": "🇳🇦",
+    "tags": [
+      "layout:diagonal",
+      "feature:fimbriation",
+      "symbol:sun",
+      "colors:red_white_blue_green_yellow",
+      "theme:pan_african_colors",
+      "region:africa"
+    ]
+  },
+  {
+    "country": "Nauru",
+    "code": "NR",
+    "flag": "🇳🇷",
+    "tags": [
+      "layout:single_field",
+      "pattern:horizontal_stripes",
+      "symbol:star",
+      "symbol:star_count_1",
+      "colors:blue_white_yellow",
+      "region:oceania",
+      "history:commonwealth"
+    ]
+  },
+  {
+    "country": "Nepal",
+    "code": "NP",
+    "flag": "🇳🇵",
+    "tags": [
+      "shape:non_rectangular",
+      "layout:bordered",
+      "symbol:sun",
+      "symbol:moon",
+      "colors:red_white_blue",
+      "region:asia"
+    ]
+  },
+  {
+    "country": "Netherlands",
+    "code": "NL",
+    "flag": "🇳🇱",
+    "tags": [
+      "layout:tricolour",
+      "pattern:horizontal_stripes",
+      "colors:red_white_blue",
+      "region:europe",
+      "history:dutch_republic"
+    ]
+  },
+  {
+    "country": "New Zealand",
+    "code": "NZ",
+    "flag": "🇳🇿",
+    "tags": [
+      "layout:canton",
+      "symbol:union_jack",
+      "symbol:southern_cross",
+      "symbol:star",
+      "symbol:star_count_4",
+      "colors:red_white_blue",
+      "region:oceania",
+      "history:commonwealth",
+      "history:british_ensign"
+    ]
+  },
+  {
+    "country": "Nicaragua",
+    "code": "NI",
+    "flag": "🇳🇮",
+    "tags": [
+      "layout:triband",
+      "pattern:horizontal_stripes",
+      "symbol:coat_of_arms",
+      "symbol:triangle",
+      "colors:blue_white",
+      "region:north_america",
+      "history:central_american_federation"
+    ]
+  },
+  {
+    "country": "Niger",
+    "code": "NE",
+    "flag": "🇳🇪",
+    "tags": [
+      "layout:tricolour",
+      "pattern:horizontal_stripes",
+      "symbol:circle",
+      "colors:orange_white_green",
+      "region:africa",
+      "feature:aspect_ratio_uncommon"
+    ]
+  },
+  {
+    "country": "Nigeria",
+    "code": "NG",
+    "flag": "🇳🇬",
+    "tags": [
+      "layout:tricolour",
+      "pattern:vertical_stripes",
+      "colors:white_green",
+      "region:africa",
+      "history:commonwealth"
+    ]
+  },
+  {
+    "country": "North Korea",
+    "code": "KP",
+    "flag": "🇰🇵",
+    "tags": [
+      "layout:triband",
+      "pattern:horizontal_stripes",
+      "pattern:unequal_stripes",
+      "feature:fimbriation",
+      "symbol:star",
+      "symbol:star_count_1",
+      "symbol:circle",
+      "colors:red_white_blue",
+      "theme:communist",
+      "region:asia"
+    ]
+  },
+  {
+    "country": "North Macedonia",
+    "code": "MK",
+    "flag": "🇲🇰",
+    "tags": [
+      "layout:single_field",
+      "symbol:sun",
+      "colors:red_yellow",
+      "region:europe",
+      "history:former_yugoslavia"
+    ]
+  },
+  {
+    "country": "Norway",
+    "code": "NO",
+    "flag": "🇳🇴",
+    "tags": [
+      "layout:cross",
+      "group:nordic_cross",
+      "feature:fimbriation",
+      "colors:red_white_blue",
+      "region:europe"
+    ]
+  },
+  {
+    "country": "Oman",
+    "code": "OM",
+    "flag": "🇴🇲",
+    "tags": [
+      "layout:tricolour",
+      "pattern:horizontal_stripes",
+      "pattern:hoist_band",
+      "symbol:coat_of_arms",
+      "symbol:weapon",
+      "colors:red_white_green",
+      "region:asia"
+    ]
+  },
+  {
+    "country": "Pakistan",
+    "code": "PK",
+    "flag": "🇵🇰",
+    "tags": [
+      "layout:bicolour",
+      "pattern:hoist_band",
+      "symbol:star_and_crescent",
+      "colors:white_green",
+      "theme:islamic",
+      "region:asia",
+      "history:commonwealth"
+    ]
+  },
+  {
+    "country": "Palau",
+    "code": "PW",
+    "flag": "🇵🇼",
+    "tags": [
+      "layout:single_field",
+      "symbol:circle",
+      "colors:blue_yellow",
+      "region:oceania"
+    ]
+  },
+  {
+    "country": "Palestine",
+    "code": "PS",
+    "flag": "🇵🇸",
+    "tags": [
+      "layout:tricolour",
+      "pattern:horizontal_stripes",
+      "layout:hoist_triangle",
+      "colors:red_white_black_green",
+      "theme:pan_arab_colors",
+      "region:asia"
+    ]
+  },
+  {
+    "country": "Panama",
+    "code": "PA",
+    "flag": "🇵🇦",
+    "tags": [
+      "layout:quartered",
+      "symbol:star",
+      "symbol:star_count_2",
+      "colors:red_white_blue",
+      "region:north_america"
+    ]
+  },
+  {
+    "country": "Papua New Guinea",
+    "code": "PG",
+    "flag": "🇵🇬",
+    "tags": [
+      "layout:diagonal",
+      "symbol:southern_cross",
+      "symbol:star",
+      "symbol:star_count_5",
+      "symbol:bird",
+      "colors:red_black_yellow",
+      "region:oceania",
+      "history:commonwealth"
+    ]
+  },
+  {
+    "country": "Paraguay",
+    "code": "PY",
+    "flag": "🇵🇾",
+    "tags": [
+      "layout:tricolour",
+      "pattern:horizontal_stripes",
+      "symbol:coat_of_arms",
+      "feature:two_sided",
+      "colors:red_white_blue",
+      "region:south_america"
+    ]
+  },
+  {
+    "country": "Peru",
+    "code": "PE",
+    "flag": "🇵🇪",
+    "tags": [
+      "layout:tricolour",
+      "pattern:vertical_stripes",
+      "symbol:coat_of_arms",
+      "colors:red_white",
+      "region:south_america"
+    ]
+  },
+  {
+    "country": "Philippines",
+    "code": "PH",
+    "flag": "🇵🇭",
+    "tags": [
+      "layout:bicolour",
+      "pattern:horizontal_stripes",
+      "layout:hoist_triangle",
+      "symbol:sun",
+      "symbol:star",
+      "symbol:star_count_3",
+      "colors:red_white_blue_yellow",
+      "region:asia"
+    ]
+  },
+  {
+    "country": "Poland",
+    "code": "PL",
+    "flag": "🇵🇱",
+    "tags": [
+      "layout:bicolour",
+      "pattern:horizontal_stripes",
+      "colors:red_white",
+      "region:europe"
+    ]
+  },
+  {
+    "country": "Portugal",
+    "code": "PT",
+    "flag": "🇵🇹",
+    "tags": [
+      "layout:bicolour",
+      "pattern:vertical_stripes",
+      "pattern:unequal_stripes",
+      "symbol:coat_of_arms",
+      "symbol:armillary_sphere",
+      "colors:red_green_yellow",
+      "region:europe"
+    ]
+  },
+  {
+    "country": "Qatar",
+    "code": "QA",
+    "flag": "🇶🇦",
+    "tags": [
+      "layout:bicolour",
+      "feature:serrated_edge",
+      "colors:maroon_white",
+      "region:asia",
+      "feature:aspect_ratio_uncommon"
+    ]
+  },
+  {
+    "country": "Romania",
+    "code": "RO",
+    "flag": "🇷🇴",
+    "tags": [
+      "layout:tricolour",
+      "pattern:vertical_stripes",
+      "colors:red_yellow_blue",
+      "region:europe"
+    ]
+  },
+  {
+    "country": "Russia",
+    "code": "RU",
+    "flag": "🇷🇺",
+    "tags": [
+      "layout:tricolour",
+      "pattern:horizontal_stripes",
+      "colors:red_white_blue",
+      "theme:pan_slavic_colors",
+      "region:europe",
+      "region:asia"
+    ]
+  },
+  {
+    "country": "Rwanda",
+    "code": "RW",
+    "flag": "🇷🇼",
+    "tags": [
+      "layout:tricolour",
+      "pattern:horizontal_stripes",
+      "pattern:unequal_stripes",
+      "symbol:sun",
+      "colors:blue_yellow_green",
+      "region:africa",
+      "history:commonwealth"
+    ]
+  },
+  {
+    "country": "Saint Kitts and Nevis",
+    "code": "KN",
+    "flag": "🇰🇳",
+    "tags": [
+      "layout:diagonal",
+      "feature:fimbriation",
+      "symbol:star",
+      "symbol:star_count_2",
+      "colors:red_green_yellow_black",
+      "theme:pan_african_colors",
+      "region:north_america",
+      "history:commonwealth"
+    ]
+  },
+  {
+    "country": "Saint Lucia",
+    "code": "LC",
+    "flag": "🇱🇨",
+    "tags": [
+      "layout:single_field",
+      "symbol:triangle",
+      "colors:blue_white_yellow_black",
+      "region:north_america",
+      "history:commonwealth"
+    ]
+  },
+  {
+    "country": "Saint Vincent and the Grenadines",
+    "code": "VC",
+    "flag": "🇻🇨",
+    "tags": [
+      "layout:tricolour",
+      "pattern:vertical_stripes",
+      "pattern:canadian_pale",
+      "symbol:diamond",
+      "colors:blue_yellow_green",
+      "region:north_america",
+      "history:commonwealth"
+    ]
+  },
+  {
+    "country": "Samoa",
+    "code": "WS",
+    "flag": "🇼🇸",
+    "tags": [
+      "layout:canton",
+      "symbol:southern_cross",
+      "symbol:star",
+      "symbol:star_count_5",
+      "colors:red_white_blue",
+      "region:oceania",
+      "history:commonwealth"
+    ]
+  },
+  {
+    "country": "San Marino",
+    "code": "SM",
+    "flag": "🇸🇲",
+    "tags": [
+      "layout:bicolour",
+      "pattern:horizontal_stripes",
+      "symbol:coat_of_arms",
+      "colors:blue_white",
+      "region:europe"
+    ]
+  },
+  {
+    "country": "Sao Tome and Principe",
+    "code": "ST",
+    "flag": "🇸🇹",
+    "tags": [
+      "layout:triband",
+      "pattern:horizontal_stripes",
+      "layout:hoist_triangle",
+      "symbol:star",
+      "symbol:star_count_2",
+      "colors:red_yellow_green_black",
+      "theme:pan_african_colors",
+      "region:africa"
+    ]
+  },
+  {
+    "country": "Saudi Arabia",
+    "code": "SA",
+    "flag": "🇸🇦",
+    "tags": [
+      "layout:single_field",
+      "feature:text_inscription",
+      "symbol:weapon",
+      "symbol:sword",
+      "colors:white_green",
+      "theme:islamic",
+      "region:asia"
+    ]
+  },
+  {
+    "country": "Senegal",
+    "code": "SN",
+    "flag": "🇸🇳",
+    "tags": [
+      "layout:tricolour",
+      "pattern:vertical_stripes",
+      "symbol:star",
+      "symbol:star_count_1",
+      "colors:red_yellow_green",
+      "theme:pan_african_colors",
+      "region:africa"
+    ]
+  },
+  {
+    "country": "Serbia",
+    "code": "RS",
+    "flag": "🇷🇸",
+    "tags": [
+      "layout:tricolour",
+      "pattern:horizontal_stripes",
+      "symbol:coat_of_arms",
+      "symbol:eagle",
+      "symbol:double_headed_eagle",
+      "colors:red_white_blue",
+      "theme:pan_slavic_colors",
+      "region:europe",
+      "history:former_yugoslavia"
+    ]
+  },
+  {
+    "country": "Seychelles",
+    "code": "SC",
+    "flag": "🇸🇨",
+    "tags": [
+      "layout:multicolour",
+      "pattern:radiating_bands",
+      "colors:red_white_blue_green_yellow",
+      "region:africa",
+      "history:commonwealth"
+    ]
+  },
+  {
+    "country": "Sierra Leone",
+    "code": "SL",
+    "flag": "🇸🇱",
+    "tags": [
+      "layout:tricolour",
+      "pattern:horizontal_stripes",
+      "colors:white_blue_green",
+      "region:africa",
+      "history:commonwealth"
+    ]
+  },
+  {
+    "country": "Singapore",
+    "code": "SG",
+    "flag": "🇸🇬",
+    "tags": [
+      "layout:bicolour",
+      "pattern:horizontal_stripes",
+      "layout:canton",
+      "symbol:star_and_crescent",
+      "symbol:star_count_5",
+      "colors:red_white",
+      "region:asia",
+      "history:commonwealth"
+    ]
+  },
+  {
+    "country": "Slovakia",
+    "code": "SK",
+    "flag": "🇸🇰",
+    "tags": [
+      "layout:tricolour",
+      "pattern:horizontal_stripes",
+      "symbol:coat_of_arms",
+      "symbol:cross",
+      "colors:red_white_blue",
+      "theme:pan_slavic_colors",
+      "region:europe",
+      "history:czechoslovakia"
+    ]
+  },
+  {
+    "country": "Slovenia",
+    "code": "SI",
+    "flag": "🇸🇮",
+    "tags": [
+      "layout:tricolour",
+      "pattern:horizontal_stripes",
+      "symbol:coat_of_arms",
+      "symbol:star",
+      "symbol:star_count_3",
+      "colors:red_white_blue",
+      "theme:pan_slavic_colors",
+      "region:europe",
+      "history:former_yugoslavia"
+    ]
+  },
+  {
+    "country": "Solomon Islands",
+    "code": "SB",
+    "flag": "🇸🇧",
+    "tags": [
+      "layout:diagonal",
+      "layout:canton",
+      "symbol:star",
+      "symbol:star_count_5",
+      "colors:blue_green_yellow_white",
+      "region:oceania",
+      "history:commonwealth"
+    ]
+  },
+  {
+    "country": "Somalia",
+    "code": "SO",
+    "flag": "🇸🇴",
+    "tags": [
+      "layout:single_field",
+      "symbol:star",
+      "symbol:star_count_1",
+      "colors:blue_white",
+      "region:africa"
+    ]
+  },
+  {
+    "country": "South Africa",
+    "code": "ZA",
+    "flag": "🇿🇦",
+    "tags": [
+      "layout:multicolour",
+      "pattern:horizontal_stripes",
+      "pattern:pall",
+      "feature:fimbriation",
+      "colors:red_white_blue_green_black_yellow",
+      "theme:pan_african_colors",
+      "history:dutch_influence",
+      "history:british_influence",
+      "region:africa"
+    ]
+  },
+  {
+    "country": "South Korea",
+    "code": "KR",
+    "flag": "🇰🇷",
+    "tags": [
+      "layout:single_field",
+      "symbol:circle",
+      "symbol:taegeuk",
+      "symbol:trigrams",
+      "colors:red_white_blue_black",
+      "region:asia"
+    ]
+  },
+  {
+    "country": "South Sudan",
+    "code": "SS",
+    "flag": "🇸🇸",
+    "tags": [
+      "layout:tricolour",
+      "pattern:horizontal_stripes",
+      "layout:hoist_triangle",
+      "feature:fimbriation",
+      "symbol:star",
+      "symbol:star_count_1",
+      "colors:red_white_blue_green_black_yellow",
+      "theme:pan_african_colors",
+      "region:africa"
+    ]
+  },
+  {
+    "country": "Spain",
+    "code": "ES",
+    "flag": "🇪🇸",
+    "tags": [
+      "layout:triband",
+      "pattern:horizontal_stripes",
+      "pattern:unequal_stripes",
+      "symbol:coat_of_arms",
+      "colors:red_yellow",
+      "region:europe"
+    ]
+  },
+  {
+    "country": "Sri Lanka",
+    "code": "LK",
+    "flag": "🇱🇰",
+    "tags": [
+      "layout:bordered",
+      "pattern:hoist_band",
+      "symbol:lion",
+      "symbol:weapon",
+      "colors:red_green_orange_yellow",
+      "region:asia",
+      "history:commonwealth"
+    ]
+  },
+  {
+    "country": "Sudan",
+    "code": "SD",
+    "flag": "🇸🇩",
+    "tags": [
+      "layout:tricolour",
+      "pattern:horizontal_stripes",
+      "layout:hoist_triangle",
+      "colors:red_white_black_green",
+      "theme:pan_arab_colors",
+      "region:africa"
+    ]
+  },
+  {
+    "country": "Sweden",
+    "code": "SE",
+    "flag": "🇸🇪",
+    "tags": [
+      "layout:cross",
+      "group:nordic_cross",
+      "colors:blue_yellow",
+      "region:europe"
+    ]
+  },
+  {
+    "country": "Switzerland",
+    "code": "CH",
+    "flag": "🇨🇭",
+    "tags": [
+      "shape:square",
+      "layout:single_field",
+      "layout:cross",
+      "colors:red_white",
+      "region:europe"
+    ]
+  },
+  {
+    "country": "Syria",
+    "code": "SY",
+    "flag": "🇸🇾",
+    "tags": [
+      "layout:tricolour",
+      "pattern:horizontal_stripes",
+      "symbol:star",
+      "symbol:star_count_2",
+      "colors:red_white_black_green",
+      "theme:arab_liberation_colors",
+      "region:asia"
+    ]
+  },
+  {
+    "country": "Taiwan",
+    "code": "TW",
+    "flag": "🇹🇼",
+    "tags": [
+      "layout:single_field",
+      "layout:canton",
+      "symbol:sun",
+      "colors:red_white_blue",
+      "region:asia"
+    ]
+  },
+  {
+    "country": "Tajikistan",
+    "code": "TJ",
+    "flag": "🇹🇯",
+    "tags": [
+      "layout:triband",
+      "pattern:horizontal_stripes",
+      "pattern:unequal_stripes",
+      "symbol:crown",
+      "symbol:star",
+      "symbol:star_arc",
+      "symbol:star_count_7",
+      "colors:red_white_green_yellow",
+      "region:asia",
+      "history:former_soviet_union"
+    ]
+  },
+  {
+    "country": "Tanzania",
+    "code": "TZ",
+    "flag": "🇹🇿",
+    "tags": [
+      "layout:diagonal",
+      "feature:fimbriation",
+      "colors:blue_green_yellow_black",
+      "theme:pan_african_colors",
+      "region:africa",
+      "history:commonwealth"
+    ]
+  },
+  {
+    "country": "Thailand",
+    "code": "TH",
+    "flag": "🇹🇭",
+    "tags": [
+      "layout:multicolour",
+      "pattern:horizontal_stripes",
+      "pattern:unequal_stripes",
+      "colors:red_white_blue",
+      "region:asia"
+    ]
+  },
+  {
+    "country": "Timor-Leste",
+    "code": "TL",
+    "flag": "🇹🇱",
+    "tags": [
+      "layout:single_field",
+      "layout:hoist_triangle",
+      "symbol:star",
+      "symbol:star_count_1",
+      "colors:red_yellow_black_white",
+      "region:asia"
+    ]
+  },
+  {
+    "country": "Togo",
+    "code": "TG",
+    "flag": "🇹🇬",
+    "tags": [
+      "layout:multicolour",
+      "pattern:horizontal_stripes",
+      "layout:canton",
+      "symbol:star",
+      "symbol:star_count_1",
+      "colors:red_white_green_yellow",
+      "theme:pan_african_colors",
+      "region:africa",
+      "feature:aspect_ratio_uncommon"
+    ]
+  },
+  {
+    "country": "Tonga",
+    "code": "TO",
+    "flag": "🇹🇴",
+    "tags": [
+      "layout:single_field",
+      "layout:canton",
+      "layout:cross",
+      "colors:red_white",
+      "region:oceania",
+      "history:commonwealth"
+    ]
+  },
+  {
+    "country": "Trinidad and Tobago",
+    "code": "TT",
+    "flag": "🇹🇹",
+    "tags": [
+      "layout:diagonal",
+      "feature:fimbriation",
+      "colors:red_white_black",
+      "region:north_america",
+      "history:commonwealth"
+    ]
+  },
+  {
+    "country": "Tunisia",
+    "code": "TN",
+    "flag": "🇹🇳",
+    "tags": [
+      "layout:single_field",
+      "symbol:star_and_crescent",
+      "symbol:circle",
+      "colors:red_white",
+      "theme:islamic",
+      "region:africa",
+      "history:ottoman_empire"
+    ]
+  },
+  {
+    "country": "Turkey",
+    "code": "TR",
+    "flag": "🇹🇷",
+    "tags": [
+      "layout:single_field",
+      "symbol:star_and_crescent",
+      "colors:red_white",
+      "theme:islamic",
+      "region:asia",
+      "region:europe",
+      "history:ottoman_empire"
+    ]
+  },
+  {
+    "country": "Turkmenistan",
+    "code": "TM",
+    "flag": "🇹🇲",
+    "tags": [
+      "layout:single_field",
+      "pattern:hoist_band",
+      "pattern:carpet_guls",
+      "symbol:star_and_crescent",
+      "symbol:star_count_5",
+      "colors:white_green",
+      "theme:islamic",
+      "region:asia",
+      "history:former_soviet_union"
+    ]
+  },
+  {
+    "country": "Tuvalu",
+    "code": "TV",
+    "flag": "🇹🇻",
+    "tags": [
+      "layout:canton",
+      "symbol:union_jack",
+      "symbol:star",
+      "symbol:star_count_9",
+      "symbol:map",
+      "colors:blue_yellow",
+      "region:oceania",
+      "history:commonwealth",
+      "history:british_ensign"
+    ]
+  },
+  {
+    "country": "Uganda",
+    "code": "UG",
+    "flag": "🇺🇬",
+    "tags": [
+      "layout:multicolour",
+      "pattern:horizontal_stripes",
+      "symbol:circle",
+      "symbol:bird",
+      "symbol:grey_crowned_crane",
+      "colors:red_yellow_black",
+      "theme:pan_african_colors",
+      "region:africa",
+      "history:commonwealth"
+    ]
+  },
+  {
+    "country": "Ukraine",
+    "code": "UA",
+    "flag": "🇺🇦",
+    "tags": [
+      "layout:bicolour",
+      "pattern:horizontal_stripes",
+      "colors:blue_yellow",
+      "region:europe",
+      "history:former_soviet_union"
+    ]
+  },
+  {
+    "country": "United Arab Emirates",
+    "code": "AE",
+    "flag": "🇦🇪",
+    "tags": [
+      "layout:tricolour",
+      "pattern:horizontal_stripes",
+      "pattern:hoist_band",
+      "colors:red_white_black_green",
+      "theme:pan_arab_colors",
+      "region:asia"
+    ]
+  },
+  {
+    "country": "United Kingdom",
+    "code": "GB",
+    "flag": "🇬🇧",
+    "tags": [
+      "layout:cross",
+      "layout:saltire",
+      "symbol:union_jack",
+      "colors:red_white_blue",
+      "region:europe"
+    ]
+  },
+  {
+    "country": "United States",
+    "code": "US",
+    "flag": "🇺🇸",
+    "tags": [
+      "layout:canton",
+      "pattern:horizontal_stripes",
+      "symbol:star",
+      "symbol:star_count_50",
+      "colors:red_white_blue",
+      "region:north_america",
+      "history:stars_and_stripes"
+    ]
+  },
+  {
+    "country": "Uruguay",
+    "code": "UY",
+    "flag": "🇺🇾",
+    "tags": [
+      "layout:canton",
+      "pattern:horizontal_stripes",
+      "symbol:sun",
+      "symbol:sun_of_may",
+      "colors:blue_white_yellow",
+      "region:south_america"
+    ]
+  },
+  {
+    "country": "Uzbekistan",
+    "code": "UZ",
+    "flag": "🇺🇿",
+    "tags": [
+      "layout:triband",
+      "pattern:horizontal_stripes",
+      "feature:fimbriation",
+      "layout:canton",
+      "symbol:star_and_crescent",
+      "symbol:star_count_12",
+      "colors:red_white_blue_green",
+      "theme:islamic",
+      "region:asia",
+      "history:former_soviet_union"
+    ]
+  },
+  {
+    "country": "Vanuatu",
+    "code": "VU",
+    "flag": "🇻🇺",
+    "tags": [
+      "layout:bicolour",
+      "pattern:horizontal_stripes",
+      "layout:hoist_triangle",
+      "pattern:pall",
+      "feature:fimbriation",
+      "symbol:boars_tusk",
+      "symbol:fern_leaves",
+      "colors:red_green_yellow_black",
+      "region:oceania",
+      "history:commonwealth"
+    ]
+  },
+  {
+    "country": "Vatican City",
+    "code": "VA",
+    "flag": "🇻🇦",
+    "tags": [
+      "shape:square",
+      "layout:bicolour",
+      "pattern:vertical_stripes",
+      "symbol:coat_of_arms",
+      "symbol:keys_of_saint_peter",
+      "symbol:papal_tiara",
+      "colors:yellow_white",
+      "region:europe"
+    ]
+  },
+  {
+    "country": "Venezuela",
+    "code": "VE",
+    "flag": "🇻🇪",
+    "tags": [
+      "layout:tricolour",
+      "pattern:horizontal_stripes",
+      "symbol:coat_of_arms",
+      "symbol:star",
+      "symbol:star_arc",
+      "symbol:star_count_8",
+      "colors:red_yellow_blue",
+      "region:south_america",
+      "history:gran_colombia"
+    ]
+  },
+  {
+    "country": "Vietnam",
+    "code": "VN",
+    "flag": "🇻🇳",
+    "tags": [
+      "layout:single_field",
+      "symbol:star",
+      "symbol:star_count_1",
+      "colors:red_yellow",
+      "theme:communist",
+      "region:asia"
+    ]
+  },
+  {
+    "country": "Yemen",
+    "code": "YE",
+    "flag": "🇾🇪",
+    "tags": [
+      "layout:tricolour",
+      "pattern:horizontal_stripes",
+      "colors:red_white_black",
+      "theme:arab_liberation_colors",
+      "region:asia"
+    ]
+  },
+  {
+    "country": "Zambia",
+    "code": "ZM",
+    "flag": "🇿🇲",
+    "tags": [
+      "layout:single_field",
+      "symbol:eagle",
+      "pattern:fly_stripes",
+      "colors:red_green_orange_black",
+      "theme:pan_african_colors",
+      "region:africa",
+      "history:commonwealth"
+    ]
+  },
+  {
+    "country": "Zimbabwe",
+    "code": "ZW",
+    "flag": "🇿🇼",
+    "tags": [
+      "layout:multicolour",
+      "pattern:horizontal_stripes",
+      "layout:hoist_triangle",
+      "symbol:star",
+      "symbol:bird",
+      "symbol:zimbabwe_bird",
+      "colors:red_white_green_yellow_black",
+      "theme:pan_african_colors",
+      "region:africa"
+    ]
+  }
+]
