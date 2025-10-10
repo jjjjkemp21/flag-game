@@ -7,8 +7,8 @@ cd /home/jjjjkemp/your-repo-directory
 git pull origin main
 
 # Stop and remove the old container (|| true prevents errors if container doesn't exist)
-docker stop your-container-name || true
-docker rm your-container-name || true
+docker stop flag-game || true
+docker rm flag-game || true
 
 # Build the new Docker image
 docker build -t flag-game .
