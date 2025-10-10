@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Navigate to your project directory
-cd /home/jjjjkemp/your-repo-directory
+cd /home/jjjjkemp/flag-game
 
 # Pull the latest changes from the main branch
 git pull origin main
