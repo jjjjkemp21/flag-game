@@ -15,6 +15,6 @@ docker build -t flag-game .
 
 # Run the new container
 # The -p 8080:80 maps port 80 in the container to port 8080 on the Pi. Change if needed.
-docker run -d --restart always --name flag-game -p 3000:80 flag-game
+docker run -d --restart always --name flag-game -p 3000:443 flag-game
 
 echo "🚀 Deployment finished successfully!"
