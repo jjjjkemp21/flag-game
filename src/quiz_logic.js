@@ -4,7 +4,12 @@ function runWeightedSelection(flagsToSelectFrom) {
     }
     const weights = flagsToSelectFrom.map(flag => {
         const struggleScore = flag.incorrect / (flag.correct + 1);
-        return 1 + struggleScore * 10;
+        let weight = 1 + struggleScore * 10;
+
+        if (flag.correct === 0 && flag.incorrect === 0) {
+            weight += 2;
+        }
+        return weight;
     });
 
     const totalWeight = weights.reduce((sum, w) => sum + w, 0);
@@ -27,20 +32,30 @@ function select_next_flag(flags, recently_shown_codes = []) {
 
     const now = Date.now();
 
-    const dueFlags = flags.filter(flag => 
-        (flag.nextReview === null || flag.nextReview <= now) &&
-        !recently_shown_codes.includes(flag.code)
-    );
-
-    if (dueFlags.length === 0) {
-        const allDueFlags = flags.filter(flag => flag.nextReview === null || flag.nextReview <= now);
-        if (allDueFlags.length > 0) {
-            return runWeightedSelection(allDueFlags);
-        }
+    const availableFlags = flags.filter(f => !f.isLeech);
+    if (availableFlags.length === 0) {
         return null;
     }
 
-    return runWeightedSelection(dueFlags);
+    const dueAndNotRecent = availableFlags.filter(flag =>
+        (flag.nextReview === null || flag.nextReview <= now) &&
+        !recently_shown_codes.includes(flag.code)
+    );
+    if (dueAndNotRecent.length > 0) {
+        return runWeightedSelection(dueAndNotRecent);
+    }
+
+    const allDue = availableFlags.filter(flag => flag.nextReview === null || flag.nextReview <= now);
+    if (allDue.length > 0) {
+        return runWeightedSelection(allDue);
+    }
+
+    const notRecent = availableFlags.filter(flag => !recently_shown_codes.includes(flag.code));
+    if (notRecent.length > 0) {
+        return runWeightedSelection(notRecent);
+    }
+
+    return runWeightedSelection(availableFlags);
 }
 
 function get_distractor_options(correct_flag, all_flags, num_options = 3) {
@@ -126,6 +141,8 @@ function update_flag_stats(flags, correct_flag_name, user_was_correct, reason = 
         color = "green";
         flag.correct += 1;
         flag.streak += 1;
+        flag.isLeech = false;
+        flag.lapses = flag.lapses ? Math.max(0, flag.lapses - 1) : 0;
         flag.nextReview = calculateNextReview(flag.streak);
     } else {
         const text = reason === 'skipped'
@@ -134,8 +151,23 @@ function update_flag_stats(flags, correct_flag_name, user_was_correct, reason = 
         message = { text, answer: correct_flag_name };
         color = "red";
         flag.incorrect += 1;
-        flag.streak = 0;
-        flag.nextReview = Date.now();
+        flag.lapses = (flag.lapses || 0) + 1;
+
+        if (flag.streak > 2) {
+            flag.streak = Math.floor(flag.streak * 0.5);
+        } else {
+            flag.streak = 0;
+        }
+
+        const LEECH_THRESHOLD = 4;
+        if (flag.lapses > LEECH_THRESHOLD) {
+            flag.isLeech = true;
+            // Set next review far in the future so it doesn't get picked up by normal review
+            flag.nextReview = Date.now() + (10 * 365 * 24 * 60 * 60 * 1000); 
+            message.text = `This flag seems tricky, so we'll set it aside for now. The answer was:`;
+        } else {
+            flag.nextReview = Date.now();
+        }
     }
 
     return { message, color, updatedFlags };

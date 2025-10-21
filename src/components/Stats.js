@@ -1,7 +1,17 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import './Stats.css';
 
 function Stats({ flagsData }) {
+    const [frenzyHighScore, setFrenzyHighScore] = useState(0);
+    const [pixelHighScore, setPixelHighScore] = useState(0);
+
+    useEffect(() => {
+        const fScore = localStorage.getItem('frenzyHighScore') || 0;
+        const pScore = localStorage.getItem('pixelatedHighScore') || 0;
+        setFrenzyHighScore(parseInt(fScore, 10));
+        setPixelHighScore(parseInt(pScore, 10));
+    }, []);
+
     if (!flagsData || flagsData.length === 0) {
         return null;
     }
@@ -20,7 +30,7 @@ function Stats({ flagsData }) {
     return (
         <div className="stats-box">
             <h2>Your Progress</h2>
-            <div className="stats-grid">
+            <div className="stats-grid knowledge-grid">
                 <div className="stat-item">
                     <span className="stat-value">{masteredCount}</span>
                     <span className="stat-label">Mastered</span>
@@ -34,8 +44,22 @@ function Stats({ flagsData }) {
                     <span className="stat-label">Needs Practice</span>
                 </div>
             </div>
+
+            <h3 className="stats-subtitle">Bonus Mode High Scores</h3>
+            <div className="stats-grid high-score-grid">
+                <div className="stat-item">
+                    <span className="stat-value bonus-score">{pixelHighScore}</span>
+                    <span className="stat-label">Pixelated</span>
+                </div>
+                <div className="stat-item">
+                    <span className="stat-value bonus-score">{frenzyHighScore}</span>
+                    <span className="stat-label">Frenzy</span>
+                </div>
+            </div>
+
             {bestKnown && worstKnown && (
                 <div className="stats-details">
+                    <h3 className="stats-subtitle">Knowledge</h3>
                     <p><strong>Best:</strong> {bestKnown.name} (Streak: {bestKnown.streak})</p>
                     <p><strong>Needs Practice:</strong> {worstKnown.name} (Streak: {worstKnown.streak})</p>
                 </div>

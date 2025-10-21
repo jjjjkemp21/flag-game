@@ -13,11 +13,14 @@ function MainMenu({ setView, flagsData, setQuizMode }) {
             <h1 className="menu-title">Flag Quiz</h1>
             <p className="menu-subtitle">Choose a mode to start learning!</p>
             <div className="menu-options">
-                <button className="menu-button" onClick={() => handleStartQuiz('multiple-choice')}>
+                <button className="menu-button c1" onClick={() => handleStartQuiz('multiple-choice')}>
                     Multiple Choice
                 </button>
-                <button className="menu-button" onClick={() => handleStartQuiz('free-response')}>
+                <button className="menu-button c2" onClick={() => handleStartQuiz('free-response')}>
                     Free Response
+                </button>
+                <button className="menu-button c3" onClick={() => setView('bonus-menu')}>
+                    Bonus Modes
                 </button>
                 <button className="menu-button secondary" onClick={() => setView('settings')}>
                     Settings

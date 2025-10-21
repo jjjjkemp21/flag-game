@@ -3,8 +3,11 @@ import { select_next_flag } from './quiz_logic';
 import MainMenu from './components/MainMenu';
 import MultipleChoiceQuiz from './components/MultipleChoiceQuiz';
 import FreeResponseQuiz from './components/FreeResponseQuiz';
+import PixelatedQuiz from './components/PixelatedQuiz';
+import FrenzyQuiz from './components/FrenzyQuiz';
 import Settings from './components/Settings';
 import QuizMenu from './components/QuizMenu';
+import BonusMenu from './components/BonusMenu';
 import './App.css';
 
 const DATA_URL = './data/flags.json';
@@ -48,13 +51,28 @@ function App() {
             if (savedDataString) {
                 const savedData = JSON.parse(savedDataString);
                 const savedDataMap = new Map(savedData.map(flag => [flag.code, flag]));
-                
+
                 const mergedData = freshData.map(freshFlag => {
                     const savedFlag = savedDataMap.get(freshFlag.code);
                     if (savedFlag) {
-                        return { ...savedFlag, ...processFlag(freshFlag) };
+                        return {
+                            correct: 0,
+                            incorrect: 0,
+                            streak: 0,
+                            nextReview: null,
+                            lastAnswered: null,
+                            ...savedFlag,
+                            ...processFlag(freshFlag),
+                        };
                     }
-                    return { ...processFlag(freshFlag), correct: 0, incorrect: 0, streak: 0, nextReview: null, lastAnswered: null };
+                    return {
+                        ...processFlag(freshFlag),
+                        correct: 0,
+                        incorrect: 0,
+                        streak: 0,
+                        nextReview: null,
+                        lastAnswered: null,
+                    };
                 });
                 setFlagsData(mergedData);
             } else {
@@ -73,7 +91,8 @@ function App() {
         }
         setIsLoading(false);
     }, []);
-    
+
+
     useEffect(() => {
         loadData();
     }, [loadData]);
@@ -88,6 +107,8 @@ function App() {
         const isConfirmed = window.confirm("Are you sure you want to reset all your progress? This action cannot be undone.");
         if (isConfirmed) {
             localStorage.removeItem('flagQuizScores');
+            localStorage.removeItem('frenzyHighScore');
+            localStorage.removeItem('pixelatedHighScore');
             loadData();
             setView('menu');
         }
@@ -106,11 +127,11 @@ function App() {
             if (quizCategory.type === 'review') {
                 return flagsData.filter(f => f.nextReview !== null && f.nextReview <= now);
             }
-            return flagsData.filter(flag => 
+            return flagsData.filter(flag =>
                 flag.tags.includes(`${quizCategory.type}:${quizCategory.value}`)
             );
         };
-        
+
         const quizProps = {
             allFlagsData: flagsData,
             setFlagsData: setFlagsData,
@@ -132,6 +153,12 @@ function App() {
                     return <MultipleChoiceQuiz {...quizProps} quizFlags={quizFlags} />;
                 }
                 return <FreeResponseQuiz {...quizProps} quizFlags={quizFlags} strictSpelling={strictSpelling} />;
+            case 'pixelated-quiz':
+                return <PixelatedQuiz allFlagsData={flagsData} setView={setView} />;
+            case 'frenzy-quiz':
+                return <FrenzyQuiz allFlagsData={flagsData} setView={setView} />;
+            case 'bonus-menu':
+                return <BonusMenu setView={setView} />;
             case 'settings':
                 return (
                     <Settings

@@ -1,143 +1,182 @@
-/* Shared styles for MainMenu and QuizMenu */
+.main-menu-box,
+.bonus-menu-box {
+  width: 100%;
+  max-width: 500px;
+  padding: 30px;
+  background-color: var(--container-background);
+  border-radius: 12px;
+  box-shadow: var(--container-shadow);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+.bonus-menu-box {
+  position: relative;
+  padding-top: 60px;
+}
+
 .menu-title {
-    font-size: 3em;
-    color: var(--primary-color);
-    margin-bottom: 0;
-    text-align: center;
+  font-size: 3em;
+  color: var(--primary-color);
+  margin-bottom: 0;
+  text-align: center;
 }
 
 .menu-subtitle {
-    font-size: 1.1em;
-    color: var(--text-color-secondary);
-    margin-top: 5px;
-    margin-bottom: 30px;
-    text-align: center;
+  font-size: 1.1em;
+  color: var(--text-color-secondary);
+  margin-top: 5px;
+  margin-bottom: 30px;
+  text-align: center;
 }
 
 .menu-options {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    gap: 15px;
-    margin-bottom: 30px;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 15px;
+  margin-bottom: 30px;
 }
 
 .menu-button {
-    width: 100%;
-    padding: 15px;
-    font-size: 1.2em;
-    font-weight: bold;
-    color: white;
-    background-color: var(--primary-color);
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background-color 0.2s, transform 0.2s;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+  width: 100%;
+  padding: 15px;
+  font-size: 1.2em;
+  font-weight: bold;
+  color: white;
+  background-color: var(--primary-color);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.2s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 .menu-button:hover:not(:disabled) {
-    background-color: var(--primary-hover-color);
-    transform: translateY(-2px);
+  background-color: var(--primary-hover-color);
+  transform: translateY(-2px);
+}
+
+.menu-button.c1 {
+  background-color: var(--primary-color);
+}
+.menu-button.c1:hover:not(:disabled) {
+  background-color: var(--primary-hover-color);
+}
+
+.menu-button.c2 {
+  background-color: #34A853;
+}
+.menu-button.c2:hover:not(:disabled) {
+  background-color: #2c8f45;
+}
+
+.menu-button.c3 {
+  background-color: #FFA000;
+}
+.menu-button.c3:hover:not(:disabled) {
+  background-color: #cc8000;
 }
 
 .menu-button.secondary {
-    background-color: var(--button-secondary-bg);
-    color: var(--text-color);
+  background-color: var(--button-secondary-bg);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
 }
 
 .menu-button.secondary:hover:not(:disabled) {
-    background-color: var(--button-secondary-hover-bg);
+  background-color: var(--button-secondary-hover-bg);
 }
 
 .menu-button-stats {
-    font-size: 0.7em;
-    font-weight: normal;
-    opacity: 0.9;
-    margin-top: 5px;
+  font-size: 0.7em;
+  font-weight: normal;
+  opacity: 0.9;
+  margin-top: 5px;
 }
 
 .menu-button-stats .completed {
-    color: #e4e6eb;
+  color: #e4e6eb;
 }
 
 .menu-button-stats .review-stat {
-    color: #ffd700;
+  color: #ffd700;
 }
 
-/* Grid styles for QuizMenu */
 .category-section {
-    width: 100%;
-    margin-bottom: 25px;
+  width: 100%;
+  margin-bottom: 25px;
 }
 
 .category-section h3 {
-    text-align: left;
-    color: var(--text-color-secondary);
-    margin-top: 0;
-    margin-bottom: 15px;
-    padding-bottom: 5px;
-    border-bottom: 1px solid var(--border-color);
-    font-size: 1.2em;
+  text-align: left;
+  color: var(--text-color-secondary);
+  margin-top: 0;
+  margin-bottom: 15px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid var(--border-color);
+  font-size: 1.2em;
 }
 
 .category-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 12px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
 }
 
 .grid-button {
-    background-color: var(--container-background);
-    border: 1px solid var(--border-color);
-    color: var(--text-color);
-    border-radius: 8px;
-    padding: 15px 10px;
-    font-size: 1em;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    min-height: 80px;
+  background-color: var(--container-background);
+  border: 1px solid var(--border-color);
+  color: var(--text-color);
+  border-radius: 8px;
+  padding: 15px 10px;
+  font-size: 1em;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-height: 80px;
 }
 
 .grid-button:hover:not(:disabled) {
-    border-color: var(--primary-color);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px var(--shadow-color);
+  border-color: var(--primary-color);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px var(--shadow-color);
 }
 
 .grid-button:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .grid-button-name {
-    font-weight: bold;
-    margin-bottom: 8px;
+  font-weight: bold;
+  margin-bottom: 8px;
 }
 
 .grid-button-stats {
-    font-size: 0.8em;
-    color: var(--text-color-secondary);
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
+  font-size: 0.8em;
+  color: var(--text-color-secondary);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .grid-button-stats .completed {
-    color: var(--correct-color);
-    font-weight: bold;
+  color: var(--correct-color);
+  font-weight: bold;
 }
 
 .grid-button-stats .review-stat {
-    color: var(--primary-hover-color);
-    font-weight: bold;
+  color: var(--primary-hover-color);
+  font-weight: bold;
 }
