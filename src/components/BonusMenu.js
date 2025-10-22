@@ -18,29 +18,31 @@ function BonusMenu({ setView }) {
     }, []);
 
     return (
-        <div className="quiz-box bonus-menu-box">
+        <div className="main-menu-box">
             <button className="back-button" onClick={() => setView('menu')}>←</button>
             <h1 className="menu-title">Bonus Modes</h1>
             <p className="menu-subtitle">Try a fun challenge!</p>
-            <div className="menu-options">
-                <button className="menu-button c2" onClick={() => setView('pixelated-quiz')}>
-                    Pixelated Guess
-                    <span className="menu-button-stats">
-                        High Score: {pixelHighScore}
-                    </span>
-                </button>
-                <button className="menu-button c3" onClick={() => setView('frenzy-quiz')}>
-                    Frenzy Mode
-                    <span className="menu-button-stats">
-                        High Score: {frenzyHighScore}
-                    </span>
-                </button>
-                <button className="menu-button c1" onClick={() => setView('longest-route-quiz')}>
-                    Longest Chain
-                    <span className="menu-button-stats">
-                        High Score: {longestRouteHighScore}
-                    </span>
-                </button>
+            <div className="category-section" style={{ marginBottom: 0 }}>
+                <div className="category-grid">
+                    <button className="grid-button" onClick={() => setView('pixelated-quiz')}>
+                        <span className="grid-button-name">Pixelated Guess</span>
+                        <div className="grid-button-stats">
+                            <span>High Score: {pixelHighScore}</span>
+                        </div>
+                    </button>
+                    <button className="grid-button" onClick={() => setView('frenzy-quiz')}>
+                        <span className="grid-button-name">Frenzy Mode</span>
+                        <div className="grid-button-stats">
+                            <span>High Score: {frenzyHighScore}</span>
+                        </div>
+                    </button>
+                    <button className="grid-button" onClick={() => setView('longest-route-quiz')}>
+                        <span className="grid-button-name">Longest Chain</span>
+                        <div className="grid-button-stats">
+                            <span>High Score: {longestRouteHighScore}</span>
+                        </div>
+                    </button>
+                </div>
             </div>
         </div>
     );
