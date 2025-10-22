@@ -9,7 +9,7 @@ import Settings from './components/Settings';
 import QuizMenu from './components/QuizMenu';
 import BonusMenu from './components/BonusMenu';
 import LongestRouteQuiz from './components/LongestRouteQuiz'; // New import
-import 'App.css';
+import './App.css';
 
 const DATA_URL = './data/flags.json';
 
