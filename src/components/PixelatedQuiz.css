@@ -102,6 +102,9 @@
     transform-origin: center;
     filter: blur(var(--base-blur)) grayscale(var(--base-grayscale-percent));
     transition: filter 0.3s ease-in-out, transform 0.3s ease-in-out;
+    -webkit-user-drag: none;
+    user-select: none;
+    -moz-user-select: none;
 }
 
 .pixelated-flag-image.wavy {

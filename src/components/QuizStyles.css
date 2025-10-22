@@ -427,6 +427,7 @@
 
 /* --- NEW BASE QUIZ CONTAINER --- */
 .quiz-box {
+    /* This is the base styling for ALL quiz boxes */
     width: 100%;
     max-width: 550px;
     margin: 0 auto;
@@ -435,7 +436,11 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+}
 
+/* This applies the mobile fix ONLY to the quizzes that need it */
+/* It EXCLUDES the modal and the two broken game modes */
+.quiz-box:not(.pixel-notification-box):not(.pixelated-quiz-box):not(.longest-route-quiz-box) {
     /* --- MOBILE RENDER FIX --- */
     min-height: 100vh;
     transform: translateZ(0);
@@ -444,6 +449,14 @@
 
 @media (max-width: 768px) {
     .quiz-box {
+        width: 100%;
+        max-width: 100%;
+        min-width: 100%;
+        padding: 80px 15px 15px 15px;
+    }
+
+    /* This applies the mobile fix ONLY to the quizzes that need it on mobile */
+    .quiz-box:not(.pixel-notification-box):not(.pixelated-quiz-box):not(.longest-route-quiz-box) {
         width: 100%;
         max-width: 100%;
         min-width: 100%;

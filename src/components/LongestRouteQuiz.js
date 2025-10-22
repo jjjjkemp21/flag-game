@@ -281,125 +281,127 @@ function LongestRouteQuiz({ allFlagsData, setView }) {
             </div>
         );
     }
-
-    if (!gameStarted) {
-        return (
-            <div className="pixel-notification-overlay">
-                <div className="pixel-notification-box quiz-box">
-                    <h2 className="menu-title" style={{ marginTop: 0 }}>Longest Route</h2>
-                    <p className="pixel-high-score">High Score: {longestRouteHighScore}</p>
-                    <p>We've loaded <strong style={{color: 'var(--primary-color)'}}>{routeKeys.length}</strong> pre-calculated routes. You'll be quizzed on one!</p>
-                    <ul className="pixel-rules-list" style={{ textAlign: 'left', listStylePosition: 'inside' }}>
-                        <li>You must guess every flag in a randomly selected chain, in order.</li>
-                        <li>A single incorrect answer or skip will end the game.</li>
-                        <li>Complete an entire chain to set a new high score!</li>
-                    </ul>
-                    <button className="response-submit" onClick={startGame}>Start Challenge</button>
-                    <button className="back-button" onClick={backToMenu} style={{ position: 'static', marginTop: '10px' }}>← Back to Menu</button>
-                </div>
-            </div>
-        );
-    }
-
-    if (gameOver && showGameOverScreen) {
-        return (
-            <div className="pixel-notification-overlay">
-                <div className="pixel-game-over pixel-notification-box quiz-box">
-                    {isWin ? (
-                        <>
-                            <h2>You did it!</h2>
-                            <p className="pixel-final-score">Chain Complete: {score}</p>
-                            {score > longestRouteHighScore ? (
-                                <p className="pixel-new-high-score">🎉 New High Score! 🎉</p>
-                            ) : (
-                                <p className="pixel-high-score">High Score: {longestRouteHighScore}</p>
-                            )}
-                        </>
-                    ) : (
-                        <>
-                            <h2>Game Over!</h2>
-                            <p className="pixel-final-score">Your chain: {score}</p>
-                            <p className="pixel-high-score">Path length was: {quizPath.length}</p>
-                            <p className="pixel-high-score">High Score: {longestRouteHighScore}</p>
-                        </>
-                    )}
-
-                    {quizStats && (
-                        <div 
-                            className="pixel-quiz-stats" 
-                            style={{ 
-                                textAlign: 'left', 
-                                marginTop: '15px', 
-                                fontSize: '0.9rem', 
-                                borderTop: '1px solid var(--border-color)', 
-                                paddingTop: '10px' 
-                            }}
-                        >
-                            <h4 style={{ marginTop: 0, marginBottom: '8px', textAlign: 'center' }}>Longest Journey Calculation</h4>
-                            <p style={{ margin: '4px 0' }}><strong>Starting Country:</strong> {quizStats.startingCountry}</p>
-                            <p style={{ margin: '4px 0' }}><strong>Countries Visited:</strong> {quizStats.countriesVisited}</p>
-                            <p style={{ margin: '4px 0' }}><strong>Total Distance:</strong> {quizStats.totalDistance} km</p>
-                            <p style={{ margin: '4px 0', wordBreak: 'break-word', lineHeight: '1.4' }}>
-                                <strong>Route:</strong> {quizStats.route}
-                            </p>
-                        </div>
-                    )}
-
-                    <button className="response-submit" onClick={resetGame}>Play Again</button>
-                    <button className="back-button" onClick={backToMenu} style={{ position: 'static', marginTop: '10px' }}>← Back to Menu</button>
-                </div>
-            </div>
-        );
-    }
-
-    if (!currentFlag && gameStarted) {
-        return (
-            <div className="quiz-box">
-                <button className="back-button" onClick={backToMenu}>←</button>
-                <h1>Error loading flag...</h1>
-            </div>
-        );
-    }
     
-    if (!currentFlag) return null; 
-
     return (
-        <div className="quiz-box">
-            <button className="back-button" onClick={backToMenu}>←</button>
-            <div className="quiz-header">
-                <span className="quiz-score">Chain: {score} / {quizPath.length}</span>
-            </div>
-            <img
-                src={`${IMAGE_BASE_URL}${currentFlag.file}`}
-                alt="Flag"
-                className="flag-image"
-            />
-            
-            <p className="feedback-label" style={{ color: feedback.color }}>
-                <span>{feedback.message.text}</span>
-                {feedback.message.answer && <span className="feedback-answer">{feedback.message.answer}</span>}
-            </p>
+        <>
+            {/* Notification / Game Over Screens */}
+            <div 
+                className="pixel-notification-overlay"
+                style={{ display: (!gameStarted || (gameOver && showGameOverScreen)) ? 'flex' : 'none' }}
+            >
+                {!gameStarted && (
+                    <div className="pixel-notification-box quiz-box">
+                        <h2 className="menu-title" style={{ marginTop: 0 }}>Longest Route</h2>
+                        <p className="pixel-high-score">High Score: {longestRouteHighScore}</p>
+                        <p>We've loaded <strong style={{color: 'var(--primary-color)'}}>{routeKeys.length}</strong> pre-calculated routes. You'll be quizzed on one!</p>
+                        <ul className="pixel-rules-list" style={{ textAlign: 'left', listStylePosition: 'inside' }}>
+                            <li>You must guess every flag in a randomly selected chain, in order.</li>
+                            <li>A single incorrect answer or skip will end the game.</li>
+                            <li>Complete an entire chain to set a new high score!</li>
+                        </ul>
+                        <button className="response-submit" onClick={startGame}>Start Challenge</button>
+                        <button className="back-button" onClick={backToMenu} style={{ position: 'static', marginTop: '10px' }}>← Back to Menu</button>
+                    </div>
+                )}
 
-            <form onSubmit={handleSubmit} className="response-form">
-                <input
-                    ref={inputRef}
-                    type="text"
-                    value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
-                    disabled={gameOver}
-                    className="response-input"
-                    placeholder="Enter country name..."
-                />
-                <div className="quiz-actions">
-                    <button type="submit" disabled={gameOver || !inputValue.trim()} className="response-submit">
-                        Submit
-                    </button>
-                    <button type="button" onClick={handleSkip} disabled={gameOver} className="skip-button">
-                        Skip
-                    </button>
-                </div>
-            </form>
-        </div>
+                {(gameOver && showGameOverScreen) && (
+                    <div className="pixel-game-over pixel-notification-box quiz-box">
+                        {isWin ? (
+                            <>
+                                <h2>You did it!</h2>
+                                <p className="pixel-final-score">Chain Complete: {score}</p>
+                                {score > longestRouteHighScore ? (
+                                    <p className="pixel-new-high-score">🎉 New High Score! 🎉</p>
+                                ) : (
+                                    <p className="pixel-high-score">High Score: {longestRouteHighScore}</p>
+                                )}
+                            </>
+                        ) : (
+                            <>
+                                <h2>Game Over!</h2>
+                                <p className="pixel-final-score">Your chain: {score}</p>
+                                <p className="pixel-high-score">Path length was: {quizPath.length}</p>
+                                <p className="pixel-high-score">High Score: {longestRouteHighScore}</p>
+                            </>
+                        )}
+
+                        {quizStats && (
+                            <div 
+                                className="pixel-quiz-stats" 
+                                style={{ 
+                                    textAlign: 'left', 
+                                    marginTop: '15px', 
+                                    fontSize: '0.9rem', 
+                                    borderTop: '1px solid var(--border-color)', 
+                                    paddingTop: '10px' 
+                                }}
+                            >
+                                <h4 style={{ marginTop: 0, marginBottom: '8px', textAlign: 'center' }}>Longest Journey Calculation</h4>
+                                <p style={{ margin: '4px 0' }}><strong>Starting Country:</strong> {quizStats.startingCountry}</p>
+                                <p style={{ margin: '4px 0' }}><strong>Countries Visited:</strong> {quizStats.countriesVisited}</p>
+                                <p style={{ margin: '4px 0' }}><strong>Total Distance:</strong> {quizStats.totalDistance} km</p>
+                                <p style={{ margin: '4px 0', wordBreak: 'break-word', lineHeight: '1.4' }}>
+                                    <strong>Route:</strong> {quizStats.route}
+                                </p>
+                            </div>
+                        )}
+
+                        <button className="response-submit" onClick={resetGame}>Play Again</button>
+                        <button className="back-button" onClick={backToMenu} style={{ position: 'static', marginTop: '10px' }}>← Back to Menu</button>
+                    </div>
+                )}
+            </div>
+
+            {/* Main Game Screen */}
+            <div 
+                className="quiz-box longest-route-quiz-box"
+                style={{ display: (gameStarted && !(gameOver && showGameOverScreen)) ? 'flex' : 'none' }}
+            >
+                {!currentFlag ? (
+                    <>
+                        <button className="back-button" onClick={backToMenu}>←</button>
+                        <h1>Error loading flag...</h1>
+                    </>
+                ) : (
+                    <>
+                        <button className="back-button" onClick={backToMenu}>←</button>
+                        <div className="quiz-header">
+                            <span className="quiz-score">Chain: {score} / {quizPath.length}</span>
+                        </div>
+                        <img
+                            src={`${IMAGE_BASE_URL}${currentFlag.file}`}
+                            alt="Flag"
+                            className="flag-image"
+                        />
+                        
+                        <p className="feedback-label" style={{ color: feedback.color }}>
+                            <span>{feedback.message.text}</span>
+                            {feedback.message.answer && <span className="feedback-answer">{feedback.message.answer}</span>}
+                        </p>
+
+                        <form onSubmit={handleSubmit} className="response-form">
+                            <input
+                                ref={inputRef}
+                                type="text"
+                                value={inputValue}
+                                onChange={(e) => setInputValue(e.target.value)}
+                                disabled={gameOver}
+                                className="response-input"
+                                placeholder="Enter country name..."
+                            />
+                            <div className="quiz-actions">
+                                <button type="submit" disabled={gameOver || !inputValue.trim()} className="response-submit">
+                                    Submit
+                                </button>
+                                <button type="button" onClick={handleSkip} disabled={gameOver} className="skip-button">
+                                    Skip
+                                </button>
+                            </div>
+                        </form>
+                    </>
+                )}
+            </div>
+        </>
     );
 }
 

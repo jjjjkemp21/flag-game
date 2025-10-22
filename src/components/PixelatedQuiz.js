@@ -189,7 +189,7 @@ function PixelatedQuiz({ allFlagsData, setView }) {
     };
 
     const handleBack = () => {
-        setView('menu');
+        setView('bonus-menu');
     };
 
     const formatTime = (ms) => {
@@ -197,125 +197,131 @@ function PixelatedQuiz({ allFlagsData, setView }) {
         return `${seconds < 10 ? '0' : ''}${seconds}`;
     };
 
-    if (showNotification) {
-        return (
-            <div className="pixel-notification-overlay">
-                <div className="pixel-notification-box quiz-box">
-                    <h2>Pixelated Guess!</h2>
-                    <p className="pixel-high-score">High Score: {highScore}</p>
-                    <p>You have 180 seconds to guess as many flags as you can.</p>
-                    <p>Scoring depends on your guess:</p>
-                    <ul className="pixel-rules-list">
-                        <li>1st Guess: +20 points</li>
-                        <li>2nd Guess: +10 points (-2 if wrong)</li>
-                        <li>3rd Guess: +7 points (-1 if wrong)</li>
-                        <li>4th Guess: +5 points </li>
-                        <li>5th Guess: +3 points </li>
-                    </ul>
-                    <p className="pixel-tip">Tip: Press '1' to quickly Skip (-3 points).</p>
-                    <button className="response-submit" onClick={startGame}>Start Game</button>
-                    <button className="back-button" onClick={handleBack} style={{ position: 'static', marginTop: '10px' }}>← Back to Menu</button>
-                </div>
-            </div>
-        );
-    }
-
-    if (gameOver) {
-        return (
-            <div className="pixel-notification-overlay">
-                <div className="pixel-game-over pixel-notification-box quiz-box">
-                    <h2>Time's Up!</h2>
-                    <p className="pixel-final-score">Final Score: {score}</p>
-                    <p className="pixel-high-score">High Score: {highScore}</p>
-                    {score > highScore && (
-                        <p className="pixel-new-high-score">🎉 New High Score! 🎉</p>
-                    )}
-                    <button className="response-submit" onClick={startGame}>Play Again</button>
-                    <button className="back-button" onClick={handleBack} style={{ position: 'static', marginTop: '10px' }}>← Back to Menu</button>
-                </div>
-            </div>
-        );
-    }
-
-    if (!currentFlag) {
-        return <div className="quiz-box"><h2>Loading Game...</h2></div>;
-    }
-
     const currentBlur = BLUR_LEVELS[revealIndex];
     const currentGrayscale = GRAYSCALE_LEVELS[revealIndex];
     const isWavy = currentBlur > 0 && !flagOver;
     const livesLost = TOTAL_LIVES - livesRemaining;
 
     return (
-        <div className="quiz-box pixelated-quiz-box">
-            <div className="pixel-game-header">
-                <button className="back-button" onClick={handleBack}>←</button>
-                <div className="pixel-game-timer">
-                    Time: {formatTime(gameTimer)}
-                </div>
-                <div className="pixel-score">
-                    Score: {score}
-                    {scoreAnimation.active && (
-                        <span className={`score-change ${scoreAnimation.points > 0 ? 'correct' : 'incorrect'}`}>
-                            {scoreAnimation.points > 0 ? '+' : ''}{scoreAnimation.points}
-                        </span>
-                    )}
-                </div>
+        <>
+            {/* Notification / Game Over Screens */}
+            <div
+                className="pixel-notification-overlay"
+                style={{ display: (showNotification || gameOver) ? 'flex' : 'none' }}
+            >
+                {showNotification && (
+                    <div className="pixel-notification-box quiz-box">
+                        <h2>Pixelated Guess!</h2>
+                        <p className="pixel-high-score">High Score: {highScore}</p>
+                        <p>You have 180 seconds to guess as many flags as you can.</p>
+                        <p>Scoring depends on your guess:</p>
+                        <ul className="pixel-rules-list">
+                            <li>1st Guess: +20 points</li>
+                            <li>2nd Guess: +10 points (-2 if wrong)</li>
+                            <li>3rd Guess: +7 points (-1 if wrong)</li>
+                            <li>4th Guess: +5 points </li>
+                            <li>5th Guess: +3 points </li>
+                        </ul>
+                        <p className="pixel-tip">Tip: Press '1' to quickly Skip (-3 points).</p>
+                        <button className="response-submit" onClick={startGame}>Start Game</button>
+                        <button className="back-button" onClick={handleBack} style={{ position: 'static', marginTop: '10px' }}>← Back to Menu</button>
+                    </div>
+                )}
+
+                {gameOver && (
+                    <div className="pixel-game-over pixel-notification-box quiz-box">
+                        <h2>Time's Up!</h2>
+                        <p className="pixel-final-score">Final Score: {score}</p>
+                        <p className="pixel-high-score">High Score: {highScore}</p>
+                        {score > highScore && (
+                            <p className="pixel-new-high-score">🎉 New High Score! 🎉</p>
+                        )}
+                        <button className="response-submit" onClick={startGame}>Play Again</button>
+                        <button className="back-button" onClick={handleBack} style={{ position: 'static', marginTop: '10px' }}>← Back to Menu</button>
+                    </div>
+                )}
             </div>
 
-            <div className="pixelated-flag-container">
-                <img
-                    key={`${currentFlag.code}-${revealIndex}`}
-                    src={`${IMAGE_BASE_URL}${currentFlag.file}`}
-                    alt="Pixelated Flag"
-                    className={`pixelated-flag-image ${isWavy ? 'wavy' : ''} ${flagOver ? 'reveal' : ''}`}
-                    style={{
-                        '--base-blur': `${currentBlur}px`,
-                        '--base-grayscale-percent': `${currentGrayscale}%`
-                    }}
-                />
+            {/* Main Game Screen */}
+            <div
+                className="quiz-box pixelated-quiz-box"
+                style={{ display: (showNotification || gameOver) ? 'none' : 'flex' }}
+            >
+                {!currentFlag ? (
+                    <h2>Loading Game...</h2>
+                ) : (
+                    <>
+                        <div className="pixel-game-header">
+                            <button className="back-button" onClick={handleBack}>←</button>
+                            <div className="pixel-game-timer">
+                                Time: {formatTime(gameTimer)}
+                            </div>
+                            <div className="pixel-score">
+                                Score: {score}
+                                {scoreAnimation.active && (
+                                    <span className={`score-change ${scoreAnimation.points > 0 ? 'correct' : 'incorrect'}`}>
+                                        {scoreAnimation.points > 0 ? '+' : ''}{scoreAnimation.points}
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="pixelated-flag-container">
+                            <img
+                                key={`${currentFlag.code}-${revealIndex}`}
+                                src={`${IMAGE_BASE_URL}${currentFlag.file}`}
+                                alt="Pixelated Flag"
+                                className={`pixelated-flag-image ${isWavy ? 'wavy' : ''} ${flagOver ? 'reveal' : ''}`}
+                                style={{
+                                    '--base-blur': `${currentBlur}px`,
+                                    '--base-grayscale-percent': `${currentGrayscale}%`
+                                }}
+                            />
+                        </div>
+
+                        <div className="lives-container">
+                            {[...Array(TOTAL_LIVES)].map((_, i) => (
+                                <div
+                                    key={i}
+                                    className={`life-box ${
+                                        i < livesLost ? (isCorrect ? 'correct' : 'lost') : ''
+                                    }`}
+                                ></div>
+                            ))}
+                        </div>
+
+                        <p className="feedback-label" style={{ color: feedback.color, minHeight: '30px', marginBottom: '15px' }}>
+                            {feedback.text}
+                        </p>
+
+                        <form onSubmit={handleSubmit} className="response-form">
+                            <input
+                                ref={inputRef}
+                                type="text"
+                                value={inputValue}
+                                onChange={(e) => setInputValue(e.target.value)}
+                                className="response-input"
+                                placeholder="Enter country name..."
+                                disabled={flagOver || gameOver}
+                            />
+                            <div className="quiz-actions">
+                                <button type="submit" disabled={flagOver || gameOver} className="response-submit">
+                                    Submit Guess
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={handleSkip}
+                                    disabled={flagOver || gameOver}
+                                    className="skip-button"
+                                >
+                                    Skip
+                                </button>
+                            </div>
+                        </form>
+                    </>
+                )}
             </div>
-
-            <div className="lives-container">
-                {[...Array(TOTAL_LIVES)].map((_, i) => (
-                    <div
-                        key={i}
-                        className={`life-box ${
-                            i < livesLost ? (isCorrect ? 'correct' : 'lost') : ''
-                        }`}
-                    ></div>
-                ))}
-            </div>
-
-            <p className="feedback-label" style={{ color: feedback.color, minHeight: '30px', marginBottom: '15px' }}>
-                {feedback.text}
-            </p>
-
-            <form onSubmit={handleSubmit} className="response-form">
-                <input
-                    ref={inputRef}
-                    type="text"
-                    value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
-                    className="response-input"
-                    placeholder="Enter country name..."
-                    disabled={flagOver || gameOver}
-                />
-                <div className="quiz-actions">
-                    <button type="submit" disabled={flagOver || gameOver} className="response-submit">
-                        Submit Guess
-                    </button>
-                    <button
-                        type="button"
-                        onClick={handleSkip}
-                        disabled={flagOver || gameOver}
-                        className="skip-button"
-                    >
-                        Skip
-                    </button>
-                </div>
-            </form>
-        </div>
+        </>
     );
 }
 
