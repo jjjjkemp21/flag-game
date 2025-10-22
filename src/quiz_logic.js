@@ -31,37 +31,54 @@ function select_next_flag(flags, recently_shown_codes = []) {
     }
 
     const now = Date.now();
-
     const availableFlags = flags.filter(f => !f.isLeech);
     if (availableFlags.length === 0) {
         return null;
     }
 
-    const dueAndNotRecent = availableFlags.filter(flag =>
-        (flag.nextReview === null || flag.nextReview <= now) &&
-        !recently_shown_codes.includes(flag.code)
-    );
-    if (dueAndNotRecent.length > 0) {
-        return runWeightedSelection(dueAndNotRecent);
+    const lastFlagCode = recently_shown_codes.length > 0 ? recently_shown_codes[recently_shown_codes.length - 1] : null;
+
+    let primaryPool = availableFlags;
+    if (lastFlagCode && availableFlags.length > 1) {
+        primaryPool = availableFlags.filter(flag => flag.code !== lastFlagCode);
     }
 
-    const allDue = availableFlags.filter(flag => flag.nextReview === null || flag.nextReview <= now);
-    if (allDue.length > 0) {
-        return runWeightedSelection(allDue);
+    if (primaryPool.length === 0) {
+        primaryPool = availableFlags;
     }
 
-    const notRecent = availableFlags.filter(flag => !recently_shown_codes.includes(flag.code));
-    if (notRecent.length > 0) {
-        return runWeightedSelection(notRecent);
+    const notRecentFlags = primaryPool.filter(flag => !recently_shown_codes.includes(flag.code));
+
+    if (notRecentFlags.length > 0) {
+        const dueAndNotRecent = notRecentFlags.filter(flag => flag.nextReview === null || flag.nextReview <= now);
+        if (dueAndNotRecent.length > 0) {
+            return runWeightedSelection(dueAndNotRecent);
+        }
+        
+        return runWeightedSelection(notRecentFlags);
+    }
+    
+    const dueInPrimaryPool = primaryPool.filter(flag => flag.nextReview === null || flag.nextReview <= now);
+    if (dueInPrimaryPool.length > 0) {
+        return runWeightedSelection(dueInPrimaryPool);
     }
 
-    return runWeightedSelection(availableFlags);
+    return runWeightedSelection(primaryPool);
 }
 
-function get_distractor_options(correct_flag, all_flags, num_options = 3) {
+function get_distractor_options(correct_flag, all_flags, num_options = 3, quiz_category = null, question_history = []) {
     const correctTags = new Set(correct_flag.tags);
-    
-    const eligibleFlags = all_flags.filter(flag => flag.name !== correct_flag.name);
+    const recentFlagCodes = new Set(question_history);
+
+    let eligibleFlags = all_flags.filter(flag =>
+        flag.name !== correct_flag.name &&
+        !recentFlagCodes.has(flag.code)
+    );
+
+    if (quiz_category && quiz_category.type === 'region') {
+        const regionTag = `region:${quiz_category.value}`;
+        eligibleFlags = eligibleFlags.filter(flag => flag.tags.includes(regionTag));
+    }
 
     const scoredFlags = eligibleFlags.map(flag => {
         const otherTags = new Set(flag.tags);
@@ -162,7 +179,6 @@ function update_flag_stats(flags, correct_flag_name, user_was_correct, reason = 
         const LEECH_THRESHOLD = 4;
         if (flag.lapses > LEECH_THRESHOLD) {
             flag.isLeech = true;
-            // Set next review far in the future so it doesn't get picked up by normal review
             flag.nextReview = Date.now() + (10 * 365 * 24 * 60 * 60 * 1000); 
             message.text = `This flag seems tricky, so we'll set it aside for now. The answer was:`;
         } else {
