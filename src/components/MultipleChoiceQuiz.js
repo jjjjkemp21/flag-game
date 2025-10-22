@@ -4,7 +4,7 @@ import './QuizStyles.css';
 
 const IMAGE_BASE_URL = './assets/flags/';
 
-function MultipleChoiceQuiz({ allFlagsData, quizFlags, setFlagsData, selectNextFlag, setView, setQuizCategory, questionHistory, updateQuestionHistory }) {
+function MultipleChoiceQuiz({ allFlagsData, quizFlags, setFlagsData, selectNextFlag, setView, setQuizCategory, quizCategory, questionHistory, updateQuestionHistory }) {
     const [currentFlag, setCurrentFlag] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [options, setOptions] = useState([]);
@@ -30,12 +30,12 @@ function MultipleChoiceQuiz({ allFlagsData, quizFlags, setFlagsData, selectNextF
 
         if (questionFlag) {
             updateQuestionHistory(questionFlag.code);
-            const distractors = get_distractor_options(questionFlag, allFlagsData, 3);
+            const distractors = get_distractor_options(questionFlag, allFlagsData, 3, quizCategory, questionHistory);
             const shuffledOptions = [...distractors, questionFlag.name].sort(() => Math.random() - 0.5);
             setOptions(shuffledOptions);
         }
         setIsLoading(false);
-    }, [quizFlags, allFlagsData, selectNextFlag, questionHistory, updateQuestionHistory]);
+    }, [quizFlags, allFlagsData, selectNextFlag, quizCategory, questionHistory, updateQuestionHistory]);
 
     useEffect(() => {
         nextQuestion();

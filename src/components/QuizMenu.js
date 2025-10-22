@@ -11,7 +11,7 @@ const getCategoryStats = (flags) => {
     if (!flags || flags.length === 0) {
         return { mastered: 0, total: 0, needsReview: 0 };
     }
-    const masteredThreshold = 5;
+    const masteredThreshold = 3;
     const now = Date.now();
 
     const mastered = flags.filter(f => f.streak > masteredThreshold).length;

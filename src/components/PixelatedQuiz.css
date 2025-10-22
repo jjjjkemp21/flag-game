@@ -106,7 +106,11 @@
 }
 
 .pixelated-flag-image.wavy {
-  animation: wavyEffect 1.5s ease-in-out infinite;
+  /* FIX: This animation is extremely resource-intensive on mobile browsers
+    and is likely the cause of your game freezing or lagging.
+    Disabling it should fix the core "does not work" problem.
+  */
+  /* animation: wavyEffect 1.5s ease-in-out infinite; */
   transition: none;
 }
 
@@ -237,10 +241,31 @@
 }
 
 .pixel-new-high-score {
-  font-size: 1.3em;
-  font-weight: bold;
-  color: #FFA000;
-  margin-top: 5px;
+    font-size: 1.3em;
+    font-weight: bold;
+    color: #FFA000;
+    margin-top: 5px;
+}
+
+
+.pixel-quiz-stats {
+    text-align: left;
+    margin-top: 15px;
+    font-size: 0.9rem;
+    border-top: 1px solid var(--border-color);
+    padding-top: 10px;
+}
+
+.pixel-quiz-stats h4 {
+    margin-top: 0;
+    margin-bottom: 8px;
+    text-align: center;
+}
+
+.pixel-quiz-stats p {
+    margin: 4px 0;
+    line-height: 1.4;
+    word-break: break-word;
 }
 
 @media (max-width: 768px) {

@@ -35,7 +35,7 @@
 }
 
 .high-score-grid {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(3, 1fr);
 }
 
 .stat-item {
@@ -67,6 +67,7 @@
 .stat-label {
     font-size: 0.9em;
     color: var(--text-color-secondary);
+    word-break: break-word; 
 }
 
 .stats-details {
@@ -88,4 +89,13 @@
 
 .stats-details strong {
     color: var(--text-color);
+}
+
+@media (max-width: 400px) {
+    .high-score-grid .stat-value {
+        font-size: 1.8em; /* Lowered the score text size */
+    }
+    .high-score-grid .stat-label {
+        font-size: 0.8em; /* Lowered the label text size */
+    }
 }

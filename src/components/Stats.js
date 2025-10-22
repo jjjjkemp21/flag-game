@@ -4,12 +4,15 @@ import './Stats.css';
 function Stats({ flagsData }) {
     const [frenzyHighScore, setFrenzyHighScore] = useState(0);
     const [pixelHighScore, setPixelHighScore] = useState(0);
+    const [longestRouteHighScore, setLongestRouteHighScore] = useState(0); // New state
 
     useEffect(() => {
         const fScore = localStorage.getItem('frenzyHighScore') || 0;
         const pScore = localStorage.getItem('pixelatedHighScore') || 0;
+        const lrScore = localStorage.getItem('longestRouteHighScore') || 0; // Load new high score
         setFrenzyHighScore(parseInt(fScore, 10));
         setPixelHighScore(parseInt(pScore, 10));
+        setLongestRouteHighScore(parseInt(lrScore, 10)); // Set new high score
     }, []);
 
     if (!flagsData || flagsData.length === 0) {
@@ -54,6 +57,10 @@ function Stats({ flagsData }) {
                 <div className="stat-item">
                     <span className="stat-value bonus-score">{frenzyHighScore}</span>
                     <span className="stat-label">Frenzy</span>
+                </div>
+                <div className="stat-item">
+                    <span className="stat-value bonus-score">{longestRouteHighScore}</span> {/* Display new high score */}
+                    <span className="stat-label">Longest Chain</span> {/* Label for new high score */}
                 </div>
             </div>
 

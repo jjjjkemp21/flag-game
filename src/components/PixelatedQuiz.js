@@ -55,7 +55,7 @@ function PixelatedQuiz({ allFlagsData, setView }) {
         setLivesRemaining(TOTAL_LIVES);
         setInputValue('');
         setFeedback({ text: 'Guess the country!', color: 'var(--text-color)' });
-        setTimeout(() => inputRef.current?.focus(), 0);
+        // REMOVED: inputRef.current?.focus() call. This is unreliable on mobile.
     }, [getRandomFlag]);
 
     const startGame = () => {
@@ -177,7 +177,7 @@ function PixelatedQuiz({ allFlagsData, setView }) {
                     text: !trimmedInput ? '❌ Empty guess! Try again.' : '❌ Incorrect. Try again!',
                     color: 'var(--incorrect-color)'
                 });
-                setTimeout(() => inputRef.current?.focus(), 0);
+                // REMOVED: inputRef.current?.focus() call. This is unreliable on mobile.
             }
         } else {
             setIsCorrect(true);
@@ -303,7 +303,7 @@ function PixelatedQuiz({ allFlagsData, setView }) {
                     className="response-input"
                     placeholder="Enter country name..."
                     disabled={flagOver || gameOver}
-                    autoFocus
+                    // REMOVED: autoFocus prop. This is unreliable on mobile.
                 />
                 <div className="quiz-actions">
                     <button type="submit" disabled={flagOver || gameOver} className="response-submit">
