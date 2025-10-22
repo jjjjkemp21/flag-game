@@ -1,36 +1,25 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './QuizStyles.css';
-import './PixelatedQuiz.css'; // Using this for the modal styles
+import './PixelatedQuiz.css';
 
-// --- Haversine Formula Helpers ---
-
-/**
- * Converts degrees to radians.
- */
 function deg2rad(deg) {
-  return deg * (Math.PI / 180);
+    return deg * (Math.PI / 180);
 }
 
-/**
- * Calculates the distance between two lat/long points in kilometers
- * using the Haversine formula.
- */
 function getDistance(lat1, lon1, lat2, lon2) {
-  const R = 6371; // Radius of the Earth in km
-  const dLat = deg2rad(lat2 - lat1);
-  const dLon = deg2rad(lon2 - lon1);
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
-    Math.sin(dLon / 2) * Math.sin(dLon / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  const distance = R * c; // Distance in km
-  return distance;
+    const R = 6371;
+    const dLat = deg2rad(lat2 - lat1);
+    const dLon = deg2rad(lon2 - lon1);
+    const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
+        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const distance = R * c;
+    return distance;
 }
 
-// Levenshtein function for forgiving spelling
 function levenshtein(a, b) {
-    // ... (levenshtein function remains the same) ...
     const an = a ? a.length : 0;
     const bn = b ? b.length : 0;
     if (an === 0) return bn;
@@ -57,10 +46,8 @@ function levenshtein(a, b) {
 }
 
 const IMAGE_BASE_URL = './assets/flags/';
-const ROUTES_DATA_URL = './data/longest_routes.json'; // Path to your new JSON
-const GAME_OVER_DELAY = 2000; // Delay in milliseconds (2 seconds)
-
-// --- React Component ---
+const ROUTES_DATA_URL = './data/longest_routes.json';
+const GAME_OVER_DELAY = 2000;
 
 function LongestRouteQuiz({ allFlagsData, setView }) {
     const [allRoutes, setAllRoutes] = useState(null);
@@ -82,27 +69,22 @@ function LongestRouteQuiz({ allFlagsData, setView }) {
         parseInt(localStorage.getItem('longestRouteHighScore') || '0', 10)
     );
     
-    // New state to hold the calculated stats for the current quiz
     const [quizStats, setQuizStats] = useState(null);
 
     const inputRef = useRef(null);
     const flagMapByName = useRef(new Map());
-    const gameOverTimeoutRef = useRef(null); // Ref for timeout
+    const gameOverTimeoutRef = useRef(null);
 
-    // On component mount, build the flag map
     useEffect(() => {
         if (allFlagsData.length > 0 && flagMapByName.current.size === 0) {
             const tempMap = new Map();
             allFlagsData.forEach(flag => {
-                // Assuming the key is 'name' as per your existing code.
-                // If your flags.json uses 'country', change 'flag.name' to 'flag.country'
                 tempMap.set(flag.name, flag);
             });
             flagMapByName.current = tempMap;
         }
     }, [allFlagsData]);
 
-    // On component mount, load the pre-calculated routes
     useEffect(() => {
         const loadRoutes = async () => {
             setIsLoading(true);
@@ -120,7 +102,6 @@ function LongestRouteQuiz({ allFlagsData, setView }) {
         loadRoutes();
     }, []);
 
-    // Cleanup timeout on unmount
     useEffect(() => {
         return () => {
             if (gameOverTimeoutRef.current) {
@@ -131,15 +112,13 @@ function LongestRouteQuiz({ allFlagsData, setView }) {
 
     const triggerGameOverSequence = (feedbackMessage) => {
         setFeedback(feedbackMessage);
-        setGameOver(true); // Disable input immediately
-        setIsWin(false); // Ensure it's marked as a loss
+        setGameOver(true);
+        setIsWin(false);
         
-        // Clear any existing timeout before setting a new one
         if (gameOverTimeoutRef.current) {
-             clearTimeout(gameOverTimeoutRef.current);
+            clearTimeout(gameOverTimeoutRef.current);
         }
 
-        // Set timeout to show the modal after the delay
         gameOverTimeoutRef.current = setTimeout(() => {
             setShowGameOverScreen(true);
         }, GAME_OVER_DELAY);
@@ -148,17 +127,15 @@ function LongestRouteQuiz({ allFlagsData, setView }) {
     const startGame = () => {
         if (!allRoutes || routeKeys.length === 0 || flagMapByName.current.size === 0) return;
         
-        // Clear any lingering game over state/timeout
         setShowGameOverScreen(false);
         if (gameOverTimeoutRef.current) {
-             clearTimeout(gameOverTimeoutRef.current);
+            clearTimeout(gameOverTimeoutRef.current);
         }
 
         const randomKey = routeKeys[Math.floor(Math.random() * routeKeys.length)];
         const randomPathArray = allRoutes[randomKey];
         setQuizPath(randomPathArray);
 
-        // --- Calculate and Set Journey Stats ---
         let calculatedDistance = 0;
         let lastFlagObj = null;
         let pathIsValid = true;
@@ -186,19 +163,16 @@ function LongestRouteQuiz({ allFlagsData, setView }) {
             setQuizStats({
                 startingCountry: randomPathArray[0],
                 countriesVisited: randomPathArray.length,
-                totalDistance: Math.round(calculatedDistance), // Round to nearest km
-                route: randomPathArray.join(' → '), // Use arrow for style
+                totalDistance: Math.round(calculatedDistance),
+                route: randomPathArray.join(' → '),
             });
         } else {
-            setQuizStats(null); // Clear stats if path was bad
+            setQuizStats(null);
         }
-        // --- End Stats Calculation ---
-
 
         const firstFlagObject = flagMapByName.current.get(randomPathArray[0]);
         if (!firstFlagObject) {
             console.error("Error starting game: Could not find flag data for", randomPathArray[0]);
-            // Maybe try again? For now, just error out.
             setFeedback({ message: { text: `Error finding first flag: ${randomPathArray[0]}` }, color: 'var(--incorrect-color)' });
             return;
         }
@@ -214,17 +188,16 @@ function LongestRouteQuiz({ allFlagsData, setView }) {
     };
 
     const resetGame = () => {
-        setQuizStats(null); // Clear old stats
-        startGame(); // Resetting just starts a new game
+        setQuizStats(null);
+        startGame();
     };
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        // Don't process submit if game is over (even during the delay)
         if (!currentFlag || !inputValue.trim() || gameOver) return; 
 
         const userAnswer = inputValue.trim().toLowerCase();
-        const correctAnswer = currentFlag.name.toLowerCase(); // Assumes 'name' field
+        const correctAnswer = currentFlag.name.toLowerCase();
 
         const distance = levenshtein(userAnswer, correctAnswer);
         const maxLength = Math.max(userAnswer.length, correctAnswer.length);
@@ -237,9 +210,8 @@ function LongestRouteQuiz({ allFlagsData, setView }) {
             setInputValue('');
 
             if (newIndex === quizPath.length) {
-                // --- GAME WON ---
-                setGameOver(true); // Disable input
-                setShowGameOverScreen(true); // Show modal immediately on win
+                setGameOver(true);
+                setShowGameOverScreen(true);
                 setIsWin(true);
                 setFeedback({ message: { text: "✅ Perfect Run! You completed the entire chain!" }, color: 'var(--correct-color)' });
                 const finalScore = quizPath.length;
@@ -248,42 +220,38 @@ function LongestRouteQuiz({ allFlagsData, setView }) {
                     setLongestRouteHighScore(finalScore);
                 }
             } else {
-                // --- NEXT QUESTION ---
                 setCurrentPathIndex(newIndex);
                 const nextFlagName = quizPath[newIndex];
                 const nextFlagObject = flagMapByName.current.get(nextFlagName);
                 if (!nextFlagObject) {
-                     console.error("Error during game: Could not find flag data for", nextFlagName);
-                     // Trigger game over sequence on error
-                     triggerGameOverSequence({ message: { text: `Error finding next flag: ${nextFlagName}. Game Over.` }, color: 'var(--incorrect-color)' });
-                     return;
+                    console.error("Error during game: Could not find flag data for", nextFlagName);
+                    triggerGameOverSequence({ message: { text: `Error finding next flag: ${nextFlagName}. Game Over.` }, color: 'var(--incorrect-color)' });
+                    return;
                 }
                 setCurrentFlag(nextFlagObject);
                 setFeedback({ message: { text: "✅ Correct! What's next?" }, color: 'var(--correct-color)' });
                 setTimeout(() => {
-                    // Check gameOver again in case the win happened during the timeout
                     if (!gameOver) {
-                         setFeedback({ message: { text: "What country is this?" }, color: 'var(--text-color)' });
+                        setFeedback({ message: { text: "What country is this?" }, color: 'var(--text-color)' });
                     }
                 }, 1000);
             }
         } else {
-            // --- GAME LOST --- Trigger the delayed sequence
             triggerGameOverSequence({ message: { text: `❌ Incorrect. The answer was:`, answer: currentFlag.name }, color: 'var(--incorrect-color)' });
         }
     };
 
     const handleSkip = () => {
-        // Don't process skip if game is over (even during the delay)
         if (!currentFlag || gameOver) return; 
-        // Trigger the delayed sequence
         triggerGameOverSequence({ message: { text: `❌ Skipped. The answer was:`, answer: currentFlag.name }, color: 'var(--incorrect-color)' });
     };
 
     useEffect(() => {
-        // Focus input only if game started and NOT over (not even during delay)
-        if (gameStarted && !gameOver && inputRef.current) { 
-            inputRef.current.focus();
+        if (gameStarted && !gameOver && inputRef.current) {
+            const focusTimeout = setTimeout(() => {
+                inputRef.current?.focus();
+            }, 100);
+            return () => clearTimeout(focusTimeout);
         }
     }, [gameStarted, gameOver, currentFlag]);
 
@@ -291,36 +259,30 @@ function LongestRouteQuiz({ allFlagsData, setView }) {
         setView('bonus-menu');
     };
 
-    // --- Render Logic ---
-
     if (isLoading || !allRoutes || flagMapByName.current.size === 0) {
-        // ... (loading state remains the same) ...
         return (
-             <div className="pixel-notification-overlay">
-                 <div className="pixel-notification-box quiz-box">
-                     <h2>Loading Routes...</h2>
-                     <p>Please wait, loading pre-calculated country routes...</p>
-                 </div>
-             </div>
+            <div className="pixel-notification-overlay">
+                <div className="pixel-notification-box quiz-box">
+                    <h2>Loading Routes...</h2>
+                    <p>Please wait, loading pre-calculated country routes...</p>
+                </div>
+            </div>
         );
     }
     
-     if (routeKeys.length === 0) {
-        // ... (no routes found state remains the same) ...
+    if (routeKeys.length === 0) {
         return (
-             <div className="pixel-notification-overlay">
-                 <div className="pixel-notification-box quiz-box">
-                     <h2>No Routes Found</h2>
-                     <p>The pre-calculated routes file seems to be empty or missing long enough paths.</p>
-                     <button className="back-button" onClick={backToMenu} style={{ position: 'static', marginTop: '10px' }}>← Back to Menu</button>
-                 </div>
-             </div>
+            <div className="pixel-notification-overlay">
+                <div className="pixel-notification-box quiz-box">
+                    <h2>No Routes Found</h2>
+                    <p>The pre-calculated routes file seems to be empty or missing long enough paths.</p>
+                    <button className="back-button" onClick={backToMenu} style={{ position: 'static', marginTop: '10px' }}>← Back to Menu</button>
+                </div>
+            </div>
         );
     }
 
-    // Show Instructions if game hasn't started
     if (!gameStarted) {
-        // ... (instructions modal remains the same) ...
         return (
             <div className="pixel-notification-overlay">
                 <div className="pixel-notification-box quiz-box">
@@ -339,32 +301,30 @@ function LongestRouteQuiz({ allFlagsData, setView }) {
         );
     }
 
-    // Show Game Over Modal ONLY if gameOver and showGameOverScreen are both true
     if (gameOver && showGameOverScreen) {
-         return (
-             <div className="pixel-notification-overlay">
-                 <div className="pixel-game-over pixel-notification-box quiz-box">
-                     {isWin ? (
-                         <>
-                             <h2>You did it!</h2>
-                             <p className="pixel-final-score">Chain Complete: {score}</p>
-                             {score > longestRouteHighScore ? (
-                                 <p className="pixel-new-high-score">🎉 New High Score! 🎉</p>
-                             ) : (
-                                 <p className="pixel-high-score">High Score: {longestRouteHighScore}</p>
-                             )}
-                         </>
-                     ) : (
-                          <>
-                             <h2>Game Over!</h2>
-                             <p className="pixel-final-score">Your chain: {score}</p>
-                             <p className="pixel-high-score">Path length was: {quizPath.length}</p>
-                             <p className="pixel-high-score">High Score: {longestRouteHighScore}</p>
-                         </>
-                     )}
+        return (
+            <div className="pixel-notification-overlay">
+                <div className="pixel-game-over pixel-notification-box quiz-box">
+                    {isWin ? (
+                        <>
+                            <h2>You did it!</h2>
+                            <p className="pixel-final-score">Chain Complete: {score}</p>
+                            {score > longestRouteHighScore ? (
+                                <p className="pixel-new-high-score">🎉 New High Score! 🎉</p>
+                            ) : (
+                                <p className="pixel-high-score">High Score: {longestRouteHighScore}</p>
+                            )}
+                        </>
+                    ) : (
+                        <>
+                            <h2>Game Over!</h2>
+                            <p className="pixel-final-score">Your chain: {score}</p>
+                            <p className="pixel-high-score">Path length was: {quizPath.length}</p>
+                            <p className="pixel-high-score">High Score: {longestRouteHighScore}</p>
+                        </>
+                    )}
 
-                     {/* --- NEW QUIZ STATS BLOCK --- */}
-                     {quizStats && (
+                    {quizStats && (
                         <div 
                             className="pixel-quiz-stats" 
                             style={{ 
@@ -380,21 +340,19 @@ function LongestRouteQuiz({ allFlagsData, setView }) {
                             <p style={{ margin: '4px 0' }}><strong>Countries Visited:</strong> {quizStats.countriesVisited}</p>
                             <p style={{ margin: '4px 0' }}><strong>Total Distance:</strong> {quizStats.totalDistance} km</p>
                             <p style={{ margin: '4px 0', wordBreak: 'break-word', lineHeight: '1.4' }}>
-                              <strong>Route:</strong> {quizStats.route}
+                                <strong>Route:</strong> {quizStats.route}
                             </p>
                         </div>
-                     )}
-                     {/* --- END QUIZ STATS BLOCK --- */}
+                    )}
 
-                     <button className="response-submit" onClick={resetGame}>Play Again</button>
-                     <button className="back-button" onClick={backToMenu} style={{ position: 'static', marginTop: '10px' }}>← Back to Menu</button>
-                 </div>
-             </div>
-         );
+                    <button className="response-submit" onClick={resetGame}>Play Again</button>
+                    <button className="back-button" onClick={backToMenu} style={{ position: 'static', marginTop: '10px' }}>← Back to Menu</button>
+                </div>
+            </div>
+        );
     }
 
-    // Show main quiz view if game is active OR if game is over but waiting for the delay
-    if (!currentFlag && gameStarted) { // Handle potential loading issue within the game
+    if (!currentFlag && gameStarted) {
         return (
             <div className="quiz-box">
                 <button className="back-button" onClick={backToMenu}>←</button>
@@ -403,7 +361,6 @@ function LongestRouteQuiz({ allFlagsData, setView }) {
         );
     }
     
-    // Ensure currentFlag exists before rendering main view
     if (!currentFlag) return null; 
 
     return (
@@ -429,7 +386,7 @@ function LongestRouteQuiz({ allFlagsData, setView }) {
                     type="text"
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
-                    disabled={gameOver} // Input disabled as soon as gameOver is true
+                    disabled={gameOver}
                     className="response-input"
                     placeholder="Enter country name..."
                 />

@@ -4,7 +4,7 @@ import './QuizStyles.css';
 
 const IMAGE_BASE_URL = './assets/flags/';
 const GAME_DURATION_MS = 180000;
-const NEXT_FLAG_DELAY_MS = 1000;
+const NEXT_FLAG_DELAY_MS = 2000;
 const PIXELATED_HIGH_SCORE_KEY = 'pixelatedHighScore';
 
 const TOTAL_LIVES = 5;
@@ -31,8 +31,6 @@ function PixelatedQuiz({ allFlagsData, setView }) {
     const [isCorrect, setIsCorrect] = useState(false);
 
     const inputRef = useRef(null);
-    const gameTimerRef = useRef(null);
-    const lastTickRef = useRef(null);
     const nextFlagTimeoutRef = useRef(null);
 
     useEffect(() => {
@@ -55,7 +53,6 @@ function PixelatedQuiz({ allFlagsData, setView }) {
         setLivesRemaining(TOTAL_LIVES);
         setInputValue('');
         setFeedback({ text: 'Guess the country!', color: 'var(--text-color)' });
-        // REMOVED: inputRef.current?.focus() call. This is unreliable on mobile.
     }, [getRandomFlag]);
 
     const startGame = () => {
@@ -65,35 +62,36 @@ function PixelatedQuiz({ allFlagsData, setView }) {
         setScore(0);
         setGameTimer(GAME_DURATION_MS);
         nextFlag();
-        lastTickRef.current = performance.now();
     };
 
     useEffect(() => {
         if (!gameStarted || gameOver) {
-            if (gameTimerRef.current) cancelAnimationFrame(gameTimerRef.current);
             return;
         }
 
-        const tick = (timestamp) => {
-            if (!lastTickRef.current) {
-                lastTickRef.current = timestamp;
-            }
-            const delta = timestamp - lastTickRef.current;
-            lastTickRef.current = timestamp;
-
+        const timerId = setInterval(() => {
             setGameTimer(prev => {
-                const newTime = prev - delta;
+                const newTime = prev - 1000;
                 if (newTime <= 0) {
                     setGameOver(true);
+                    clearInterval(timerId);
                     return 0;
                 }
                 return newTime;
             });
-            gameTimerRef.current = requestAnimationFrame(tick);
-        };
-        gameTimerRef.current = requestAnimationFrame(tick);
-        return () => cancelAnimationFrame(gameTimerRef.current);
+        }, 1000);
+
+        return () => clearInterval(timerId);
     }, [gameStarted, gameOver]);
+
+    useEffect(() => {
+        if (gameStarted && !gameOver && !flagOver && inputRef.current) {
+            const focusTimeout = setTimeout(() => {
+                inputRef.current?.focus();
+            }, 100);
+            return () => clearTimeout(focusTimeout);
+        }
+    }, [gameStarted, gameOver, flagOver, revealIndex, currentFlag]);
 
     useEffect(() => {
         if (gameOver && gameStarted) {
@@ -177,7 +175,6 @@ function PixelatedQuiz({ allFlagsData, setView }) {
                     text: !trimmedInput ? '❌ Empty guess! Try again.' : '❌ Incorrect. Try again!',
                     color: 'var(--incorrect-color)'
                 });
-                // REMOVED: inputRef.current?.focus() call. This is unreliable on mobile.
             }
         } else {
             setIsCorrect(true);
@@ -196,7 +193,7 @@ function PixelatedQuiz({ allFlagsData, setView }) {
     };
 
     const formatTime = (ms) => {
-        const seconds = (ms / 1000).toFixed(0);
+        const seconds = Math.ceil(ms / 1000);
         return `${seconds < 10 ? '0' : ''}${seconds}`;
     };
 
@@ -206,7 +203,7 @@ function PixelatedQuiz({ allFlagsData, setView }) {
                 <div className="pixel-notification-box quiz-box">
                     <h2>Pixelated Guess!</h2>
                     <p className="pixel-high-score">High Score: {highScore}</p>
-                    <p>You have 60 seconds to guess as many flags as you can.</p>
+                    <p>You have 180 seconds to guess as many flags as you can.</p>
                     <p>Scoring depends on your guess:</p>
                     <ul className="pixel-rules-list">
                         <li>1st Guess: +20 points</li>
@@ -303,7 +300,6 @@ function PixelatedQuiz({ allFlagsData, setView }) {
                     className="response-input"
                     placeholder="Enter country name..."
                     disabled={flagOver || gameOver}
-                    // REMOVED: autoFocus prop. This is unreliable on mobile.
                 />
                 <div className="quiz-actions">
                     <button type="submit" disabled={flagOver || gameOver} className="response-submit">
