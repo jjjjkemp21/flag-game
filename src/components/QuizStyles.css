@@ -439,8 +439,8 @@
 }
 
 /* This applies the mobile fix ONLY to the quizzes that need it */
-/* It EXCLUDES the modal and the two broken game modes */
-.quiz-box:not(.pixel-notification-box):not(.pixelated-quiz-box):not(.longest-route-quiz-box) {
+/* It EXCLUDES the modal and the three broken game modes */
+.quiz-box:not(.pixel-notification-box):not(.pixelated-quiz-box):not(.longest-route-quiz-box):not(.bonus-menu-box) {
     /* --- MOBILE RENDER FIX --- */
     min-height: 100vh;
     transform: translateZ(0);
@@ -456,7 +456,7 @@
     }
 
     /* This applies the mobile fix ONLY to the quizzes that need it on mobile */
-    .quiz-box:not(.pixel-notification-box):not(.pixelated-quiz-box):not(.longest-route-quiz-box) {
+    .quiz-box:not(.pixel-notification-box):not(.pixelated-quiz-box):not(.longest-route-quiz-box):not(.bonus-menu-box) {
         width: 100%;
         max-width: 100%;
         min-width: 100%;
