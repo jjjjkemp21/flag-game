@@ -6,15 +6,18 @@ function BonusMenu({ setView }) {
     const [frenzyHighScore, setFrenzyHighScore] = useState(0);
     const [pixelHighScore, setPixelHighScore] = useState(0);
     const [longestRouteHighScore, setLongestRouteHighScore] = useState(0);
+    const [languageHighScore, setLanguageHighScore] = useState(0);
 
     useEffect(() => {
         const fScore = localStorage.getItem('frenzyHighScore') || 0;
         const pScore = localStorage.getItem('pixelatedHighScore') || 0;
         const lrScore = localStorage.getItem('longestRouteHighScore') || 0;
+        const langScore = localStorage.getItem('languageHighScore') || 0;
 
         setFrenzyHighScore(parseInt(fScore, 10));
         setPixelHighScore(parseInt(pScore, 10));
         setLongestRouteHighScore(parseInt(lrScore, 10));
+        setLanguageHighScore(parseInt(langScore, 10));
     }, []);
 
     return (
@@ -39,6 +42,12 @@ function BonusMenu({ setView }) {
                     Longest Chain
                     <span className="menu-button-stats">
                         High Score: {longestRouteHighScore}
+                    </span>
+                </button>
+                <button className="menu-button c4" onClick={() => setView('language-quiz')}>
+                    Language Quiz
+                    <span className="menu-button-stats">
+                        High Score: {languageHighScore}
                     </span>
                 </button>
             </div>

@@ -1,0 +1,352 @@
+[
+  {
+    "name": "Spanish",
+    "family": "Romance",
+    "alphabet": "Latin",
+    "regions": ["Europe", "South America", "North America"],
+    "distractors": ["Portuguese", "Italian", "Catalan"]
+  },
+  {
+    "name": "French",
+    "family": "Romance",
+    "alphabet": "Latin",
+    "regions": ["Europe", "Africa", "North America"],
+    "distractors": ["Spanish", "Italian", "Romanian"]
+  },
+  {
+    "name": "German",
+    "family": "Germanic",
+    "alphabet": "Latin",
+    "regions": ["Europe"],
+    "distractors": ["Dutch", "Afrikaans", "Swedish"]
+  },
+  {
+    "name": "Mandarin Chinese",
+    "family": "Sino-Tibetan",
+    "alphabet": "Chinese characters",
+    "regions": ["Asia"],
+    "distractors": ["Japanese", "Korean", "Vietnamese"]
+  },
+  {
+    "name": "Hindi",
+    "family": "Indo-Aryan",
+    "alphabet": "Devanagari",
+    "regions": ["Asia"],
+    "distractors": ["Urdu", "Bengali", "Punjabi"]
+  },
+  {
+    "name": "Arabic",
+    "family": "Semitic",
+    "alphabet": "Arabic",
+    "regions": ["Middle East", "Africa"],
+    "distractors": ["Hebrew", "Farsi", "Urdu"]
+  },
+  {
+    "name": "Portuguese",
+    "family": "Romance",
+    "alphabet": "Latin",
+    "regions": ["Europe", "South America", "Africa"],
+    "distractors": ["Spanish", "Catalan", "French"]
+  },
+  {
+    "name": "Russian",
+    "family": "Slavic",
+    "alphabet": "Cyrillic",
+    "regions": ["Europe", "Asia"],
+    "distractors": ["Ukrainian", "Serbian", "Polish"]
+  },
+  {
+    "name": "Japanese",
+    "family": "Japonic",
+    "alphabet": "Hiragana, Katakana, Kanji",
+    "regions": ["Asia"],
+    "distractors": ["Korean", "Mandarin Chinese", "Mongolian"]
+  },
+  {
+    "name": "Bengali",
+    "family": "Indo-Aryan",
+    "alphabet": "Bengali",
+    "regions": ["Asia"],
+    "distractors": ["Hindi", "Punjabi", "Gujarati"]
+  },
+  {
+    "name": "Turkish",
+    "family": "Turkic",
+    "alphabet": "Latin",
+    "regions": ["Asia", "Europe"],
+    "distractors": ["Farsi", "Arabic", "Greek"]
+  },
+  {
+    "name": "Korean",
+    "family": "Koreanic",
+    "alphabet": "Hangul",
+    "regions": ["Asia"],
+    "distractors": ["Japanese", "Mandarin Chinese", "Vietnamese"]
+  },
+  {
+    "name": "Italian",
+    "family": "Romance",
+    "alphabet": "Latin",
+    "regions": ["Europe"],
+    "distractors": ["Spanish", "French", "Romanian"]
+  },
+  {
+    "name": "Swahili",
+    "family": "Bantu",
+    "alphabet": "Latin",
+    "regions": ["Africa"],
+    "distractors": ["Zulu", "Hausa", "Yoruba"]
+  },
+  {
+    "name": "Polish",
+    "family": "Slavic",
+    "alphabet": "Latin",
+    "regions": ["Europe"],
+    "distractors": ["Czech", "Slovak", "Russian"]
+  },
+  {
+    "name": "Dutch",
+    "family": "Germanic",
+    "alphabet": "Latin",
+    "regions": ["Europe", "South America"],
+    "distractors": ["German", "Afrikaans", "Danish"]
+  },
+  {
+    "name": "Greek",
+    "family": "Hellenic",
+    "alphabet": "Greek",
+    "regions": ["Europe"],
+    "distractors": ["Russian", "Serbian", "Turkish"]
+  },
+  {
+    "name": "Hebrew",
+    "family": "Semitic",
+    "alphabet": "Hebrew",
+    "regions": ["Middle East"],
+    "distractors": ["Arabic", "Amharic", "Farsi"]
+  },
+  {
+    "name": "Vietnamese",
+    "family": "Austroasiatic",
+    "alphabet": "Latin",
+    "regions": ["Asia"],
+    "distractors": ["Thai", "Mandarin Chinese", "Tagalog"]
+  },
+  {
+    "name": "Thai",
+    "family": "Kra-Dai",
+    "alphabet": "Thai",
+    "regions": ["Asia"],
+    "distractors": ["Vietnamese", "Indonesian", "Javanese"]
+  },
+  {
+    "name": "Indonesian",
+    "family": "Austronesian",
+    "alphabet": "Latin",
+    "regions": ["Asia"],
+    "distractors": ["Tagalog", "Javanese", "Thai"]
+  },
+  {
+    "name": "Urdu",
+    "family": "Indo-Aryan",
+    "alphabet": "Perso-Arabic",
+    "regions": ["Asia"],
+    "distractors": ["Hindi", "Farsi", "Punjabi"]
+  },
+  {
+    "name": "Farsi",
+    "family": "Indo-Iranian",
+    "alphabet": "Perso-Arabic",
+    "regions": ["Middle East", "Asia"],
+    "distractors": ["Urdu", "Arabic", "Hebrew"]
+  },
+  {
+    "name": "Tagalog",
+    "family": "Austronesian",
+    "alphabet": "Latin",
+    "regions": ["Asia"],
+    "distractors": ["Indonesian", "Javanese", "Vietnamese"]
+  },
+  {
+    "name": "Swedish",
+    "family": "Germanic",
+    "alphabet": "Latin",
+    "regions": ["Europe"],
+    "distractors": ["Norwegian", "Danish", "German"]
+  },
+  {
+    "name": "Finnish",
+    "family": "Uralic",
+    "alphabet": "Latin",
+    "regions": ["Europe"],
+    "distractors": ["Hungarian", "Swedish", "Estonian"]
+  },
+  {
+    "name": "Romanian",
+    "family": "Romance",
+    "alphabet": "Latin",
+    "regions": ["Europe"],
+    "distractors": ["Italian", "French", "Catalan"]
+  },
+  {
+    "name": "Czech",
+    "family": "Slavic",
+    "alphabet": "Latin",
+    "regions": ["Europe"],
+    "distractors": ["Slovak", "Polish", "Croatian"]
+  },
+  {
+    "name": "Hungarian",
+    "family": "Uralic",
+    "alphabet": "Latin",
+    "regions": ["Europe"],
+    "distractors": ["Finnish", "Czech", "Romanian"]
+  },
+  {
+    "name": "Ukrainian",
+    "family": "Slavic",
+    "alphabet": "Cyrillic",
+    "regions": ["Europe"],
+    "distractors": ["Russian", "Polish", "Serbian"]
+  },
+  {
+    "name": "Danish",
+    "family": "Germanic",
+    "alphabet": "Latin",
+    "regions": ["Europe"],
+    "distractors": ["Swedish", "Norwegian", "German"]
+  },
+  {
+    "name": "Norwegian",
+    "family": "Germanic",
+    "alphabet": "Latin",
+    "regions": ["Europe"],
+    "distractors": ["Swedish", "Danish", "Dutch"]
+  },
+  {
+    "name": "Tamil",
+    "family": "Dravidian",
+    "alphabet": "Tamil",
+    "regions": ["Asia"],
+    "distractors": ["Hindi", "Bengali", "Gujarati"]
+  },
+  {
+    "name": "Javanese",
+    "family": "Austronesian",
+    "alphabet": "Latin, Javanese",
+    "regions": ["Asia"],
+    "distractors": ["Indonesian", "Tagalog", "Thai"]
+  },
+  {
+    "name": "Punjabi",
+    "family": "Indo-Aryan",
+    "alphabet": "Gurmukhi, Shahmukhi",
+    "regions": ["Asia"],
+    "distractors": ["Hindi", "Urdu", "Gujarati"]
+  },
+  {
+    "name": "Gujarati",
+    "family": "Indo-Aryan",
+    "alphabet": "Gujarati",
+    "regions": ["Asia"],
+    "distractors": ["Hindi", "Punjabi", "Bengali"]
+  },
+  {
+    "name": "Hausa",
+    "family": "Chadic",
+    "alphabet": "Latin, Ajami",
+    "regions": ["Africa"],
+    "distractors": ["Yoruba", "Swahili", "Amharic"]
+  },
+  {
+    "name": "Yoruba",
+    "family": "Volta-Niger",
+    "alphabet": "Latin",
+    "regions": ["Africa"],
+    "distractors": ["Hausa", "Swahili", "Zulu"]
+  },
+  {
+    "name": "Amharic",
+    "family": "Semitic",
+    "alphabet": "Ge'ez",
+    "regions": ["Africa"],
+    "distractors": ["Arabic", "Hebrew", "Swahili"]
+  },
+  {
+    "name": "Afrikaans",
+    "family": "Germanic",
+    "alphabet": "Latin",
+    "regions": ["Africa"],
+    "distractors": ["Dutch", "German", "English"]
+  },
+  {
+    "name": "Zulu",
+    "family": "Bantu",
+    "alphabet": "Latin",
+    "regions": ["Africa"],
+    "distractors": ["Swahili", "Yoruba", "Hausa"]
+  },
+  {
+    "name": "Irish",
+    "family": "Celtic",
+    "alphabet": "Latin",
+    "regions": ["Europe"],
+    "distractors": ["Welsh", "Norwegian", "Danish"]
+  },
+  {
+    "name": "Welsh",
+    "family": "Celtic",
+    "alphabet": "Latin",
+    "regions": ["Europe"],
+    "distractors": ["Irish", "Swedish", "Dutch"]
+  },
+  {
+    "name": "Catalan",
+    "family": "Romance",
+    "alphabet": "Latin",
+    "regions": ["Europe"],
+    "distractors": ["Spanish", "French", "Portuguese"]
+  },
+  {
+    "name": "Mongolian",
+    "family": "Mongolic",
+    "alphabet": "Cyrillic, Mongolian",
+    "regions": ["Asia"],
+    "distractors": ["Russian", "Mandarin Chinese", "Korean"]
+  },
+  {
+    "name": "Slovak",
+    "family": "Slavic",
+    "alphabet": "Latin",
+    "regions": ["Europe"],
+    "distractors": ["Czech", "Polish", "Hungarian"]
+  },
+  {
+    "name": "Serbian",
+    "family": "Slavic",
+    "alphabet": "Cyrillic, Latin",
+    "regions": ["Europe"],
+    "distractors": ["Croatian", "Russian", "Ukrainian"]
+  },
+  {
+    "name": "Croatian",
+    "family": "Slavic",
+    "alphabet": "Latin",
+    "regions": ["Europe"],
+    "distractors": ["Serbian", "Czech", "Slovak"]
+  },
+  {
+    "name": "Esperanto",
+    "family": "Constructed",
+    "alphabet": "Latin",
+    "regions": ["International"],
+    "distractors": ["Latin", "Italian", "Spanish"]
+  },
+  {
+    "name": "Latin",
+    "family": "Italic",
+    "alphabet": "Latin",
+    "regions": ["Historical", "Europe"],
+    "distractors": ["Italian", "Spanish", "French"]
+  }
+]

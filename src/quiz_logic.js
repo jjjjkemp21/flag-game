@@ -21,7 +21,6 @@ function runWeightedSelection(flagsToSelectFrom) {
             return flagsToSelectFrom[i];
         }
     }
-
     return flagsToSelectFrom[flagsToSelectFrom.length - 1];
 }
 

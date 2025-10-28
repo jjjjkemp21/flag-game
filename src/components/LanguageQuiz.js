@@ -43,47 +43,6 @@ function LanguageQuiz({ setView }) {
         loadData();
     }, []);
 
-    const getDistractorLanguages = useCallback((correctLanguage) => {
-        const distractors = [];
-        const correctFamily = correctLanguage.family;
-
-        const sameFamilyDistractors = languagesData.filter(lang =>
-            lang.name !== correctLanguage.name && lang.family === correctFamily
-        );
-        sameFamilyDistractors.sort(() => Math.random() - 0.5);
-
-        while (distractors.length < 3 && sameFamilyDistractors.length > 0) {
-            const chosen = sameFamilyDistractors.shift();
-            distractors.push({ name: chosen.name, family: chosen.family });
-        }
-
-        if (distractors.length < 3) {
-            const otherFamilyDistractors = languagesData.filter(lang =>
-                lang.name !== correctLanguage.name && lang.family !== correctFamily
-            );
-            otherFamilyDistractors.sort(() => Math.random() - 0.5);
-
-            while (distractors.length < 3 && otherFamilyDistractors.length > 0) {
-                const chosen = otherFamilyDistractors.shift();
-                distractors.push({ name: chosen.name, family: chosen.family });
-            }
-        }
-        
-        if (distractors.length < 3) {
-            const allOthers = languagesData.filter(lang => 
-               lang.name !== correctLanguage.name && !distractors.some(d => d.name === lang.name)
-           );
-           allOthers.sort(() => Math.random() - 0.5);
-           
-           while (distractors.length < 3 && allOthers.length > 0) {
-               const chosen = allOthers.shift();
-               distractors.push({ name: chosen.name, family: chosen.family });
-           }
-       }
-
-        return distractors;
-    }, [languagesData]);
-
     const nextQuestion = useCallback(() => {
         setFeedback({ text: '\u00A0', color: 'var(--text-color)' });
         setIsAnswered(false);
@@ -105,11 +64,11 @@ function LanguageQuiz({ setView }) {
         const randomPhrase = phraseList[Math.floor(Math.random() * phraseList.length)];
         setCurrentQuestion({ phrase: randomPhrase, language: randomLanguage.name });
 
-        const distractors = getDistractorLanguages(randomLanguage);
-        const correctOption = { name: randomLanguage.name, family: randomLanguage.family };
+        const distractors = randomLanguage.distractors;
+        const correctOption = randomLanguage.name;
         const shuffledOptions = [...distractors, correctOption].sort(() => Math.random() - 0.5);
         setOptions(shuffledOptions);
-    }, [languagesData, phrasesData, getDistractorLanguages]);
+    }, [languagesData, phrasesData]);
 
     useEffect(() => {
         if (!isLoading && languagesData.length > 0 && phrasesData) {
@@ -117,11 +76,9 @@ function LanguageQuiz({ setView }) {
         }
     }, [isLoading, languagesData, phrasesData, nextQuestion]);
 
-    const handleAnswer = (answerOption) => {
+    const handleAnswer = (answerName) => {
         if (isAnswered || isGameOver) return;
         setIsAnswered(true);
-
-        const answerName = answerOption.name;
 
         if (answerName === currentQuestion.language) {
             setScore(prevScore => prevScore + 1);
@@ -221,12 +178,12 @@ function LanguageQuiz({ setView }) {
             <div className="options-box language-options">
                 {options.map((option) => (
                     <button
-                        key={option.name}
+                        key={option}
                         onClick={() => handleAnswer(option)}
                         disabled={isAnswered}
-                        className={`option-button ${answerStatus[option.name] || ''}`}
+                        className={`option-button ${answerStatus[option] || ''}`}
                     >
-                        {option.name}
+                        {option}
                     </button>
                 ))}
             </div>

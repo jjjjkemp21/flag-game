@@ -35,7 +35,7 @@
 }
 
 .high-score-grid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
 }
 
 .stat-item {
@@ -93,9 +93,9 @@
 
 @media (max-width: 400px) {
     .high-score-grid .stat-value {
-        font-size: 1.8em; /* Lowered the score text size */
+        font-size: 1.8em;
     }
     .high-score-grid .stat-label {
-        font-size: 0.8em; /* Lowered the label text size */
+        font-size: 0.8em;
     }
 }

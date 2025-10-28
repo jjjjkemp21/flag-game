@@ -181,8 +181,6 @@
   font-weight: bold;
 }
 
-/* Existing .menu-button styles... */
-
 .menu-button-stats {
     font-size: 0.7em;
     font-weight: normal;
@@ -190,7 +188,6 @@
     margin-top: 5px;
 }
 
-/* New styles for Longest Chain instructions and quiz header */
 .quiz-instructions {
     list-style: none;
     padding: 0;
@@ -240,10 +237,9 @@
     color: white;
 }
 
-/* New styles for Borders List */
 .borders-list-container {
     width: 100%;
-    max-height: 150px; /* Set a max height for scrolling */
+    max-height: 150px;
     overflow-y: auto;
     background-color: var(--background-color);
     border: 1px solid var(--border-color);
@@ -280,4 +276,11 @@
     border-radius: 6px;
     font-size: 0.9em;
     font-weight: 500;
+}
+
+.menu-button.c4 {
+  background-color: #8E44AD;
+}
+.menu-button.c4:hover:not(:disabled) {
+  background-color: #7B3A9B;
 }

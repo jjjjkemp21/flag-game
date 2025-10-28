@@ -8,7 +8,8 @@ import FrenzyQuiz from './components/FrenzyQuiz';
 import Settings from './components/Settings';
 import QuizMenu from './components/QuizMenu';
 import BonusMenu from './components/BonusMenu';
-import LongestRouteQuiz from './components/LongestRouteQuiz'; // New import
+import LongestRouteQuiz from './components/LongestRouteQuiz';
+import LanguageQuiz from './components/LanguageQuiz';
 import './App.css';
 
 const DATA_URL = './data/flags.json';
@@ -110,7 +111,8 @@ function App() {
             localStorage.removeItem('flagQuizScores');
             localStorage.removeItem('frenzyHighScore');
             localStorage.removeItem('pixelatedHighScore');
-            localStorage.removeItem('longestRouteHighScore'); // Reset for new mode
+            localStorage.removeItem('longestRouteHighScore');
+            localStorage.removeItem('languageHighScore');
             loadData();
             setView('menu');
         }
@@ -160,8 +162,10 @@ function App() {
                 return <PixelatedQuiz allFlagsData={flagsData} setView={setView} />;
             case 'frenzy-quiz':
                 return <FrenzyQuiz allFlagsData={flagsData} setView={setView} />;
-            case 'longest-route-quiz': // New case for Longest Chain
+            case 'longest-route-quiz':
                 return <LongestRouteQuiz allFlagsData={flagsData} setView={setView} />;
+            case 'language-quiz':
+                return <LanguageQuiz setView={setView} />;
             case 'bonus-menu':
                 return <BonusMenu setView={setView} />;
             case 'settings':
@@ -180,9 +184,11 @@ function App() {
                 return <MainMenu setView={setView} flagsData={flagsData} setQuizMode={setQuizMode} />;
         }
     };
+    
+    const containerClassName = view === 'frenzy-quiz' ? "app-container-fullwidth" : "app-container";
 
     return (
-        <div className="app-container">
+        <div className={containerClassName}>
             {renderView()}
         </div>
     );

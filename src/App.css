@@ -37,9 +37,6 @@ body {
     color: var(--text-color);
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     margin: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
     min-height: 100vh;
     transition: background-color 0.3s, color 0.3s;
 }
@@ -53,18 +50,18 @@ body {
     max-width: 500px;
     padding: 20px;
     box-sizing: border-box;
+    margin: 0 auto;
 }
 
-.quiz-box, .settings-box, .main-menu-box {
-    background-color: var(--container-background);
-    border-radius: 12px;
-    box-shadow: 0 4px 12px var(--shadow-color);
-    padding: 24px;
-    width: 100%;
+.app-container-fullwidth {
     display: flex;
     flex-direction: column;
+    justify-content: center;
     align-items: center;
-    transition: background-color 0.3s;
+    width: 100%;
+    padding: 20px;
+    box-sizing: border-box;
+    margin: 0 auto;
 }
 
 .quiz-box.flash-correct {

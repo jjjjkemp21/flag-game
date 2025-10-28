@@ -1,7 +1,6 @@
 .main-menu-box,
 .bonus-menu-box {
     width: 100%;
-    max-width: 500px;
     padding: 30px;
     background-color: var(--container-background);
     border-radius: 12px;
@@ -81,6 +80,13 @@
 }
 .menu-button.c3:hover:not(:disabled) {
     background-color: #cc8000;
+}
+
+.menu-button.c4 {
+    background-color: #673AB7;
+}
+.menu-button.c4:hover:not(:disabled) {
+    background-color: #512DA8;
 }
 
 .menu-button.secondary {
@@ -425,26 +431,18 @@
     gap: 10px;
 }
 
-/* --- NEW BASE QUIZ CONTAINER --- */
 .quiz-box {
-    /* This is the base styling for ALL quiz boxes */
     width: 100%;
-    max-width: 550px;
     margin: 0 auto;
-    padding: 80px 20px 20px 20px;
+    padding: 20px 20px 20px 20px;
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
     align-items: center;
-}
-
-/* This applies the mobile fix ONLY to the quizzes that need it */
-/* It EXCLUDES the modal and the three broken game modes */
-.quiz-box:not(.pixel-notification-box):not(.pixelated-quiz-box):not(.longest-route-quiz-box):not(.bonus-menu-box) {
-    /* --- MOBILE RENDER FIX --- */
-    min-height: 100vh;
-    transform: translateZ(0);
-    -webkit-transform: translateZ(0);
+    background-color: var(--container-background);
+    border-radius: 12px;
+    box-shadow: 0 4px 12px var(--shadow-color);
+    transition: background-color 0.3s;
 }
 
 @media (max-width: 768px) {
@@ -452,14 +450,12 @@
         width: 100%;
         max-width: 100%;
         min-width: 100%;
-        padding: 80px 15px 15px 15px;
+        padding: 20px 15px 15px 15px;
     }
 
-    /* This applies the mobile fix ONLY to the quizzes that need it on mobile */
-    .quiz-box:not(.pixel-notification-box):not(.pixelated-quiz-box):not(.longest-route-quiz-box):not(.bonus-menu-box) {
-        width: 100%;
-        max-width: 100%;
-        min-width: 100%;
-        padding: 80px 15px 15px 15px;
+    .quiz-box:not(.pixel-notification-box):not(.pixelated-quiz-box):not(.longest-route-quiz-box) {
+        min-height: 100vh;
+        transform: translateZ(0);
+        -webkit-transform: translateZ(0);
     }
 }
