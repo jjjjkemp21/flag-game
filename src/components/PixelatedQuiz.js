@@ -29,6 +29,7 @@ function PixelatedQuiz({ allFlagsData, setView }) {
     const [flagOver, setFlagOver] = useState(false);
     const [scoreAnimation, setScoreAnimation] = useState({ points: 0, active: false });
     const [isCorrect, setIsCorrect] = useState(false);
+    const [flashColor, setFlashColor] = useState(null);
 
     const inputRef = useRef(null);
     const nextFlagTimeoutRef = useRef(null);
@@ -47,6 +48,7 @@ function PixelatedQuiz({ allFlagsData, setView }) {
     const nextFlag = useCallback(() => {
         setFlagOver(false);
         setIsCorrect(false);
+        setFlashColor(null);
         const newFlag = getRandomFlag();
         setCurrentFlag(newFlag);
         setRevealIndex(0);
@@ -114,6 +116,7 @@ function PixelatedQuiz({ allFlagsData, setView }) {
         if (gameOver || flagOver) return;
         clearTimeout(nextFlagTimeoutRef.current);
         setIsCorrect(false);
+        setFlashColor('incorrect');
         triggerScoreAnimation(POINTS_SKIP);
         setFeedback({ text: `Skipped! It was ${currentFlag.name}.`, color: 'var(--incorrect-color)' });
         setRevealIndex(BLUR_LEVELS.length - 1);
@@ -162,6 +165,7 @@ function PixelatedQuiz({ allFlagsData, setView }) {
 
             if (newLivesRemaining <= 0) {
                 setIsCorrect(false);
+                setFlashColor('incorrect');
                 setFeedback({ text: `❌ Out of guesses! It was ${currentFlag.name}.`, color: 'var(--incorrect-color)' });
                 setRevealIndex(BLUR_LEVELS.length - 1);
                 setFlagOver(true);
@@ -169,6 +173,7 @@ function PixelatedQuiz({ allFlagsData, setView }) {
                 nextFlagTimeoutRef.current = setTimeout(nextFlag, NEXT_FLAG_DELAY_MS);
             } else {
                 setIsCorrect(false);
+                setFlashColor('incorrect');
                 const nextRevealIndex = Math.min(revealIndex + 1, BLUR_LEVELS.length - 1);
                 setRevealIndex(nextRevealIndex);
                 setFeedback({
@@ -178,6 +183,7 @@ function PixelatedQuiz({ allFlagsData, setView }) {
             }
         } else {
             setIsCorrect(true);
+            setFlashColor('correct');
             const points = POINTS_CORRECT[attemptIndex];
             triggerScoreAnimation(points);
             setFeedback({ text: `✅ Correct! It was ${currentFlag.name}.`, color: 'var(--correct-color)' });
@@ -244,7 +250,7 @@ function PixelatedQuiz({ allFlagsData, setView }) {
 
             {/* Main Game Screen */}
             <div
-                className="quiz-box pixelated-quiz-box"
+                className={`quiz-box pixelated-quiz-box ${flashColor ? `flash-${flashColor}` : ''}`}
                 style={{ display: (showNotification || gameOver) ? 'none' : 'flex' }}
             >
                 {!currentFlag ? (

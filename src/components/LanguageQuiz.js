@@ -22,6 +22,12 @@ function LanguageQuiz({ setView }) {
     const [isAnswered, setIsAnswered] = useState(false);
     const [answerStatus, setAnswerStatus] = useState({});
 
+    // --- STATES ADDED ---
+    const [flashColor, setFlashColor] = useState(null);
+    const [scorePop, setScorePop] = useState(false);
+    const [lifeLostIndex, setLifeLostIndex] = useState(null);
+    // const [showConfetti, setShowConfetti] = useState(false); // --- REMOVED ---
+
     useEffect(() => {
         setHighScore(parseInt(localStorage.getItem(HIGH_SCORE_KEY) || 0, 10));
         async function loadData() {
@@ -35,7 +41,8 @@ function LanguageQuiz({ setView }) {
                 setLanguagesData(languages);
                 setPhrasesData(phrases);
                 setIsLoading(false);
-            } catch (error) {
+            } catch (error)
+ {
                 console.error("Failed to load language data:", error);
                 setIsLoading(false);
             }
@@ -44,6 +51,9 @@ function LanguageQuiz({ setView }) {
     }, []);
 
     const nextQuestion = useCallback(() => {
+        // --- RESET ALL EFFECTS ---
+        setFlashColor(null);
+        setLifeLostIndex(null);
         setFeedback({ text: '\u00A0', color: 'var(--text-color)' });
         setIsAnswered(false);
         setAnswerStatus({});
@@ -81,17 +91,25 @@ function LanguageQuiz({ setView }) {
         setIsAnswered(true);
 
         if (answerName === currentQuestion.language) {
-            setScore(prevScore => prevScore + 1);
+            const newScore = score + 1;
+            setScore(newScore);
+            setScorePop(true); // --- Trigger score pop ---
+            setTimeout(() => setScorePop(false), 300); // --- Reset score pop ---
+
             setFeedback({ text: '✅ Correct!', color: 'var(--correct-color)' });
             setAnswerStatus({ [answerName]: 'correct' });
+            setFlashColor('correct'); // --- Trigger green flash ---
             setTimeout(nextQuestion, 1000);
         } else {
+            setFlashColor('incorrect'); // --- Trigger red flash ---
             setAnswerStatus({
                 [answerName]: 'incorrect',
                 [currentQuestion.language]: 'correct'
             });
+
             const newLives = lives - 1;
             setLives(newLives);
+            setLifeLostIndex(TOTAL_LIVES - lives); // --- Trigger life shake ---
             setFeedback({ text: `❌ Incorrect! It was ${currentQuestion.language}.`, color: 'var(--incorrect-color)' });
 
             if (newLives <= 0) {
@@ -99,6 +117,7 @@ function LanguageQuiz({ setView }) {
                 if (score > highScore) {
                     setHighScore(score);
                     localStorage.setItem(HIGH_SCORE_KEY, score.toString());
+                    // setShowConfetti(true); // --- REMOVED ---
                 }
             } else {
                 setTimeout(nextQuestion, 1500);
@@ -108,6 +127,7 @@ function LanguageQuiz({ setView }) {
 
     const handlePlayAgain = () => {
         setIsGameOver(false);
+        // setShowConfetti(false); // --- REMOVED ---
         setScore(0);
         setLives(TOTAL_LIVES);
         nextQuestion();
@@ -120,7 +140,8 @@ function LanguageQuiz({ setView }) {
                 {[...Array(TOTAL_LIVES)].map((_, i) => (
                     <div
                         key={i}
-                        className={`life-box ${i < livesLost ? 'lost' : ''}`}
+                        // --- Apply shake class ---
+                        className={`life-box ${i < livesLost ? 'lost' : ''} ${i === lifeLostIndex ? 'shake' : ''}`}
                     ></div>
                 ))}
             </div>
@@ -136,6 +157,7 @@ function LanguageQuiz({ setView }) {
     if (isGameOver) {
         return (
             <div className="quiz-box language-quiz-box game-over-box">
+                {/* --- REMOVED CONFETTI --- */}
                 <button className="back-button" onClick={() => setView('bonus-menu')}>←</button>
                 <h1 className="menu-title">Game Over!</h1>
                 <p className="final-score-lang">Final Score: {score}</p>
@@ -157,14 +179,17 @@ function LanguageQuiz({ setView }) {
 
 
     return (
-        <div className="quiz-box language-quiz-box">
+        // --- Apply flash class ---
+        <div className={`quiz-box language-quiz-box ${flashColor ? `flash-${flashColor}` : ''}`}>
             <button className="back-button" onClick={() => setView('bonus-menu')}>←</button>
             <div className="quiz-header language-header">
                 {renderLives()}
-                <div className="quiz-score">Score: {score}</div>
+                {/* --- Apply score pop class --- */}
+                <div className={`quiz-score ${scorePop ? 'pop' : ''}`}>Score: {score}</div>
             </div>
 
-            <div className="phrase-container">
+            {/* --- Add key to trigger re-render animation --- */}
+            <div className="phrase-container" key={currentQuestion.phrase}>
                 <h2 className="phrase-text">
                     "{currentQuestion.phrase}"
                 </h2>

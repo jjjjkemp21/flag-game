@@ -71,6 +71,9 @@ function LongestRouteQuiz({ allFlagsData, setView }) {
     
     const [quizStats, setQuizStats] = useState(null);
 
+    const [flashColor, setFlashColor] = useState(null);
+    const [scorePop, setScorePop] = useState(false);
+
     const inputRef = useRef(null);
     const flagMapByName = useRef(new Map());
     const gameOverTimeoutRef = useRef(null);
@@ -112,6 +115,7 @@ function LongestRouteQuiz({ allFlagsData, setView }) {
 
     const triggerGameOverSequence = (feedbackMessage) => {
         setFeedback(feedbackMessage);
+        setFlashColor('incorrect');
         setGameOver(true);
         setIsWin(false);
         
@@ -128,6 +132,8 @@ function LongestRouteQuiz({ allFlagsData, setView }) {
         if (!allRoutes || routeKeys.length === 0 || flagMapByName.current.size === 0) return;
         
         setShowGameOverScreen(false);
+        setFlashColor(null);
+
         if (gameOverTimeoutRef.current) {
             clearTimeout(gameOverTimeoutRef.current);
         }
@@ -205,8 +211,11 @@ function LongestRouteQuiz({ allFlagsData, setView }) {
         const wasCorrect = similarity >= 0.8;
 
         if (wasCorrect) {
+            setFlashColor('correct');
             const newIndex = currentPathIndex + 1;
             setScore(newIndex);
+            setScorePop(true);
+            setTimeout(() => setScorePop(false), 300);
             setInputValue('');
 
             if (newIndex === quizPath.length) {
@@ -220,21 +229,27 @@ function LongestRouteQuiz({ allFlagsData, setView }) {
                     setLongestRouteHighScore(finalScore);
                 }
             } else {
-                setCurrentPathIndex(newIndex);
-                const nextFlagName = quizPath[newIndex];
-                const nextFlagObject = flagMapByName.current.get(nextFlagName);
-                if (!nextFlagObject) {
-                    console.error("Error during game: Could not find flag data for", nextFlagName);
-                    triggerGameOverSequence({ message: { text: `Error finding next flag: ${nextFlagName}. Game Over.` }, color: 'var(--incorrect-color)' });
-                    return;
-                }
-                setCurrentFlag(nextFlagObject);
-                setFeedback({ message: { text: "✅ Correct! What's next?" }, color: 'var(--correct-color)' });
+                setFeedback({ message: { text: "✅ Correct!" }, color: 'var(--correct-color)' });
+                setInputValue('');
+                
                 setTimeout(() => {
-                    if (!gameOver) {
-                        setFeedback({ message: { text: "What country is this?" }, color: 'var(--text-color)' });
+                    if (gameOver) return;
+
+                    setCurrentPathIndex(newIndex);
+                    const nextFlagName = quizPath[newIndex];
+                    const nextFlagObject = flagMapByName.current.get(nextFlagName);
+                    
+                    if (!nextFlagObject) {
+                        console.error("Error during game: Could not find flag data for", nextFlagName);
+                        triggerGameOverSequence({ message: { text: `Error finding next flag: ${nextFlagName}. Game Over.` }, color: 'var(--incorrect-color)' });
+                        return;
                     }
-                }, 1000);
+
+                    setCurrentFlag(nextFlagObject);
+                    setFlashColor(null);
+                    setFeedback({ message: { text: "What country is this?" }, color: 'var(--text-color)' });
+                
+                }, 2000);
             }
         } else {
             triggerGameOverSequence({ message: { text: `❌ Incorrect. The answer was:`, answer: currentFlag.name }, color: 'var(--incorrect-color)' });
@@ -284,7 +299,6 @@ function LongestRouteQuiz({ allFlagsData, setView }) {
     
     return (
         <>
-            {/* Notification / Game Over Screens */}
             <div 
                 className="pixel-notification-overlay"
                 style={{ display: (!gameStarted || (gameOver && showGameOverScreen)) ? 'flex' : 'none' }}
@@ -318,6 +332,7 @@ function LongestRouteQuiz({ allFlagsData, setView }) {
                             </>
                         ) : (
                             <>
+                                -----------------
                                 <h2>Game Over!</h2>
                                 <p className="pixel-final-score">Your chain: {score}</p>
                                 <p className="pixel-high-score">Path length was: {quizPath.length}</p>
@@ -352,9 +367,8 @@ function LongestRouteQuiz({ allFlagsData, setView }) {
                 )}
             </div>
 
-            {/* Main Game Screen */}
             <div 
-                className="quiz-box longest-route-quiz-box"
+                className={`quiz-box longest-route-quiz-box ${flashColor ? `flash-${flashColor}` : ''}`}
                 style={{ display: (gameStarted && !(gameOver && showGameOverScreen)) ? 'flex' : 'none' }}
             >
                 {!currentFlag ? (
@@ -366,12 +380,13 @@ function LongestRouteQuiz({ allFlagsData, setView }) {
                     <>
                         <button className="back-button" onClick={backToMenu}>←</button>
                         <div className="quiz-header">
-                            <span className="quiz-score">Chain: {score} / {quizPath.length}</span>
+                            <span className={`quiz-score ${scorePop ? 'pop' : ''}`}>Chain: {score} / {quizPath.length}</span>
                         </div>
                         <img
+                            key={currentFlag.file}
                             src={`${IMAGE_BASE_URL}${currentFlag.file}`}
                             alt="Flag"
-                            className="flag-image"
+                            className="flag-image pop-in"
                         />
                         
                         <p className="feedback-label" style={{ color: feedback.color }}>

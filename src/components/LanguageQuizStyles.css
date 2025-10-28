@@ -2,6 +2,18 @@
     padding-bottom: 20px;
 }
 
+/* --- ADDED POP-IN ANIMATION --- */
+@keyframes popIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
 .language-quiz-box .phrase-container {
     width: 100%;
     margin-bottom: 10px;
@@ -15,6 +27,8 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
     max-height: 300px;
     overflow-y: auto;
+    /* --- ADDED ANIMATION --- */
+    animation: popIn 0.4s ease-out;
 }
 
 .language-quiz-box .phrase-text {
@@ -55,6 +69,19 @@
 .language-quiz-box .life-box.lost {
     background-color: var(--incorrect-color);
 }
+
+/* --- ADDED SHAKE ANIMATION FOR LIFE --- */
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-6px); }
+    40%, 80% { transform: translateX(6px); }
+}
+
+.language-quiz-box .life-box.shake {
+    animation: shake 0.5s ease-in-out;
+    background-color: var(--incorrect-color);
+}
+
 
 .language-quiz-box .language-subtitle {
     margin-bottom: 10px;
@@ -102,12 +129,21 @@
     box-shadow: 0 2px 4px var(--shadow-color);
 }
 
+/* --- ADDED JIGGLE ANIMATION --- */
+@keyframes jiggle {
+    0%, 100% { transform: scale(1); }
+    25% { transform: scale(1.05) rotate(2deg); }
+    75% { transform: scale(0.95) rotate(-2deg); }
+}
+
 .language-quiz-box .option-button.correct {
     background-color: var(--correct-color);
     border-color: var(--correct-border-color);
     color: white;
     transform: translateY(0);
     box-shadow: none;
+    /* --- ADDED ANIMATION --- */
+    animation: jiggle 0.5s ease-in-out;
 }
 
 .language-quiz-box .option-button.incorrect {
@@ -125,6 +161,7 @@
 
 .language-quiz-box.game-over-box {
     text-align: center;
+    /* --- REMOVED CONFETTI RULES --- */
 }
 
 .final-score-lang {

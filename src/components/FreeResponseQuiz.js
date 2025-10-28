@@ -38,6 +38,7 @@ function FreeResponseQuiz({ allFlagsData, quizFlags, setFlagsData, selectNextFla
     const [answered, setAnswered] = useState(false);
     const inputRef = useRef(null);
     const [flashColor, setFlashColor] = useState(null);
+    const [isWiggling, setIsWiggling] = useState(false);
 
     const handleBack = () => {
         setView('quiz-menu');
@@ -71,7 +72,14 @@ function FreeResponseQuiz({ allFlagsData, quizFlags, setFlagsData, selectNextFla
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        if (!currentFlag || answered || !inputValue.trim()) return;
+        if (!currentFlag || answered) return;
+
+        if (!inputValue.trim()) {
+            setIsWiggling(true);
+            setTimeout(() => setIsWiggling(false), 500);
+            return;
+        }
+
         const userAnswer = inputValue.trim().toLowerCase();
         const correctAnswer = currentFlag.name.toLowerCase();
         let wasCorrect;
@@ -87,6 +95,12 @@ function FreeResponseQuiz({ allFlagsData, quizFlags, setFlagsData, selectNextFla
                 wasCorrect = similarity >= 0.8;
             }
         }
+
+        if (!wasCorrect) {
+            setIsWiggling(true);
+            setTimeout(() => setIsWiggling(false), 500);
+        }
+
         setAnswered(true);
         setFlashColor(wasCorrect ? 'correct' : 'incorrect');
         const { message, color, updatedFlags } = update_flag_stats(allFlagsData, currentFlag.name, wasCorrect);
@@ -144,7 +158,7 @@ function FreeResponseQuiz({ allFlagsData, quizFlags, setFlagsData, selectNextFla
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
                     disabled={answered}
-                    className="response-input"
+                    className={`response-input ${isWiggling ? 'wiggle' : ''}`}
                     placeholder="Enter country name..."
                 />
                 <div className="quiz-actions">

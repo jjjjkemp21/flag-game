@@ -99,9 +99,11 @@ function MultipleChoiceQuiz({ allFlagsData, quizFlags, setFlagsData, selectNextF
         <div className={`quiz-box ${flashColor ? `flash-${flashColor}` : ''}`}>
             <button className="back-button" onClick={handleBack}>←</button>
             <img
+                // --- Add key and pop-in class ---
+                key={currentFlag.file}
                 src={`${IMAGE_BASE_URL}${currentFlag.file}`}
                 alt="Flag"
-                className="flag-image"
+                className="flag-image pop-in"
             />
             <p className="feedback-label" style={{ color: feedback.color }}>
                 <span>{feedback.message.text}</span>

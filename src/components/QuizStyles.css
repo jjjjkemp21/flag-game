@@ -226,7 +226,18 @@
     padding: 8px 15px;
     border-radius: 8px;
     color: var(--text-color);
+    transition: transform 0.2s ease-out; /* --- Added for pop --- */
 }
+
+/* --- ADDED SCORE POP ANIMATION --- */
+@keyframes pop {
+    50% { transform: scale(1.25); }
+    100% { transform: scale(1); }
+}
+.quiz-score.pop {
+    animation: pop 0.3s ease-in-out;
+}
+
 
 .quiz-score {
     background-color: var(--primary-color);
@@ -294,6 +305,22 @@
     border-radius: 8px;
 }
 
+/* --- ADDED FLAG POP-IN ANIMATION --- */
+@keyframes popIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+.flag-image.pop-in {
+    animation: popIn 0.4s ease-out;
+}
+
+
 .feedback-label {
     font-size: 1.2em;
     font-weight: bold;
@@ -344,10 +371,19 @@
     opacity: 0.8;
 }
 
+/* --- ADDED JIGGLE ANIMATION --- */
+@keyframes jiggle {
+    0%, 100% { transform: scale(1); }
+    25% { transform: scale(1.05) rotate(2deg); }
+    75% { transform: scale(0.95) rotate(-2deg); }
+}
+
 .option-button.correct {
     background-color: var(--correct-color);
     border-color: var(--correct-border-color);
     color: white;
+    /* --- ADDED ANIMATION --- */
+    animation: jiggle 0.5s ease-in-out;
 }
 
 .option-button.incorrect {
@@ -445,6 +481,8 @@
     transition: background-color 0.3s;
 }
 
+/* --- REMOVED CONFETTI --- */
+
 @media (max-width: 768px) {
     .quiz-box {
         width: 100%;
@@ -458,4 +496,17 @@
         transform: translateZ(0);
         -webkit-transform: translateZ(0);
     }
+}
+
+@keyframes wiggle {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  50% { transform: translateX(6px); }
+  75% { transform: translateX(-6px); }
+}
+
+.response-input.wiggle {
+  animation: wiggle 0.5s ease-in-out;
+  border-color: var(--incorrect-color);
+  box-shadow: 0 0 0 2px var(--incorrect-color-translucent, rgba(250, 56, 62, 0.2));
 }
