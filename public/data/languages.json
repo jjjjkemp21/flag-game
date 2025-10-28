@@ -348,5 +348,26 @@
     "alphabet": "Latin",
     "regions": ["Historical", "Europe"],
     "distractors": ["Italian", "Spanish", "French"]
+  },
+  {
+    "name": "Marathi",
+    "family": "Indo-Aryan",
+    "alphabet": "Devanagari",
+    "regions": ["Asia"],
+    "distractors": ["Hindi", "Gujarati", "Bengali"]
+  },
+  {
+    "name": "Telugu",
+    "family": "Dravidian",
+    "alphabet": "Telugu",
+    "regions": ["Asia"],
+    "distractors": ["Tamil", "Hindi", "Marathi"]
+  },
+  {
+    "name": "Estonian",
+    "family": "Uralic",
+    "alphabet": "Latin",
+    "regions": ["Europe"],
+    "distractors": ["Finnish", "Hungarian", "Swedish"]
   }
 ]
