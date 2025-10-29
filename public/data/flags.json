@@ -1,6 +1,7 @@
 [
   {
     "country": "Afghanistan",
+    "aliases": [],
     "code": "AF",
     "flag": "🇦🇫",
     "tags": [
@@ -15,6 +16,7 @@
   },
   {
     "country": "Albania",
+    "aliases": [],
     "code": "AL",
     "flag": "🇦🇱",
     "tags": [
@@ -28,6 +30,7 @@
   },
   {
     "country": "Algeria",
+    "aliases": [],
     "code": "DZ",
     "flag": "🇩🇿",
     "tags": [
@@ -43,6 +46,7 @@
   },
   {
     "country": "Andorra",
+    "aliases": [],
     "code": "AD",
     "flag": "🇦🇩",
     "tags": [
@@ -58,6 +62,7 @@
   },
   {
     "country": "Angola",
+    "aliases": [],
     "code": "AO",
     "flag": "🇦🇴",
     "tags": [
@@ -74,6 +79,7 @@
   },
   {
     "country": "Antigua and Barbuda",
+    "aliases": [],
     "code": "AG",
     "flag": "🇦🇬",
     "tags": [
@@ -86,6 +92,7 @@
   },
   {
     "country": "Argentina",
+    "aliases": [],
     "code": "AR",
     "flag": "🇦🇷",
     "tags": [
@@ -100,6 +107,7 @@
   },
   {
     "country": "Armenia",
+    "aliases": [],
     "code": "AM",
     "flag": "🇦🇲",
     "tags": [
@@ -112,6 +120,7 @@
   },
   {
     "country": "Australia",
+    "aliases": [],
     "code": "AU",
     "flag": "🇦🇺",
     "tags": [
@@ -128,6 +137,7 @@
   },
   {
     "country": "Austria",
+    "aliases": [],
     "code": "AT",
     "flag": "🇦🇹",
     "tags": [
@@ -140,6 +150,7 @@
   },
   {
     "country": "Azerbaijan",
+    "aliases": [],
     "code": "AZ",
     "flag": "🇦🇿",
     "tags": [
@@ -155,6 +166,7 @@
   },
   {
     "country": "Bahamas",
+    "aliases": [],
     "code": "BS",
     "flag": "🇧🇸",
     "tags": [
@@ -168,6 +180,7 @@
   },
   {
     "country": "Bahrain",
+    "aliases": [],
     "code": "BH",
     "flag": "🇧🇭",
     "tags": [
@@ -180,6 +193,7 @@
   },
   {
     "country": "Bangladesh",
+    "aliases": [],
     "code": "BD",
     "flag": "🇧🇩",
     "tags": [
@@ -192,6 +206,7 @@
   },
   {
     "country": "Barbados",
+    "aliases": [],
     "code": "BB",
     "flag": "🇧🇧",
     "tags": [
@@ -205,6 +220,7 @@
   },
   {
     "country": "Belarus",
+    "aliases": [],
     "code": "BY",
     "flag": "🇧🇾",
     "tags": [
@@ -219,6 +235,7 @@
   },
   {
     "country": "Belgium",
+    "aliases": [],
     "code": "BE",
     "flag": "🇧🇪",
     "tags": [
@@ -231,6 +248,7 @@
   },
   {
     "country": "Belize",
+    "aliases": [],
     "code": "BZ",
     "flag": "🇧🇿",
     "tags": [
@@ -244,6 +262,7 @@
   },
   {
     "country": "Benin",
+    "aliases": [],
     "code": "BJ",
     "flag": "🇧🇯",
     "tags": [
@@ -257,6 +276,7 @@
   },
   {
     "country": "Bhutan",
+    "aliases": [],
     "code": "BT",
     "flag": "🇧🇹",
     "tags": [
@@ -268,6 +288,7 @@
   },
   {
     "country": "Bolivia",
+    "aliases": [],
     "code": "BO",
     "flag": "🇧🇴",
     "tags": [
@@ -281,6 +302,7 @@
   },
   {
     "country": "Bosnia and Herzegovina",
+    "aliases": [],
     "code": "BA",
     "flag": "🇧🇦",
     "tags": [
@@ -293,6 +315,7 @@
   },
   {
     "country": "Botswana",
+    "aliases": [],
     "code": "BW",
     "flag": "🇧🇼",
     "tags": [
@@ -306,6 +329,7 @@
   },
   {
     "country": "Brazil",
+    "aliases": [],
     "code": "BR",
     "flag": "🇧🇷",
     "tags": [
@@ -321,6 +345,7 @@
   },
   {
     "country": "Brunei",
+    "aliases": [],
     "code": "BN",
     "flag": "🇧🇳",
     "tags": [
@@ -333,6 +358,7 @@
   },
   {
     "country": "Bulgaria",
+    "aliases": [],
     "code": "BG",
     "flag": "🇧🇬",
     "tags": [
@@ -346,6 +372,7 @@
   },
   {
     "country": "Burkina Faso",
+    "aliases": [],
     "code": "BF",
     "flag": "🇧🇫",
     "tags": [
@@ -360,6 +387,7 @@
   },
   {
     "country": "Burundi",
+    "aliases": [],
     "code": "BI",
     "flag": "🇧🇮",
     "tags": [
@@ -374,6 +402,7 @@
   },
   {
     "country": "Cambodia",
+    "aliases": [],
     "code": "KH",
     "flag": "🇰🇭",
     "tags": [
@@ -388,6 +417,7 @@
   },
   {
     "country": "Cameroon",
+    "aliases": [],
     "code": "CM",
     "flag": "🇨🇲",
     "tags": [
@@ -402,6 +432,7 @@
   },
   {
     "country": "Canada",
+    "aliases": [],
     "code": "CA",
     "flag": "🇨🇦",
     "tags": [
@@ -416,6 +447,7 @@
   },
   {
     "country": "Cape Verde",
+    "aliases": [],
     "code": "CV",
     "flag": "🇨🇻",
     "tags": [
@@ -431,6 +463,7 @@
   },
   {
     "country": "Central African Republic",
+    "aliases": [],
     "code": "CF",
     "flag": "🇨🇫",
     "tags": [
@@ -448,6 +481,7 @@
   },
   {
     "country": "Chad",
+    "aliases": [],
     "code": "TD",
     "flag": "🇹🇩",
     "tags": [
@@ -461,6 +495,7 @@
   },
   {
     "country": "Chile",
+    "aliases": [],
     "code": "CL",
     "flag": "🇨🇱",
     "tags": [
@@ -475,6 +510,7 @@
   },
   {
     "country": "China",
+    "aliases": [],
     "code": "CN",
     "flag": "🇨🇳",
     "tags": [
@@ -489,6 +525,7 @@
   },
   {
     "country": "Colombia",
+    "aliases": [],
     "code": "CO",
     "flag": "🇨🇴",
     "tags": [
@@ -502,6 +539,7 @@
   },
   {
     "country": "Comoros",
+    "aliases": [],
     "code": "KM",
     "flag": "🇰🇲",
     "tags": [
@@ -517,6 +555,7 @@
   },
   {
     "country": "Democratic Republic of the Congo",
+    "aliases": [],
     "code": "CD",
     "flag": "🇨🇩",
     "tags": [
@@ -531,6 +570,7 @@
   },
   {
     "country": "Republic of the Congo",
+    "aliases": [],
     "code": "CG",
     "flag": "🇨🇬",
     "tags": [
@@ -543,6 +583,7 @@
   },
   {
     "country": "Costa Rica",
+    "aliases": [],
     "code": "CR",
     "flag": "🇨🇷",
     "tags": [
@@ -557,6 +598,7 @@
   },
   {
     "country": "Croatia",
+    "aliases": [],
     "code": "HR",
     "flag": "🇭🇷",
     "tags": [
@@ -572,6 +614,7 @@
   },
   {
     "country": "Cuba",
+    "aliases": [],
     "code": "CU",
     "flag": "🇨🇺",
     "tags": [
@@ -586,6 +629,7 @@
   },
   {
     "country": "Cyprus",
+    "aliases": [],
     "code": "CY",
     "flag": "🇨🇾",
     "tags": [
@@ -598,6 +642,7 @@
   },
   {
     "country": "Czech Republic",
+    "aliases": [],
     "code": "CZ",
     "flag": "🇨🇿",
     "tags": [
@@ -612,6 +657,7 @@
   },
   {
     "country": "Denmark",
+    "aliases": [],
     "code": "DK",
     "flag": "🇩🇰",
     "tags": [
@@ -623,6 +669,7 @@
   },
   {
     "country": "Djibouti",
+    "aliases": [],
     "code": "DJ",
     "flag": "🇩🇯",
     "tags": [
@@ -637,6 +684,7 @@
   },
   {
     "country": "Dominica",
+    "aliases": [],
     "code": "DM",
     "flag": "🇩🇲",
     "tags": [
@@ -656,6 +704,7 @@
   },
   {
     "country": "Dominican Republic",
+    "aliases": [],
     "code": "DO",
     "flag": "🇩🇴",
     "tags": [
@@ -668,6 +717,7 @@
   },
   {
     "country": "Ecuador",
+    "aliases": [],
     "code": "EC",
     "flag": "🇪🇨",
     "tags": [
@@ -682,6 +732,7 @@
   },
   {
     "country": "Egypt",
+    "aliases": [],
     "code": "EG",
     "flag": "🇪🇬",
     "tags": [
@@ -696,6 +747,7 @@
   },
   {
     "country": "El Salvador",
+    "aliases": [],
     "code": "SV",
     "flag": "🇸🇻",
     "tags": [
@@ -709,6 +761,7 @@
   },
   {
     "country": "Equatorial Guinea",
+    "aliases": [],
     "code": "GQ",
     "flag": "🇬🇶",
     "tags": [
@@ -725,6 +778,7 @@
   },
   {
     "country": "Eritrea",
+    "aliases": [],
     "code": "ER",
     "flag": "🇪🇷",
     "tags": [
@@ -737,6 +791,7 @@
   },
   {
     "country": "Estonia",
+    "aliases": [],
     "code": "EE",
     "flag": "🇪🇪",
     "tags": [
@@ -749,6 +804,7 @@
   },
   {
     "country": "Eswatini",
+    "aliases": [],
     "code": "SZ",
     "flag": "🇸🇿",
     "tags": [
@@ -763,6 +819,7 @@
   },
   {
     "country": "Ethiopia",
+    "aliases": [],
     "code": "ET",
     "flag": "🇪🇹",
     "tags": [
@@ -778,6 +835,7 @@
   },
   {
     "country": "Fiji",
+    "aliases": [],
     "code": "FJ",
     "flag": "🇫🇯",
     "tags": [
@@ -792,6 +850,7 @@
   },
   {
     "country": "Finland",
+    "aliases": [],
     "code": "FI",
     "flag": "🇫🇮",
     "tags": [
@@ -803,6 +862,7 @@
   },
   {
     "country": "France",
+    "aliases": [],
     "code": "FR",
     "flag": "🇫🇷",
     "tags": [
@@ -815,6 +875,7 @@
   },
   {
     "country": "Gabon",
+    "aliases": [],
     "code": "GA",
     "flag": "🇬🇦",
     "tags": [
@@ -826,6 +887,7 @@
   },
   {
     "country": "Gambia",
+    "aliases": [],
     "code": "GM",
     "flag": "🇬🇲",
     "tags": [
@@ -839,6 +901,7 @@
   },
   {
     "country": "Georgia",
+    "aliases": [],
     "code": "GE",
     "flag": "🇬🇪",
     "tags": [
@@ -851,6 +914,7 @@
   },
   {
     "country": "Germany",
+    "aliases": [],
     "code": "DE",
     "flag": "🇩🇪",
     "tags": [
@@ -862,6 +926,7 @@
   },
   {
     "country": "Ghana",
+    "aliases": [],
     "code": "GH",
     "flag": "🇬🇭",
     "tags": [
@@ -877,6 +942,7 @@
   },
   {
     "country": "Greece",
+    "aliases": [],
     "code": "GR",
     "flag": "🇬🇷",
     "tags": [
@@ -889,6 +955,7 @@
   },
   {
     "country": "Grenada",
+    "aliases": [],
     "code": "GD",
     "flag": "🇬🇩",
     "tags": [
@@ -905,6 +972,7 @@
   },
   {
     "country": "Guatemala",
+    "aliases": [],
     "code": "GT",
     "flag": "🇬🇹",
     "tags": [
@@ -920,6 +988,7 @@
   },
   {
     "country": "Guinea",
+    "aliases": [],
     "code": "GN",
     "flag": "🇬🇳",
     "tags": [
@@ -932,6 +1001,7 @@
   },
   {
     "country": "Guinea-Bissau",
+    "aliases": [],
     "code": "GW",
     "flag": "🇬🇼",
     "tags": [
@@ -946,6 +1016,7 @@
   },
   {
     "country": "Guyana",
+    "aliases": [],
     "code": "GY",
     "flag": "🇬🇾",
     "tags": [
@@ -960,6 +1031,7 @@
   },
   {
     "country": "Haiti",
+    "aliases": [],
     "code": "HT",
     "flag": "🇭🇹",
     "tags": [
@@ -972,6 +1044,7 @@
   },
   {
     "country": "Honduras",
+    "aliases": [],
     "code": "HN",
     "flag": "🇭🇳",
     "tags": [
@@ -986,6 +1059,7 @@
   },
   {
     "country": "Hungary",
+    "aliases": [],
     "code": "HU",
     "flag": "🇭🇺",
     "tags": [
@@ -998,6 +1072,7 @@
   },
   {
     "country": "Iceland",
+    "aliases": [],
     "code": "IS",
     "flag": "🇮🇸",
     "tags": [
@@ -1010,6 +1085,7 @@
   },
   {
     "country": "India",
+    "aliases": ["Poop Face"],
     "code": "IN",
     "flag": "🇮🇳",
     "tags": [
@@ -1024,6 +1100,7 @@
   },
   {
     "country": "Indonesia",
+    "aliases": [],
     "code": "ID",
     "flag": "🇮🇩",
     "tags": [
@@ -1035,6 +1112,7 @@
   },
   {
     "country": "Iran",
+    "aliases": [],
     "code": "IR",
     "flag": "🇮🇷",
     "tags": [
@@ -1050,6 +1128,7 @@
   },
   {
     "country": "Iraq",
+    "aliases": [],
     "code": "IQ",
     "flag": "🇮🇶",
     "tags": [
@@ -1063,6 +1142,7 @@
   },
   {
     "country": "Ireland",
+    "aliases": [],
     "code": "IE",
     "flag": "🇮🇪",
     "tags": [
@@ -1074,6 +1154,7 @@
   },
   {
     "country": "Israel",
+    "aliases": [],
     "code": "IL",
     "flag": "🇮🇱",
     "tags": [
@@ -1087,6 +1168,7 @@
   },
   {
     "country": "Italy",
+    "aliases": [],
     "code": "IT",
     "flag": "🇮🇹",
     "tags": [
@@ -1098,6 +1180,7 @@
   },
   {
     "country": "Ivory Coast",
+    "aliases": [],
     "code": "CI",
     "flag": "🇨🇮",
     "tags": [
@@ -1109,6 +1192,7 @@
   },
   {
     "country": "Jamaica",
+    "aliases": [],
     "code": "JM",
     "flag": "🇯🇲",
     "tags": [
@@ -1121,6 +1205,7 @@
   },
   {
     "country": "Japan",
+    "aliases": [],
     "code": "JP",
     "flag": "🇯🇵",
     "tags": [
@@ -1133,6 +1218,7 @@
   },
   {
     "country": "Jordan",
+    "aliases": [],
     "code": "JO",
     "flag": "🇯🇴",
     "tags": [
@@ -1148,6 +1234,7 @@
   },
   {
     "country": "Kazakhstan",
+    "aliases": [],
     "code": "KZ",
     "flag": "🇰🇿",
     "tags": [
@@ -1162,6 +1249,7 @@
   },
   {
     "country": "Kenya",
+    "aliases": [],
     "code": "KE",
     "flag": "🇰🇪",
     "tags": [
@@ -1178,6 +1266,7 @@
   },
   {
     "country": "Kiribati",
+    "aliases": [],
     "code": "KI",
     "flag": "🇰🇮",
     "tags": [
@@ -1193,6 +1282,7 @@
   },
   {
     "country": "Kosovo",
+    "aliases": [],
     "code": "XK",
     "flag": "🇽🇰",
     "tags": [
@@ -1207,6 +1297,7 @@
   },
   {
     "country": "Kuwait",
+    "aliases": [],
     "code": "KW",
     "flag": "🇰🇼",
     "tags": [
@@ -1220,6 +1311,7 @@
   },
   {
     "country": "Kyrgyzstan",
+    "aliases": [],
     "code": "KG",
     "flag": "🇰🇬",
     "tags": [
@@ -1232,6 +1324,7 @@
   },
   {
     "country": "Laos",
+    "aliases": [],
     "code": "LA",
     "flag": "🇱🇦",
     "tags": [
@@ -1245,6 +1338,7 @@
   },
   {
     "country": "Latvia",
+    "aliases": [],
     "code": "LV",
     "flag": "🇱🇻",
     "tags": [
@@ -1258,6 +1352,7 @@
   },
   {
     "country": "Lebanon",
+    "aliases": [],
     "code": "LB",
     "flag": "🇱🇧",
     "tags": [
@@ -1272,6 +1367,7 @@
   },
   {
     "country": "Lesotho",
+    "aliases": [],
     "code": "LS",
     "flag": "🇱🇸",
     "tags": [
@@ -1286,6 +1382,7 @@
   },
   {
     "country": "Liberia",
+    "aliases": [],
     "code": "LR",
     "flag": "🇱🇷",
     "tags": [
@@ -1300,6 +1397,7 @@
   },
   {
     "country": "Libya",
+    "aliases": [],
     "code": "LY",
     "flag": "🇱🇾",
     "tags": [
@@ -1315,6 +1413,7 @@
   },
   {
     "country": "Liechtenstein",
+    "aliases": [],
     "code": "LI",
     "flag": "🇱🇮",
     "tags": [
@@ -1328,6 +1427,7 @@
   },
   {
     "country": "Lithuania",
+    "aliases": [],
     "code": "LT",
     "flag": "🇱🇹",
     "tags": [
@@ -1340,6 +1440,7 @@
   },
   {
     "country": "Luxembourg",
+    "aliases": [],
     "code": "LU",
     "flag": "🇱🇺",
     "tags": [
@@ -1351,6 +1452,7 @@
   },
   {
     "country": "Madagascar",
+    "aliases": [],
     "code": "MG",
     "flag": "🇲🇬",
     "tags": [
@@ -1362,6 +1464,7 @@
   },
   {
     "country": "Malawi",
+    "aliases": [],
     "code": "MW",
     "flag": "🇲🇼",
     "tags": [
@@ -1376,6 +1479,7 @@
   },
   {
     "country": "Malaysia",
+    "aliases": [],
     "code": "MY",
     "flag": "🇲🇾",
     "tags": [
@@ -1391,6 +1495,7 @@
   },
   {
     "country": "Maldives",
+    "aliases": [],
     "code": "MV",
     "flag": "🇲🇻",
     "tags": [
@@ -1403,6 +1508,7 @@
   },
   {
     "country": "Mali",
+    "aliases": [],
     "code": "ML",
     "flag": "🇲🇱",
     "tags": [
@@ -1415,6 +1521,7 @@
   },
   {
     "country": "Malta",
+    "aliases": [],
     "code": "MT",
     "flag": "🇲🇹",
     "tags": [
@@ -1429,6 +1536,7 @@
   },
   {
     "country": "Marshall Islands",
+    "aliases": [],
     "code": "MH",
     "flag": "🇲🇭",
     "tags": [
@@ -1442,6 +1550,7 @@
   },
   {
     "country": "Mauritania",
+    "aliases": [],
     "code": "MR",
     "flag": "🇲🇷",
     "tags": [
@@ -1456,6 +1565,7 @@
   },
   {
     "country": "Mauritius",
+    "aliases": [],
     "code": "MU",
     "flag": "🇲🇺",
     "tags": [
@@ -1468,6 +1578,7 @@
   },
   {
     "country": "Mexico",
+    "aliases": [],
     "code": "MX",
     "flag": "🇲🇽",
     "tags": [
@@ -1483,6 +1594,7 @@
   },
   {
     "country": "Micronesia",
+    "aliases": [],
     "code": "FM",
     "flag": "🇫🇲",
     "tags": [
@@ -1495,6 +1607,7 @@
   },
   {
     "country": "Moldova",
+    "aliases": [],
     "code": "MD",
     "flag": "🇲🇩",
     "tags": [
@@ -1510,6 +1623,7 @@
   },
   {
     "country": "Monaco",
+    "aliases": [],
     "code": "MC",
     "flag": "🇲🇨",
     "tags": [
@@ -1521,6 +1635,7 @@
   },
   {
     "country": "Mongolia",
+    "aliases": [],
     "code": "MN",
     "flag": "🇲🇳",
     "tags": [
@@ -1534,6 +1649,7 @@
   },
   {
     "country": "Montenegro",
+    "aliases": [],
     "code": "ME",
     "flag": "🇲🇪",
     "tags": [
@@ -1548,6 +1664,7 @@
   },
   {
     "country": "Morocco",
+    "aliases": [],
     "code": "MA",
     "flag": "🇲🇦",
     "tags": [
@@ -1560,6 +1677,7 @@
   },
   {
     "country": "Mozambique",
+    "aliases": [],
     "code": "MZ",
     "flag": "🇲🇿",
     "tags": [
@@ -1579,6 +1697,7 @@
   },
   {
     "country": "Myanmar",
+    "aliases": [],
     "code": "MM",
     "flag": "🇲🇲",
     "tags": [
@@ -1592,6 +1711,7 @@
   },
   {
     "country": "Namibia",
+    "aliases": [],
     "code": "NA",
     "flag": "🇳🇦",
     "tags": [
@@ -1605,6 +1725,7 @@
   },
   {
     "country": "Nauru",
+    "aliases": [],
     "code": "NR",
     "flag": "🇳🇷",
     "tags": [
@@ -1619,6 +1740,7 @@
   },
   {
     "country": "Nepal",
+    "aliases": [],
     "code": "NP",
     "flag": "🇳🇵",
     "tags": [
@@ -1632,6 +1754,7 @@
   },
   {
     "country": "Netherlands",
+    "aliases": [],
     "code": "NL",
     "flag": "🇳🇱",
     "tags": [
@@ -1644,6 +1767,7 @@
   },
   {
     "country": "New Zealand",
+    "aliases": [],
     "code": "NZ",
     "flag": "🇳🇿",
     "tags": [
@@ -1660,6 +1784,7 @@
   },
   {
     "country": "Nicaragua",
+    "aliases": [],
     "code": "NI",
     "flag": "🇳🇮",
     "tags": [
@@ -1674,6 +1799,7 @@
   },
   {
     "country": "Niger",
+    "aliases": [],
     "code": "NE",
     "flag": "🇳🇪",
     "tags": [
@@ -1687,6 +1813,7 @@
   },
   {
     "country": "Nigeria",
+    "aliases": [],
     "code": "NG",
     "flag": "🇳🇬",
     "tags": [
@@ -1699,6 +1826,7 @@
   },
   {
     "country": "North Korea",
+    "aliases": [],
     "code": "KP",
     "flag": "🇰🇵",
     "tags": [
@@ -1716,6 +1844,7 @@
   },
   {
     "country": "North Macedonia",
+    "aliases": [],
     "code": "MK",
     "flag": "🇲🇰",
     "tags": [
@@ -1728,6 +1857,7 @@
   },
   {
     "country": "Norway",
+    "aliases": [],
     "code": "NO",
     "flag": "🇳🇴",
     "tags": [
@@ -1740,6 +1870,7 @@
   },
   {
     "country": "Oman",
+    "aliases": [],
     "code": "OM",
     "flag": "🇴🇲",
     "tags": [
@@ -1754,6 +1885,7 @@
   },
   {
     "country": "Pakistan",
+    "aliases": [],
     "code": "PK",
     "flag": "🇵🇰",
     "tags": [
@@ -1768,6 +1900,7 @@
   },
   {
     "country": "Palau",
+    "aliases": [],
     "code": "PW",
     "flag": "🇵🇼",
     "tags": [
@@ -1779,6 +1912,7 @@
   },
   {
     "country": "Palestine",
+    "aliases": [],
     "code": "PS",
     "flag": "🇵🇸",
     "tags": [
@@ -1792,6 +1926,7 @@
   },
   {
     "country": "Panama",
+    "aliases": [],
     "code": "PA",
     "flag": "🇵🇦",
     "tags": [
@@ -1804,6 +1939,7 @@
   },
   {
     "country": "Papua New Guinea",
+    "aliases": [],
     "code": "PG",
     "flag": "🇵🇬",
     "tags": [
@@ -1819,6 +1955,7 @@
   },
   {
     "country": "Paraguay",
+    "aliases": [],
     "code": "PY",
     "flag": "🇵🇾",
     "tags": [
@@ -1832,6 +1969,7 @@
   },
   {
     "country": "Peru",
+    "aliases": [],
     "code": "PE",
     "flag": "🇵🇪",
     "tags": [
@@ -1844,6 +1982,7 @@
   },
   {
     "country": "Philippines",
+    "aliases": [],
     "code": "PH",
     "flag": "🇵🇭",
     "tags": [
@@ -1859,6 +1998,7 @@
   },
   {
     "country": "Poland",
+    "aliases": [],
     "code": "PL",
     "flag": "🇵🇱",
     "tags": [
@@ -1870,6 +2010,7 @@
   },
   {
     "country": "Portugal",
+    "aliases": [],
     "code": "PT",
     "flag": "🇵🇹",
     "tags": [
@@ -1884,6 +2025,7 @@
   },
   {
     "country": "Qatar",
+    "aliases": [],
     "code": "QA",
     "flag": "🇶🇦",
     "tags": [
@@ -1896,6 +2038,7 @@
   },
   {
     "country": "Romania",
+    "aliases": [],
     "code": "RO",
     "flag": "🇷🇴",
     "tags": [
@@ -1907,6 +2050,7 @@
   },
   {
     "country": "Russia",
+    "aliases": [],
     "code": "RU",
     "flag": "🇷🇺",
     "tags": [
@@ -1920,6 +2064,7 @@
   },
   {
     "country": "Rwanda",
+    "aliases": [],
     "code": "RW",
     "flag": "🇷🇼",
     "tags": [
@@ -1934,6 +2079,7 @@
   },
   {
     "country": "Saint Kitts and Nevis",
+    "aliases": [],
     "code": "KN",
     "flag": "🇰🇳",
     "tags": [
@@ -1949,6 +2095,7 @@
   },
   {
     "country": "Saint Lucia",
+    "aliases": [],
     "code": "LC",
     "flag": "🇱🇨",
     "tags": [
@@ -1961,6 +2108,7 @@
   },
   {
     "country": "Saint Vincent and the Grenadines",
+    "aliases": [],
     "code": "VC",
     "flag": "🇻🇨",
     "tags": [
@@ -1975,6 +2123,7 @@
   },
   {
     "country": "Samoa",
+    "aliases": [],
     "code": "WS",
     "flag": "🇼🇸",
     "tags": [
@@ -1989,6 +2138,7 @@
   },
   {
     "country": "San Marino",
+    "aliases": [],
     "code": "SM",
     "flag": "🇸🇲",
     "tags": [
@@ -2001,6 +2151,7 @@
   },
   {
     "country": "Sao Tome and Principe",
+    "aliases": [],
     "code": "ST",
     "flag": "🇸🇹",
     "tags": [
@@ -2016,6 +2167,7 @@
   },
   {
     "country": "Saudi Arabia",
+    "aliases": [],
     "code": "SA",
     "flag": "🇸🇦",
     "tags": [
@@ -2030,6 +2182,7 @@
   },
   {
     "country": "Senegal",
+    "aliases": [],
     "code": "SN",
     "flag": "🇸🇳",
     "tags": [
@@ -2044,6 +2197,7 @@
   },
   {
     "country": "Serbia",
+    "aliases": [],
     "code": "RS",
     "flag": "🇷🇸",
     "tags": [
@@ -2060,6 +2214,7 @@
   },
   {
     "country": "Seychelles",
+    "aliases": [],
     "code": "SC",
     "flag": "🇸🇨",
     "tags": [
@@ -2072,6 +2227,7 @@
   },
   {
     "country": "Sierra Leone",
+    "aliases": [],
     "code": "SL",
     "flag": "🇸🇱",
     "tags": [
@@ -2084,6 +2240,7 @@
   },
   {
     "country": "Singapore",
+    "aliases": [],
     "code": "SG",
     "flag": "🇸🇬",
     "tags": [
@@ -2099,6 +2256,7 @@
   },
   {
     "country": "Slovakia",
+    "aliases": [],
     "code": "SK",
     "flag": "🇸🇰",
     "tags": [
@@ -2114,6 +2272,7 @@
   },
   {
     "country": "Slovenia",
+    "aliases": [],
     "code": "SI",
     "flag": "🇸🇮",
     "tags": [
@@ -2130,6 +2289,7 @@
   },
   {
     "country": "Solomon Islands",
+    "aliases": [],
     "code": "SB",
     "flag": "🇸🇧",
     "tags": [
@@ -2144,6 +2304,7 @@
   },
   {
     "country": "Somalia",
+    "aliases": [],
     "code": "SO",
     "flag": "🇸🇴",
     "tags": [
@@ -2156,6 +2317,7 @@
   },
   {
     "country": "South Africa",
+    "aliases": [],
     "code": "ZA",
     "flag": "🇿🇦",
     "tags": [
@@ -2172,6 +2334,7 @@
   },
   {
     "country": "South Korea",
+    "aliases": [],
     "code": "KR",
     "flag": "🇰🇷",
     "tags": [
@@ -2185,6 +2348,7 @@
   },
   {
     "country": "South Sudan",
+    "aliases": [],
     "code": "SS",
     "flag": "🇸🇸",
     "tags": [
@@ -2201,6 +2365,7 @@
   },
   {
     "country": "Spain",
+    "aliases": [],
     "code": "ES",
     "flag": "🇪🇸",
     "tags": [
@@ -2214,6 +2379,7 @@
   },
   {
     "country": "Sri Lanka",
+    "aliases": ["Poop Face"],
     "code": "LK",
     "flag": "🇱🇰",
     "tags": [
@@ -2228,6 +2394,7 @@
   },
   {
     "country": "Sudan",
+    "aliases": [],
     "code": "SD",
     "flag": "🇸🇩",
     "tags": [
@@ -2241,6 +2408,7 @@
   },
   {
     "country": "Sweden",
+    "aliases": [],
     "code": "SE",
     "flag": "🇸🇪",
     "tags": [
@@ -2252,6 +2420,7 @@
   },
   {
     "country": "Switzerland",
+    "aliases": [],
     "code": "CH",
     "flag": "🇨🇭",
     "tags": [
@@ -2264,6 +2433,8 @@
   },
   {
     "country": "Syria",
+    "aliases": [],
+
     "code": "SY",
     "flag": "🇸🇾",
     "tags": [
@@ -2278,6 +2449,7 @@
   },
   {
     "country": "Taiwan",
+    "aliases": [],
     "code": "TW",
     "flag": "🇹🇼",
     "tags": [
@@ -2290,6 +2462,7 @@
   },
   {
     "country": "Tajikistan",
+    "aliases": [],
     "code": "TJ",
     "flag": "🇹🇯",
     "tags": [
@@ -2307,6 +2480,7 @@
   },
   {
     "country": "Tanzania",
+    "aliases": [],
     "code": "TZ",
     "flag": "🇹🇿",
     "tags": [
@@ -2320,6 +2494,7 @@
   },
   {
     "country": "Thailand",
+    "aliases": [],
     "code": "TH",
     "flag": "🇹🇭",
     "tags": [
@@ -2332,6 +2507,7 @@
   },
   {
     "country": "Timor-Leste",
+    "aliases": [],
     "code": "TL",
     "flag": "🇹🇱",
     "tags": [
@@ -2345,6 +2521,7 @@
   },
   {
     "country": "Togo",
+    "aliases": [],
     "code": "TG",
     "flag": "🇹🇬",
     "tags": [
@@ -2361,6 +2538,7 @@
   },
   {
     "country": "Tonga",
+    "aliases": [],
     "code": "TO",
     "flag": "🇹🇴",
     "tags": [
@@ -2374,6 +2552,7 @@
   },
   {
     "country": "Trinidad and Tobago",
+    "aliases": [],
     "code": "TT",
     "flag": "🇹🇹",
     "tags": [
@@ -2386,6 +2565,7 @@
   },
   {
     "country": "Tunisia",
+    "aliases": [],
     "code": "TN",
     "flag": "🇹🇳",
     "tags": [
@@ -2400,6 +2580,7 @@
   },
   {
     "country": "Turkey",
+    "aliases": [],
     "code": "TR",
     "flag": "🇹🇷",
     "tags": [
@@ -2414,6 +2595,7 @@
   },
   {
     "country": "Turkmenistan",
+    "aliases": [],
     "code": "TM",
     "flag": "🇹🇲",
     "tags": [
@@ -2430,6 +2612,7 @@
   },
   {
     "country": "Tuvalu",
+    "aliases": [],
     "code": "TV",
     "flag": "🇹🇻",
     "tags": [
@@ -2446,6 +2629,7 @@
   },
   {
     "country": "Uganda",
+    "aliases": [],
     "code": "UG",
     "flag": "🇺🇬",
     "tags": [
@@ -2462,6 +2646,7 @@
   },
   {
     "country": "Ukraine",
+    "aliases": [],
     "code": "UA",
     "flag": "🇺🇦",
     "tags": [
@@ -2474,6 +2659,9 @@
   },
   {
     "country": "United Arab Emirates",
+    "aliases": [
+      "Arab Emirates"
+    ],
     "code": "AE",
     "flag": "🇦🇪",
     "tags": [
@@ -2487,6 +2675,9 @@
   },
   {
     "country": "United Kingdom",
+    "aliases": [
+      "Great Britain"
+    ],
     "code": "GB",
     "flag": "🇬🇧",
     "tags": [
@@ -2499,6 +2690,11 @@
   },
   {
     "country": "United States",
+    "aliases": [
+      "USA",
+      "United States of America",
+      "US"
+    ],
     "code": "US",
     "flag": "🇺🇸",
     "tags": [
@@ -2513,6 +2709,7 @@
   },
   {
     "country": "Uruguay",
+    "aliases": [],
     "code": "UY",
     "flag": "🇺🇾",
     "tags": [
@@ -2526,6 +2723,7 @@
   },
   {
     "country": "Uzbekistan",
+    "aliases": [],
     "code": "UZ",
     "flag": "🇺🇿",
     "tags": [
@@ -2543,6 +2741,7 @@
   },
   {
     "country": "Vanuatu",
+    "aliases": [],
     "code": "VU",
     "flag": "🇻🇺",
     "tags": [
@@ -2560,6 +2759,7 @@
   },
   {
     "country": "Vatican City",
+    "aliases": [],
     "code": "VA",
     "flag": "🇻🇦",
     "tags": [
@@ -2575,6 +2775,7 @@
   },
   {
     "country": "Venezuela",
+    "aliases": [],
     "code": "VE",
     "flag": "🇻🇪",
     "tags": [
@@ -2591,6 +2792,7 @@
   },
   {
     "country": "Vietnam",
+    "aliases": [],
     "code": "VN",
     "flag": "🇻🇳",
     "tags": [
@@ -2604,6 +2806,7 @@
   },
   {
     "country": "Yemen",
+    "aliases": [],
     "code": "YE",
     "flag": "🇾🇪",
     "tags": [
@@ -2616,6 +2819,7 @@
   },
   {
     "country": "Zambia",
+    "aliases": [],
     "code": "ZM",
     "flag": "🇿🇲",
     "tags": [
@@ -2630,6 +2834,7 @@
   },
   {
     "country": "Zimbabwe",
+    "aliases": [],
     "code": "ZW",
     "flag": "🇿🇼",
     "tags": [

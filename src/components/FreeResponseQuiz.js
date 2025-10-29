@@ -30,6 +30,44 @@ function levenshtein(a, b) {
     return matrix[bn][an];
 }
 
+// --- NEW FUNCTION TO CHECK ALIASES ---
+function checkAnswer(userGuess, flag, strictSpelling) {
+    const normalizedGuess = userGuess.trim().toLowerCase();
+    if (normalizedGuess === '') return false;
+
+    // Create a list of all possible correct answers
+    const possibleAnswers = [
+        flag.name,
+        ...(flag.aliases || []) // Safely spread aliases
+    ];
+
+    if (strictSpelling) {
+        // Strict check: User's guess must exactly match one of the answers
+        const normalizedAnswers = possibleAnswers.map(ans => ans.toLowerCase());
+        return normalizedAnswers.includes(normalizedGuess);
+    } else {
+        // Levenshtein check: User's guess must be "close enough" to at least one answer
+        for (const answer of possibleAnswers) {
+            const normalizedAnswer = answer.toLowerCase();
+            const distance = levenshtein(normalizedGuess, normalizedAnswer);
+            const maxLength = Math.max(normalizedGuess.length, normalizedAnswer.length);
+
+            if (maxLength === 0) {
+                 // Both strings are empty
+                if (normalizedGuess.length === 0 && normalizedAnswer.length === 0) return true;
+                continue; 
+            }
+
+            const similarity = 1 - (distance / maxLength);
+            if (similarity >= 0.8) {
+                return true; // Found a close-enough match
+            }
+        }
+        return false; // No close match found
+    }
+}
+// --- END OF NEW FUNCTION ---
+
 function FreeResponseQuiz({ allFlagsData, quizFlags, setFlagsData, selectNextFlag, setView, strictSpelling, setQuizCategory, questionHistory, updateQuestionHistory }) {
     const [currentFlag, setCurrentFlag] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -80,21 +118,9 @@ function FreeResponseQuiz({ allFlagsData, quizFlags, setFlagsData, selectNextFla
             return;
         }
 
-        const userAnswer = inputValue.trim().toLowerCase();
-        const correctAnswer = currentFlag.name.toLowerCase();
-        let wasCorrect;
-        if (strictSpelling) {
-            wasCorrect = userAnswer === correctAnswer;
-        } else {
-            const distance = levenshtein(userAnswer, correctAnswer);
-            const maxLength = Math.max(userAnswer.length, correctAnswer.length);
-            if (maxLength === 0) {
-                wasCorrect = true;
-            } else {
-                const similarity = 1 - (distance / maxLength);
-                wasCorrect = similarity >= 0.8;
-            }
-        }
+        // --- THIS LOGIC IS REPLACED ---
+        const wasCorrect = checkAnswer(inputValue, currentFlag, strictSpelling);
+        // --- END OF REPLACEMENT ---
 
         if (!wasCorrect) {
             setIsWiggling(true);

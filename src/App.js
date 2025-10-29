@@ -48,6 +48,7 @@ function App() {
                 ...flag,
                 name: flag.country,
                 file: `${flag.code.toLowerCase()}.svg`,
+                aliases: flag.aliases || [], // <-- THIS LINE IS ADDED
             });
 
             if (savedDataString) {
