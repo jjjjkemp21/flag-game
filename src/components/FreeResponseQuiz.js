@@ -30,7 +30,7 @@ function levenshtein(a, b) {
     return matrix[bn][an];
 }
 
-// --- NEW FUNCTION TO CHECK ALIASES ---
+// --- THIS FUNCTION CHECKS THE NAME AND ALL ALIASES ---
 function checkAnswer(userGuess, flag, strictSpelling) {
     const normalizedGuess = userGuess.trim().toLowerCase();
     if (normalizedGuess === '') return false;
@@ -66,7 +66,7 @@ function checkAnswer(userGuess, flag, strictSpelling) {
         return false; // No close match found
     }
 }
-// --- END OF NEW FUNCTION ---
+// --- END OF FUNCTION ---
 
 function FreeResponseQuiz({ allFlagsData, quizFlags, setFlagsData, selectNextFlag, setView, strictSpelling, setQuizCategory, questionHistory, updateQuestionHistory }) {
     const [currentFlag, setCurrentFlag] = useState(null);
@@ -118,9 +118,7 @@ function FreeResponseQuiz({ allFlagsData, quizFlags, setFlagsData, selectNextFla
             return;
         }
 
-        // --- THIS LOGIC IS MODIFIED TO USE checkAnswer ---
         const wasCorrect = checkAnswer(inputValue, currentFlag, strictSpelling);
-        // --- END OF MODIFICATION ---
 
         if (!wasCorrect) {
             setIsWiggling(true);
@@ -129,7 +127,10 @@ function FreeResponseQuiz({ allFlagsData, quizFlags, setFlagsData, selectNextFla
 
         setAnswered(true);
         setFlashColor(wasCorrect ? 'correct' : 'incorrect');
-        const { message, color, updatedFlags } = update_flag_stats(allFlagsData, currentFlag.name, wasCorrect);
+        
+        // --- MODIFIED: Pass currentFlag (object) instead of just currentFlag.name ---
+        const { message, color, updatedFlags } = update_flag_stats(allFlagsData, currentFlag, wasCorrect);
+        
         const feedbackColor = color === 'green' ? 'var(--correct-color)' : 'var(--incorrect-color)';
         setFlagsData(updatedFlags);
         setFeedback({ message, color: feedbackColor });
@@ -142,7 +143,10 @@ function FreeResponseQuiz({ allFlagsData, quizFlags, setFlagsData, selectNextFla
         if (!currentFlag || answered) return;
         setAnswered(true);
         setFlashColor('incorrect');
-        const { message, color, updatedFlags } = update_flag_stats(allFlagsData, currentFlag.name, false, 'skipped');
+        
+        // --- MODIFIED: Pass currentFlag (object) instead of just currentFlag.name ---
+        const { message, color, updatedFlags } = update_flag_stats(allFlagsData, currentFlag, false, 'skipped');
+
         const feedbackColor = color === 'green' ? 'var(--correct-color)' : 'var(--incorrect-color)';
         setFlagsData(updatedFlags);
         setFeedback({ message, color: feedbackColor });

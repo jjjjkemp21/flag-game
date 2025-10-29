@@ -139,8 +139,11 @@ function calculateNextReview(streak) {
     return Date.now() + milliseconds;
 }
 
-function update_flag_stats(flags, correct_flag_name, user_was_correct, reason = 'answered') {
-    const flagIndex = flags.findIndex(f => f.name === correct_flag_name);
+// --- MODIFIED: Function signature changed to accept the full flag object ---
+function update_flag_stats(flags, correct_flag_object, user_was_correct, reason = 'answered') {
+    // Find the flag using the object's name
+    const flagIndex = flags.findIndex(f => f.name === correct_flag_object.name);
+    
     if (flagIndex === -1) {
         const message = { text: "Error: Flag not found." };
         return { message, color: "red", updatedFlags: flags };
@@ -164,7 +167,17 @@ function update_flag_stats(flags, correct_flag_name, user_was_correct, reason = 
         const text = reason === 'skipped'
             ? `❌ Skipped. The answer was:`
             : `❌ Incorrect. The answer was:`;
-        message = { text, answer: correct_flag_name };
+        
+        // --- NEW: Create a string with all possible correct answers ---
+        const allAnswers = [
+            correct_flag_object.name,
+            ...(correct_flag_object.aliases || [])
+        ].filter(Boolean); // Filter(Boolean) removes any null/empty strings
+        
+        const answerString = allAnswers.join(' / ');
+        // --- END NEW ---
+
+        message = { text, answer: answerString }; // Use the new answerString
         color = "red";
         flag.incorrect += 1;
         flag.lapses = (flag.lapses || 0) + 1;
@@ -179,6 +192,7 @@ function update_flag_stats(flags, correct_flag_name, user_was_correct, reason = 
         if (flag.lapses > LEECH_THRESHOLD) {
             flag.isLeech = true;
             flag.nextReview = Date.now() + (10 * 365 * 24 * 60 * 60 * 1000); 
+            // Update the message text but keep the answerString
             message.text = `This flag seems tricky, so we'll set it aside for now. The answer was:`;
         } else {
             flag.nextReview = Date.now();
