@@ -118,9 +118,9 @@ function FreeResponseQuiz({ allFlagsData, quizFlags, setFlagsData, selectNextFla
             return;
         }
 
-        // --- THIS LOGIC IS REPLACED ---
+        // --- THIS LOGIC IS MODIFIED TO USE checkAnswer ---
         const wasCorrect = checkAnswer(inputValue, currentFlag, strictSpelling);
-        // --- END OF REPLACEMENT ---
+        // --- END OF MODIFICATION ---
 
         if (!wasCorrect) {
             setIsWiggling(true);

@@ -1085,7 +1085,7 @@
   },
   {
     "country": "India",
-    "aliases": ["Poop Face"],
+    "aliases": [],
     "code": "IN",
     "flag": "🇮🇳",
     "tags": [
@@ -2379,7 +2379,7 @@
   },
   {
     "country": "Sri Lanka",
-    "aliases": ["Poop Face"],
+    "aliases": [],
     "code": "LK",
     "flag": "🇱🇰",
     "tags": [
@@ -2434,7 +2434,6 @@
   {
     "country": "Syria",
     "aliases": [],
-
     "code": "SY",
     "flag": "🇸🇾",
     "tags": [
@@ -2659,9 +2658,7 @@
   },
   {
     "country": "United Arab Emirates",
-    "aliases": [
-      "Arab Emirates"
-    ],
+    "aliases": [],
     "code": "AE",
     "flag": "🇦🇪",
     "tags": [
@@ -2691,9 +2688,7 @@
   {
     "country": "United States",
     "aliases": [
-      "USA",
-      "United States of America",
-      "US"
+      "United States of America"
     ],
     "code": "US",
     "flag": "🇺🇸",
