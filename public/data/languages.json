@@ -369,5 +369,26 @@
     "alphabet": "Latin",
     "regions": ["Europe"],
     "distractors": ["Finnish", "Hungarian", "Swedish"]
+  },
+  {
+	"name": "Maltese",
+	"family": "Semitic",
+	"alphabet": "Latin",
+	"regions": ["Europe"],
+	"distractors": ["Hebrew","Italian","Catalan"]
+  },
+  {
+	"name": "Lithuanian",
+	"family": "Baltic",
+	"alphabet": "Latin",
+	"regions": ["Europe"],
+	"distractors": ["Latvian","Slovak","Polish"]
+  },
+  {
+	"name": "Latvian",
+	"family": "Baltic",
+	"alphabet": "Latin",
+	"regions": ["Europe"],
+	"distractors": ["Lithuanian","Slovak","Polish"]
   }
 ]

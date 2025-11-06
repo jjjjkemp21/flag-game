@@ -634,5 +634,32 @@
     "Kas me saaksime arve, palun? Meil on natuke kiire.",
     "Vaade sellelt künkalt on hingematvalt ilus.",
     "Ma sooviksin broneerida laua kahele tänaseks õhtuks."
-  ]
+  ],
+  "Maltese": [
+	"Inħobb immur fil-bajja kull nhar.",
+	"Se niltaqa’ mal-ħbieb fil-kafè.",
+	"Qrajt ktieb ġdid dalgħodu filgħaxija.",
+	"Nista’ nieklu ikla ħafifa issa.",
+	"Għada se mmur ix-xiri fil-ħanut.",
+	"Il-kafè huwa sħun ħafna llum.",
+	"Il-baħar huwa kalm u sabiħ."
+	],
+	"Lithuanian": [
+    "Rytoj eisiu į parduotuvę nusipirkti šviežių obuolių.",
+    "Mano draugas gyvena netoli nuo didelio parko.",
+    "Šiandien oras labai gražus ir saulėtas.",
+    "Aš mokausi lietuvių kalbos kiekvieną dieną.",
+    "Mes keliausime į kitą miestą šią savaitę.",
+	"Ji mėgsta klausytis muzikos prieš miegą vakare.",
+	"Vaikai žaidžia kieme su draugais po pamokų."
+  ],
+  "Latvian": [
+	"Es eju uz veikalu nopirkt svaigus dārzeņus.",
+	"Mana draudzene dzīvo netālu no liela parka.",
+	"Šodien ir silts un saulains skaists laiks.",
+	"Es mācos latviešu valodu katru dienu mājās.",
+	"Rīt mēs dosimies uz citu pilsētu kopā.",
+	"Viņa patīk klausīties mūziku pirms gulētiešanas.",
+	"Bērni spēlējas pagalmā ar draugiem pēc skolas."
+	]
 }
