@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { checkAnswer } from '../answer_check';
+import './Menu.css';
 import './QuizStyles.css';
 import './PixelatedQuiz.css';
 
