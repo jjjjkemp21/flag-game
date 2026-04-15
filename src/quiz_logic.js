@@ -139,14 +139,32 @@ function calculateNextReview(streak) {
     return Date.now() + milliseconds;
 }
 
-// --- MODIFIED: Function signature changed to accept the full flag object ---
 function update_flag_stats(flags, correct_flag_object, user_was_correct, reason = 'answered') {
-    // Find the flag using the object's name
-    const flagIndex = flags.findIndex(f => f.name === correct_flag_object.name);
-    
+    // Accept either a flag object or a plain name string for backwards compatibility.
+    const target = typeof correct_flag_object === 'string'
+        ? { name: correct_flag_object }
+        : (correct_flag_object || {});
+
+    // Prefer matching by `code` (stable canonical ID) and fall back to `name`.
+    let flagIndex = -1;
+    if (target.code) {
+        flagIndex = flags.findIndex(f => f.code === target.code);
+    }
+    if (flagIndex === -1 && target.name) {
+        flagIndex = flags.findIndex(f => f.name === target.name);
+    }
+    if (flagIndex === -1 && target.country) {
+        flagIndex = flags.findIndex(f => f.country === target.country);
+    }
+
     if (flagIndex === -1) {
-        const message = { text: "Error: Flag not found." };
-        return { message, color: "red", updatedFlags: flags };
+        console.warn('update_flag_stats: flag not found', target);
+        const fallbackName = target.name || target.country || 'this flag';
+        const message = {
+            text: user_was_correct ? 'Correct! The answer was:' : 'The answer was:',
+            answer: fallbackName,
+        };
+        return { message, color: user_was_correct ? 'green' : 'red', updatedFlags: flags };
     }
 
     const updatedFlags = JSON.parse(JSON.stringify(flags));
@@ -155,9 +173,11 @@ function update_flag_stats(flags, correct_flag_object, user_was_correct, reason 
 
     flag.lastAnswered = Date.now();
 
+    // Build the answer string from the canonical (found) flag so it always
+    // reflects the latest name + aliases, even if the caller passed a string.
     const allAnswers = [
-        correct_flag_object.name,
-        ...(correct_flag_object.aliases || [])
+        flag.name || flag.country,
+        ...(flag.aliases || []),
     ].filter(Boolean);
     const answerString = allAnswers.join(' / ');
 

@@ -29,9 +29,12 @@ function Stats({ flagsData }) {
     const learningCount = flagsData.filter(f => f.streak > learningThreshold && f.streak <= masteredThreshold).length;
     const needsPracticeCount = flagsData.filter(f => f.streak <= learningThreshold).length;
 
-    const sortedByKnowledge = [...flagsData].sort((a, b) => b.streak - a.streak);
-    const bestKnown = sortedByKnowledge.length > 0 ? sortedByKnowledge[0] : null;
-    const worstKnown = sortedByKnowledge.length > 0 ? sortedByKnowledge[sortedByKnowledge.length - 1] : null;
+    // Only surface Best/Worst once the user has actually answered flags.
+    const answeredFlags = flagsData.filter(f => (f.correct || 0) + (f.incorrect || 0) > 0);
+    const hasAnswered = answeredFlags.length > 0;
+    const sortedByKnowledge = [...answeredFlags].sort((a, b) => b.streak - a.streak);
+    const bestKnown = hasAnswered ? sortedByKnowledge[0] : null;
+    const worstKnown = hasAnswered ? sortedByKnowledge[sortedByKnowledge.length - 1] : null;
 
     return (
         <div className="stats-box">
@@ -71,11 +74,13 @@ function Stats({ flagsData }) {
                 </div>
             </div>
 
-            {bestKnown && worstKnown && (
+            {hasAnswered && (
                 <div className="stats-details">
                     <h3 className="stats-subtitle">Knowledge</h3>
                     <p><strong>Best:</strong> {bestKnown.name} (Streak: {bestKnown.streak})</p>
-                    <p><strong>Needs Practice:</strong> {worstKnown.name} (Streak: {worstKnown.streak})</p>
+                    {worstKnown && worstKnown !== bestKnown && (
+                        <p><strong>Needs Practice:</strong> {worstKnown.name} (Streak: {worstKnown.streak})</p>
+                    )}
                 </div>
             )}
         </div>
