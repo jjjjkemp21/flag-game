@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import Icon from './Icon';
 import './Menu.css';
 import './QuizStyles.css';
 import './LanguageQuizStyles.css';
@@ -93,15 +94,19 @@ function LanguageQuiz({ setView }) {
         if (answerName === currentQuestion.language) {
             const newScore = score + 1;
             setScore(newScore);
-            setScorePop(true); // --- Trigger score pop ---
-            setTimeout(() => setScorePop(false), 300); // --- Reset score pop ---
+            setScorePop(true);
+            setTimeout(() => setScorePop(false), 300);
 
-            setFeedback({ text: '✅ Correct!', color: 'var(--correct-color)' });
+            setFeedback({
+                text: 'Correct! The language was:',
+                answer: currentQuestion.language,
+                color: 'var(--correct-color)',
+            });
             setAnswerStatus({ [answerName]: 'correct' });
-            setFlashColor('correct'); // --- Trigger green flash ---
-            setTimeout(nextQuestion, 1000);
+            setFlashColor('correct');
+            setTimeout(nextQuestion, 1500);
         } else {
-            setFlashColor('incorrect'); // --- Trigger red flash ---
+            setFlashColor('incorrect');
             setAnswerStatus({
                 [answerName]: 'incorrect',
                 [currentQuestion.language]: 'correct'
@@ -109,16 +114,19 @@ function LanguageQuiz({ setView }) {
 
             const newLives = lives - 1;
             setLives(newLives);
-            setLifeLostIndex(TOTAL_LIVES - lives); // --- Trigger life shake ---
-            setFeedback({ text: `❌ Incorrect! It was ${currentQuestion.language}.`, color: 'var(--incorrect-color)' });
+            setLifeLostIndex(TOTAL_LIVES - lives);
+            setFeedback({
+                text: 'Incorrect. The language was:',
+                answer: currentQuestion.language,
+                color: 'var(--incorrect-color)',
+            });
 
             if (newLives <= 0) {
-                setIsGameOver(true);
                 if (score > highScore) {
                     setHighScore(score);
                     localStorage.setItem(HIGH_SCORE_KEY, score.toString());
-                    // setShowConfetti(true); // --- REMOVED ---
                 }
+                setTimeout(() => setIsGameOver(true), 1800);
             } else {
                 setTimeout(nextQuestion, 1500);
             }
@@ -150,22 +158,28 @@ function LanguageQuiz({ setView }) {
 
 
     if (isLoading) {
-        return <div className="quiz-box language-quiz-box"><h2>Loading Languages... 🌍</h2></div>;
+        return <div className="loading-box">Loading languages…</div>;
     }
 
 
     if (isGameOver) {
         return (
             <div className="quiz-box language-quiz-box game-over-box">
-                {/* --- REMOVED CONFETTI --- */}
-                <button className="back-button" onClick={() => setView('bonus-menu')}>←</button>
+                <button className="back-button" onClick={() => setView('bonus-menu')} aria-label="Back">
+                    <Icon name="arrow_back" variant="primary" />
+                </button>
+                <Icon name="translate" variant="primary" size="xl" pop />
                 <h1 className="menu-title">Game Over!</h1>
                 <p className="final-score-lang">Final Score: {score}</p>
                 <p className="high-score-lang">High Score: {highScore}</p>
-                {score > highScore && <p className="new-high-score-lang">🎉 New High Score! 🎉</p>}
+                {score > highScore && (
+                    <p className="new-high-score-lang">
+                        <Icon name="emoji_events" variant="highlight" size="lg" pop /> New High Score!
+                    </p>
+                )}
                 <div className="menu-options" style={{ marginTop: '20px' }}>
                     <button className="menu-button c1" onClick={handlePlayAgain}>
-                        Play Again? 🔁
+                        <Icon name="replay" variant="primary" /> Play Again
                     </button>
                 </div>
             </div>
@@ -174,21 +188,20 @@ function LanguageQuiz({ setView }) {
 
 
     if (!currentQuestion) {
-        return <div className="quiz-box language-quiz-box"><h2>Preparing quiz... 🤔</h2></div>;
+        return <div className="loading-box">Preparing quiz…</div>;
     }
 
 
     return (
-        // --- Apply flash class ---
         <div className={`quiz-box language-quiz-box ${flashColor ? `flash-${flashColor}` : ''}`}>
-            <button className="back-button" onClick={() => setView('bonus-menu')}>←</button>
+            <button className="back-button" onClick={() => setView('bonus-menu')} aria-label="Back">
+                <Icon name="arrow_back" variant="primary" />
+            </button>
             <div className="quiz-header language-header">
                 {renderLives()}
-                {/* --- Apply score pop class --- */}
                 <div className={`quiz-score ${scorePop ? 'pop' : ''}`}>Score: {score}</div>
             </div>
 
-            {/* --- Add key to trigger re-render animation --- */}
             <div className="phrase-container" key={currentQuestion.phrase}>
                 <h2 className="phrase-text">
                     "{currentQuestion.phrase}"
@@ -196,9 +209,14 @@ function LanguageQuiz({ setView }) {
             </div>
             <p className="menu-subtitle language-subtitle">Which language is this?</p>
 
-            <p className="feedback-label language-feedback" style={{ color: feedback.color }}>
-                {feedback.text}
-            </p>
+            <div className="feedback-label language-feedback" style={{ color: feedback.color }}>
+                <div className="feedback-row">
+                    {flashColor === 'correct' && <Icon name="check_circle" variant="correct" size="lg" pop />}
+                    {flashColor === 'incorrect' && <Icon name="cancel" variant="incorrect" size="lg" pop />}
+                    <span>{feedback.text}</span>
+                </div>
+                {feedback.answer && <span className="feedback-answer">{feedback.answer}</span>}
+            </div>
 
             <div className="options-box language-options">
                 {options.map((option) => (

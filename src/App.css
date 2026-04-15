@@ -173,6 +173,17 @@ body {
     box-shadow: var(--focus-ring);
 }
 
+.back-button.menu-back-button {
+    align-self: center;
+    margin-top: var(--space-sm);
+    margin-bottom: 0;
+    padding: var(--space-sm) var(--space-lg);
+    font-size: 1em;
+    font-weight: 600;
+    gap: var(--space-xs);
+    color: var(--primary-color);
+}
+
 /* Shared loading state */
 .loading-box {
     width: 100%;

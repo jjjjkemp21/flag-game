@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import Icon from './Icon';
 import './Menu.css';
 
 const formatCategoryName = (name) => {
@@ -82,7 +83,9 @@ function QuizMenu({ setView, setQuizCategory, flagsData, quizMode }) {
 
     return (
         <div className="main-menu-box">
-            <button className="back-button" onClick={() => setView('menu')}>←</button>
+            <button className="back-button" onClick={() => setView('menu')} aria-label="Back">
+                <Icon name="arrow_back" variant="primary" />
+            </button>
             <h1 className="menu-title">Choose a Deck</h1>
             <p className="menu-subtitle">Select a set of flags to begin your quiz.</p>
             

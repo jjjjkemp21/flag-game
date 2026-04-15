@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { update_flag_stats } from '../quiz_logic';
 import { checkAnswer } from '../answer_check';
+import Icon from './Icon';
 import './QuizStyles.css';
 
 const IMAGE_BASE_URL = './assets/flags/';
@@ -99,8 +100,11 @@ function FreeResponseQuiz({ allFlagsData, quizFlags, setFlagsData, selectNextFla
     if (!currentFlag) {
         return (
             <div className="quiz-box">
-                <button className="back-button" onClick={handleBack}>←</button>
-                <h1>You're all done for now. Great job! 🎉</h1>
+                <button className="back-button" onClick={handleBack} aria-label="Back">
+                    <Icon name="arrow_back" variant="primary" />
+                </button>
+                <Icon name="celebration" variant="highlight" size="xl" pop />
+                <h1>You're all done for now. Great job!</h1>
                 <p style={{ textAlign: 'center' }}>Come back later to review more flags.</p>
             </div>
         );
@@ -108,16 +112,22 @@ function FreeResponseQuiz({ allFlagsData, quizFlags, setFlagsData, selectNextFla
 
     return (
         <div className={`quiz-box ${flashColor ? `flash-${flashColor}` : ''}`}>
-            <button className="back-button" onClick={handleBack}>←</button>
+            <button className="back-button" onClick={handleBack} aria-label="Back">
+                <Icon name="arrow_back" variant="primary" />
+            </button>
             <img
                 src={`${IMAGE_BASE_URL}${currentFlag.file}`}
                 alt="Flag"
                 className="flag-image"
             />
-            <p className="feedback-label" style={{ color: feedback.color }}>
-                <span>{feedback.message.text}</span>
+            <div className="feedback-label" style={{ color: feedback.color }}>
+                <div className="feedback-row">
+                    {flashColor === 'correct' && <Icon name="check_circle" variant="correct" size="lg" pop />}
+                    {flashColor === 'incorrect' && <Icon name="cancel" variant="incorrect" size="lg" pop />}
+                    <span>{feedback.message.text}</span>
+                </div>
                 {feedback.message.answer && <span className="feedback-answer">{feedback.message.answer}</span>}
-            </p>
+            </div>
             <form onSubmit={handleSubmit} className="response-form">
                 <input
                     ref={inputRef}

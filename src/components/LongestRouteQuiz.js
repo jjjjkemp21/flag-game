@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { checkAnswer } from '../answer_check';
+import Icon from './Icon';
 import './Menu.css';
 import './QuizStyles.css';
 import './PixelatedQuiz.css';
@@ -189,26 +190,32 @@ function LongestRouteQuiz({ allFlagsData, setView }) {
             setInputValue('');
 
             if (newIndex === quizPath.length) {
-                setGameOver(true);
-                setShowGameOverScreen(true);
-                setIsWin(true);
-                setFeedback({ message: { text: "✅ Perfect Run! You completed the entire chain!" }, color: 'var(--correct-color)' });
+                const finalFlagName = currentFlag.name;
+                setFeedback({ message: { text: 'Perfect Run! The final flag was:', answer: finalFlagName }, color: 'var(--correct-color)' });
                 const finalScore = quizPath.length;
                 if (finalScore > longestRouteHighScore) {
                     localStorage.setItem('longestRouteHighScore', finalScore.toString());
                     setLongestRouteHighScore(finalScore);
                 }
+                setGameOver(true);
+                setIsWin(true);
+                if (gameOverTimeoutRef.current) {
+                    clearTimeout(gameOverTimeoutRef.current);
+                }
+                gameOverTimeoutRef.current = setTimeout(() => {
+                    setShowGameOverScreen(true);
+                }, GAME_OVER_DELAY);
             } else {
-                setFeedback({ message: { text: "✅ Correct!" }, color: 'var(--correct-color)' });
+                setFeedback({ message: { text: 'Correct! That was:', answer: currentFlag.name }, color: 'var(--correct-color)' });
                 setInputValue('');
-                
+
                 setTimeout(() => {
                     if (gameOver) return;
 
                     setCurrentPathIndex(newIndex);
                     const nextFlagName = quizPath[newIndex];
                     const nextFlagObject = flagMapByName.current.get(nextFlagName);
-                    
+
                     if (!nextFlagObject) {
                         console.error("Error during game: Could not find flag data for", nextFlagName);
                         triggerGameOverSequence({ message: { text: `Error finding next flag: ${nextFlagName}. Game Over.` }, color: 'var(--incorrect-color)' });
@@ -218,17 +225,17 @@ function LongestRouteQuiz({ allFlagsData, setView }) {
                     setCurrentFlag(nextFlagObject);
                     setFlashColor(null);
                     setFeedback({ message: { text: "What country is this?" }, color: 'var(--text-color)' });
-                
+
                 }, 2000);
             }
         } else {
-            triggerGameOverSequence({ message: { text: `❌ Incorrect. The answer was:`, answer: currentFlag.name }, color: 'var(--incorrect-color)' });
+            triggerGameOverSequence({ message: { text: 'Incorrect. The answer was:', answer: currentFlag.name }, color: 'var(--incorrect-color)' });
         }
     };
 
     const handleSkip = () => {
-        if (!currentFlag || gameOver) return; 
-        triggerGameOverSequence({ message: { text: `❌ Skipped. The answer was:`, answer: currentFlag.name }, color: 'var(--incorrect-color)' });
+        if (!currentFlag || gameOver) return;
+        triggerGameOverSequence({ message: { text: 'Skipped. The answer was:', answer: currentFlag.name }, color: 'var(--incorrect-color)' });
     };
 
     useEffect(() => {
@@ -245,36 +252,32 @@ function LongestRouteQuiz({ allFlagsData, setView }) {
     };
 
     if (isLoading || !allRoutes || flagMapByName.current.size === 0) {
-        return (
-            <div className="pixel-notification-overlay">
-                <div className="pixel-notification-box quiz-box">
-                    <h2>Loading Routes...</h2>
-                    <p>Please wait, loading pre-calculated country routes...</p>
-                </div>
-            </div>
-        );
+        return <div className="loading-box">Loading routes…</div>;
     }
-    
+
     if (routeKeys.length === 0) {
         return (
             <div className="pixel-notification-overlay">
                 <div className="pixel-notification-box quiz-box">
                     <h2>No Routes Found</h2>
                     <p>The pre-calculated routes file seems to be empty or missing long enough paths.</p>
-                    <button className="back-button" onClick={backToMenu} style={{ position: 'static', marginTop: '10px' }}>← Back to Menu</button>
+                    <button className="back-button menu-back-button" onClick={backToMenu}>
+                        <Icon name="arrow_back" variant="primary" /> Back to Menu
+                    </button>
                 </div>
             </div>
         );
     }
-    
+
     return (
         <>
-            <div 
+            <div
                 className="pixel-notification-overlay"
                 style={{ display: (!gameStarted || (gameOver && showGameOverScreen)) ? 'flex' : 'none' }}
             >
                 {!gameStarted && (
                     <div className="pixel-notification-box quiz-box">
+                        <Icon name="route" variant="primary" size="xl" />
                         <h2 className="menu-title" style={{ marginTop: 0 }}>Longest Route</h2>
                         <p className="pixel-high-score">High Score: {longestRouteHighScore}</p>
                         <p>We've loaded <strong style={{color: 'var(--primary-color)'}}>{routeKeys.length}</strong> pre-calculated routes. You'll be quizzed on one!</p>
@@ -284,7 +287,9 @@ function LongestRouteQuiz({ allFlagsData, setView }) {
                             <li>Complete an entire chain to set a new high score!</li>
                         </ul>
                         <button className="response-submit" onClick={startGame}>Start Challenge</button>
-                        <button className="back-button" onClick={backToMenu} style={{ position: 'static', marginTop: '10px' }}>← Back to Menu</button>
+                        <button className="back-button menu-back-button" onClick={backToMenu}>
+                            <Icon name="arrow_back" variant="primary" /> Back to Menu
+                        </button>
                     </div>
                 )}
 
@@ -292,16 +297,20 @@ function LongestRouteQuiz({ allFlagsData, setView }) {
                     <div className="pixel-game-over pixel-notification-box quiz-box">
                         {isWin ? (
                             <>
+                                <Icon name="military_tech" variant="highlight" size="xl" pop />
                                 <h2>You did it!</h2>
                                 <p className="pixel-final-score">Chain Complete: {score}</p>
                                 {score > longestRouteHighScore ? (
-                                    <p className="pixel-new-high-score">🎉 New High Score! 🎉</p>
+                                    <p className="pixel-new-high-score">
+                                        <Icon name="emoji_events" variant="highlight" size="lg" pop /> New High Score!
+                                    </p>
                                 ) : (
                                     <p className="pixel-high-score">High Score: {longestRouteHighScore}</p>
                                 )}
                             </>
                         ) : (
                             <>
+                                <Icon name="sentiment_dissatisfied" variant="incorrect" size="xl" />
                                 <h2>Game Over!</h2>
                                 <p className="pixel-final-score">Your chain: {score}</p>
                                 <p className="pixel-high-score">Path length was: {quizPath.length}</p>
@@ -331,23 +340,29 @@ function LongestRouteQuiz({ allFlagsData, setView }) {
                         )}
 
                         <button className="response-submit" onClick={resetGame}>Play Again</button>
-                        <button className="back-button" onClick={backToMenu} style={{ position: 'static', marginTop: '10px' }}>← Back to Menu</button>
+                        <button className="back-button menu-back-button" onClick={backToMenu}>
+                            <Icon name="arrow_back" variant="primary" /> Back to Menu
+                        </button>
                     </div>
                 )}
             </div>
 
-            <div 
+            <div
                 className={`quiz-box longest-route-quiz-box ${flashColor ? `flash-${flashColor}` : ''}`}
                 style={{ display: (gameStarted && !(gameOver && showGameOverScreen)) ? 'flex' : 'none' }}
             >
                 {!currentFlag ? (
                     <>
-                        <button className="back-button" onClick={backToMenu}>←</button>
+                        <button className="back-button" onClick={backToMenu} aria-label="Back">
+                            <Icon name="arrow_back" variant="primary" />
+                        </button>
                         <h1>Error loading flag...</h1>
                     </>
                 ) : (
                     <>
-                        <button className="back-button" onClick={backToMenu}>←</button>
+                        <button className="back-button" onClick={backToMenu} aria-label="Back">
+                            <Icon name="arrow_back" variant="primary" />
+                        </button>
                         <div className="quiz-header">
                             <span className={`quiz-score ${scorePop ? 'pop' : ''}`}>Chain: {score} / {quizPath.length}</span>
                         </div>
@@ -357,11 +372,15 @@ function LongestRouteQuiz({ allFlagsData, setView }) {
                             alt="Flag"
                             className="flag-image pop-in"
                         />
-                        
-                        <p className="feedback-label" style={{ color: feedback.color }}>
-                            <span>{feedback.message.text}</span>
+
+                        <div className="feedback-label" style={{ color: feedback.color }}>
+                            <div className="feedback-row">
+                                {flashColor === 'correct' && <Icon name="check_circle" variant="correct" size="lg" pop />}
+                                {flashColor === 'incorrect' && <Icon name="cancel" variant="incorrect" size="lg" pop />}
+                                <span>{feedback.message.text}</span>
+                            </div>
                             {feedback.message.answer && <span className="feedback-answer">{feedback.message.answer}</span>}
-                        </p>
+                        </div>
 
                         <form onSubmit={handleSubmit} className="response-form">
                             <input

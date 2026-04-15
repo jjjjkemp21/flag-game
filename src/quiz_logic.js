@@ -155,8 +155,14 @@ function update_flag_stats(flags, correct_flag_object, user_was_correct, reason 
 
     flag.lastAnswered = Date.now();
 
+    const allAnswers = [
+        correct_flag_object.name,
+        ...(correct_flag_object.aliases || [])
+    ].filter(Boolean);
+    const answerString = allAnswers.join(' / ');
+
     if (user_was_correct) {
-        message = { text: "✅ Correct!" };
+        message = { text: "Correct! The answer was:", answer: answerString };
         color = "green";
         flag.correct += 1;
         flag.streak += 1;
@@ -165,19 +171,10 @@ function update_flag_stats(flags, correct_flag_object, user_was_correct, reason 
         flag.nextReview = calculateNextReview(flag.streak);
     } else {
         const text = reason === 'skipped'
-            ? `❌ Skipped. The answer was:`
-            : `❌ Incorrect. The answer was:`;
-        
-        // --- NEW: Create a string with all possible correct answers ---
-        const allAnswers = [
-            correct_flag_object.name,
-            ...(correct_flag_object.aliases || [])
-        ].filter(Boolean); // Filter(Boolean) removes any null/empty strings
-        
-        const answerString = allAnswers.join(' / ');
-        // --- END NEW ---
+            ? 'Skipped. The answer was:'
+            : 'Incorrect. The answer was:';
 
-        message = { text, answer: answerString }; // Use the new answerString
+        message = { text, answer: answerString };
         color = "red";
         flag.incorrect += 1;
         flag.lapses = (flag.lapses || 0) + 1;
@@ -191,9 +188,8 @@ function update_flag_stats(flags, correct_flag_object, user_was_correct, reason 
         const LEECH_THRESHOLD = 4;
         if (flag.lapses > LEECH_THRESHOLD) {
             flag.isLeech = true;
-            flag.nextReview = Date.now() + (10 * 365 * 24 * 60 * 60 * 1000); 
-            // Update the message text but keep the answerString
-            message.text = `This flag seems tricky, so we'll set it aside for now. The answer was:`;
+            flag.nextReview = Date.now() + (10 * 365 * 24 * 60 * 60 * 1000);
+            message.text = "This flag seems tricky, so we'll set it aside for now. The answer was:";
         } else {
             flag.nextReview = Date.now();
         }

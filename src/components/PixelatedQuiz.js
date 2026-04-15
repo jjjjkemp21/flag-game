@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { checkAnswer } from '../answer_check';
+import Icon from './Icon';
 import './PixelatedQuiz.css';
 import './QuizStyles.css';
 
@@ -76,8 +77,21 @@ function PixelatedQuiz({ allFlagsData, setView }) {
             setGameTimer(prev => {
                 const newTime = prev - 1000;
                 if (newTime <= 0) {
-                    setGameOver(true);
                     clearInterval(timerId);
+                    if (!flagOver && currentFlag) {
+                        setIsCorrect(false);
+                        setFlashColor('incorrect');
+                        setFeedback({
+                            text: `Time's up! The answer was ${currentFlag.name}.`,
+                            color: 'var(--incorrect-color)'
+                        });
+                        setRevealIndex(BLUR_LEVELS.length - 1);
+                        setFlagOver(true);
+                        clearTimeout(nextFlagTimeoutRef.current);
+                        nextFlagTimeoutRef.current = setTimeout(() => setGameOver(true), NEXT_FLAG_DELAY_MS);
+                    } else {
+                        setGameOver(true);
+                    }
                     return 0;
                 }
                 return newTime;
@@ -85,7 +99,7 @@ function PixelatedQuiz({ allFlagsData, setView }) {
         }, 1000);
 
         return () => clearInterval(timerId);
-    }, [gameStarted, gameOver]);
+    }, [gameStarted, gameOver, flagOver, currentFlag]);
 
     useEffect(() => {
         if (gameStarted && !gameOver && !flagOver && inputRef.current) {
@@ -119,7 +133,7 @@ function PixelatedQuiz({ allFlagsData, setView }) {
         setIsCorrect(false);
         setFlashColor('incorrect');
         triggerScoreAnimation(POINTS_SKIP);
-        setFeedback({ text: `Skipped! It was ${currentFlag.name}.`, color: 'var(--incorrect-color)' });
+        setFeedback({ text: `Skipped. The answer was ${currentFlag.name}.`, color: 'var(--incorrect-color)' });
         setRevealIndex(BLUR_LEVELS.length - 1);
         setFlagOver(true);
         nextFlagTimeoutRef.current = setTimeout(nextFlag, NEXT_FLAG_DELAY_MS);
@@ -167,7 +181,7 @@ function PixelatedQuiz({ allFlagsData, setView }) {
             if (newLivesRemaining <= 0) {
                 setIsCorrect(false);
                 setFlashColor('incorrect');
-                setFeedback({ text: `❌ Out of guesses! It was ${currentFlag.name}.`, color: 'var(--incorrect-color)' });
+                setFeedback({ text: `Out of guesses! It was ${currentFlag.name}.`, color: 'var(--incorrect-color)' });
                 setRevealIndex(BLUR_LEVELS.length - 1);
                 setFlagOver(true);
                 clearTimeout(nextFlagTimeoutRef.current);
@@ -178,7 +192,7 @@ function PixelatedQuiz({ allFlagsData, setView }) {
                 const nextRevealIndex = Math.min(revealIndex + 1, BLUR_LEVELS.length - 1);
                 setRevealIndex(nextRevealIndex);
                 setFeedback({
-                    text: !trimmedInput ? '❌ Empty guess! Try again.' : '❌ Incorrect. Try again!',
+                    text: !trimmedInput ? 'Empty guess. Try again.' : 'Incorrect. Try again!',
                     color: 'var(--incorrect-color)'
                 });
             }
@@ -187,7 +201,7 @@ function PixelatedQuiz({ allFlagsData, setView }) {
             setFlashColor('correct');
             const points = POINTS_CORRECT[attemptIndex];
             triggerScoreAnimation(points);
-            setFeedback({ text: `✅ Correct! It was ${currentFlag.name}.`, color: 'var(--correct-color)' });
+            setFeedback({ text: `Correct! It was ${currentFlag.name}.`, color: 'var(--correct-color)' });
             setRevealIndex(BLUR_LEVELS.length - 1);
             setFlagOver(true);
             clearTimeout(nextFlagTimeoutRef.current);
@@ -218,6 +232,7 @@ function PixelatedQuiz({ allFlagsData, setView }) {
             >
                 {showNotification && (
                     <div className="pixel-notification-box quiz-box">
+                        <Icon name="blur_on" variant="primary" size="xl" />
                         <h2>Pixelated Guess!</h2>
                         <p className="pixel-high-score">High Score: {highScore}</p>
                         <p>You have 180 seconds to guess as many flags as you can.</p>
@@ -231,20 +246,27 @@ function PixelatedQuiz({ allFlagsData, setView }) {
                         </ul>
                         <p className="pixel-tip">Tip: Press '1' to quickly Skip (-3 points).</p>
                         <button className="response-submit" onClick={startGame}>Start Game</button>
-                        <button className="back-button" onClick={handleBack} style={{ position: 'static', marginTop: '10px' }}>← Back to Menu</button>
+                        <button className="back-button menu-back-button" onClick={handleBack}>
+                            <Icon name="arrow_back" variant="primary" /> Back to Menu
+                        </button>
                     </div>
                 )}
 
                 {gameOver && (
                     <div className="pixel-game-over pixel-notification-box quiz-box">
+                        <Icon name="timer_off" variant="highlight" size="xl" pop />
                         <h2>Time's Up!</h2>
                         <p className="pixel-final-score">Final Score: {score}</p>
                         <p className="pixel-high-score">High Score: {highScore}</p>
                         {score > highScore && (
-                            <p className="pixel-new-high-score">🎉 New High Score! 🎉</p>
+                            <p className="pixel-new-high-score">
+                                <Icon name="emoji_events" variant="highlight" size="lg" pop /> New High Score!
+                            </p>
                         )}
                         <button className="response-submit" onClick={startGame}>Play Again</button>
-                        <button className="back-button" onClick={handleBack} style={{ position: 'static', marginTop: '10px' }}>← Back to Menu</button>
+                        <button className="back-button menu-back-button" onClick={handleBack}>
+                            <Icon name="arrow_back" variant="primary" /> Back to Menu
+                        </button>
                     </div>
                 )}
             </div>
@@ -255,13 +277,15 @@ function PixelatedQuiz({ allFlagsData, setView }) {
                 style={{ display: (showNotification || gameOver) ? 'none' : 'flex' }}
             >
                 {!currentFlag ? (
-                    <h2>Loading Game...</h2>
+                    <div className="loading-box">Loading game…</div>
                 ) : (
                     <>
                         <div className="pixel-game-header">
-                            <button className="back-button" onClick={handleBack}>←</button>
+                            <button className="back-button" onClick={handleBack} aria-label="Back">
+                                <Icon name="arrow_back" variant="primary" />
+                            </button>
                             <div className="pixel-game-timer">
-                                Time: {formatTime(gameTimer)}
+                                <Icon name="schedule" variant="highlight" /> {formatTime(gameTimer)}
                             </div>
                             <div className="pixel-score">
                                 Score: {score}
@@ -297,9 +321,13 @@ function PixelatedQuiz({ allFlagsData, setView }) {
                             ))}
                         </div>
 
-                        <p className="feedback-label" style={{ color: feedback.color, minHeight: '30px', marginBottom: '15px' }}>
-                            {feedback.text}
-                        </p>
+                        <div className="feedback-label pixel-feedback" style={{ color: feedback.color }}>
+                            <div className="feedback-row">
+                                {flashColor === 'correct' && <Icon name="check_circle" variant="correct" size="lg" pop />}
+                                {flashColor === 'incorrect' && <Icon name="cancel" variant="incorrect" size="lg" pop />}
+                                <span>{feedback.text}</span>
+                            </div>
+                        </div>
 
                         <form onSubmit={handleSubmit} className="response-form">
                             <input

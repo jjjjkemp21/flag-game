@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Icon from './Icon';
 import './Menu.css';
 import './QuizStyles.css';
 
@@ -22,7 +23,9 @@ function BonusMenu({ setView }) {
 
     return (
         <div className="quiz-box bonus-menu-box">
-            <button className="back-button" onClick={() => setView('menu')}>←</button>
+            <button className="back-button" onClick={() => setView('menu')} aria-label="Back">
+                <Icon name="arrow_back" variant="primary" />
+            </button>
             <h1 className="menu-title">Bonus Modes</h1>
             <p className="menu-subtitle">Try a fun challenge!</p>
             <div className="menu-options">

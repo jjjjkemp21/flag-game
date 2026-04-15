@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { checkAnswer } from '../answer_check';
+import Icon from './Icon';
 import './FrenzyQuiz.css';
 import './QuizStyles.css';
 
@@ -224,30 +225,49 @@ function FrenzyQuiz({ allFlagsData, setView }) {
         return (
             <div className="frenzy-notification-overlay">
                 <div className="frenzy-notification-box">
+                    <Icon name="bolt" variant="highlight" size="xl" />
                     <h2>Frenzy Mode!</h2>
                     <p className="frenzy-high-score">High Score: {highScore}</p>
                     <p>Guess as many flags as you can in 3 minutes!</p>
                     <p>Each flag has a 30-second timer. Correct guesses add 10 points. Wrong guesses or expired timers lose 5 points.</p>
                     <p className="frenzy-tip">Tip: Press a number '1-4' to quickly swap between flags!</p>
                     <button className="response-submit" onClick={startGame}>Start Game</button>
-                    <button className="back-button" onClick={handleBack} style={{ position: 'static', marginTop: '10px' }}>← Back to Menu</button>
+                    <button className="back-button menu-back-button" onClick={handleBack}>
+                        <Icon name="arrow_back" variant="primary" /> Back to Menu
+                    </button>
                 </div>
             </div>
         );
     }
 
     if (gameOver) {
+        const unansweredSlots = slots.filter(s => s.flag && (s.cooldown === 0 || s.isCorrect === null));
         return (
             <div className="frenzy-notification-overlay">
                 <div className="frenzy-game-over frenzy-notification-box">
+                    <Icon name="flag" variant="primary" size="xl" pop />
                     <h2>Game Over!</h2>
                     <p className="frenzy-final-score">Final Score: {score}</p>
                     <p className="frenzy-high-score">High Score: {highScore}</p>
                     {score > highScore && (
-                        <p className="frenzy-new-high-score">🎉 New High Score! 🎉</p>
+                        <p className="frenzy-new-high-score">
+                            <Icon name="emoji_events" variant="highlight" size="lg" pop /> New High Score!
+                        </p>
+                    )}
+                    {unansweredSlots.length > 0 && (
+                        <div className="frenzy-unanswered">
+                            <p className="frenzy-unanswered-title">Flags you didn't finish:</p>
+                            <ul className="frenzy-unanswered-list">
+                                {unansweredSlots.map((s, i) => (
+                                    <li key={i}>{s.flag.name}</li>
+                                ))}
+                            </ul>
+                        </div>
                     )}
                     <button className="response-submit" onClick={startGame}>Play Again</button>
-                    <button className="back-button" onClick={handleBack} style={{ position: 'static', marginTop: '10px' }}>← Back to Menu</button>
+                    <button className="back-button menu-back-button" onClick={handleBack}>
+                        <Icon name="arrow_back" variant="primary" /> Back to Menu
+                    </button>
                 </div>
             </div>
         );
@@ -256,9 +276,11 @@ function FrenzyQuiz({ allFlagsData, setView }) {
     return (
         <div className={`frenzy-quiz-container ${shake ? 'shake' : ''}`}>
             <div className="frenzy-header">
-                <button className="back-button" onClick={handleBack}>←</button>
+                <button className="back-button" onClick={handleBack} aria-label="Back">
+                    <Icon name="arrow_back" variant="primary" />
+                </button>
                 <div className="frenzy-game-timer">
-                    Time: {formatTime(gameTimer)}
+                    <Icon name="schedule" variant="highlight" /> {formatTime(gameTimer)}
                 </div>
                 <div className="frenzy-score">
                     Score: {score}
@@ -274,9 +296,27 @@ function FrenzyQuiz({ allFlagsData, setView }) {
                     <div key={index} className="frenzy-slot">
                         {slot.cooldown > 0 && (
                             <div className={`frenzy-cooldown-overlay ${slot.isCorrect === true ? 'correct' : slot.isCorrect === false ? 'incorrect' : 'expired'}`}>
-                                {slot.isCorrect === true && "✅ Correct!"}
-                                {slot.isCorrect === false && `❌ ${slot.flag?.name || ''}`}
-                                {slot.isCorrect === null && `⏰ Times Up!`}
+                                {slot.isCorrect === true && (
+                                    <div className="frenzy-cooldown-content">
+                                        <Icon name="check_circle" variant="correct" size="xl" pop />
+                                        <span>Correct!</span>
+                                        <span className="frenzy-cooldown-answer">{slot.flag?.name}</span>
+                                    </div>
+                                )}
+                                {slot.isCorrect === false && (
+                                    <div className="frenzy-cooldown-content">
+                                        <Icon name="cancel" variant="incorrect" size="xl" pop />
+                                        <span>Incorrect</span>
+                                        <span className="frenzy-cooldown-answer">{slot.flag?.name || ''}</span>
+                                    </div>
+                                )}
+                                {slot.isCorrect === null && (
+                                    <div className="frenzy-cooldown-content">
+                                        <Icon name="timer_off" variant="incorrect" size="xl" pop />
+                                        <span>Time's up!</span>
+                                        <span className="frenzy-cooldown-answer">{slot.flag?.name || ''}</span>
+                                    </div>
+                                )}
                             </div>
                         )}
                         {slot.flag && (

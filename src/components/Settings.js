@@ -1,15 +1,18 @@
 import React from 'react';
+import Icon from './Icon';
 import './Settings.css';
 
 function Settings({ theme, setTheme, strictSpelling, setStrictSpelling, onResetStats, setView }) {
-    
+
     const toggleTheme = () => {
         setTheme(prevTheme => prevTheme === 'light' ? 'dark' : 'light');
     };
 
     return (
         <div className="settings-box">
-            <button className="back-button" onClick={() => setView('menu')}>←</button>
+            <button className="back-button" onClick={() => setView('menu')} aria-label="Back">
+                <Icon name="arrow_back" variant="primary" />
+            </button>
             <h2>Settings</h2>
             <div className="settings-options">
                 <div className="setting-item">
@@ -38,7 +41,7 @@ function Settings({ theme, setTheme, strictSpelling, setStrictSpelling, onResetS
                 </div>
             </div>
             <button onClick={onResetStats} className="reset-button">
-                Reset All Progress
+                <Icon name="restart_alt" variant="primary" /> Reset All Progress
             </button>
         </div>
     );
