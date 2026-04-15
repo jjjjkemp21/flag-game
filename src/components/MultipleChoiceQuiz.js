@@ -50,7 +50,7 @@ function MultipleChoiceQuiz({ allFlagsData, quizFlags, setFlagsData, selectNextF
         const wasCorrect = answer === currentFlag.name;
         setFlashColor(wasCorrect ? 'correct' : 'incorrect');
 
-        const { message, color, updatedFlags } = update_flag_stats(allFlagsData, currentFlag.name, wasCorrect);
+        const { message, color, updatedFlags } = update_flag_stats(allFlagsData, currentFlag, wasCorrect);
         const feedbackColor = color === 'green' ? 'var(--correct-color)' : 'var(--incorrect-color)';
         setFlagsData(updatedFlags);
         setFeedback({ message, color: feedbackColor });
@@ -64,7 +64,7 @@ function MultipleChoiceQuiz({ allFlagsData, quizFlags, setFlagsData, selectNextF
         if (!currentFlag || answered) return;
         setAnswered(true);
         setFlashColor('incorrect');
-        const { message, color, updatedFlags } = update_flag_stats(allFlagsData, currentFlag.name, false, 'skipped');
+        const { message, color, updatedFlags } = update_flag_stats(allFlagsData, currentFlag, false, 'skipped');
         const feedbackColor = color === 'green' ? 'var(--correct-color)' : 'var(--incorrect-color)';
         setFlagsData(updatedFlags);
         setFeedback({ message, color: feedbackColor });

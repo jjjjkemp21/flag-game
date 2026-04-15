@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { checkAnswer } from '../answer_check';
 import './PixelatedQuiz.css';
 import './QuizStyles.css';
 
@@ -151,10 +152,10 @@ function PixelatedQuiz({ allFlagsData, setView }) {
         if (gameOver || flagOver || !currentFlag) return;
 
         const trimmedInput = inputValue.trim();
-        const correctAnswer = currentFlag.name.toLowerCase();
         const attemptIndex = TOTAL_LIVES - livesRemaining;
+        const wasCorrect = trimmedInput && checkAnswer(trimmedInput, currentFlag);
 
-        if (!trimmedInput || trimmedInput.toLowerCase() !== correctAnswer) {
+        if (!wasCorrect) {
             const points = POINTS_INCORRECT[attemptIndex];
             if (points !== 0) {
                 triggerScoreAnimation(points);

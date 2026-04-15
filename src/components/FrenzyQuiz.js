@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { checkAnswer } from '../answer_check';
 import './FrenzyQuiz.css';
 import './QuizStyles.css';
 
@@ -190,10 +191,7 @@ function FrenzyQuiz({ allFlagsData, setView }) {
         const slot = slots[index];
         if (slot.cooldown > 0 || gameOver || !gameStarted) return;
 
-        const answer = slot.inputValue.trim().toLowerCase();
-        const correctAnswer = slot.flag.name.toLowerCase();
-
-        if (answer === correctAnswer) {
+        if (checkAnswer(slot.inputValue, slot.flag)) {
             setScore(s => s + CORRECT_POINTS);
             triggerScoreAnimation(CORRECT_POINTS);
             setSlots(prev => {

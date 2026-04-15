@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { checkAnswer } from '../answer_check';
 import './QuizStyles.css';
 import './PixelatedQuiz.css';
 
@@ -17,32 +18,6 @@ function getDistance(lat1, lon1, lat2, lon2) {
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     const distance = R * c;
     return distance;
-}
-
-function levenshtein(a, b) {
-    const an = a ? a.length : 0;
-    const bn = b ? b.length : 0;
-    if (an === 0) return bn;
-    if (bn === 0) return an;
-    const matrix = Array(bn + 1);
-    for (let i = 0; i <= bn; i++) {
-        matrix[i] = [i];
-    }
-    const bMatrix = matrix[0];
-    for (let j = 1; j <= an; j++) {
-        bMatrix[j] = j;
-    }
-    for (let i = 1; i <= bn; i++) {
-        for (let j = 1; j <= an; j++) {
-            const cost = a[j - 1] === b[i - 1] ? 0 : 1;
-            matrix[i][j] = Math.min(
-                matrix[i - 1][j] + 1,
-                matrix[i][j - 1] + 1,
-                matrix[i - 1][j - 1] + cost,
-            );
-        }
-    }
-    return matrix[bn][an];
 }
 
 const IMAGE_BASE_URL = './assets/flags/';
@@ -202,13 +177,7 @@ function LongestRouteQuiz({ allFlagsData, setView }) {
         e.preventDefault();
         if (!currentFlag || !inputValue.trim() || gameOver) return; 
 
-        const userAnswer = inputValue.trim().toLowerCase();
-        const correctAnswer = currentFlag.name.toLowerCase();
-
-        const distance = levenshtein(userAnswer, correctAnswer);
-        const maxLength = Math.max(userAnswer.length, correctAnswer.length);
-        const similarity = maxLength === 0 ? 1 : (1 - (distance / maxLength));
-        const wasCorrect = similarity >= 0.8;
+        const wasCorrect = checkAnswer(inputValue, currentFlag);
 
         if (wasCorrect) {
             setFlashColor('correct');
@@ -332,7 +301,6 @@ function LongestRouteQuiz({ allFlagsData, setView }) {
                             </>
                         ) : (
                             <>
-                                -----------------
                                 <h2>Game Over!</h2>
                                 <p className="pixel-final-score">Your chain: {score}</p>
                                 <p className="pixel-high-score">Path length was: {quizPath.length}</p>
