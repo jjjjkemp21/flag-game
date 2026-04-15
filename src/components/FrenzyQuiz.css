@@ -159,15 +159,15 @@
 
 .frenzy-notification-box {
   background-color: var(--background-color);
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-  padding: 30px;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--container-shadow-lg);
+  padding: clamp(var(--space-lg), 5vw, var(--space-2xl));
   max-width: 500px;
-  width: 90%;
+  width: min(90vw, 500px);
   text-align: center;
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: var(--space-md);
   box-sizing: border-box;
   margin: auto;
 }
@@ -190,9 +190,9 @@
   color: var(--primary-color);
   margin-top: 10px;
   padding: 10px;
-  border: 1px dashed var(--primary-color-translucent);
+  border: 1px dashed var(--primary-color);
   border-radius: 8px;
-  background-color: rgba(var(--primary-rgb), 0.05);
+  background-color: var(--primary-color-translucent);
 }
 
 .frenzy-notification-box .response-submit,
@@ -223,7 +223,7 @@
 .frenzy-new-high-score {
   font-size: 1.3em;
   font-weight: bold;
-  color: #FFA000;
+  color: var(--highlight-color);
   margin-top: 5px;
 }
 

@@ -82,7 +82,7 @@ function MultipleChoiceQuiz({ allFlagsData, quizFlags, setFlagsData, selectNextF
     };
 
     if (isLoading) {
-        return <div className="quiz-box"><h2>Loading next flag...</h2></div>;
+        return <div className="loading-box">Loading next flag…</div>;
     }
 
     if (!currentFlag) {

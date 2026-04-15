@@ -181,7 +181,7 @@
 .new-high-score-lang {
     font-size: 1.3em;
     font-weight: bold;
-    color: #FFA000;
+    color: var(--highlight-color);
     margin-top: 5px;
 }
 

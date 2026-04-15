@@ -1,21 +1,15 @@
-/* This class MODIFIES the base .quiz-box */
-.pixelated-quiz-box {
-    padding-top: 100px;
-}
-
 .pixel-game-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    position: absolute;
-    top: 20px;
-    left: 20px;
-    right: 20px;
+    width: 100%;
+    gap: var(--space-md);
+    margin-bottom: var(--space-lg);
 }
 
 .pixel-game-header .back-button {
-    position: static;
-    transform: none;
+    margin-bottom: 0;
+    align-self: auto;
 }
 
 .pixel-game-timer,
@@ -23,8 +17,12 @@
     font-size: 1.5em;
     font-weight: bold;
     color: var(--primary-color);
-    min-width: 100px;
     text-align: right;
+}
+
+.pixel-game-timer {
+    flex: 1;
+    text-align: center;
 }
 
 .pixel-score {
@@ -168,15 +166,15 @@
 
 .pixel-notification-box {
     background-color: var(--background-color);
-    border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-    padding: 30px;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--container-shadow-lg);
+    padding: clamp(var(--space-lg), 5vw, var(--space-2xl));
     max-width: 500px;
-    width: 90%;
+    width: min(90vw, 500px);
     text-align: center;
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: var(--space-md);
     box-sizing: border-box;
     margin: auto;
 }
@@ -208,9 +206,9 @@
     color: var(--primary-color);
     margin-top: 10px;
     padding: 10px;
-    border: 1px dashed var(--primary-color-translucent);
+    border: 1px dashed var(--primary-color);
     border-radius: 8px;
-    background-color: rgba(var(--primary-rgb), 0.05);
+    background-color: var(--primary-color-translucent);
 }
 
 .pixel-notification-box .response-submit,
@@ -241,7 +239,7 @@
 .pixel-new-high-score {
     font-size: 1.3em;
     font-weight: bold;
-    color: #FFA000;
+    color: var(--highlight-color);
     margin-top: 5px;
 }
 
@@ -266,16 +264,6 @@
 }
 
 @media (max-width: 768px) {
-    .pixelated-quiz-box {
-        padding-top: 100px;
-    }
-
-    .pixel-game-header {
-        left: 10px;
-        right: 10px;
-        top: 10px;
-    }
-
     .pixel-game-timer,
     .pixel-score {
         font-size: 1.2em;
@@ -288,12 +276,23 @@
     }
 
     .pixel-notification-box {
-        padding: 20px;
+        padding: var(--space-lg);
         width: 95%;
     }
 }
 
 @media (max-width: 480px) {
+    .pixel-game-header {
+        gap: var(--space-sm);
+        flex-wrap: wrap;
+    }
+    .pixel-game-timer,
+    .pixel-score {
+        font-size: 1.05em;
+    }
+    .pixelated-flag-container {
+        height: 160px;
+    }
     .pixel-notification-box p {
         font-size: 0.9em;
     }

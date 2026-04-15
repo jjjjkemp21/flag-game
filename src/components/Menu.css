@@ -62,6 +62,15 @@
   transform: translateY(-2px);
 }
 
+.menu-button:active:not(:disabled) {
+  transform: translateY(0) scale(0.98);
+}
+
+.menu-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .menu-button.c1 {
   background-color: var(--primary-color);
 }
@@ -70,17 +79,17 @@
 }
 
 .menu-button.c2 {
-  background-color: #34A853;
+  background-color: var(--color-c2);
 }
 .menu-button.c2:hover:not(:disabled) {
-  background-color: #2c8f45;
+  background-color: var(--color-c2-hover);
 }
 
 .menu-button.c3 {
-  background-color: #FFA000;
+  background-color: var(--color-c3);
 }
 .menu-button.c3:hover:not(:disabled) {
-  background-color: #cc8000;
+  background-color: var(--color-c3-hover);
 }
 
 .menu-button.secondary {
@@ -101,11 +110,11 @@
 }
 
 .menu-button-stats .completed {
-  color: #e4e6eb;
+  color: rgba(255, 255, 255, 0.92);
 }
 
 .menu-button-stats .review-stat {
-  color: #ffd700;
+  color: var(--highlight-color);
 }
 
 .category-section {
@@ -151,6 +160,11 @@
   border-color: var(--primary-color);
   transform: translateY(-2px);
   box-shadow: 0 4px 8px var(--shadow-color);
+}
+
+.grid-button:active:not(:disabled) {
+  transform: translateY(0) scale(0.98);
+  box-shadow: 0 1px 3px var(--shadow-color);
 }
 
 .grid-button:disabled {
@@ -228,12 +242,7 @@
 }
 
 .quiz-timer {
-    background-color: #FFA000;
-    color: white;
-}
-
-.quiz-timer {
-    background-color: #FFA000;
+    background-color: var(--highlight-color);
     color: white;
 }
 
@@ -279,8 +288,8 @@
 }
 
 .menu-button.c4 {
-  background-color: #8E44AD;
+  background-color: var(--color-c4);
 }
 .menu-button.c4:hover:not(:disabled) {
-  background-color: #7B3A9B;
+  background-color: var(--color-c4-hover);
 }

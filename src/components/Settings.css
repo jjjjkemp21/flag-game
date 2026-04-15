@@ -52,8 +52,8 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: #ccc;
-    transition: .4s;
+    background-color: var(--button-secondary-bg);
+    transition: background-color .3s, box-shadow .2s;
 }
 
 .slider:before {
@@ -63,16 +63,17 @@
     width: 26px;
     left: 4px;
     bottom: 4px;
-    background-color: white;
-    transition: .4s;
+    background-color: var(--container-background);
+    box-shadow: 0 1px 3px var(--shadow-color);
+    transition: transform .3s, background-color .3s;
 }
 
 input:checked + .slider {
     background-color: var(--primary-color);
 }
 
-input:focus + .slider {
-    box-shadow: 0 0 1px var(--primary-color);
+input:focus-visible + .slider {
+    box-shadow: var(--focus-ring);
 }
 
 input:checked + .slider:before {

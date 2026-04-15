@@ -120,7 +120,11 @@ function App() {
     };
 
     if (isLoading) {
-        return <div className="app-container"><h1>Loading Quiz...</h1></div>;
+        return (
+            <div className="app-container">
+                <div className="loading-box">Loading Quiz…</div>
+            </div>
+        );
     }
 
     const renderView = () => {

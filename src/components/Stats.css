@@ -53,7 +53,7 @@
 }
 
 .knowledge-grid .stat-item:nth-child(2) .stat-value {
-    color: #FFC107;
+    color: var(--highlight-color);
 }
 
 .knowledge-grid .stat-item:nth-child(3) .stat-value {
@@ -91,9 +91,24 @@
     color: var(--text-color);
 }
 
-@media (max-width: 400px) {
-    .high-score-grid .stat-value {
+@media (max-width: 480px) {
+    .stats-grid {
+        gap: 10px;
+    }
+    .stat-value {
         font-size: 1.8em;
+    }
+    .stat-label {
+        font-size: 0.85em;
+    }
+}
+
+@media (max-width: 400px) {
+    .knowledge-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    .high-score-grid .stat-value {
+        font-size: 1.6em;
     }
     .high-score-grid .stat-label {
         font-size: 0.8em;
