@@ -1,20 +1,39 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { update_flag_stats } from '../quiz_logic';
 import { checkAnswer } from '../answer_check';
 import Icon from './Icon';
-import './QuizStyles.css';
+import { ScoreBubble } from './ui';
+import Mascot from '../assets/illustrations/Mascot';
+import Confetti from '../assets/illustrations/Confetti';
+import Spinner from '../assets/illustrations/Spinner';
+import { useAudio } from '../audio/AudioProvider';
 
 const IMAGE_BASE_URL = './assets/flags/';
 
-function FreeResponseQuiz({ allFlagsData, quizFlags, setFlagsData, selectNextFlag, setView, strictSpelling, setQuizCategory, questionHistory, updateQuestionHistory }) {
+function FreeResponseQuiz({
+    allFlagsData,
+    quizFlags,
+    setFlagsData,
+    selectNextFlag,
+    setView,
+    strictSpelling,
+    setQuizCategory,
+    questionHistory,
+    updateQuestionHistory,
+}) {
     const [currentFlag, setCurrentFlag] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [inputValue, setInputValue] = useState('');
-    const [feedback, setFeedback] = useState({ message: { text: "Type the country's name" }, color: 'var(--text-color)' });
+    const [feedback, setFeedback] = useState({ text: "Type the country's name" });
     const [answered, setAnswered] = useState(false);
     const inputRef = useRef(null);
     const [flashColor, setFlashColor] = useState(null);
     const [isWiggling, setIsWiggling] = useState(false);
+    const [score, setScore] = useState(0);
+    const [streak, setStreak] = useState(0);
+    const [showConfetti, setShowConfetti] = useState(false);
+    const audio = useAudio();
 
     const handleBack = () => {
         setView('quiz-menu');
@@ -24,7 +43,8 @@ function FreeResponseQuiz({ allFlagsData, quizFlags, setFlagsData, selectNextFla
     const nextQuestion = useCallback(() => {
         setIsLoading(true);
         setFlashColor(null);
-        setFeedback({ message: { text: "Type the country's name" }, color: 'var(--text-color)' });
+        setShowConfetti(false);
+        setFeedback({ text: "Type the country's name" });
         setAnswered(false);
         setInputValue('');
         const questionFlag = selectNextFlag(quizFlags, questionHistory);
@@ -39,7 +59,7 @@ function FreeResponseQuiz({ allFlagsData, quizFlags, setFlagsData, selectNextFla
         nextQuestion();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
-    
+
     useEffect(() => {
         if (!isLoading && currentFlag && inputRef.current) {
             inputRef.current.focus();
@@ -52,6 +72,7 @@ function FreeResponseQuiz({ allFlagsData, quizFlags, setFlagsData, selectNextFla
 
         if (!inputValue.trim()) {
             setIsWiggling(true);
+            audio.play('incorrect', { volume: 0.5 });
             setTimeout(() => setIsWiggling(false), 500);
             return;
         }
@@ -65,69 +86,108 @@ function FreeResponseQuiz({ allFlagsData, quizFlags, setFlagsData, selectNextFla
 
         setAnswered(true);
         setFlashColor(wasCorrect ? 'correct' : 'incorrect');
-        
-        // --- MODIFIED: Pass currentFlag (object) instead of just currentFlag.name ---
+
         const { message, color, updatedFlags } = update_flag_stats(allFlagsData, currentFlag, wasCorrect);
-        
-        const feedbackColor = color === 'green' ? 'var(--correct-color)' : 'var(--incorrect-color)';
         setFlagsData(updatedFlags);
-        setFeedback({ message, color: feedbackColor });
-        setTimeout(() => {
-            nextQuestion();
-        }, 2000);
+        setFeedback({ text: message.text, answer: message.answer, tone: color });
+
+        if (wasCorrect) {
+            audio.play('correct');
+            setScore(s => s + 1);
+            setStreak(s => {
+                const next = s + 1;
+                if (next === 3 || next === 5 || next === 10) audio.play('streak');
+                return next;
+            });
+            setShowConfetti(true);
+        } else {
+            audio.play('incorrect');
+            setStreak(0);
+        }
+
+        setTimeout(() => nextQuestion(), 2000);
     };
 
     const handleSkip = () => {
         if (!currentFlag || answered) return;
         setAnswered(true);
         setFlashColor('incorrect');
-        
-        // --- MODIFIED: Pass currentFlag (object) instead of just currentFlag.name ---
+        audio.play('incorrect');
+        setStreak(0);
         const { message, color, updatedFlags } = update_flag_stats(allFlagsData, currentFlag, false, 'skipped');
-
-        const feedbackColor = color === 'green' ? 'var(--correct-color)' : 'var(--incorrect-color)';
         setFlagsData(updatedFlags);
-        setFeedback({ message, color: feedbackColor });
-        setTimeout(() => {
-            nextQuestion();
-        }, 2000);
+        setFeedback({ text: message.text, answer: message.answer, tone: color });
+        setTimeout(() => nextQuestion(), 2000);
     };
 
     if (isLoading) {
-        return <div className="loading-box">Loading next flag…</div>;
+        return (
+            <div className="loading-box">
+                <Spinner />
+                <span>Loading next flag…</span>
+            </div>
+        );
     }
 
     if (!currentFlag) {
         return (
             <div className="quiz-box">
-                <button className="back-button" onClick={handleBack} aria-label="Back">
-                    <Icon name="arrow_back" variant="primary" />
-                </button>
-                <Icon name="celebration" variant="highlight" size="xl" pop />
-                <h1>You're all done for now. Great job!</h1>
-                <p style={{ textAlign: 'center' }}>Come back later to review more flags.</p>
+                <div className="quiz-topbar">
+                    <button className="back-button" onClick={handleBack} aria-label="Back">
+                        <Icon name="arrow_back" />
+                    </button>
+                </div>
+                <Mascot size={120} mood="cheer" />
+                <h1 className="text-center">You're all caught up!</h1>
+                <p className="text-center" style={{ color: 'var(--color-ink-soft)' }}>
+                    Come back later to review more flags.
+                </p>
             </div>
         );
     }
 
+    const feedbackColor = feedback.tone === 'green'
+        ? 'var(--color-success-deep)'
+        : feedback.tone === 'red'
+            ? 'var(--color-danger-deep)'
+            : 'var(--color-ink-soft)';
+
     return (
         <div className={`quiz-box ${flashColor ? `flash-${flashColor}` : ''}`}>
-            <button className="back-button" onClick={handleBack} aria-label="Back">
-                <Icon name="arrow_back" variant="primary" />
-            </button>
-            <img
-                src={`${IMAGE_BASE_URL}${currentFlag.file}`}
-                alt="Flag"
-                className="flag-image"
-            />
-            <div className="feedback-label" style={{ color: feedback.color }}>
+            <div className="quiz-topbar">
+                <button className="back-button" onClick={handleBack} aria-label="Back">
+                    <Icon name="arrow_back" />
+                </button>
+                <span className="ui-pill ui-pill--primary">
+                    <Icon name="local_fire_department" /> Streak {streak}
+                </span>
+                <ScoreBubble score={score} icon="star" />
+            </div>
+
+            <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', width: '100%' }}>
+                <motion.img
+                    key={currentFlag.file}
+                    src={`${IMAGE_BASE_URL}${currentFlag.file}`}
+                    alt="Flag"
+                    className="flag-image"
+                    initial={{ opacity: 0, scale: 0.94 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.28, ease: [0.25, 0.46, 0.45, 0.94] }}
+                />
+                <AnimatePresence>
+                    {showConfetti && <Confetti pieces={26} />}
+                </AnimatePresence>
+            </div>
+
+            <div className="feedback-label" style={{ color: feedbackColor }} aria-live="polite">
                 <div className="feedback-row">
                     {flashColor === 'correct' && <Icon name="check_circle" variant="correct" size="lg" pop />}
                     {flashColor === 'incorrect' && <Icon name="cancel" variant="incorrect" size="lg" pop />}
-                    <span>{feedback.message.text}</span>
+                    <span>{feedback.text}</span>
                 </div>
-                {feedback.message.answer && <span className="feedback-answer">{feedback.message.answer}</span>}
+                {feedback.answer && <span className="feedback-answer">{feedback.answer}</span>}
             </div>
+
             <form onSubmit={handleSubmit} className="response-form">
                 <input
                     ref={inputRef}
@@ -136,7 +196,10 @@ function FreeResponseQuiz({ allFlagsData, quizFlags, setFlagsData, selectNextFla
                     onChange={(e) => setInputValue(e.target.value)}
                     disabled={answered}
                     className={`response-input ${isWiggling ? 'wiggle' : ''}`}
-                    placeholder="Enter country name..."
+                    placeholder="Enter country name…"
+                    autoComplete="off"
+                    autoCorrect="off"
+                    spellCheck="false"
                 />
                 <div className="quiz-actions">
                     <button type="submit" disabled={answered || !inputValue.trim()} className="response-submit">

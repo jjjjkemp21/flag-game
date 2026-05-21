@@ -1,18 +1,32 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, Suspense, lazy } from 'react';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { select_next_flag } from './quiz_logic';
 import MainMenu from './components/MainMenu';
 import MultipleChoiceQuiz from './components/MultipleChoiceQuiz';
 import FreeResponseQuiz from './components/FreeResponseQuiz';
-import PixelatedQuiz from './components/PixelatedQuiz';
-import FrenzyQuiz from './components/FrenzyQuiz';
 import Settings from './components/Settings';
 import QuizMenu from './components/QuizMenu';
 import BonusMenu from './components/BonusMenu';
-import LongestRouteQuiz from './components/LongestRouteQuiz';
-import LanguageQuiz from './components/LanguageQuiz';
-import './App.css';
+import Spinner from './assets/illustrations/Spinner';
+import { useAudio } from './audio/AudioProvider';
+import { variants } from './motion';
+
+// Heavy bonus modes — lazy-loaded
+const PixelatedQuiz    = lazy(() => import('./components/PixelatedQuiz'));
+const FrenzyQuiz       = lazy(() => import('./components/FrenzyQuiz'));
+const LongestRouteQuiz = lazy(() => import('./components/LongestRouteQuiz'));
+const LanguageQuiz     = lazy(() => import('./components/LanguageQuiz'));
 
 const DATA_URL = './data/flags.json';
+
+function LazyFallback({ label = 'Loading…' }) {
+    return (
+        <div className="loading-box">
+            <Spinner />
+            <span>{label}</span>
+        </div>
+    );
+}
 
 function App() {
     const [flagsData, setFlagsData] = useState([]);
@@ -23,6 +37,8 @@ function App() {
     const [strictSpelling, setStrictSpelling] = useState(() => localStorage.getItem('strictSpelling') === 'true');
     const [isLoading, setIsLoading] = useState(true);
     const [questionHistory, setQuestionHistory] = useState([]);
+    const prefersReduced = useReducedMotion();
+    const audio = useAudio();
 
     const updateQuestionHistory = useCallback((flagCode) => {
         setQuestionHistory(prev => [...prev.slice(-4), flagCode]);
@@ -37,6 +53,11 @@ function App() {
         localStorage.setItem('strictSpelling', String(strictSpelling));
     }, [strictSpelling]);
 
+    useEffect(() => {
+        if (audio.isUnlocked) audio.play('transition', { volume: 0.5 });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [view]);
+
     const loadData = useCallback(async () => {
         setIsLoading(true);
         try {
@@ -48,7 +69,7 @@ function App() {
                 ...flag,
                 name: flag.country,
                 file: `${flag.code.toLowerCase()}.svg`,
-                aliases: flag.aliases || [], // <-- THIS LINE IS ADDED
+                aliases: flag.aliases || [],
             });
 
             if (savedDataString) {
@@ -95,7 +116,6 @@ function App() {
         setIsLoading(false);
     }, []);
 
-
     useEffect(() => {
         loadData();
     }, [loadData]);
@@ -107,22 +127,22 @@ function App() {
     }, [flagsData, isLoading]);
 
     const handleResetStats = () => {
-        const isConfirmed = window.confirm("Are you sure you want to reset all your progress? This action cannot be undone.");
-        if (isConfirmed) {
-            localStorage.removeItem('flagQuizScores');
-            localStorage.removeItem('frenzyHighScore');
-            localStorage.removeItem('pixelatedHighScore');
-            localStorage.removeItem('longestRouteHighScore');
-            localStorage.removeItem('languageHighScore');
-            loadData();
-            setView('menu');
-        }
+        localStorage.removeItem('flagQuizScores');
+        localStorage.removeItem('frenzyHighScore');
+        localStorage.removeItem('pixelatedHighScore');
+        localStorage.removeItem('longestRouteHighScore');
+        localStorage.removeItem('languageHighScore');
+        loadData();
+        setView('menu');
     };
 
     if (isLoading) {
         return (
             <div className="app-container">
-                <div className="loading-box">Loading Quiz…</div>
+                <div className="loading-box">
+                    <Spinner size={56} />
+                    <span>Loading Flag Quest…</span>
+                </div>
             </div>
         );
     }
@@ -157,20 +177,37 @@ function App() {
             case 'quiz-menu':
                 return <QuizMenu setView={setView} setQuizCategory={setQuizCategory} flagsData={flagsData} quizMode={quizMode} />;
             case 'multiple-choice':
-            case 'free-response':
+            case 'free-response': {
                 const quizFlags = getFilteredFlags();
                 if (view === 'multiple-choice') {
                     return <MultipleChoiceQuiz {...quizProps} quizFlags={quizFlags} />;
                 }
                 return <FreeResponseQuiz {...quizProps} quizFlags={quizFlags} strictSpelling={strictSpelling} />;
+            }
             case 'pixelated-quiz':
-                return <PixelatedQuiz allFlagsData={flagsData} setView={setView} />;
+                return (
+                    <Suspense fallback={<LazyFallback label="Loading Pixelated…" />}>
+                        <PixelatedQuiz allFlagsData={flagsData} setView={setView} />
+                    </Suspense>
+                );
             case 'frenzy-quiz':
-                return <FrenzyQuiz allFlagsData={flagsData} setView={setView} />;
+                return (
+                    <Suspense fallback={<LazyFallback label="Loading Frenzy…" />}>
+                        <FrenzyQuiz allFlagsData={flagsData} setView={setView} />
+                    </Suspense>
+                );
             case 'longest-route-quiz':
-                return <LongestRouteQuiz allFlagsData={flagsData} setView={setView} />;
+                return (
+                    <Suspense fallback={<LazyFallback label="Loading Longest Route…" />}>
+                        <LongestRouteQuiz allFlagsData={flagsData} setView={setView} />
+                    </Suspense>
+                );
             case 'language-quiz':
-                return <LanguageQuiz setView={setView} />;
+                return (
+                    <Suspense fallback={<LazyFallback label="Loading Language Quiz…" />}>
+                        <LanguageQuiz setView={setView} />
+                    </Suspense>
+                );
             case 'bonus-menu':
                 return <BonusMenu setView={setView} />;
             case 'settings':
@@ -189,12 +226,24 @@ function App() {
                 return <MainMenu setView={setView} flagsData={flagsData} setQuizMode={setQuizMode} />;
         }
     };
-    
+
     const containerClassName = view === 'frenzy-quiz' ? "app-container-fullwidth" : "app-container";
+    const motionVariants = prefersReduced ? variants.fadeOnly : variants.page;
 
     return (
         <div className={containerClassName}>
-            {renderView()}
+            <AnimatePresence mode="wait" initial={false}>
+                <motion.div
+                    key={view}
+                    variants={motionVariants}
+                    initial="initial"
+                    animate="animate"
+                    exit="exit"
+                    style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'var(--space-lg)' }}
+                >
+                    {renderView()}
+                </motion.div>
+            </AnimatePresence>
         </div>
     );
 }

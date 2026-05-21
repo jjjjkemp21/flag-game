@@ -1,8 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import Icon from './Icon';
-import './Menu.css';
-import './QuizStyles.css';
-import './LanguageQuizStyles.css';
+import { ChoiceCard, ScoreBubble } from './ui';
+import Mascot from '../assets/illustrations/Mascot';
+import Confetti from '../assets/illustrations/Confetti';
+import Spinner from '../assets/illustrations/Spinner';
+import { useAudio } from '../audio/AudioProvider';
+import { springs } from '../motion';
 
 const LANGUAGES_URL = './data/languages.json';
 const PHRASES_URL = './data/phrases.json';
@@ -18,16 +22,15 @@ function LanguageQuiz({ setView }) {
     const [highScore, setHighScore] = useState(0);
     const [lives, setLives] = useState(TOTAL_LIVES);
     const [isGameOver, setIsGameOver] = useState(false);
-    const [feedback, setFeedback] = useState({ text: '\u00A0', color: 'var(--text-color)' });
+    const [feedback, setFeedback] = useState({ text: ' ' });
     const [isLoading, setIsLoading] = useState(true);
     const [isAnswered, setIsAnswered] = useState(false);
     const [answerStatus, setAnswerStatus] = useState({});
-
-    // --- STATES ADDED ---
     const [flashColor, setFlashColor] = useState(null);
-    const [scorePop, setScorePop] = useState(false);
     const [lifeLostIndex, setLifeLostIndex] = useState(null);
-    // const [showConfetti, setShowConfetti] = useState(false); // --- REMOVED ---
+    const [showConfetti, setShowConfetti] = useState(false);
+
+    const audio = useAudio();
 
     useEffect(() => {
         setHighScore(parseInt(localStorage.getItem(HIGH_SCORE_KEY) || 0, 10));
@@ -35,39 +38,32 @@ function LanguageQuiz({ setView }) {
             try {
                 const [langResponse, phraseResponse] = await Promise.all([
                     fetch(LANGUAGES_URL),
-                    fetch(PHRASES_URL)
+                    fetch(PHRASES_URL),
                 ]);
-                const languages = await langResponse.json();
-                const phrases = await phraseResponse.json();
-                setLanguagesData(languages);
-                setPhrasesData(phrases);
-                setIsLoading(false);
-            } catch (error)
- {
-                console.error("Failed to load language data:", error);
-                setIsLoading(false);
+                setLanguagesData(await langResponse.json());
+                setPhrasesData(await phraseResponse.json());
+            } catch (error) {
+                console.error('Failed to load language data:', error);
             }
+            setIsLoading(false);
         }
         loadData();
     }, []);
 
     const nextQuestion = useCallback(() => {
-        // --- RESET ALL EFFECTS ---
         setFlashColor(null);
         setLifeLostIndex(null);
-        setFeedback({ text: '\u00A0', color: 'var(--text-color)' });
+        setShowConfetti(false);
+        setFeedback({ text: ' ' });
         setIsAnswered(false);
         setAnswerStatus({});
 
-        if (languagesData.length === 0 || !phrasesData) {
-            return;
-        }
+        if (languagesData.length === 0 || !phrasesData) return;
 
         const randomLanguage = languagesData[Math.floor(Math.random() * languagesData.length)];
         const phraseList = phrasesData[randomLanguage.name];
 
         if (!phraseList || phraseList.length === 0) {
-            console.warn(`No phrases found for ${randomLanguage.name}, trying again.`);
             setTimeout(nextQuestion, 50);
             return;
         }
@@ -92,25 +88,25 @@ function LanguageQuiz({ setView }) {
         setIsAnswered(true);
 
         if (answerName === currentQuestion.language) {
+            audio.play('correct');
+            setShowConfetti(true);
             const newScore = score + 1;
             setScore(newScore);
-            setScorePop(true);
-            setTimeout(() => setScorePop(false), 300);
-
+            if (newScore === 3 || newScore === 5 || newScore === 10) {
+                audio.play('streak');
+            }
             setFeedback({
                 text: 'Correct! The language was:',
                 answer: currentQuestion.language,
-                color: 'var(--correct-color)',
+                tone: 'green',
             });
             setAnswerStatus({ [answerName]: 'correct' });
             setFlashColor('correct');
             setTimeout(nextQuestion, 1500);
         } else {
+            audio.play('incorrect');
             setFlashColor('incorrect');
-            setAnswerStatus({
-                [answerName]: 'incorrect',
-                [currentQuestion.language]: 'correct'
-            });
+            setAnswerStatus({ [answerName]: 'incorrect', [currentQuestion.language]: 'correct' });
 
             const newLives = lives - 1;
             setLives(newLives);
@@ -118,7 +114,7 @@ function LanguageQuiz({ setView }) {
             setFeedback({
                 text: 'Incorrect. The language was:',
                 answer: currentQuestion.language,
-                color: 'var(--incorrect-color)',
+                tone: 'red',
             });
 
             if (newLives <= 0) {
@@ -126,7 +122,10 @@ function LanguageQuiz({ setView }) {
                     setHighScore(score);
                     localStorage.setItem(HIGH_SCORE_KEY, score.toString());
                 }
-                setTimeout(() => setIsGameOver(true), 1800);
+                setTimeout(() => {
+                    audio.play('gameOver');
+                    setIsGameOver(true);
+                }, 1500);
             } else {
                 setTimeout(nextQuestion, 1500);
             }
@@ -134,41 +133,31 @@ function LanguageQuiz({ setView }) {
     };
 
     const handlePlayAgain = () => {
+        audio.play('click');
         setIsGameOver(false);
-        // setShowConfetti(false); // --- REMOVED ---
         setScore(0);
         setLives(TOTAL_LIVES);
         nextQuestion();
     };
 
-    const renderLives = () => {
-        const livesLost = TOTAL_LIVES - lives;
+    if (isLoading) {
         return (
-            <div className="lives-container">
-                {[...Array(TOTAL_LIVES)].map((_, i) => (
-                    <div
-                        key={i}
-                        // --- Apply shake class ---
-                        className={`life-box ${i < livesLost ? 'lost' : ''} ${i === lifeLostIndex ? 'shake' : ''}`}
-                    ></div>
-                ))}
+            <div className="loading-box">
+                <Spinner />
+                <span>Loading languages…</span>
             </div>
         );
-    };
-
-
-    if (isLoading) {
-        return <div className="loading-box">Loading languages…</div>;
     }
-
 
     if (isGameOver) {
         return (
             <div className="quiz-box language-quiz-box game-over-box">
-                <button className="back-button" onClick={() => setView('bonus-menu')} aria-label="Back">
-                    <Icon name="arrow_back" variant="primary" />
-                </button>
-                <Icon name="translate" variant="primary" size="xl" pop />
+                <div className="quiz-topbar">
+                    <button className="back-button" onClick={() => setView('bonus-menu')} aria-label="Back">
+                        <Icon name="arrow_back" />
+                    </button>
+                </div>
+                <Mascot size={120} mood={score > highScore ? 'cheer' : 'sad'} />
                 <h1 className="menu-title">Game Over!</h1>
                 <p className="final-score-lang">Final Score: {score}</p>
                 <p className="high-score-lang">High Score: {highScore}</p>
@@ -177,39 +166,63 @@ function LanguageQuiz({ setView }) {
                         <Icon name="emoji_events" variant="highlight" size="lg" pop /> New High Score!
                     </p>
                 )}
-                <div className="menu-options" style={{ marginTop: '20px' }}>
-                    <button className="menu-button c1" onClick={handlePlayAgain}>
-                        <Icon name="replay" variant="primary" /> Play Again
-                    </button>
-                </div>
+                <button className="response-submit" onClick={handlePlayAgain}>
+                    <Icon name="replay" /> Play Again
+                </button>
             </div>
         );
     }
 
-
     if (!currentQuestion) {
-        return <div className="loading-box">Preparing quiz…</div>;
+        return (
+            <div className="loading-box">
+                <Spinner />
+                <span>Preparing quiz…</span>
+            </div>
+        );
     }
-
 
     return (
         <div className={`quiz-box language-quiz-box ${flashColor ? `flash-${flashColor}` : ''}`}>
-            <button className="back-button" onClick={() => setView('bonus-menu')} aria-label="Back">
-                <Icon name="arrow_back" variant="primary" />
-            </button>
-            <div className="quiz-header language-header">
-                {renderLives()}
-                <div className={`quiz-score ${scorePop ? 'pop' : ''}`}>Score: {score}</div>
+            <div className="quiz-topbar">
+                <button className="back-button" onClick={() => setView('bonus-menu')} aria-label="Back">
+                    <Icon name="arrow_back" />
+                </button>
+                <div className="lives-container" aria-label={`${lives} lives left`}>
+                    {[...Array(TOTAL_LIVES)].map((_, i) => {
+                        const livesLost = TOTAL_LIVES - lives;
+                        return (
+                            <motion.div
+                                key={i}
+                                className={`life-box ${i < livesLost ? 'lost' : ''} ${i === lifeLostIndex ? 'shake' : ''}`}
+                                animate={{ scale: i === lifeLostIndex ? [1, 0.6, 0.85] : 1 }}
+                                transition={{ duration: 0.4 }}
+                            />
+                        );
+                    })}
+                </div>
+                <ScoreBubble score={score} icon="star" />
             </div>
 
-            <div className="phrase-container" key={currentQuestion.phrase}>
-                <h2 className="phrase-text">
-                    "{currentQuestion.phrase}"
-                </h2>
-            </div>
+            <AnimatePresence mode="wait">
+                <motion.div
+                    key={currentQuestion.phrase}
+                    className="phrase-container"
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    transition={springs.gentle}
+                >
+                    <h2 className="phrase-text">"{currentQuestion.phrase}"</h2>
+                </motion.div>
+            </AnimatePresence>
             <p className="menu-subtitle language-subtitle">Which language is this?</p>
 
-            <div className="feedback-label language-feedback" style={{ color: feedback.color }}>
+            <AnimatePresence>
+                {showConfetti && <Confetti pieces={20} />}
+            </AnimatePresence>
+
+            <div className="feedback-label" style={{ color: feedback.tone === 'green' ? 'var(--color-success-deep)' : feedback.tone === 'red' ? 'var(--color-danger-deep)' : 'var(--color-ink-soft)' }} aria-live="polite">
                 <div className="feedback-row">
                     {flashColor === 'correct' && <Icon name="check_circle" variant="correct" size="lg" pop />}
                     {flashColor === 'incorrect' && <Icon name="cancel" variant="incorrect" size="lg" pop />}
@@ -219,20 +232,19 @@ function LanguageQuiz({ setView }) {
             </div>
 
             <div className="options-box language-options">
-                {options.map((option) => (
-                    <button
+                {options.map((option, i) => (
+                    <ChoiceCard
                         key={option}
-                        onClick={() => handleAnswer(option)}
+                        label={option}
+                        index={i}
+                        state={answerStatus[option] === 'correct' ? 'correct' : answerStatus[option] === 'incorrect' ? 'incorrect' : 'idle'}
                         disabled={isAnswered}
-                        className={`option-button ${answerStatus[option] || ''}`}
-                    >
-                        {option}
-                    </button>
+                        onSelect={handleAnswer}
+                    />
                 ))}
             </div>
         </div>
     );
 }
-
 
 export default LanguageQuiz;

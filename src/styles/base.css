@@ -1,0 +1,254 @@
+/* =================================================================
+   Base styles — resets, body, typography, focus, app shell.
+   ================================================================= */
+
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+html, body, #root {
+    height: 100%;
+}
+
+body {
+    margin: 0;
+    background-color: var(--color-bg);
+    color: var(--color-ink);
+    font-family: var(--font-body);
+    font-weight: 500;
+    font-size: var(--fs-md);
+    line-height: var(--lh-base);
+    letter-spacing: var(--tracking-snug);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    overflow-x: hidden;
+    transition: background-color var(--dur-slow) var(--ease-out-quart),
+                color var(--dur-slow) var(--ease-out-quart);
+}
+
+/* Ambient background — subtle radial wash that responds to theme */
+body::before {
+    content: '';
+    position: fixed;
+    inset: -10vh -10vw;
+    pointer-events: none;
+    z-index: -2;
+    background:
+        radial-gradient(40rem 30rem at 90% -10%, rgba(var(--color-accent-rgb), .18), transparent 60%),
+        radial-gradient(50rem 35rem at -10% 110%, rgba(var(--color-primary-rgb), .14), transparent 60%);
+    transition: opacity var(--dur-slow) ease;
+}
+
+/* Secondary ambient blob layer — only visible at desktop widths so the
+   wide canvas isn't a void around the centered card. */
+body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: -1;
+    opacity: 0;
+    transition: opacity var(--dur-slow) ease;
+    background:
+        radial-gradient(22rem 16rem at 8% 30%,  rgba(var(--color-primary-rgb), .25), transparent 65%),
+        radial-gradient(20rem 14rem at 92% 22%, rgba(var(--color-accent-rgb), .22), transparent 65%),
+        radial-gradient(26rem 18rem at 12% 88%, rgba(var(--color-success-rgb), .18), transparent 65%),
+        radial-gradient(24rem 16rem at 88% 82%, rgba(var(--color-info-rgb), .20), transparent 65%);
+    filter: blur(40px);
+}
+@media (min-width: 1024px) {
+    body::after { opacity: 0.55; }
+}
+@media (min-width: 1440px) {
+    body::after { opacity: 0.7; }
+}
+@media (prefers-reduced-motion: reduce) {
+    body::after { opacity: 0; }
+}
+
+h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    line-height: var(--lh-tight);
+    letter-spacing: var(--tracking-tight);
+    margin: 0;
+    color: var(--color-ink);
+}
+
+h1 { font-size: var(--fs-2xl); }
+h2 { font-size: var(--fs-xl); }
+h3 { font-size: var(--fs-lg); }
+h4 { font-size: var(--fs-md); font-weight: 700; }
+
+p {
+    margin: 0;
+    line-height: var(--lh-base);
+}
+
+button, input, textarea, select {
+    font-family: inherit;
+    font-size: inherit;
+    color: inherit;
+}
+
+button {
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    padding: 0;
+}
+
+input, textarea {
+    background: transparent;
+}
+
+a {
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+/* -------- App shell -------- */
+.app-container,
+.app-container-fullwidth {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    width: 100%;
+    padding: clamp(var(--space-md), 3vw, var(--space-2xl));
+    box-sizing: border-box;
+    margin: 0 auto;
+    min-height: 100vh;
+}
+.app-container       { max-width: 760px; }
+.app-container-fullwidth { max-width: 1280px; }
+
+/* Tablet+ vertical centering — content sits in middle, not pinned to top. */
+@media (min-width: 720px) {
+    .app-container,
+    .app-container-fullwidth {
+        justify-content: center;
+        padding-block: clamp(var(--space-xl), 5vh, var(--space-4xl));
+    }
+}
+
+/* Desktop — wider quiz container so it feels substantial. */
+@media (min-width: 1024px) {
+    .app-container        { max-width: 880px; }
+    .app-container-fullwidth { max-width: 1320px; }
+}
+
+/* Wide desktop — even more room. */
+@media (min-width: 1440px) {
+    .app-container        { max-width: 960px; }
+}
+
+/* Mobile — card hugs the viewport edge for a native feel. */
+@media (max-width: 480px) {
+    .app-container,
+    .app-container-fullwidth {
+        padding: var(--space-sm);
+    }
+}
+@media (max-width: 360px) {
+    .app-container,
+    .app-container-fullwidth {
+        padding: var(--space-xs);
+    }
+}
+
+/* -------- Global focus -------- */
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+a:focus-visible,
+[role="button"]:focus-visible,
+[tabindex]:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
+}
+
+/* -------- Touch-device hover suppression -------- */
+@media (hover: none) {
+    .menu-button:hover:not(:disabled),
+    .grid-button:hover:not(:disabled),
+    .option-button:hover:not(:disabled),
+    .response-submit:hover:not(:disabled),
+    .skip-button:hover:not(:disabled),
+    .back-button:hover:not(:disabled),
+    .ui-button:hover:not(:disabled),
+    .choice-card:hover:not(:disabled) {
+        transform: none;
+    }
+}
+
+/* -------- Reduced motion -------- */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* Selection */
+::selection {
+    background: rgba(var(--color-primary-rgb), .35);
+    color: var(--color-ink);
+}
+
+/* Scrollbars (subtle) */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border-strong) transparent;
+}
+*::-webkit-scrollbar { width: 10px; height: 10px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb {
+    background: var(--color-border-strong);
+    border-radius: var(--radius-pill);
+    border: 2px solid transparent;
+    background-clip: padding-box;
+}
+
+/* Material Symbols sizing helpers (kept for compat with existing Icon.js) */
+.material-symbols-rounded {
+    font-family: 'Material Symbols Rounded';
+    font-weight: 500;
+    font-style: normal;
+    line-height: 1;
+    letter-spacing: normal;
+    text-transform: none;
+    white-space: nowrap;
+    direction: ltr;
+    -webkit-font-smoothing: antialiased;
+    display: inline-block;
+}
+.app-icon { vertical-align: middle; }
+.icon-inline { font-size: 1.3em; }
+.icon-lg     { font-size: 2em; }
+.icon-xl     { font-size: 3em; }
+.icon-primary    { color: var(--color-primary); }
+.icon-correct    { color: var(--color-success); }
+.icon-incorrect  { color: var(--color-danger); }
+.icon-highlight  { color: var(--color-accent); }
+.icon-muted      { color: var(--color-ink-muted); }
+.icon-pop {
+    display: inline-block;
+    animation: icon-pop var(--dur-slow) var(--ease-pop) both;
+}
+@keyframes icon-pop {
+    0%   { transform: scale(.5); opacity: 0; }
+    60%  { transform: scale(1.15); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+}

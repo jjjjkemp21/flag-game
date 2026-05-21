@@ -1,0 +1,215 @@
+/* =================================================================
+   Design Tokens — single source of truth for the design system.
+   Colors, typography, spacing, radii, shadows, motion.
+   Light + dark themes via [data-theme='dark'].
+   ================================================================= */
+
+:root {
+    /* -------- Brand palette (Light/Cream theme) -------- */
+    --color-bg:           #FFF7EC;
+    --color-bg-soft:      #FCEEDC;
+    --color-bg-elev-1:    #FFFFFF;
+    --color-bg-elev-2:    #FFFDF7;
+    --color-ink:          #1F1A3B;
+    --color-ink-soft:     #5B5677;
+    --color-ink-muted:    #8C88A6;
+    --color-border:       #EADFC9;
+    --color-border-strong:#D8C8AB;
+
+    --color-primary:       #5B5BF6;
+    --color-primary-deep:  #3F3FD1;
+    --color-primary-soft:  #E6E5FF;
+    --color-primary-rgb:   91, 91, 246;
+
+    --color-accent:        #FFC247;
+    --color-accent-deep:   #E5A018;
+    --color-accent-soft:   #FFF1CA;
+    --color-accent-rgb:    255, 194, 71;
+
+    --color-success:       #19C37D;
+    --color-success-deep:  #109764;
+    --color-success-soft:  #D4F5E5;
+    --color-success-rgb:   25, 195, 125;
+
+    --color-danger:        #FF5C6C;
+    --color-danger-deep:   #D9384B;
+    --color-danger-soft:   #FFDDE1;
+    --color-danger-rgb:    255, 92, 108;
+
+    --color-info:          #2EC4D3;
+    --color-info-deep:     #1FA0AC;
+    --color-info-soft:     #D2F3F6;
+    --color-info-rgb:      46, 196, 211;
+
+    --color-purple:        #A270FF;
+    --color-purple-deep:   #7E4FE0;
+    --color-purple-soft:   #ECDDFF;
+
+    /* -------- Gradients -------- */
+    --grad-hero:    linear-gradient(135deg, #FFC247 0%, #FF7E8A 45%, #5B5BF6 100%);
+    --grad-success: linear-gradient(135deg, #19C37D 0%, #2EC4D3 100%);
+    --grad-danger:  linear-gradient(135deg, #FF5C6C 0%, #FF9A5A 100%);
+    --grad-primary: linear-gradient(135deg, #5B5BF6 0%, #8A8CFF 100%);
+    --grad-accent:  linear-gradient(135deg, #FFC247 0%, #FFA500 100%);
+    --grad-card:    linear-gradient(180deg, #FFFFFF 0%, #FFF7EC 100%);
+    --grad-info:    linear-gradient(135deg, #2EC4D3 0%, #5B5BF6 100%);
+
+    /* Legacy aliases for old class names (keeps refactor incremental) */
+    --background-color:        var(--color-bg);
+    --container-background:     var(--color-bg-elev-1);
+    --text-color:               var(--color-ink);
+    --text-color-secondary:     var(--color-ink-soft);
+    --border-color:             var(--color-border);
+    --shadow-color:             rgba(31, 26, 59, .08);
+    --primary-color:            var(--color-primary);
+    --primary-hover-color:      var(--color-primary-deep);
+    --primary-rgb:              var(--color-primary-rgb);
+    --primary-color-translucent:rgba(var(--color-primary-rgb), .18);
+    --correct-color:            var(--color-success);
+    --correct-border-color:     var(--color-success-deep);
+    --correct-rgb:              var(--color-success-rgb);
+    --incorrect-color:          var(--color-danger);
+    --incorrect-border-color:   var(--color-danger-deep);
+    --incorrect-color-translucent: rgba(var(--color-danger-rgb), .18);
+    --button-secondary-bg:      var(--color-bg-soft);
+    --button-secondary-hover-bg: var(--color-border);
+    --highlight-color:          var(--color-accent);
+    --highlight-hover-color:    var(--color-accent-deep);
+    --color-c2:                 var(--color-success);
+    --color-c2-hover:           var(--color-success-deep);
+    --color-c3:                 var(--color-accent);
+    --color-c3-hover:           var(--color-accent-deep);
+    --color-c4:                 var(--color-purple);
+    --color-c4-hover:           var(--color-purple-deep);
+
+    /* -------- Typography -------- */
+    --font-display: 'Fredoka', 'Nunito', 'Segoe UI', system-ui, -apple-system, sans-serif;
+    --font-body:    'Nunito', 'Segoe UI', system-ui, -apple-system, sans-serif;
+
+    --fs-xs:  clamp(0.75rem, 0.70rem + 0.20vw, 0.85rem);
+    --fs-sm:  clamp(0.875rem, 0.82rem + 0.25vw, 1.00rem);
+    --fs-md:  clamp(1.00rem,  0.94rem + 0.30vw, 1.125rem);
+    --fs-lg:  clamp(1.25rem,  1.10rem + 0.60vw, 1.50rem);
+    --fs-xl:  clamp(1.75rem,  1.40rem + 1.40vw, 2.25rem);
+    --fs-2xl: clamp(2.20rem,  1.70rem + 2.00vw, 3.20rem);
+
+    --lh-tight: 1.15;
+    --lh-snug:  1.35;
+    --lh-base:  1.55;
+
+    --tracking-tight: -0.02em;
+    --tracking-snug:  -0.01em;
+    --tracking-base:   0;
+    --tracking-wide:   0.04em;
+
+    /* -------- Spacing -------- */
+    --space-xs: 4px;
+    --space-sm: 8px;
+    --space-md: 12px;
+    --space-lg: 16px;
+    --space-xl: 24px;
+    --space-2xl: 32px;
+    --space-3xl: 48px;
+    --space-4xl: 64px;
+
+    /* -------- Radii -------- */
+    --radius-xs:  4px;
+    --radius-sm:  8px;
+    --radius-md:  14px;
+    --radius-lg:  22px;
+    --radius-xl:  30px;
+    --radius-pill: 999px;
+
+    /* -------- Shadows (layered, soft) -------- */
+    --shadow-sm:  0 1px 2px rgba(31,26,59,.06), 0 1px 1px rgba(31,26,59,.04);
+    --shadow-md:  0 6px 14px rgba(91,91,246,.10), 0 2px 4px rgba(31,26,59,.06);
+    --shadow-lg:  0 18px 36px rgba(91,91,246,.16), 0 6px 12px rgba(31,26,59,.07);
+    --shadow-xl:  0 28px 60px rgba(91,91,246,.22), 0 10px 18px rgba(31,26,59,.08);
+    --shadow-inset: inset 0 3px 0 rgba(0,0,0,.06);
+    --shadow-glow-primary: 0 0 0 4px rgba(91,91,246,.20);
+    --shadow-glow-success: 0 0 0 4px rgba(25,195,125,.25);
+    --shadow-glow-danger:  0 0 0 4px rgba(255,92,108,.25);
+    --shadow-glow-accent:  0 0 0 4px rgba(255,194,71,.30);
+    --container-shadow:     var(--shadow-md);
+    --container-shadow-lg:  var(--shadow-lg);
+
+    /* -------- Motion -------- */
+    --ease-out-quart: cubic-bezier(.25,.46,.45,.94);
+    --ease-spring:    cubic-bezier(.34,1.56,.64,1);
+    --ease-pop:       cubic-bezier(.18,.89,.32,1.28);
+    --ease-back-in:   cubic-bezier(.6,-.28,.74,.05);
+    --dur-fast:  120ms;
+    --dur-base:  220ms;
+    --dur-slow:  420ms;
+    --dur-deliberate: 700ms;
+
+    /* -------- Focus / accessibility -------- */
+    --focus-ring: 0 0 0 4px rgba(var(--color-primary-rgb), .35);
+
+    /* -------- Z index scale -------- */
+    --z-base:        0;
+    --z-header:      10;
+    --z-toast:       800;
+    --z-overlay:     900;
+    --z-modal:      1000;
+
+    color-scheme: light;
+}
+
+[data-theme='dark'] {
+    --color-bg:           #0F0E1E;
+    --color-bg-soft:      #15142B;
+    --color-bg-elev-1:    #1A1832;
+    --color-bg-elev-2:    #221F40;
+    --color-ink:          #F5F2FF;
+    --color-ink-soft:     #BFB9DC;
+    --color-ink-muted:    #8C88B0;
+    --color-border:       #2B2748;
+    --color-border-strong:#3D3865;
+
+    --color-primary:       #8A8CFF;
+    --color-primary-deep:  #6F70F1;
+    --color-primary-soft:  #2B2A55;
+    --color-primary-rgb:   138, 140, 255;
+
+    --color-accent:        #FFD075;
+    --color-accent-deep:   #E5A018;
+    --color-accent-soft:   #463A1F;
+    --color-accent-rgb:    255, 208, 117;
+
+    --color-success:       #2DDE94;
+    --color-success-deep:  #1FBE79;
+    --color-success-soft:  #1A3F30;
+    --color-success-rgb:   45, 222, 148;
+
+    --color-danger:        #FF7782;
+    --color-danger-deep:   #E55867;
+    --color-danger-soft:   #45222A;
+    --color-danger-rgb:    255, 119, 130;
+
+    --color-info:          #54D6E1;
+    --color-info-deep:     #2EC4D3;
+    --color-info-soft:     #1C3D44;
+    --color-info-rgb:      84, 214, 225;
+
+    --color-purple:        #B98EFF;
+    --color-purple-deep:   #A270FF;
+    --color-purple-soft:   #2E2348;
+
+    --grad-card:    linear-gradient(180deg, #1A1832 0%, #0F0E1E 100%);
+    --grad-hero:    linear-gradient(135deg, #FFD075 0%, #FF7E8A 45%, #8A8CFF 100%);
+
+    --shadow-color:             rgba(0,0,0,.30);
+    --shadow-sm:  0 1px 2px rgba(0,0,0,.30), 0 1px 1px rgba(0,0,0,.20);
+    --shadow-md:  0 6px 14px rgba(0,0,0,.40), 0 2px 4px rgba(0,0,0,.30);
+    --shadow-lg:  0 18px 36px rgba(0,0,0,.50), 0 6px 12px rgba(0,0,0,.30);
+    --shadow-xl:  0 28px 60px rgba(0,0,0,.60), 0 10px 18px rgba(0,0,0,.40);
+    --shadow-glow-primary: 0 0 0 4px rgba(138,140,255,.30);
+    --shadow-glow-success: 0 0 0 4px rgba(45,222,148,.30);
+    --shadow-glow-danger:  0 0 0 4px rgba(255,119,130,.30);
+    --shadow-glow-accent:  0 0 0 4px rgba(255,208,117,.30);
+
+    --focus-ring: 0 0 0 4px rgba(var(--color-primary-rgb), .45);
+
+    color-scheme: dark;
+}

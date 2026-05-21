@@ -1,58 +1,68 @@
 import React, { useState, useEffect } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
 import Icon from './Icon';
-import './Menu.css';
-import './QuizStyles.css';
+import Mascot from '../assets/illustrations/Mascot';
+import { useAudio } from '../audio/AudioProvider';
+import { springs } from '../motion';
+
+const MODES = [
+    { key: 'pixelated-quiz',     title: 'Pixelated Guess', desc: 'Reveal flags in stages',     icon: 'blur_on',       tone: 'success',  scoreKey: 'pixelatedHighScore',     mood: 'think' },
+    { key: 'frenzy-quiz',        title: 'Frenzy Mode',     desc: 'Race the clock on 4 flags',  icon: 'bolt',          tone: 'accent',   scoreKey: 'frenzyHighScore',        mood: 'cheer' },
+    { key: 'longest-route-quiz', title: 'Longest Chain',   desc: 'Travel from country to country', icon: 'route',     tone: 'primary',  scoreKey: 'longestRouteHighScore',  mood: 'wave'  },
+    { key: 'language-quiz',      title: 'Language Quiz',   desc: 'Match phrase to language',   icon: 'translate',     tone: 'purple',   scoreKey: 'languageHighScore',      mood: 'idle'  },
+];
 
 function BonusMenu({ setView }) {
-    const [frenzyHighScore, setFrenzyHighScore] = useState(0);
-    const [pixelHighScore, setPixelHighScore] = useState(0);
-    const [longestRouteHighScore, setLongestRouteHighScore] = useState(0);
-    const [languageHighScore, setLanguageHighScore] = useState(0);
+    const audio = useAudio();
+    const prefersReduced = useReducedMotion();
+    const [scores, setScores] = useState({});
 
     useEffect(() => {
-        const fScore = localStorage.getItem('frenzyHighScore') || 0;
-        const pScore = localStorage.getItem('pixelatedHighScore') || 0;
-        const lrScore = localStorage.getItem('longestRouteHighScore') || 0;
-        const langScore = localStorage.getItem('languageHighScore') || 0;
-
-        setFrenzyHighScore(parseInt(fScore, 10));
-        setPixelHighScore(parseInt(pScore, 10));
-        setLongestRouteHighScore(parseInt(lrScore, 10));
-        setLanguageHighScore(parseInt(langScore, 10));
+        const next = {};
+        MODES.forEach(m => {
+            next[m.scoreKey] = parseInt(localStorage.getItem(m.scoreKey) || '0', 10);
+        });
+        setScores(next);
     }, []);
 
     return (
-        <div className="quiz-box bonus-menu-box">
-            <button className="back-button" onClick={() => setView('menu')} aria-label="Back">
-                <Icon name="arrow_back" variant="primary" />
-            </button>
-            <h1 className="menu-title">Bonus Modes</h1>
+        <div className="bonus-menu-box">
+            <div className="quiz-topbar">
+                <button className="back-button" onClick={() => { audio.play('click'); setView('menu'); }} aria-label="Back">
+                    <Icon name="arrow_back" /> Back
+                </button>
+            </div>
+            <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 'var(--space-md)',
+                alignSelf: 'center',
+                flexWrap: 'wrap',
+                justifyContent: 'center'
+            }}>
+                <Mascot size={64} mood="think" />
+                <h1 className="menu-title" style={{ margin: 0 }}>Bonus Modes</h1>
+            </div>
             <p className="menu-subtitle">Try a fun challenge!</p>
-            <div className="menu-options">
-                <button className="menu-button c2" onClick={() => setView('pixelated-quiz')}>
-                    Pixelated Guess
-                    <span className="menu-button-stats">
-                        High Score: {pixelHighScore}
-                    </span>
-                </button>
-                <button className="menu-button c3" onClick={() => setView('frenzy-quiz')}>
-                    Frenzy Mode
-                    <span className="menu-button-stats">
-                        High Score: {frenzyHighScore}
-                    </span>
-                </button>
-                <button className="menu-button c1" onClick={() => setView('longest-route-quiz')}>
-                    Longest Chain
-                    <span className="menu-button-stats">
-                        High Score: {longestRouteHighScore}
-                    </span>
-                </button>
-                <button className="menu-button c4" onClick={() => setView('language-quiz')}>
-                    Language Quiz
-                    <span className="menu-button-stats">
-                        High Score: {languageHighScore}
-                    </span>
-                </button>
+            <div className="mode-grid">
+                {MODES.map((mode, i) => (
+                    <motion.button
+                        key={mode.key}
+                        className={`mode-card tone-${mode.tone}`}
+                        onClick={() => { audio.play('click'); setView(mode.key); }}
+                        initial={prefersReduced ? false : { opacity: 0, y: 18 }}
+                        animate={prefersReduced ? false : { opacity: 1, y: 0 }}
+                        transition={{ ...springs.gentle, delay: 0.08 * i }}
+                        whileHover={prefersReduced ? undefined : { y: -3 }}
+                        whileTap={prefersReduced ? undefined : { scale: 0.97 }}
+                        aria-label={`${mode.title} — High score ${scores[mode.scoreKey] || 0}`}
+                    >
+                        <div className="mode-card__badge">High Score: {scores[mode.scoreKey] || 0}</div>
+                        <div className="mode-card__title">{mode.title}</div>
+                        <div className="mode-card__desc">{mode.desc}</div>
+                        <Icon name={mode.icon} className="mode-card__icon" />
+                    </motion.button>
+                ))}
             </div>
         </div>
     );
