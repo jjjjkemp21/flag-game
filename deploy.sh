@@ -31,6 +31,7 @@ docker run -d --restart always --name flag-game --network=my_proxy_network \
   -e DB_PATH=/data/flagquest.db \
   -e JWT_SECRET="${JWT_SECRET}" \
   -e ADMIN_USERNAME="${ADMIN_USERNAME}" \
+  -e ADMIN_PASSWORD="${ADMIN_PASSWORD}" \
   flag-game
 
 echo "🚀 Deployment finished successfully!"

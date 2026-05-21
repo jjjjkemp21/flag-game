@@ -1,5 +1,6 @@
 const path = require('path');
 const fs = require('fs');
+const bcrypt = require('bcryptjs');
 const Database = require('better-sqlite3');
 
 const DB_PATH = process.env.DB_PATH || '/data/flagquest.db';
@@ -63,10 +64,23 @@ db.exec(`
     );
 `);
 
-// Grant admin to the configured username if it already exists.
+// Seed / promote the admin account from env. If ADMIN_PASSWORD is set, the admin
+// account is created (or its password reset) on boot so it can always log in.
 const adminUsername = process.env.ADMIN_USERNAME;
+const adminPassword = process.env.ADMIN_PASSWORD;
 if (adminUsername) {
-    db.prepare('UPDATE users SET is_admin = 1 WHERE username = ?').run(adminUsername);
+    const existing = db.prepare('SELECT id FROM users WHERE username = ?').get(adminUsername);
+    if (existing) {
+        db.prepare('UPDATE users SET is_admin = 1 WHERE id = ?').run(existing.id);
+        if (adminPassword) {
+            db.prepare('UPDATE users SET password_hash = ? WHERE id = ?')
+                .run(bcrypt.hashSync(adminPassword, 10), existing.id);
+        }
+    } else if (adminPassword) {
+        db.prepare(
+            'INSERT INTO users (username, password_hash, created_at, is_admin) VALUES (?, ?, ?, 1)'
+        ).run(adminUsername, bcrypt.hashSync(adminPassword, 10), Date.now());
+    }
 }
 
 module.exports = db;
