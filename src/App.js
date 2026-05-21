@@ -7,8 +7,16 @@ import FreeResponseQuiz from './components/FreeResponseQuiz';
 import Settings from './components/Settings';
 import QuizMenu from './components/QuizMenu';
 import BonusMenu from './components/BonusMenu';
+import AuthScreen from './components/AuthScreen';
+import Leaderboard from './components/Leaderboard';
+import Friends from './components/Friends';
+import TopBar from './components/TopBar';
 import Spinner from './assets/illustrations/Spinner';
 import { useAudio } from './audio/AudioProvider';
+import { useAuth } from './auth/AuthProvider';
+import { api } from './api/client';
+import { extractFlagStats, mergeFlagStats, applyStatsToFlags, pushStats } from './lib/syncStats';
+import { computeXp, readBonusScores } from './lib/xp';
 import { variants } from './motion';
 
 // Heavy bonus modes — lazy-loaded
@@ -39,6 +47,7 @@ function App() {
     const [questionHistory, setQuestionHistory] = useState([]);
     const prefersReduced = useReducedMotion();
     const audio = useAudio();
+    const { isAuthed, patchUser } = useAuth();
 
     const updateQuestionHistory = useCallback((flagCode) => {
         setQuestionHistory(prev => [...prev.slice(-4), flagCode]);
@@ -123,8 +132,27 @@ function App() {
     useEffect(() => {
         if (flagsData.length > 0 && !isLoading) {
             localStorage.setItem('flagQuizScores', JSON.stringify(flagsData));
+            if (isAuthed) {
+                pushStats(flagsData);
+                patchUser({ xp: computeXp(flagsData, readBonusScores()) });
+            }
         }
-    }, [flagsData, isLoading]);
+    }, [flagsData, isLoading, isAuthed, patchUser]);
+
+    // After a successful login/register, merge the account's saved progress with the
+    // guest's local progress, apply it in-memory, and push the merged result back.
+    const handleAuthed = useCallback(async () => {
+        try {
+            const remote = await api.get('/stats');
+            const merged = mergeFlagStats(extractFlagStats(flagsData), remote.flagStats || []);
+            const mergedFlags = applyStatsToFlags(flagsData, merged);
+            setFlagsData(mergedFlags);
+            await api.put('/stats', { flagStats: merged, bonusScores: readBonusScores() });
+            patchUser({ xp: computeXp(mergedFlags, readBonusScores()) });
+        } catch (_) {
+            /* keep playing with local progress if the sync fails */
+        }
+    }, [flagsData, patchUser]);
 
     const handleResetStats = () => {
         localStorage.removeItem('flagQuizScores');
@@ -210,6 +238,12 @@ function App() {
                 );
             case 'bonus-menu':
                 return <BonusMenu setView={setView} />;
+            case 'login':
+                return <AuthScreen setView={setView} onAuthed={handleAuthed} />;
+            case 'leaderboard':
+                return <Leaderboard setView={setView} />;
+            case 'friends':
+                return <Friends setView={setView} />;
             case 'settings':
                 return (
                     <Settings
@@ -232,6 +266,7 @@ function App() {
 
     return (
         <div className={containerClassName}>
+            <TopBar setView={setView} />
             <AnimatePresence mode="wait" initial={false}>
                 <motion.div
                     key={view}

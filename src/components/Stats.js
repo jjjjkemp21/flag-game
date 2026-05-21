@@ -3,6 +3,7 @@ import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
 import { ProgressRing, Pill } from './ui';
 import BadgeRing from '../assets/illustrations/BadgeRing';
 import Icon from './Icon';
+import { computeXp, readBonusScores } from '../lib/xp';
 
 function CountUp({ to = 0, duration = 0.9 }) {
     const count = useMotionValue(0);
@@ -51,6 +52,8 @@ function Stats({ flagsData }) {
 
     if (!stats) return null;
 
+    const xp = computeXp(flagsData, readBonusScores());
+
     const tiers = [
         { tier: 'bronze',   label: 'Bronze',   threshold: 10 },
         { tier: 'silver',   label: 'Silver',   threshold: 50 },
@@ -61,6 +64,10 @@ function Stats({ flagsData }) {
     return (
         <div className="stats-box">
             <h2 className="text-center">Your Progress</h2>
+
+            <div style={{ display: 'flex', justifyContent: 'center' }}>
+                <Pill tone="primary" icon="star"><CountUp to={xp} /> XP</Pill>
+            </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'var(--space-md)' }}>
                 <ProgressRing value={stats.mastery} size={140} stroke={12} tone="primary" label={`${stats.masteredCount} of ${stats.total} mastered`}>

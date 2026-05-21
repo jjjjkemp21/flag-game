@@ -23,6 +23,11 @@ yarn-error.log*
 # Testing / coverage
 /coverage
 
+# Local SQLite database files
+*.db
+*.db-shm
+*.db-wal
+
 # Editor / OS
 .vscode/
 .idea/

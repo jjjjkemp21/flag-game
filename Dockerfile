@@ -1,6 +1,5 @@
-# swag instagram
-# Stage 1: Build the React Application
-FROM node:18-alpine AS builder
+# Stage 1: Build the React application
+FROM node:18-bookworm-slim AS builder
 WORKDIR /app
 COPY package*.json ./
 RUN npm install
@@ -9,17 +8,23 @@ RUN npm run build
 
 # ---
 
-# Stage 2: Serve the application with Apache (HTTP only)
-FROM httpd:2.4-alpine
+# Stage 2: Node server that serves the build AND the /api
+FROM node:18-bookworm-slim
+WORKDIR /app
 
-# Copy the build output from the builder stage
-COPY --from=builder /app/build /usr/local/apache2/htdocs/
+# Build tools so better-sqlite3 can compile from source if no ARM prebuild matches.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends python3 make g++ \
+    && rm -rf /var/lib/apt/lists/*
 
-# Copy the .htaccess file for SPA routing
-COPY --from=builder /app/src/.htaccess /usr/local/apache2/htdocs/
+# Install server dependencies (better-sqlite3 builds a native module here)
+COPY server/package*.json ./server/
+RUN cd server && npm install --omit=dev
 
-# Expose port 80 for the web server
+# App code + built frontend
+COPY server ./server
+COPY --from=builder /app/build ./build
+
 EXPOSE 80
-
-# Start Apache in the foreground
-CMD ["httpd-foreground"]
+ENV PORT=80
+CMD ["node", "server/index.js"]

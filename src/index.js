@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import App from './App';
 import { AudioProvider } from './audio/AudioProvider';
 import { ToastProvider } from './components/ui/Toast';
+import { AuthProvider } from './auth/AuthProvider';
 
 import './styles/tokens.css';
 import './styles/base.css';
@@ -14,7 +15,9 @@ root.render(
     <React.StrictMode>
         <AudioProvider>
             <ToastProvider>
-                <App />
+                <AuthProvider>
+                    <App />
+                </AuthProvider>
             </ToastProvider>
         </AudioProvider>
     </React.StrictMode>
