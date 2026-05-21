@@ -19,12 +19,7 @@ function Stats({ flagsData }) {
     const [highScores, setHighScores] = useState({});
 
     useEffect(() => {
-        setHighScores({
-            frenzy: parseInt(localStorage.getItem('frenzyHighScore') || '0', 10),
-            pixelated: parseInt(localStorage.getItem('pixelatedHighScore') || '0', 10),
-            longestRoute: parseInt(localStorage.getItem('longestRouteHighScore') || '0', 10),
-            language: parseInt(localStorage.getItem('languageHighScore') || '0', 10),
-        });
+        setHighScores(readBonusScores());
     }, [flagsData]);
 
     const stats = useMemo(() => {

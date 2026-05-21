@@ -7,6 +7,7 @@ import Mascot from '../assets/illustrations/Mascot';
 import Confetti from '../assets/illustrations/Confetti';
 import Spinner from '../assets/illustrations/Spinner';
 import { useAudio } from '../audio/AudioProvider';
+import { getHighScore, recordHighScore } from '../lib/progress';
 import { variants } from '../motion';
 
 function deg2rad(deg) { return deg * (Math.PI / 180); }
@@ -42,9 +43,7 @@ function LongestRouteQuiz({ allFlagsData, setView }) {
     const [isLoading, setIsLoading] = useState(true);
 
     const [score, setScore] = useState(0);
-    const [longestRouteHighScore, setLongestRouteHighScore] = useState(() =>
-        parseInt(localStorage.getItem('longestRouteHighScore') || '0', 10)
-    );
+    const [longestRouteHighScore, setLongestRouteHighScore] = useState(() => getHighScore('longestRoute'));
 
     const [quizStats, setQuizStats] = useState(null);
     const [flashColor, setFlashColor] = useState(null);
@@ -180,7 +179,7 @@ function LongestRouteQuiz({ allFlagsData, setView }) {
                 setFeedback({ text: 'Perfect Run! The final flag was:', answer: finalFlagName, color: 'var(--color-success-deep)' });
                 const finalScore = quizPath.length;
                 if (finalScore > longestRouteHighScore) {
-                    localStorage.setItem('longestRouteHighScore', finalScore.toString());
+                    recordHighScore('longestRoute', finalScore);
                     setLongestRouteHighScore(finalScore);
                 }
                 setGameOver(true);

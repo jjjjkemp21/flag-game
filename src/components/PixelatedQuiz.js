@@ -7,12 +7,12 @@ import Mascot from '../assets/illustrations/Mascot';
 import Confetti from '../assets/illustrations/Confetti';
 import Spinner from '../assets/illustrations/Spinner';
 import { useAudio } from '../audio/AudioProvider';
+import { getHighScore, recordHighScore } from '../lib/progress';
 import { variants, springs } from '../motion';
 
 const IMAGE_BASE_URL = './assets/flags/';
 const GAME_DURATION_MS = 180000;
 const NEXT_FLAG_DELAY_MS = 2000;
-const PIXELATED_HIGH_SCORE_KEY = 'pixelatedHighScore';
 
 const TOTAL_LIVES = 5;
 const BLUR_LEVELS = [20, 16, 11, 6, 2, 0];
@@ -28,7 +28,7 @@ function PixelatedQuiz({ allFlagsData, setView }) {
     const [inputValue, setInputValue] = useState('');
     const [feedback, setFeedback] = useState({ text: 'Guess the country!', color: 'var(--color-ink-soft)' });
     const [score, setScore] = useState(0);
-    const [highScore, setHighScore] = useState(0);
+    const [highScore, setHighScore] = useState(() => getHighScore('pixelated'));
     const [gameTimer, setGameTimer] = useState(GAME_DURATION_MS);
     const [gameOver, setGameOver] = useState(false);
     const [gameStarted, setGameStarted] = useState(false);
@@ -44,8 +44,7 @@ function PixelatedQuiz({ allFlagsData, setView }) {
     const nextFlagTimeoutRef = useRef(null);
 
     useEffect(() => {
-        const savedHighScore = localStorage.getItem(PIXELATED_HIGH_SCORE_KEY);
-        setHighScore(savedHighScore ? parseInt(savedHighScore, 10) : 0);
+        setHighScore(getHighScore('pixelated'));
     }, []);
 
     const getRandomFlag = useCallback(() => {
@@ -122,7 +121,7 @@ function PixelatedQuiz({ allFlagsData, setView }) {
         if (gameOver && gameStarted) {
             if (score > highScore) {
                 setHighScore(score);
-                localStorage.setItem(PIXELATED_HIGH_SCORE_KEY, score.toString());
+                recordHighScore('pixelated', score);
             }
         }
     }, [gameOver, gameStarted, score, highScore]);

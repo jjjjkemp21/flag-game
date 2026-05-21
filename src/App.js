@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, Suspense, lazy } from 'react';
+import React, { useState, useEffect, useCallback, useRef, Suspense, lazy } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { select_next_flag } from './quiz_logic';
 import MainMenu from './components/MainMenu';
@@ -16,8 +16,9 @@ import Spinner from './assets/illustrations/Spinner';
 import { useAudio } from './audio/AudioProvider';
 import { useAuth } from './auth/AuthProvider';
 import { api } from './api/client';
-import { extractFlagStats, mergeFlagStats, applyStatsToFlags, pushStats } from './lib/syncStats';
+import { applyStatsToFlags, zeroFlagStats, pushStats } from './lib/syncStats';
 import { computeXp, readBonusScores } from './lib/xp';
+import { setAuthed, loadBonus, resetBonus } from './lib/progress';
 import { variants } from './motion';
 
 // Heavy bonus modes — lazy-loaded
@@ -48,7 +49,13 @@ function App() {
     const [questionHistory, setQuestionHistory] = useState([]);
     const prefersReduced = useReducedMotion();
     const audio = useAudio();
-    const { isAuthed, patchUser } = useAuth();
+    const { isAuthed, status, patchUser } = useAuth();
+
+    // Refs let the save effect read the latest auth state without re-running on
+    // login/logout (which would otherwise push before account progress loads).
+    const authedRef = useRef(isAuthed);
+    authedRef.current = isAuthed;
+    const progressReadyRef = useRef(false);
 
     const updateQuestionHistory = useCallback((flagCode) => {
         setQuestionHistory(prev => [...prev.slice(-4), flagCode]);
@@ -68,58 +75,27 @@ function App() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [view]);
 
+    // Load the flag catalog with zeroed progress. Progress itself is never read
+    // from localStorage — it is tied to the account and loaded separately below.
     const loadData = useCallback(async () => {
         setIsLoading(true);
         try {
             const response = await fetch(DATA_URL);
             const freshData = await response.json();
-            const savedDataString = localStorage.getItem('flagQuizScores');
-
-            const processFlag = (flag) => ({
+            const initializedData = freshData.map(flag => ({
                 ...flag,
                 name: flag.country,
                 file: `${flag.code.toLowerCase()}.svg`,
                 aliases: flag.aliases || [],
-            });
-
-            if (savedDataString) {
-                const savedData = JSON.parse(savedDataString);
-                const savedDataMap = new Map(savedData.map(flag => [flag.code, flag]));
-
-                const mergedData = freshData.map(freshFlag => {
-                    const savedFlag = savedDataMap.get(freshFlag.code);
-                    if (savedFlag) {
-                        return {
-                            correct: 0,
-                            incorrect: 0,
-                            streak: 0,
-                            nextReview: null,
-                            lastAnswered: null,
-                            ...savedFlag,
-                            ...processFlag(freshFlag),
-                        };
-                    }
-                    return {
-                        ...processFlag(freshFlag),
-                        correct: 0,
-                        incorrect: 0,
-                        streak: 0,
-                        nextReview: null,
-                        lastAnswered: null,
-                    };
-                });
-                setFlagsData(mergedData);
-            } else {
-                const initializedData = freshData.map(flag => ({
-                    ...processFlag(flag),
-                    correct: 0,
-                    incorrect: 0,
-                    streak: 0,
-                    nextReview: null,
-                    lastAnswered: null,
-                }));
-                setFlagsData(initializedData);
-            }
+                correct: 0,
+                incorrect: 0,
+                streak: 0,
+                lapses: 0,
+                isLeech: false,
+                nextReview: null,
+                lastAnswered: null,
+            }));
+            setFlagsData(initializedData);
         } catch (error) {
             console.error("Failed to load flags data:", error);
         }
@@ -130,38 +106,54 @@ function App() {
         loadData();
     }, [loadData]);
 
+    // Persist progress only for logged-in users; guests are intentionally
+    // ephemeral. Guarded by progressReadyRef so we don't push before the
+    // account's progress has finished loading on sign-in.
     useEffect(() => {
-        if (flagsData.length > 0 && !isLoading) {
-            localStorage.setItem('flagQuizScores', JSON.stringify(flagsData));
-            if (isAuthed) {
-                pushStats(flagsData);
-                patchUser({ xp: computeXp(flagsData, readBonusScores()) });
-            }
+        if (isLoading || flagsData.length === 0) return;
+        if (!progressReadyRef.current) return;
+        if (authedRef.current) {
+            pushStats(flagsData);
+            patchUser({ xp: computeXp(flagsData, readBonusScores()) });
         }
-    }, [flagsData, isLoading, isAuthed, patchUser]);
+    }, [flagsData, isLoading, patchUser]);
 
-    // After a successful login/register, merge the account's saved progress with the
-    // guest's local progress, apply it in-memory, and push the merged result back.
-    const handleAuthed = useCallback(async () => {
-        try {
-            const remote = await api.get('/stats');
-            const merged = mergeFlagStats(extractFlagStats(flagsData), remote.flagStats || []);
-            const mergedFlags = applyStatsToFlags(flagsData, merged);
-            setFlagsData(mergedFlags);
-            await api.put('/stats', { flagStats: merged, bonusScores: readBonusScores() });
-            patchUser({ xp: computeXp(mergedFlags, readBonusScores()) });
-        } catch (_) {
-            /* keep playing with local progress if the sync fails */
-        }
-    }, [flagsData, patchUser]);
+    // Load the account's progress when logged in; clear it for guests / on logout.
+    useEffect(() => {
+        if (status === 'loading' || isLoading || flagsData.length === 0) return;
+        let cancelled = false;
+
+        (async () => {
+            if (isAuthed) {
+                setAuthed(true);
+                try {
+                    const remote = await api.get('/stats');
+                    if (cancelled) return;
+                    loadBonus(remote.bonusScores || {});
+                    setFlagsData(prev => applyStatsToFlags(zeroFlagStats(prev), remote.flagStats || []));
+                    patchUser({ xp: computeXp(remote.flagStats || [], remote.bonusScores || {}) });
+                } catch (_) {
+                    /* leave zeroed progress if the load fails */
+                }
+            } else {
+                setAuthed(false);
+                resetBonus();
+                setFlagsData(prev => zeroFlagStats(prev));
+            }
+            if (!cancelled) progressReadyRef.current = true;
+        })();
+
+        return () => { cancelled = true; };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isAuthed, status, isLoading]);
 
     const handleResetStats = () => {
-        localStorage.removeItem('flagQuizScores');
-        localStorage.removeItem('frenzyHighScore');
-        localStorage.removeItem('pixelatedHighScore');
-        localStorage.removeItem('longestRouteHighScore');
-        localStorage.removeItem('languageHighScore');
-        loadData();
+        resetBonus();
+        setFlagsData(prev => zeroFlagStats(prev));
+        if (authedRef.current) {
+            api.put('/stats', { flagStats: [], bonusScores: {} }).catch(() => {});
+            patchUser({ xp: 0 });
+        }
         setView('menu');
     };
 
@@ -240,7 +232,7 @@ function App() {
             case 'bonus-menu':
                 return <BonusMenu setView={setView} />;
             case 'login':
-                return <AuthScreen setView={setView} onAuthed={handleAuthed} />;
+                return <AuthScreen setView={setView} />;
             case 'leaderboard':
                 return <Leaderboard setView={setView} />;
             case 'friends':

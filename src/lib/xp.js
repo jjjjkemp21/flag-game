@@ -1,4 +1,5 @@
 // Client mirror of server/xp.js. Keep the two in sync.
+import { getBonus } from './progress';
 
 export const MASTERY_STREAK = 5;
 
@@ -22,13 +23,7 @@ export function computeXp(flagStats, bonusScores) {
     return totalCorrect * 10 + mastered * 50 + bonusTotal;
 }
 
-// Read the per-mode high scores that live in localStorage.
+// Bonus high scores now come from the in-memory progress store (account-tied).
 export function readBonusScores() {
-    const num = (k) => Number(localStorage.getItem(k)) || 0;
-    return {
-        frenzy: num('frenzyHighScore'),
-        pixelated: num('pixelatedHighScore'),
-        longestRoute: num('longestRouteHighScore'),
-        language: num('languageHighScore'),
-    };
+    return getBonus();
 }

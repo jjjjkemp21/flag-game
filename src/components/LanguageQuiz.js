@@ -6,11 +6,11 @@ import Mascot from '../assets/illustrations/Mascot';
 import Confetti from '../assets/illustrations/Confetti';
 import Spinner from '../assets/illustrations/Spinner';
 import { useAudio } from '../audio/AudioProvider';
+import { getHighScore, recordHighScore } from '../lib/progress';
 import { springs } from '../motion';
 
 const LANGUAGES_URL = './data/languages.json';
 const PHRASES_URL = './data/phrases.json';
-const HIGH_SCORE_KEY = 'languageHighScore';
 const TOTAL_LIVES = 3;
 
 function LanguageQuiz({ setView }) {
@@ -19,7 +19,7 @@ function LanguageQuiz({ setView }) {
     const [currentQuestion, setCurrentQuestion] = useState(null);
     const [options, setOptions] = useState([]);
     const [score, setScore] = useState(0);
-    const [highScore, setHighScore] = useState(0);
+    const [highScore, setHighScore] = useState(() => getHighScore('language'));
     const [lives, setLives] = useState(TOTAL_LIVES);
     const [isGameOver, setIsGameOver] = useState(false);
     const [feedback, setFeedback] = useState({ text: ' ' });
@@ -33,7 +33,7 @@ function LanguageQuiz({ setView }) {
     const audio = useAudio();
 
     useEffect(() => {
-        setHighScore(parseInt(localStorage.getItem(HIGH_SCORE_KEY) || 0, 10));
+        setHighScore(getHighScore('language'));
         async function loadData() {
             try {
                 const [langResponse, phraseResponse] = await Promise.all([
@@ -120,7 +120,7 @@ function LanguageQuiz({ setView }) {
             if (newLives <= 0) {
                 if (score > highScore) {
                     setHighScore(score);
-                    localStorage.setItem(HIGH_SCORE_KEY, score.toString());
+                    recordHighScore('language', score);
                 }
                 setTimeout(() => {
                     audio.play('gameOver');

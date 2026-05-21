@@ -3,13 +3,14 @@ import { motion, useReducedMotion } from 'framer-motion';
 import Icon from './Icon';
 import Mascot from '../assets/illustrations/Mascot';
 import { useAudio } from '../audio/AudioProvider';
+import { getBonus } from '../lib/progress';
 import { springs } from '../motion';
 
 const MODES = [
-    { key: 'pixelated-quiz',     title: 'Pixelated Guess', desc: 'Reveal flags in stages',     icon: 'blur_on',       tone: 'success',  scoreKey: 'pixelatedHighScore',     mood: 'think' },
-    { key: 'frenzy-quiz',        title: 'Frenzy Mode',     desc: 'Race the clock on 4 flags',  icon: 'bolt',          tone: 'accent',   scoreKey: 'frenzyHighScore',        mood: 'cheer' },
-    { key: 'longest-route-quiz', title: 'Longest Chain',   desc: 'Travel from country to country', icon: 'route',     tone: 'primary',  scoreKey: 'longestRouteHighScore',  mood: 'wave'  },
-    { key: 'language-quiz',      title: 'Language Quiz',   desc: 'Match phrase to language',   icon: 'translate',     tone: 'purple',   scoreKey: 'languageHighScore',      mood: 'idle'  },
+    { key: 'pixelated-quiz',     title: 'Pixelated Guess', desc: 'Reveal flags in stages',     icon: 'blur_on',       tone: 'success',  scoreKey: 'pixelated',     mood: 'think' },
+    { key: 'frenzy-quiz',        title: 'Frenzy Mode',     desc: 'Race the clock on 4 flags',  icon: 'bolt',          tone: 'accent',   scoreKey: 'frenzy',        mood: 'cheer' },
+    { key: 'longest-route-quiz', title: 'Longest Chain',   desc: 'Travel from country to country', icon: 'route',     tone: 'primary',  scoreKey: 'longestRoute',  mood: 'wave'  },
+    { key: 'language-quiz',      title: 'Language Quiz',   desc: 'Match phrase to language',   icon: 'translate',     tone: 'purple',   scoreKey: 'language',      mood: 'idle'  },
 ];
 
 function BonusMenu({ setView }) {
@@ -18,11 +19,7 @@ function BonusMenu({ setView }) {
     const [scores, setScores] = useState({});
 
     useEffect(() => {
-        const next = {};
-        MODES.forEach(m => {
-            next[m.scoreKey] = parseInt(localStorage.getItem(m.scoreKey) || '0', 10);
-        });
-        setScores(next);
+        setScores(getBonus());
     }, []);
 
     return (

@@ -5,6 +5,7 @@ import Icon from './Icon';
 import { ScoreBubble, ProgressRing } from './ui';
 import Mascot from '../assets/illustrations/Mascot';
 import { useAudio } from '../audio/AudioProvider';
+import { getHighScore, recordHighScore } from '../lib/progress';
 import { variants, springs } from '../motion';
 
 const IMAGE_BASE_URL = './assets/flags/';
@@ -14,7 +15,6 @@ const COOLDOWN_MS = 5000;
 const SLOT_COUNT = 4;
 const CORRECT_POINTS = 10;
 const INCORRECT_POINTS = -5;
-const FRENZY_HIGH_SCORE_KEY = 'frenzyHighScore';
 
 const initialSlotState = {
     flag: null,
@@ -27,7 +27,7 @@ const initialSlotState = {
 function FrenzyQuiz({ allFlagsData, setView }) {
     const [slots, setSlots] = useState(() => Array(SLOT_COUNT).fill(initialSlotState));
     const [score, setScore] = useState(0);
-    const [highScore, setHighScore] = useState(0);
+    const [highScore, setHighScore] = useState(() => getHighScore('frenzy'));
     const [gameTimer, setGameTimer] = useState(GAME_DURATION_MS);
     const [gameOver, setGameOver] = useState(false);
     const [gameStarted, setGameStarted] = useState(false);
@@ -41,8 +41,7 @@ function FrenzyQuiz({ allFlagsData, setView }) {
     const tickedRef = useRef(false);
 
     useEffect(() => {
-        const savedHighScore = localStorage.getItem(FRENZY_HIGH_SCORE_KEY);
-        setHighScore(savedHighScore ? parseInt(savedHighScore, 10) : 0);
+        setHighScore(getHighScore('frenzy'));
     }, []);
 
     const getUniqueFlag = useCallback((currentFlags) => {
@@ -134,7 +133,7 @@ function FrenzyQuiz({ allFlagsData, setView }) {
         if (gameOver) {
             if (score > highScore) {
                 setHighScore(score);
-                localStorage.setItem(FRENZY_HIGH_SCORE_KEY, score.toString());
+                recordHighScore('frenzy', score);
             }
         }
     }, [gameOver, score, highScore]);

@@ -19,35 +19,22 @@ export function extractFlagStats(flagsData) {
         }));
 }
 
-// Merge two stat record arrays. Per flag we keep the most progress: max of the
-// counters, and the review state from whichever record was answered most recently.
-export function mergeFlagStats(localStats, remoteStats) {
-    const byCode = new Map();
-    for (const rec of localStats || []) byCode.set(rec.code, { ...rec });
+const ZERO = {
+    correct: 0,
+    incorrect: 0,
+    streak: 0,
+    lapses: 0,
+    isLeech: false,
+    nextReview: null,
+    lastAnswered: null,
+};
 
-    for (const rec of remoteStats || []) {
-        const existing = byCode.get(rec.code);
-        if (!existing) {
-            byCode.set(rec.code, { ...rec });
-            continue;
-        }
-        const localNewer = (existing.lastAnswered || 0) >= (rec.lastAnswered || 0);
-        const recent = localNewer ? existing : rec;
-        byCode.set(rec.code, {
-            code: rec.code,
-            correct: Math.max(existing.correct || 0, rec.correct || 0),
-            incorrect: Math.max(existing.incorrect || 0, rec.incorrect || 0),
-            streak: Math.max(existing.streak || 0, rec.streak || 0),
-            lapses: Math.max(existing.lapses || 0, rec.lapses || 0),
-            isLeech: !!(existing.isLeech || rec.isLeech),
-            nextReview: recent.nextReview ?? null,
-            lastAnswered: recent.lastAnswered ?? null,
-        });
-    }
-    return Array.from(byCode.values());
+// Return the flags with all progress fields reset (used for guests / logout).
+export function zeroFlagStats(flagsData) {
+    return (flagsData || []).map((flag) => ({ ...flag, ...ZERO }));
 }
 
-// Apply merged stat records back onto the full flagsData (which carries metadata).
+// Apply stat records onto the full flagsData (which carries metadata).
 export function applyStatsToFlags(flagsData, statRecords) {
     const byCode = new Map((statRecords || []).map((r) => [r.code, r]));
     return (flagsData || []).map((flag) => {
@@ -75,7 +62,7 @@ export function pushStats(flagsData, delay = 1500) {
                 bonusScores: readBonusScores(),
             })
             .catch(() => {
-                /* offline / transient — local progress is still safe in localStorage */
+                /* offline / transient — will sync again on the next change */
             });
     }, delay);
 }

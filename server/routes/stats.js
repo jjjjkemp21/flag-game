@@ -20,15 +20,28 @@ router.get('/', (req, res) => {
 
 router.put('/', (req, res) => {
     const { flagStats, bonusScores } = req.body || {};
-    if (!Array.isArray(flagStats)) {
+    if (flagStats !== undefined && !Array.isArray(flagStats)) {
         return res.status(400).json({ error: 'flagStats must be an array.' });
     }
-    const bonus = bonusScores && typeof bonusScores === 'object' ? bonusScores : {};
-    const xp = computeXp(flagStats, bonus);
+
+    // Partial update: only the provided fields change; the rest keep their
+    // current values. XP is recomputed from the resulting combined state.
+    const row = db
+        .prepare('SELECT stats_json, bonus_scores_json FROM users WHERE id = ?')
+        .get(req.user.id);
+
+    const newFlagStats = Array.isArray(flagStats)
+        ? flagStats
+        : (row.stats_json ? JSON.parse(row.stats_json) : []);
+    const newBonus = bonusScores && typeof bonusScores === 'object'
+        ? bonusScores
+        : (row.bonus_scores_json ? JSON.parse(row.bonus_scores_json) : {});
+
+    const xp = computeXp(newFlagStats, newBonus);
 
     db.prepare(
         'UPDATE users SET stats_json = ?, bonus_scores_json = ?, xp = ? WHERE id = ?'
-    ).run(JSON.stringify(flagStats), JSON.stringify(bonus), xp, req.user.id);
+    ).run(JSON.stringify(newFlagStats), JSON.stringify(newBonus), xp, req.user.id);
 
     res.json({ ok: true, xp });
 });
