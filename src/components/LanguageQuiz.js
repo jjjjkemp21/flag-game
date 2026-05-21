@@ -7,6 +7,7 @@ import Confetti from '../assets/illustrations/Confetti';
 import Spinner from '../assets/illustrations/Spinner';
 import { useAudio } from '../audio/AudioProvider';
 import { getHighScore, recordHighScore } from '../lib/progress';
+import { recordPlay } from '../lib/pet';
 import { springs } from '../motion';
 
 const LANGUAGES_URL = './data/languages.json';
@@ -118,6 +119,7 @@ function LanguageQuiz({ setView }) {
             });
 
             if (newLives <= 0) {
+                recordPlay(1.5);
                 if (score > highScore) {
                     setHighScore(score);
                     recordHighScore('language', score);

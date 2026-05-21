@@ -8,6 +8,7 @@ import Confetti from '../assets/illustrations/Confetti';
 import Spinner from '../assets/illustrations/Spinner';
 import { useAudio } from '../audio/AudioProvider';
 import { getHighScore, recordHighScore } from '../lib/progress';
+import { recordPlay } from '../lib/pet';
 import { variants, springs } from '../motion';
 
 const IMAGE_BASE_URL = './assets/flags/';
@@ -125,6 +126,10 @@ function PixelatedQuiz({ allFlagsData, setView }) {
             }
         }
     }, [gameOver, gameStarted, score, highScore]);
+
+    useEffect(() => {
+        if (gameOver && gameStarted) recordPlay(1.5);
+    }, [gameOver, gameStarted]);
 
     const triggerScoreChange = useCallback((points) => {
         setScore(s => Math.max(0, s + points));

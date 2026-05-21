@@ -1777,3 +1777,49 @@
     border-radius: var(--radius-md);
     background: var(--color-bg-elev-2);
 }
+
+/* -------- Virtual pet panel (Atlas) -------- */
+.pet-panel {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    padding: var(--space-md) var(--space-lg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-bg-elev-2);
+    box-shadow: var(--shadow-sm);
+}
+.pet-panel--gone { align-items: center; text-align: center; gap: var(--space-md); }
+.pet-header { display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm); }
+.pet-name { font-family: var(--font-display); font-weight: 800; font-size: var(--fs-md); color: var(--color-ink); }
+.pet-pills { display: flex; gap: var(--space-xs); flex-wrap: wrap; }
+
+.pet-needs { display: flex; flex-direction: column; gap: 8px; }
+.need-row { display: flex; align-items: center; gap: var(--space-sm); }
+.need-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    width: 92px;
+    flex: none;
+    font-size: var(--fs-xs);
+    font-weight: 700;
+    color: var(--color-ink-soft);
+}
+.need-track {
+    position: relative;
+    flex: 1;
+    height: 12px;
+    border-radius: var(--radius-pill);
+    background: var(--color-bg-soft);
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+}
+.need-track.is-low { box-shadow: 0 0 0 2px rgba(var(--color-danger-rgb), 0.25); }
+.need-fill { position: absolute; inset: 0 auto 0 0; height: 100%; border-radius: var(--radius-pill); }
+.need-fill--success { background: linear-gradient(90deg, var(--color-success), var(--color-success-deep)); }
+.need-fill--accent  { background: linear-gradient(90deg, var(--color-accent), var(--color-accent-deep)); }
+.need-fill--info    { background: linear-gradient(90deg, var(--color-info), var(--color-info-deep)); }
+
+.pet-status { margin: 0; font-size: var(--fs-sm); color: var(--color-ink-soft); }

@@ -8,6 +8,7 @@ import Confetti from '../assets/illustrations/Confetti';
 import Spinner from '../assets/illustrations/Spinner';
 import { useAudio } from '../audio/AudioProvider';
 import { getHighScore, recordHighScore } from '../lib/progress';
+import { recordPlay } from '../lib/pet';
 import { variants } from '../motion';
 
 function deg2rad(deg) { return deg * (Math.PI / 180); }
@@ -54,6 +55,10 @@ function LongestRouteQuiz({ allFlagsData, setView }) {
     const inputRef = useRef(null);
     const flagMapByName = useRef(new Map());
     const gameOverTimeoutRef = useRef(null);
+
+    useEffect(() => {
+        if (gameOver) recordPlay(1.5);
+    }, [gameOver]);
 
     useEffect(() => {
         if (allFlagsData.length > 0 && flagMapByName.current.size === 0) {

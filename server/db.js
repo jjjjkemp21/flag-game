@@ -71,6 +71,12 @@ if (!announcementCols.some((c) => c.name === 'commit_sha')) {
     db.exec('ALTER TABLE announcements ADD COLUMN commit_sha TEXT');
 }
 
+// Migration: virtual-pet ("Atlas") state per user.
+const userCols = db.prepare('PRAGMA table_info(users)').all();
+if (!userCols.some((c) => c.name === 'pet_json')) {
+    db.exec('ALTER TABLE users ADD COLUMN pet_json TEXT');
+}
+
 // Seed / promote the admin account from env. If ADMIN_PASSWORD is set, the admin
 // account is created (or its password reset) on boot so it can always log in.
 const adminUsername = process.env.ADMIN_USERNAME;

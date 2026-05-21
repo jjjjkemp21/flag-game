@@ -2,27 +2,65 @@ import React from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 
 /**
- * Friendly globe mascot. Moods rig the expression and animation.
+ * Friendly globe mascot ("Atlas"). Moods rig the expression and animation.
  * moods: 'idle' | 'cheer' | 'sad' | 'think' | 'wave'
+ *      | 'hungry' | 'sleepy' | 'sick' | 'dead'
  */
 export default function Mascot({ size = 96, mood = 'idle' }) {
     const prefersReduced = useReducedMotion();
 
     const bobVariants = {
-        idle:  { y: [0, -3, 0], transition: { duration: 3.2, repeat: Infinity, ease: 'easeInOut' } },
-        cheer: { y: [0, -10, 0], transition: { duration: 0.5, repeat: Infinity, ease: 'easeInOut' } },
-        sad:   { y: 4, transition: { duration: 0.4 } },
-        think: { rotate: [0, -3, 3, 0], transition: { duration: 3.2, repeat: Infinity, ease: 'easeInOut' } },
-        wave:  { rotate: [0, -6, 6, -4, 0], transition: { duration: 1.6, repeat: Infinity, ease: 'easeInOut' } },
+        idle:   { y: [0, -3, 0], transition: { duration: 3.2, repeat: Infinity, ease: 'easeInOut' } },
+        cheer:  { y: [0, -10, 0], transition: { duration: 0.5, repeat: Infinity, ease: 'easeInOut' } },
+        sad:    { y: 4, transition: { duration: 0.4 } },
+        think:  { rotate: [0, -3, 3, 0], transition: { duration: 3.2, repeat: Infinity, ease: 'easeInOut' } },
+        wave:   { rotate: [0, -6, 6, -4, 0], transition: { duration: 1.6, repeat: Infinity, ease: 'easeInOut' } },
+        hungry: { y: [0, -2, 0], transition: { duration: 1.8, repeat: Infinity, ease: 'easeInOut' } },
+        sleepy: { y: [0, -1.5, 0], transition: { duration: 4.8, repeat: Infinity, ease: 'easeInOut' } },
+        sick:   { rotate: [0, -2.5, 2.5, -1.5, 0], transition: { duration: 1.3, repeat: Infinity, ease: 'easeInOut' } },
+        dead:   { y: 6, opacity: 0.75, transition: { duration: 0.6 } },
     };
 
     const mouth = {
-        idle:  <path d="M40 60 Q48 66 56 60" stroke="#1F1A3B" strokeWidth="3" strokeLinecap="round" fill="none" />,
-        cheer: <path d="M37 56 Q48 72 59 56 Q55 70 48 70 Q41 70 37 56 Z" fill="#1F1A3B" />,
-        sad:   <path d="M40 64 Q48 56 56 64" stroke="#1F1A3B" strokeWidth="3" strokeLinecap="round" fill="none" />,
-        think: <path d="M40 62 L 56 62" stroke="#1F1A3B" strokeWidth="3" strokeLinecap="round" />,
-        wave:  <path d="M40 60 Q48 68 56 60" stroke="#1F1A3B" strokeWidth="3" strokeLinecap="round" fill="none" />,
+        idle:   <path d="M40 60 Q48 66 56 60" stroke="#1F1A3B" strokeWidth="3" strokeLinecap="round" fill="none" />,
+        cheer:  <path d="M37 56 Q48 72 59 56 Q55 70 48 70 Q41 70 37 56 Z" fill="#1F1A3B" />,
+        sad:    <path d="M40 64 Q48 56 56 64" stroke="#1F1A3B" strokeWidth="3" strokeLinecap="round" fill="none" />,
+        think:  <path d="M40 62 L 56 62" stroke="#1F1A3B" strokeWidth="3" strokeLinecap="round" />,
+        wave:   <path d="M40 60 Q48 68 56 60" stroke="#1F1A3B" strokeWidth="3" strokeLinecap="round" fill="none" />,
+        hungry: <ellipse cx="48" cy="63" rx="5" ry="6" fill="#1F1A3B" />,
+        sleepy: <circle cx="48" cy="62" r="3" fill="#1F1A3B" />,
+        sick:   <path d="M40 62 Q44 58 48 62 T56 62" stroke="#1F1A3B" strokeWidth="3" strokeLinecap="round" fill="none" />,
+        dead:   <path d="M41 64 L 55 64" stroke="#1F1A3B" strokeWidth="3" strokeLinecap="round" />,
     }[mood];
+
+    const blinkingEyes = (
+        <motion.g
+            animate={prefersReduced ? undefined : { scaleY: mood === 'sad' ? 0.6 : [1, 1, 0.12, 1] }}
+            transition={{ duration: 4, repeat: Infinity, repeatDelay: 2, times: [0, 0.94, 0.97, 1] }}
+            style={{ transformOrigin: 'center' }}
+        >
+            <circle cx="38" cy="46" r="4.5" fill="#1F1A3B" />
+            <circle cx="58" cy="46" r="4.5" fill="#1F1A3B" />
+            <circle cx="39.5" cy="44.5" r="1.4" fill="#fff" />
+            <circle cx="59.5" cy="44.5" r="1.4" fill="#fff" />
+        </motion.g>
+    );
+
+    const sleepyEyes = (
+        <g stroke="#1F1A3B" strokeWidth="3" strokeLinecap="round" fill="none">
+            <path d="M33 46 Q38 50 43 46" />
+            <path d="M53 46 Q58 50 63 46" />
+        </g>
+    );
+
+    const deadEyes = (
+        <g stroke="#1F1A3B" strokeWidth="3" strokeLinecap="round">
+            <path d="M34 42 L 42 50 M42 42 L 34 50" />
+            <path d="M54 42 L 62 50 M62 42 L 54 50" />
+        </g>
+    );
+
+    const eyes = mood === 'dead' ? deadEyes : mood === 'sleepy' ? sleepyEyes : blinkingEyes;
 
     return (
         <motion.div
@@ -57,24 +95,18 @@ export default function Mascot({ size = 96, mood = 'idle' }) {
                     opacity=".85"
                 />
 
-                {/* Cheeks */}
-                <circle cx="34" cy="58" r="4" fill="#FF8A98" opacity=".75" />
-                <circle cx="62" cy="58" r="4" fill="#FF8A98" opacity=".75" />
+                {/* Queasy tint when sick */}
+                {mood === 'sick' && <circle cx="48" cy="48" r="34" fill="#19C37D" opacity=".22" />}
+
+                {/* Cheeks (flushed brighter when sick) */}
+                <circle cx="34" cy="58" r="4" fill={mood === 'sick' ? '#9AD7A0' : '#FF8A98'} opacity=".75" />
+                <circle cx="62" cy="58" r="4" fill={mood === 'sick' ? '#9AD7A0' : '#FF8A98'} opacity=".75" />
 
                 {/* Eyes */}
-                <motion.g
-                    animate={prefersReduced ? undefined : { scaleY: mood === 'sad' ? 0.6 : [1, 1, 0.12, 1] }}
-                    transition={{ duration: 4, repeat: Infinity, repeatDelay: 2, times: [0, 0.94, 0.97, 1] }}
-                    style={{ transformOrigin: 'center' }}
-                >
-                    <circle cx="38" cy="46" r="4.5" fill="#1F1A3B" />
-                    <circle cx="58" cy="46" r="4.5" fill="#1F1A3B" />
-                    <circle cx="39.5" cy="44.5" r="1.4" fill="#fff" />
-                    <circle cx="59.5" cy="44.5" r="1.4" fill="#fff" />
-                </motion.g>
+                {eyes}
 
-                {/* Eyebrows for sad/think */}
-                {mood === 'sad' && (
+                {/* Eyebrows for sad / think / hungry */}
+                {(mood === 'sad' || mood === 'hungry') && (
                     <>
                         <path d="M32 38 L 44 42" stroke="#1F1A3B" strokeWidth="2.5" strokeLinecap="round" />
                         <path d="M64 38 L 52 42" stroke="#1F1A3B" strokeWidth="2.5" strokeLinecap="round" />
@@ -90,15 +122,42 @@ export default function Mascot({ size = 96, mood = 'idle' }) {
                 {/* Mouth */}
                 {mouth}
 
-                {/* Tiny flag pole + flag */}
-                <motion.g
-                    style={{ transformOrigin: '76px 22px' }}
-                    animate={prefersReduced ? undefined : { rotate: mood === 'wave' ? [0, -10, 10, -8, 0] : [0, -3, 3, 0] }}
-                    transition={{ duration: mood === 'wave' ? 1.6 : 3.4, repeat: Infinity, ease: 'easeInOut' }}
-                >
-                    <rect x="74" y="14" width="2" height="22" rx="1" fill="#1F1A3B" />
-                    <path d="M76 14 L 92 18 L 76 24 Z" fill="url(#globeFlag)" />
-                </motion.g>
+                {/* Sweat drop when hungry or sick */}
+                {(mood === 'hungry' || mood === 'sick') && !prefersReduced && (
+                    <motion.path
+                        d="M70 32 q3 6 0 9 q-3 -3 0 -9 Z"
+                        fill="#2EC4D3"
+                        animate={{ y: [0, 2, 0], opacity: [0.5, 1, 0.5] }}
+                        transition={{ duration: 1.6, repeat: Infinity }}
+                    />
+                )}
+
+                {/* Zzz when sleepy */}
+                {mood === 'sleepy' && !prefersReduced && (
+                    <motion.g
+                        fill="#1F1A3B"
+                        opacity="0.7"
+                        animate={{ y: [0, -6, -12], opacity: [0, 1, 0] }}
+                        transition={{ duration: 2.4, repeat: Infinity }}
+                    >
+                        <text x="66" y="26" fontSize="10" fontWeight="700">z</text>
+                        <text x="74" y="18" fontSize="13" fontWeight="700">Z</text>
+                    </motion.g>
+                )}
+
+                {/* Tiny flag pole + flag — droops/stops when unwell or gone */}
+                {mood !== 'dead' && (
+                    <motion.g
+                        style={{ transformOrigin: '76px 22px' }}
+                        animate={prefersReduced ? undefined : {
+                            rotate: mood === 'wave' || mood === 'cheer' ? [0, -10, 10, -8, 0] : [0, -3, 3, 0],
+                        }}
+                        transition={{ duration: mood === 'wave' ? 1.6 : 3.4, repeat: Infinity, ease: 'easeInOut' }}
+                    >
+                        <rect x="74" y="14" width="2" height="22" rx="1" fill="#1F1A3B" />
+                        <path d="M76 14 L 92 18 L 76 24 Z" fill="url(#globeFlag)" />
+                    </motion.g>
+                )}
 
                 {/* Sparkles on cheer */}
                 {mood === 'cheer' && !prefersReduced && (

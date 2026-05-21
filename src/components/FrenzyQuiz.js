@@ -6,6 +6,7 @@ import { ScoreBubble, ProgressRing } from './ui';
 import Mascot from '../assets/illustrations/Mascot';
 import { useAudio } from '../audio/AudioProvider';
 import { getHighScore, recordHighScore } from '../lib/progress';
+import { recordPlay } from '../lib/pet';
 import { variants, springs } from '../motion';
 
 const IMAGE_BASE_URL = './assets/flags/';
@@ -137,6 +138,10 @@ function FrenzyQuiz({ allFlagsData, setView }) {
             }
         }
     }, [gameOver, score, highScore]);
+
+    useEffect(() => {
+        if (gameOver) recordPlay(1.5);
+    }, [gameOver]);
 
     useEffect(() => {
         if (!gameStarted || gameOver) return;

@@ -19,6 +19,7 @@ import { api } from './api/client';
 import { applyStatsToFlags, zeroFlagStats, pushStats } from './lib/syncStats';
 import { computeXp, readBonusScores } from './lib/xp';
 import { setAuthed, loadBonus, resetBonus } from './lib/progress';
+import { loadPet, resetPet, recordCorrect, recordIncorrect } from './lib/pet';
 import { variants } from './motion';
 
 // Heavy bonus modes — lazy-loaded
@@ -28,6 +29,16 @@ const LongestRouteQuiz = lazy(() => import('./components/LongestRouteQuiz'));
 const LanguageQuiz     = lazy(() => import('./components/LanguageQuiz'));
 
 const DATA_URL = './data/flags.json';
+
+function sumAnswers(flags) {
+    return (flags || []).reduce(
+        (acc, f) => ({
+            correct: acc.correct + (f.correct || 0),
+            incorrect: acc.incorrect + (f.incorrect || 0),
+        }),
+        { correct: 0, incorrect: 0 }
+    );
+}
 
 function LazyFallback({ label = 'Loading…' }) {
     return (
@@ -56,6 +67,8 @@ function App() {
     const authedRef = useRef(isAuthed);
     authedRef.current = isAuthed;
     const progressReadyRef = useRef(false);
+    // Baseline answer counts so we can feed the pet by how much they grew.
+    const answerTotalsRef = useRef({ correct: 0, incorrect: 0 });
 
     const updateQuestionHistory = useCallback((flagCode) => {
         setQuestionHistory(prev => [...prev.slice(-4), flagCode]);
@@ -118,6 +131,19 @@ function App() {
         }
     }, [flagsData, isLoading, patchUser]);
 
+    // Feed the pet by how much the answer counts grew (covers the standard quizzes,
+    // which update flagsData). Suppressed until progress has loaded so loading an
+    // account's history doesn't dump a feast on the pet.
+    useEffect(() => {
+        if (isLoading || flagsData.length === 0 || !progressReadyRef.current) return;
+        const totals = sumAnswers(flagsData);
+        const dCorrect = totals.correct - answerTotalsRef.current.correct;
+        const dIncorrect = totals.incorrect - answerTotalsRef.current.incorrect;
+        answerTotalsRef.current = totals;
+        if (dCorrect > 0) recordCorrect(dCorrect);
+        if (dIncorrect > 0) recordIncorrect(dIncorrect);
+    }, [flagsData, isLoading]);
+
     // Load the account's progress when logged in; clear it for guests / on logout.
     useEffect(() => {
         if (status === 'loading' || isLoading || flagsData.length === 0) return;
@@ -130,14 +156,27 @@ function App() {
                     const remote = await api.get('/stats');
                     if (cancelled) return;
                     loadBonus(remote.bonusScores || {});
-                    setFlagsData(prev => applyStatsToFlags(zeroFlagStats(prev), remote.flagStats || []));
+                    setFlagsData(prev => {
+                        const next = applyStatsToFlags(zeroFlagStats(prev), remote.flagStats || []);
+                        // Anchor the feed baseline so loading progress doesn't feed the pet.
+                        answerTotalsRef.current = sumAnswers(next);
+                        return next;
+                    });
                     patchUser({ xp: computeXp(remote.flagStats || [], remote.bonusScores || {}) });
                 } catch (_) {
                     /* leave zeroed progress if the load fails */
                 }
+                try {
+                    const { pet } = await api.get('/pet');
+                    if (!cancelled) loadPet(pet);
+                } catch (_) {
+                    /* pet stays at its default if the load fails */
+                }
             } else {
                 setAuthed(false);
                 resetBonus();
+                resetPet();
+                answerTotalsRef.current = { correct: 0, incorrect: 0 };
                 setFlagsData(prev => zeroFlagStats(prev));
             }
             if (!cancelled) progressReadyRef.current = true;
