@@ -880,6 +880,9 @@
     padding: var(--space-2xl);
     max-width: 480px;
     width: 100%;
+    max-height: calc(100vh - 2 * var(--space-lg));
+    max-height: calc(100dvh - 2 * var(--space-lg));
+    overflow-y: auto;
     display: flex;
     flex-direction: column;
     gap: var(--space-md);
