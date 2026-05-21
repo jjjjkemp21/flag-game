@@ -10,6 +10,7 @@ import BonusMenu from './components/BonusMenu';
 import AuthScreen from './components/AuthScreen';
 import Leaderboard from './components/Leaderboard';
 import Friends from './components/Friends';
+import AdminAnnounce from './components/AdminAnnounce';
 import TopBar from './components/TopBar';
 import Spinner from './assets/illustrations/Spinner';
 import { useAudio } from './audio/AudioProvider';
@@ -244,6 +245,8 @@ function App() {
                 return <Leaderboard setView={setView} />;
             case 'friends':
                 return <Friends setView={setView} />;
+            case 'admin':
+                return <AdminAnnounce setView={setView} />;
             case 'settings':
                 return (
                     <Settings

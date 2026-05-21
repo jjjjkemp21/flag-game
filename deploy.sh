@@ -36,17 +36,28 @@ docker run -d --restart always --name flag-game --network=my_proxy_network \
   -e ADMIN_PASSWORD="${ADMIN_PASSWORD}" \
   flag-game
 
-# Auto-publish release notes from the commits in this deploy. Writes straight to
-# the SQLite DB inside the container (no auth needed on the trusted host).
-# Deduped by the deployed commit sha, so re-running a deploy won't double-post.
+# Auto-publish release notes for this deploy. Writes straight to the SQLite DB
+# inside the container (no auth needed on the trusted host). Deduped by the
+# deployed commit sha, so re-running a deploy won't double-post.
+#
+# Source of the note:
+#   - If RELEASE_NOTES.md changed in this deploy, publish its top "## " section
+#     (heading = title, lines below = Markdown body).
+#   - Otherwise fall back to the latest commit's subject + full body.
 if [ "$BEFORE" != "$AFTER" ]; then
-    TITLE="Update $(date +%Y-%m-%d)"
-    BODY=$(git log --no-merges --pretty=format:'- %s' "$BEFORE..$AFTER")
-    if [ -n "$BODY" ]; then
-        # Give the container a moment to come up before writing.
-        sleep 3
-        docker exec flag-game node server/announce.js "$TITLE" "$BODY" "$AFTER" || true
+    NOTES_CHANGED=$(git diff --name-only "$BEFORE" "$AFTER" -- RELEASE_NOTES.md)
+    if [ -n "$NOTES_CHANGED" ] && [ -f RELEASE_NOTES.md ]; then
+        TITLE=$(awk '/^## /{sub(/^## +/,""); print; exit}' RELEASE_NOTES.md)
+        BODY=$(awk 'f&&/^## /{exit} /^## /{f=1; next} f{print}' RELEASE_NOTES.md)
+    else
+        TITLE=$(git log -1 --pretty=format:'%s' "$AFTER")
+        BODY=$(git log -1 --pretty=format:'%b' "$AFTER")
     fi
+    [ -z "$TITLE" ] && TITLE="Update $(date +%Y-%m-%d)"
+    [ -z "$BODY" ] && BODY="$TITLE"
+    # Give the container a moment to come up before writing.
+    sleep 3
+    docker exec flag-game node server/announce.js "$TITLE" "$BODY" "$AFTER" || true
 fi
 
 echo "🚀 Deployment finished successfully!"

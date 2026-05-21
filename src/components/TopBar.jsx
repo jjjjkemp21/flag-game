@@ -36,6 +36,12 @@ function TopBar({ setView }) {
                         onClick={() => { setMenuOpen(false); setView('friends'); }}>
                         Friends
                     </Button>
+                    {user?.is_admin && (
+                        <Button variant="accent" fullWidth icon="campaign"
+                            onClick={() => { setMenuOpen(false); setView('admin'); }}>
+                            Post announcement
+                        </Button>
+                    )}
                     <Button variant="danger" fullWidth icon="logout"
                         onClick={() => { setMenuOpen(false); logout(); setView('menu'); }}>
                         Log out

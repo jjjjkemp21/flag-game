@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import Icon from './Icon';
 import { Modal } from './ui';
+import Markdown from './Markdown';
 import { api } from '../api/client';
 
 function formatDate(ms) {
@@ -56,7 +57,7 @@ function NotificationBell() {
                                     <strong>{a.title}</strong>
                                     <span className="announcement-date">{formatDate(a.created_at)}</span>
                                 </div>
-                                <p className="announcement-body">{a.body}</p>
+                                <Markdown className="announcement-body">{a.body}</Markdown>
                             </li>
                         ))}
                     </ul>
