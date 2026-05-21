@@ -14,11 +14,28 @@ const SECURITY_QUESTIONS = [
     'What is your favorite food?',
 ];
 
-function Field({ label, ...props }) {
+function Field({ label, type, ...props }) {
+    const [show, setShow] = useState(false);
+    const isPassword = type === 'password';
+    const inputType = isPassword ? (show ? 'text' : 'password') : type;
     return (
         <label className="auth-field">
             <span className="auth-field__label">{label}</span>
-            <input className="auth-field__input" {...props} />
+            {isPassword ? (
+                <div className="auth-field__wrap">
+                    <input className="auth-field__input" type={inputType} {...props} />
+                    <button
+                        type="button"
+                        className="pw-toggle"
+                        onClick={() => setShow((s) => !s)}
+                        aria-label={show ? 'Hide password' : 'Show password'}
+                    >
+                        <Icon name={show ? 'visibility_off' : 'visibility'} />
+                    </button>
+                </div>
+            ) : (
+                <input className="auth-field__input" type={type} {...props} />
+            )}
         </label>
     );
 }

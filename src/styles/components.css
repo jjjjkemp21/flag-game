@@ -1700,3 +1700,21 @@
 .friend-actions { display: flex; gap: 6px; }
 .icon-button { border: none; background: transparent; color: var(--color-ink-soft); cursor: pointer; padding: 4px; border-radius: var(--radius-md); }
 .icon-button:hover { background: var(--color-bg-soft); color: var(--color-danger); }
+
+/* Password show/hide toggle */
+.auth-field__wrap { position: relative; display: flex; align-items: center; }
+.auth-field__wrap .auth-field__input { width: 100%; padding-right: 44px; }
+.pw-toggle {
+    position: absolute;
+    right: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    color: var(--color-ink-soft);
+    cursor: pointer;
+    padding: 6px;
+    border-radius: var(--radius-md);
+}
+.pw-toggle:hover { color: var(--color-primary); }
