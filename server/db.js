@@ -64,6 +64,13 @@ db.exec(`
     );
 `);
 
+// Migration: add commit_sha to announcements so the deploy pipeline can dedupe
+// auto-published release notes (SQLite has no "ADD COLUMN IF NOT EXISTS").
+const announcementCols = db.prepare('PRAGMA table_info(announcements)').all();
+if (!announcementCols.some((c) => c.name === 'commit_sha')) {
+    db.exec('ALTER TABLE announcements ADD COLUMN commit_sha TEXT');
+}
+
 // Seed / promote the admin account from env. If ADMIN_PASSWORD is set, the admin
 // account is created (or its password reset) on boot so it can always log in.
 const adminUsername = process.env.ADMIN_USERNAME;
