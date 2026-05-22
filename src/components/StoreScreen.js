@@ -203,6 +203,11 @@ function StoreScreen({ setView, flagsData }) {
                         {Object.entries(cat.items).map(([id, item]) => {
                             const unlocked = isUnlocked(xp, item);
                             const equipped = profile.cosmetics[cat.key] === id;
+                            // Preview the item on Atlas: colors recolor the globe; hats /
+                            // glasses sit on the player's current globe color.
+                            const previewCos = cat.key === 'color'
+                                ? { color: id }
+                                : { color: profile.cosmetics.color, [cat.key]: id };
                             return (
                                 <button
                                     key={id}
@@ -210,15 +215,9 @@ function StoreScreen({ setView, flagsData }) {
                                     onClick={() => onEquip(cat.key, id, item)}
                                     aria-label={item.name}
                                 >
-                                    {cat.key === 'color' && (
-                                        <span
-                                            className={`cosmetic-swatch ${item.anim ? 'cosmetic-swatch--anim' : ''}`}
-                                            style={{
-                                                background: `linear-gradient(135deg, ${item.stops[0]}, ${item.stops[1]}, ${item.stops[2]})`,
-                                                backgroundSize: item.anim ? '220% 220%' : undefined,
-                                            }}
-                                        />
-                                    )}
+                                    <span className="cosmetic-preview">
+                                        <Mascot size={52} mood="idle" cosmetics={previewCos} still />
+                                    </span>
                                     <span className="cosmetic-name">{item.name}{item.anim ? ' ✨' : ''}</span>
                                     {equipped ? (
                                         <span className="cosmetic-tag cosmetic-tag--on"><Icon name="check" /> Equipped</span>

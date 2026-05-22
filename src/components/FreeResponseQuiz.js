@@ -8,6 +8,11 @@ import Mascot from '../assets/illustrations/Mascot';
 import Confetti from '../assets/illustrations/Confetti';
 import Spinner from '../assets/illustrations/Spinner';
 import { useAudio } from '../audio/AudioProvider';
+import { useProfile } from '../lib/profile';
+import { awardForAnswer, streakMultiplier } from '../lib/xp';
+import { addEarnedXp } from '../lib/progress';
+import { getStreak, saveStreak, resetStreak } from '../lib/streak';
+import { springs } from '../motion';
 
 const IMAGE_BASE_URL = './assets/flags/';
 
@@ -31,9 +36,11 @@ function FreeResponseQuiz({
     const [flashColor, setFlashColor] = useState(null);
     const [isWiggling, setIsWiggling] = useState(false);
     const [score, setScore] = useState(0);
-    const [streak, setStreak] = useState(0);
+    const [streak, setStreak] = useState(() => getStreak());
+    const [xpGain, setXpGain] = useState(null);
     const [showConfetti, setShowConfetti] = useState(false);
     const audio = useAudio();
+    const profile = useProfile();
 
     const handleBack = () => {
         setView('quiz-menu');
@@ -47,6 +54,7 @@ function FreeResponseQuiz({
         setFeedback({ text: "Type the country's name" });
         setAnswered(false);
         setInputValue('');
+        setXpGain(null);
         const questionFlag = selectNextFlag(quizFlags, questionHistory);
         setCurrentFlag(questionFlag);
         if (questionFlag) {
@@ -94,15 +102,18 @@ function FreeResponseQuiz({
         if (wasCorrect) {
             audio.play('correct');
             setScore(s => s + 1);
-            setStreak(s => {
-                const next = s + 1;
-                if (next === 3 || next === 5 || next === 10) audio.play('streak');
-                return next;
-            });
+            const next = streak + 1;
+            if (next === 3 || next === 5 || next === 10) audio.play('streak');
+            setStreak(next);
+            saveStreak(next);
+            const award = awardForAnswer(currentFlag, 'free-response', next);
+            addEarnedXp(award.amount);
+            setXpGain(award);
             setShowConfetti(true);
         } else {
             audio.play('incorrect');
             setStreak(0);
+            resetStreak();
         }
 
         setTimeout(() => nextQuestion(), 2000);
@@ -114,6 +125,7 @@ function FreeResponseQuiz({
         setFlashColor('incorrect');
         audio.play('incorrect');
         setStreak(0);
+        resetStreak();
         const { message, color, updatedFlags } = update_flag_stats(allFlagsData, currentFlag, false, 'skipped');
         setFlagsData(updatedFlags);
         setFeedback({ text: message.text, answer: message.answer, tone: color });
@@ -137,7 +149,7 @@ function FreeResponseQuiz({
                         <Icon name="arrow_back" />
                     </button>
                 </div>
-                <Mascot size={120} mood="cheer" />
+                <Mascot size={120} mood="cheer" cosmetics={profile.cosmetics} />
                 <h1 className="text-center">You're all caught up!</h1>
                 <p className="text-center" style={{ color: 'var(--color-ink-soft)' }}>
                     Come back later to review more flags.
@@ -160,6 +172,7 @@ function FreeResponseQuiz({
                 </button>
                 <span className="ui-pill ui-pill--primary">
                     <Icon name="local_fire_department" /> Streak {streak}
+                    {streak > 0 && <span className="streak-mult">×{streakMultiplier(streak).toFixed(1)}</span>}
                 </span>
                 <ScoreBubble score={score} icon="star" />
             </div>
@@ -176,6 +189,21 @@ function FreeResponseQuiz({
                 />
                 <AnimatePresence>
                     {showConfetti && <Confetti pieces={26} />}
+                </AnimatePresence>
+                <AnimatePresence>
+                    {xpGain && (
+                        <motion.div
+                            className="xp-gain"
+                            initial={{ x: '-50%', y: 8, opacity: 0, scale: 0.9 }}
+                            animate={{ x: '-50%', y: -18, opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={springs.bouncy}
+                            style={{ position: 'absolute', left: '50%', top: 'min(2vw, 12px)' }}
+                            aria-hidden="true"
+                        >
+                            +{xpGain.amount} XP{xpGain.multiplier > 1 ? ` ×${xpGain.multiplier.toFixed(1)}` : ''}
+                        </motion.div>
+                    )}
                 </AnimatePresence>
             </div>
 

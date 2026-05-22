@@ -7,6 +7,10 @@ import Confetti from '../assets/illustrations/Confetti';
 import Mascot from '../assets/illustrations/Mascot';
 import Spinner from '../assets/illustrations/Spinner';
 import { useAudio } from '../audio/AudioProvider';
+import { useProfile } from '../lib/profile';
+import { awardForAnswer, streakMultiplier } from '../lib/xp';
+import { addEarnedXp } from '../lib/progress';
+import { getStreak, saveStreak, resetStreak } from '../lib/streak';
 import { springs } from '../motion';
 
 const IMAGE_BASE_URL = './assets/flags/';
@@ -30,9 +34,11 @@ function MultipleChoiceQuiz({
     const [chosenAnswer, setChosenAnswer] = useState(null);
     const [flashColor, setFlashColor] = useState(null);
     const [score, setScore] = useState(0);
-    const [streak, setStreak] = useState(0);
+    const [streak, setStreak] = useState(() => getStreak());
+    const [xpGain, setXpGain] = useState(null); // { amount, multiplier } floating reward
     const [showConfetti, setShowConfetti] = useState(false);
     const audio = useAudio();
+    const profile = useProfile();
 
     const handleBack = () => {
         setView('quiz-menu');
@@ -45,6 +51,7 @@ function MultipleChoiceQuiz({
         setFeedback({ text: ' ' });
         setAnswered(false);
         setChosenAnswer(null);
+        setXpGain(null);
         setShowConfetti(false);
 
         const questionFlag = selectNextFlag(quizFlags, questionHistory);
@@ -79,17 +86,20 @@ function MultipleChoiceQuiz({
         if (wasCorrect) {
             audio.play('correct');
             setScore(s => s + 1);
-            setStreak(s => {
-                const next = s + 1;
-                if (next === 3 || next === 5 || next === 10) {
-                    audio.play('streak');
-                }
-                return next;
-            });
+            const next = streak + 1;
+            if (next === 3 || next === 5 || next === 10) audio.play('streak');
+            setStreak(next);
+            saveStreak(next);
+            // Scaled XP: harder modes pay more, hot streak multiplies up to 2x,
+            // and a brand-new flag is worth more than an already-mastered one.
+            const award = awardForAnswer(currentFlag, 'multiple-choice', next);
+            addEarnedXp(award.amount);
+            setXpGain(award);
             setShowConfetti(true);
         } else {
             audio.play('incorrect');
             setStreak(0);
+            resetStreak();
         }
 
         setTimeout(() => {
@@ -103,6 +113,7 @@ function MultipleChoiceQuiz({
         setFlashColor('incorrect');
         audio.play('incorrect');
         setStreak(0);
+        resetStreak();
         const { message, color, updatedFlags } = update_flag_stats(allFlagsData, currentFlag, false, 'skipped');
         setFlagsData(updatedFlags);
         setFeedback({ text: message.text, answer: message.answer, tone: color });
@@ -135,7 +146,7 @@ function MultipleChoiceQuiz({
                         <Icon name="arrow_back" />
                     </button>
                 </div>
-                <Mascot size={120} mood="cheer" />
+                <Mascot size={120} mood="cheer" cosmetics={profile.cosmetics} />
                 <h1 className="text-center">You're all caught up!</h1>
                 <p className="text-center" style={{ color: 'var(--color-ink-soft)' }}>
                     Come back later to review more flags.
@@ -158,6 +169,7 @@ function MultipleChoiceQuiz({
                 </button>
                 <span className="ui-pill ui-pill--primary">
                     <Icon name="local_fire_department" /> Streak {streak}
+                    {streak > 0 && <span className="streak-mult">×{streakMultiplier(streak).toFixed(1)}</span>}
                 </span>
                 <ScoreBubble score={score} icon="star" />
             </div>
@@ -185,7 +197,7 @@ function MultipleChoiceQuiz({
                             style={{ position: 'absolute', right: 'min(2vw, 12px)', bottom: 'min(2vw, 12px)' }}
                             aria-hidden="true"
                         >
-                            <Mascot size={56} mood="cheer" />
+                            <Mascot size={56} mood="cheer" cosmetics={profile.cosmetics} still />
                         </motion.div>
                     )}
                     {answered && flashColor === 'incorrect' && (
@@ -197,7 +209,20 @@ function MultipleChoiceQuiz({
                             style={{ position: 'absolute', right: 'min(2vw, 12px)', bottom: 'min(2vw, 12px)' }}
                             aria-hidden="true"
                         >
-                            <Mascot size={56} mood="sad" />
+                            <Mascot size={56} mood="sad" cosmetics={profile.cosmetics} still />
+                        </motion.div>
+                    )}
+                    {xpGain && (
+                        <motion.div
+                            className="xp-gain"
+                            initial={{ x: '-50%', y: 8, opacity: 0, scale: 0.9 }}
+                            animate={{ x: '-50%', y: -18, opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={springs.bouncy}
+                            style={{ position: 'absolute', left: '50%', top: 'min(2vw, 12px)' }}
+                            aria-hidden="true"
+                        >
+                            +{xpGain.amount} XP{xpGain.multiplier > 1 ? ` ×${xpGain.multiplier.toFixed(1)}` : ''}
                         </motion.div>
                     )}
                 </AnimatePresence>
@@ -215,7 +240,7 @@ function MultipleChoiceQuiz({
             <div className="options-box">
                 {options.map((option, i) => (
                     <ChoiceCard
-                        key={option}
+                        key={`${currentFlag.code}-${option}`}
                         label={option}
                         index={i}
                         state={getChoiceState(option)}

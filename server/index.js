@@ -21,6 +21,7 @@ app.use('/api/stats', require('./routes/stats'));
 app.use('/api/pet', require('./routes/pet'));
 app.use('/api/profile', require('./routes/profile'));
 app.use('/api/announcements', require('./routes/announcements'));
+app.use('/api/mp', require('./routes/multiplayer'));
 app.use('/api', require('./routes/social'));
 
 // Serve the built React app and fall back to index.html for SPA routes.
@@ -36,5 +37,5 @@ app.get('*', (req, res) => {
 const PORT = process.env.PORT || 80;
 app.listen(PORT, () => {
     // eslint-disable-next-line no-console
-    console.log(`Flag Quest server listening on :${PORT}`);
+    console.log(`Flag Game server listening on :${PORT}`);
 });

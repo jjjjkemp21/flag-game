@@ -1,5 +1,6 @@
 import { api } from '../api/client';
 import { readBonusScores } from './xp';
+import { getEarnedXp } from './progress';
 
 const STAT_FIELDS = ['correct', 'incorrect', 'streak', 'lapses', 'isLeech', 'nextReview', 'lastAnswered'];
 
@@ -50,19 +51,41 @@ export function applyStatsToFlags(flagsData, statRecords) {
 
 let pushTimer = null;
 
+function payload(flagsData) {
+    return {
+        flagStats: extractFlagStats(flagsData),
+        bonusScores: readBonusScores(),
+        earnedXp: getEarnedXp(),
+    };
+}
+
 // Debounced upload of the current progress to the backend. Safe to call on every
 // stats change; only the last call within the window actually fires.
 export function pushStats(flagsData, delay = 1500) {
     if (pushTimer) clearTimeout(pushTimer);
     pushTimer = setTimeout(() => {
         pushTimer = null;
-        api
-            .put('/stats', {
-                flagStats: extractFlagStats(flagsData),
-                bonusScores: readBonusScores(),
-            })
-            .catch(() => {
-                /* offline / transient — will sync again on the next change */
-            });
+        api.put('/stats', payload(flagsData)).catch(() => {
+            /* offline / transient — will sync again on the next change */
+        });
     }, delay);
+}
+
+// Immediate flush — cancels any pending debounce and sends now. Used when the
+// page is being hidden/closed so a long session's last answers aren't lost.
+// Falls back to sendBeacon, which survives unload when fetch would be cancelled.
+export function flushStats(flagsData) {
+    if (pushTimer) { clearTimeout(pushTimer); pushTimer = null; }
+    const body = payload(flagsData);
+    try {
+        const token = localStorage.getItem('flagQuestToken');
+        const blob = new Blob([JSON.stringify(body)], { type: 'application/json' });
+        // sendBeacon can't set an Authorization header, so pass the token as a
+        // query param (the /stats route accepts it as a fallback on beacons).
+        if (navigator.sendBeacon && token) {
+            const ok = navigator.sendBeacon(`/api/stats/beacon?token=${encodeURIComponent(token)}`, blob);
+            if (ok) return;
+        }
+    } catch (_) { /* fall through to fetch */ }
+    api.put('/stats', body).catch(() => {});
 }

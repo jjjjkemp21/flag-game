@@ -18,6 +18,10 @@ function TopBar({ setView }) {
             <div className="topbar__right">
                 {isAuthed && <NotificationBell />}
 
+                <button className="bell-button" aria-label="Settings" onClick={() => setView('settings')}>
+                    <Icon name="settings" />
+                </button>
+
                 {isAuthed ? (
                     <button className="account-chip" onClick={() => setMenuOpen(true)} aria-label="Account">
                         <Icon name="account_circle" />

@@ -47,7 +47,7 @@ function Stats({ flagsData }) {
 
     if (!stats) return null;
 
-    const xp = computeXp(flagsData, readBonusScores());
+    const xp = computeXp();
 
     const tiers = [
         { tier: 'bronze',   label: 'Bronze',   threshold: 10 },

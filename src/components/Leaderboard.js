@@ -6,7 +6,7 @@ import AchievementBadge from './AchievementBadge';
 import ProfileCard from './ProfileCard';
 import { useAuth } from '../auth/AuthProvider';
 import { api } from '../api/client';
-import { masteryRank } from '../lib/mastery';
+import { scopeRank } from '../lib/mastery';
 import { ACHIEVEMENTS_BY_ID } from '../lib/achievements';
 
 const FLAG_BASE = './assets/flags/';
@@ -107,7 +107,7 @@ function Leaderboard({ setView, flagsData }) {
                         </p>
                     )}
                     {data.entries.map((row) => {
-                        const r = masteryRank(row.masteredCount, total);
+                        const r = scopeRank(scope, row, total);
                         const badges = (row.showcase || []).map((id) => ACHIEVEMENTS_BY_ID[id]).filter(Boolean);
                         return (
                             <li
@@ -138,7 +138,8 @@ function Leaderboard({ setView, flagsData }) {
                                     </span>
                                     <span className="leaderboard-sub">
                                         <span className={`rank-tag rank-pill--${r.tier}`}>{r.title}</span>
-                                        {' · '}{row.petName || 'Atlas'} Lv {row.petLevel} · {row.masteredCount} mastered
+                                        {' · '}{row.petName || 'Atlas'} Lv {row.petLevel}
+                                        {(scope === 'overall' || scope === 'friends') && ` · ${row.masteredCount} mastered`}
                                     </span>
                                 </span>
                                 <span className="leaderboard-xp">{formatValue(scope, row.value)}</span>

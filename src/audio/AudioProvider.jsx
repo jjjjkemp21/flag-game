@@ -79,6 +79,12 @@ export function AudioProvider({ children }) {
         const ctx = getAudioCtx();
         if (!ctx) return;
 
+        // Mobile browsers (esp. iOS Safari) re-suspend the AudioContext when the
+        // page is backgrounded or after periods of inactivity, which silences all
+        // playback even though sound is enabled. Re-resume on every play so audio
+        // keeps working for the rest of the session.
+        if (ctx.state === 'suspended') ctx.resume().catch(() => {});
+
         // Throttle identical sounds firing too close together
         const now = ctx.currentTime;
         const last = lastPlayedRef.current[name] || 0;

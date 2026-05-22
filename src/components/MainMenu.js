@@ -1,6 +1,5 @@
 import React, { useMemo } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
-import Stats from './Stats';
 import Icon from './Icon';
 import Logo from '../assets/illustrations/Logo';
 import Mascot from '../assets/illustrations/Mascot';
@@ -15,11 +14,12 @@ import { springs } from '../motion';
 const MODES = [
     { key: 'multiple-choice', title: 'Multiple Choice', desc: 'Pick from four options', icon: 'quiz', tone: 'primary' },
     { key: 'free-response',   title: 'Free Response',   desc: 'Type the country name', icon: 'edit_note',  tone: 'success' },
+    { key: 'multiplayer',     title: 'Multiplayer',     desc: 'Host a lobby, race friends live', icon: 'sports_esports', tone: 'versus' },
     { key: 'bonus',           title: 'Bonus Modes',     desc: 'Frenzy, Pixelated, Language…', icon: 'rocket_launch', tone: 'purple' },
     { key: 'leaderboard',     title: 'Leaderboard',     desc: 'Compete on the global ranks', icon: 'leaderboard', tone: 'info' },
     { key: 'achievements',    title: 'Achievements',    desc: 'Earn badges and mastery ranks', icon: 'emoji_events', tone: 'accent' },
     { key: 'friends',         title: 'Friends',         desc: 'Add friends, compare progress', icon: 'group', tone: 'danger' },
-    { key: 'settings',        title: 'Settings',        desc: 'Theme, sound, spelling', icon: 'tune', tone: 'neutral' },
+    { key: 'statistics',      title: 'Statistics',      desc: 'Your progress and high scores', icon: 'insights', tone: 'neutral' },
 ];
 
 function ModeCard({ mode, onClick, index, masteryHint }) {
@@ -61,6 +61,8 @@ function MainMenu({ setView, flagsData, setQuizMode }) {
     const onCardClick = (modeKey) => {
         if (modeKey === 'multiple-choice' || modeKey === 'free-response') {
             handleStartQuiz(modeKey);
+        } else if (modeKey === 'multiplayer') {
+            setView('multiplayer');
         } else if (modeKey === 'bonus') {
             setView('bonus-menu');
         } else if (modeKey === 'leaderboard') {
@@ -69,8 +71,8 @@ function MainMenu({ setView, flagsData, setQuizMode }) {
             setView('achievements');
         } else if (modeKey === 'friends') {
             setView('friends');
-        } else if (modeKey === 'settings') {
-            setView('settings');
+        } else if (modeKey === 'statistics') {
+            setView('statistics');
         }
     };
 
@@ -83,7 +85,7 @@ function MainMenu({ setView, flagsData, setQuizMode }) {
                 </div>
                 <div className="hero-band__logo-row">
                     <Logo size={56} />
-                    <h1 id="main-menu-title" className="menu-title hero-band__title">Flag Quest</h1>
+                    <h1 id="main-menu-title" className="menu-title hero-band__title">Flag Game</h1>
                 </div>
                 <p className="menu-subtitle hero-band__subtitle">
                     Master 250+ world flags with spaced repetition, frenzy challenges, and pixel reveals.
@@ -113,8 +115,6 @@ function MainMenu({ setView, flagsData, setQuizMode }) {
                     />
                 ))}
             </div>
-
-            <Stats flagsData={flagsData} />
         </div>
     );
 }

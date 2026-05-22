@@ -29,6 +29,39 @@ export function masteryRank(mastered, total) {
     return { ...rank, index };
 }
 
+// A title for a value within a set of ascending { min, title, tier } tiers.
+function tieredTitle(value, tiers) {
+    const v = Number(value) || 0;
+    let pick = tiers[0];
+    for (const t of tiers) { if (v >= t.min) pick = t; }
+    return { title: pick.title, tier: pick.tier };
+}
+
+const ATLAS_TIERS = [
+    { min: 0,  title: 'Hatchling',       tier: 'stone' },
+    { min: 5,  title: 'Atlas Companion', tier: 'bronze' },
+    { min: 10, title: 'Atlas Caretaker', tier: 'silver' },
+    { min: 20, title: 'Atlas Guardian',  tier: 'gold' },
+];
+
+// Bonus-mode tiers keyed to the achievement thresholds for each mode.
+const BONUS_TIERS = {
+    frenzy:       [{ min: 0, title: 'Newcomer', tier: 'stone' }, { min: 100, title: 'Frenzy Rookie', tier: 'bronze' }, { min: 250, title: 'Frenzy Pro', tier: 'silver' }, { min: 500, title: 'Frenzy Legend', tier: 'gold' }],
+    pixelated:    [{ min: 0, title: 'Newcomer', tier: 'stone' }, { min: 100, title: 'Pixel Peeker', tier: 'bronze' }, { min: 250, title: 'Pixel Pro', tier: 'silver' }, { min: 500, title: 'Pixel Master', tier: 'gold' }],
+    longestRoute: [{ min: 0, title: 'Newcomer', tier: 'stone' }, { min: 8,  title: 'Chain Starter', tier: 'bronze' }, { min: 15, title: 'Chain Master', tier: 'silver' }, { min: 25, title: 'Unbroken', tier: 'gold' }],
+    language:     [{ min: 0, title: 'Newcomer', tier: 'stone' }, { min: 10, title: 'Linguist', tier: 'bronze' }, { min: 20, title: 'Polyglot', tier: 'silver' }, { min: 30, title: 'Babel Breaker', tier: 'gold' }],
+};
+
+// The rank title to show under a leaderboard row for a given scope, so the label
+// always matches the value being ranked. Overall/Friends keep the mastery rank;
+// Atlas and the bonus modes get a title for that metric. `entry` is a leaderboard
+// entry; `value` is the row's metric value for the scope.
+export function scopeRank(scope, entry, total) {
+    if (scope === 'atlas') return tieredTitle(entry.petLevel || 1, ATLAS_TIERS);
+    if (BONUS_TIERS[scope]) return tieredTitle(entry.value || 0, BONUS_TIERS[scope]);
+    return masteryRank(entry.masteredCount || 0, total); // overall / friends
+}
+
 // Info for a progress bar toward the next rank, or null at the top.
 export function nextRank(mastered, total) {
     const m = Number(mastered) || 0;

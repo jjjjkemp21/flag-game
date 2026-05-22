@@ -79,6 +79,10 @@ if (!hasCol('cosmetics_json')) db.exec('ALTER TABLE users ADD COLUMN cosmetics_j
 if (!hasCol('region')) db.exec('ALTER TABLE users ADD COLUMN region TEXT');
 if (!hasCol('pet_level')) db.exec('ALTER TABLE users ADD COLUMN pet_level INTEGER NOT NULL DEFAULT 1');
 if (!hasCol('achievements_json')) db.exec('ALTER TABLE users ADD COLUMN achievements_json TEXT');
+// earned_xp: lifetime flag-answer XP (mode/streak-scaled). NULL until first
+// migrated/written; the stats route seeds it from the legacy formula so totals
+// carry over for accounts that predate per-answer scaling.
+if (!hasCol('earned_xp')) db.exec('ALTER TABLE users ADD COLUMN earned_xp INTEGER');
 
 // Seed / promote the admin account from env. If ADMIN_PASSWORD is set, the admin
 // account is created (or its password reset) on boot so it can always log in.

@@ -7,6 +7,10 @@ import { api } from '../api/client';
 const EMPTY = { frenzy: 0, pixelated: 0, longestRoute: 0, language: 0 };
 
 let bonus = { ...EMPTY };
+// Lifetime XP earned from answering flags (mode- and streak-scaled). Bonus-mode
+// high scores are added on top in the XP formula, so this holds only the
+// flag-answer portion. Account-tied: loaded from / pushed to the server.
+let earnedXp = 0;
 let authed = false;
 let pushTimer = null;
 
@@ -26,6 +30,30 @@ export function getBonus() {
     return { ...bonus };
 }
 
+// ---- Earned XP accumulator ----
+export function loadEarnedXp(value) {
+    earnedXp = Math.max(0, Math.round(Number(value) || 0));
+}
+
+export function resetEarnedXp() {
+    earnedXp = 0;
+}
+
+export function getEarnedXp() {
+    return earnedXp;
+}
+
+// Add a scaled per-answer award. Persists to the account (debounced) when logged
+// in; the normal stats push also carries the absolute value, so this is safe to
+// call freely. Returns the new total.
+export function addEarnedXp(amount) {
+    const a = Math.max(0, Math.round(Number(amount) || 0));
+    if (a <= 0) return earnedXp;
+    earnedXp += a;
+    if (authed) pushBonus();
+    return earnedXp;
+}
+
 export function getHighScore(name) {
     return bonus[name] || 0;
 }
@@ -34,7 +62,7 @@ function pushBonus(delay = 1200) {
     if (pushTimer) clearTimeout(pushTimer);
     pushTimer = setTimeout(() => {
         pushTimer = null;
-        api.put('/stats', { bonusScores: getBonus() }).catch(() => {
+        api.put('/stats', { bonusScores: getBonus(), earnedXp }).catch(() => {
             /* offline / transient — guest progress is intentionally ephemeral */
         });
     }, delay);

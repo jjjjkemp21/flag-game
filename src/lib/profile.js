@@ -1,6 +1,7 @@
 import { useSyncExternalStore } from 'react';
 import { api } from '../api/client';
 import { DEFAULT_COSMETICS, normalizeCosmetics, clampPos } from './cosmetics';
+import { topAchievements } from './achievements';
 
 // Account-tied profile: region flag, equipped cosmetics, and achievements
 // (the up-to-3 showcased ids + the unlocked set). Loaded on sign-in, persisted
@@ -22,10 +23,16 @@ function persist() {
     if (pushTimer) clearTimeout(pushTimer);
     pushTimer = setTimeout(() => {
         pushTimer = null;
+        // If the player hasn't curated a showcase, feature their best unlocked
+        // achievements so something always shows on the leaderboard / profile.
+        const explicit = state.achievements.showcase;
+        const showcase = explicit.length > 0
+            ? explicit
+            : topAchievements(state.achievements.unlocked, 3);
         api.put('/profile', {
             region: state.region,
             cosmetics: state.cosmetics,
-            achievements: { showcase: state.achievements.showcase, count: state.achievements.unlocked.length },
+            achievements: { showcase, count: state.achievements.unlocked.length },
         }).catch(() => {});
     }, 1000);
 }

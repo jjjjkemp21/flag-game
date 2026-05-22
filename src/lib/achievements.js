@@ -139,6 +139,22 @@ export const ACHIEVEMENTS = [
 
 export const ACHIEVEMENTS_BY_ID = Object.fromEntries(ACHIEVEMENTS.map((a) => [a.id, a]));
 
+// Rank tiers from least to most impressive — used to pick which achievements to
+// auto-feature on the leaderboard when the player hasn't curated a showcase.
+const TIER_ORDER = { stone: 0, bronze: 1, silver: 2, gold: 3, platinum: 4, legend: 5 };
+
+// The best `n` unlocked achievements (highest tier first), preserving catalog
+// order within a tier. Used as a default showcase so achievements always appear.
+export function topAchievements(unlockedIds, n = 3) {
+    const ids = Array.isArray(unlockedIds) ? unlockedIds : [];
+    return ids
+        .map((id) => ACHIEVEMENTS_BY_ID[id])
+        .filter(Boolean)
+        .sort((a, b) => (TIER_ORDER[b.tier] || 0) - (TIER_ORDER[a.tier] || 0))
+        .slice(0, n)
+        .map((a) => a.id);
+}
+
 export const ACHIEVEMENT_GROUPS = ['Mastery', 'Continents', 'Accuracy', 'Bonus Modes', 'Atlas'];
 
 // Returns the array of unlocked achievement ids for a context.

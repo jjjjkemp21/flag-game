@@ -1211,6 +1211,7 @@
 .mode-card.tone-danger  { --mc-bg: var(--grad-danger);  --mc-shadow: var(--color-danger-deep);  --mc-fg: #fff; }
 .mode-card.tone-info    { --mc-bg: var(--grad-info);    --mc-shadow: var(--color-info-deep);    --mc-fg: #fff; }
 .mode-card.tone-neutral { --mc-bg: var(--color-bg-elev-1); --mc-shadow: var(--color-border-strong); --mc-fg: var(--color-ink); }
+.mode-card.tone-versus  { --mc-bg: linear-gradient(135deg, #FF7BA0 0%, #B05BF6 100%); --mc-shadow: #7A3FB0; --mc-fg: #fff; }
 
 /* Knowledge stats inline pills inside MainMenu */
 .knowledge-stats {
@@ -1886,7 +1887,19 @@
 .pet-footer .pet-status { margin: 0; flex: 1; min-width: 160px; }
 
 /* -------- Atlas shop / customize -------- */
-.store-preview { display: flex; flex-direction: column; align-items: center; gap: var(--space-xs); }
+/* Keep Atlas (and its move/size controls) pinned while scrolling the cosmetic
+   lists. The shared .quiz-box clips with overflow:hidden, which would break
+   position:sticky, so the store opts back into visible overflow. */
+.store-box { overflow: visible; }
+.store-preview {
+    display: flex; flex-direction: column; align-items: center; gap: var(--space-xs);
+    position: sticky; top: 0; z-index: 6;
+    background: var(--grad-card);
+    padding: var(--space-sm) var(--space-sm) var(--space-xs);
+    margin: 0 calc(-1 * var(--space-sm));
+    border-radius: var(--radius-lg);
+    box-shadow: 0 8px 12px -10px rgba(0,0,0,0.35);
+}
 .store-section { width: 100%; display: flex; flex-direction: column; gap: var(--space-sm); }
 .region-row { display: flex; align-items: center; gap: var(--space-sm); }
 .region-row .auth-field__input { flex: 1; }
@@ -1914,7 +1927,18 @@
     text-align: center;
     transition: transform var(--dur-fast) var(--ease-out-quart);
 }
+.cosmetic-card { padding-top: 16px; } /* headroom so tall hats aren't clipped */
 .cosmetic-card:hover { transform: translateY(-2px); }
+.cosmetic-preview { display: inline-flex; align-items: flex-end; justify-content: center; height: 54px; pointer-events: none; }
+
+/* Streak multiplier chip + floating XP reward shown during the standard quizzes */
+.streak-mult { margin-left: 6px; font-size: var(--fs-xs); font-weight: 800; opacity: 0.92; }
+.xp-gain {
+    z-index: 5; pointer-events: none; white-space: nowrap;
+    font-family: var(--font-display); font-weight: 800; font-size: var(--fs-lg);
+    color: var(--color-success-deep);
+    text-shadow: 0 1px 0 var(--color-bg-elev-1), 0 2px 6px rgba(0,0,0,0.18);
+}
 .cosmetic-card.is-equipped { border-color: var(--color-primary); background: var(--color-primary-soft); }
 .cosmetic-card.is-locked { opacity: 0.6; }
 .cosmetic-swatch { width: 28px; height: 28px; border-radius: 50%; box-shadow: var(--shadow-sm); }
@@ -2030,6 +2054,12 @@
     content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
     border: 6px solid transparent; border-top-color: var(--color-ink);
 }
+/* Portal-rendered variant: fixed to the viewport (escapes scroll/overflow clipping). */
+.ach-popover--fixed { position: fixed; bottom: auto; }
+.ach-popover--fixed.ach-popover--above { transform: translate(-50%, -100%); }
+.ach-popover--fixed.ach-popover--below { transform: translate(-50%, 0); }
+/* Flip the caret to the top edge when the popover sits below the badge. */
+.ach-popover--below::after { top: auto; bottom: 100%; border-top-color: transparent; border-bottom-color: var(--color-ink); }
 .ach-popover__title { display: inline-flex; align-items: center; gap: 5px; font-weight: 800; font-size: var(--fs-sm); }
 .ach-popover__title .app-icon { color: inherit; }
 .ach-popover__title--gold, .ach-popover__title--legend { color: #FFD86B; }
@@ -2068,3 +2098,55 @@
 .adjust-tab.is-active { border-color: var(--color-primary); background: color-mix(in srgb, var(--color-primary) 14%, transparent); color: var(--color-primary-deep); }
 .adjust-size { display: inline-flex; align-items: center; gap: 8px; width: 100%; font-size: var(--fs-xs); font-weight: 700; color: var(--color-ink-soft); }
 .adjust-size input[type="range"] { flex: 1; }
+
+/* =================================================================
+   Multiplayer (lobbies, live race, results)
+   ================================================================= */
+.mp-box { width: 100%; max-width: 560px; }
+.mp-config { width: 100%; display: flex; flex-direction: column; gap: var(--space-md); }
+.mp-field { display: flex; flex-direction: column; gap: 6px; }
+.mp-field__label { font-size: var(--fs-sm); font-weight: 700; color: var(--color-ink); }
+.mp-field__hint { font-size: var(--fs-xs); color: var(--color-ink-muted); }
+.mp-choices { display: flex; flex-wrap: wrap; gap: 6px; }
+.mp-chip {
+    display: inline-flex; align-items: center; gap: 5px; cursor: pointer;
+    padding: 7px 13px; border-radius: var(--radius-pill); font-size: var(--fs-sm); font-weight: 700;
+    border: 1.5px solid var(--color-border); background: var(--color-bg-elev-2); color: var(--color-ink-soft);
+    transition: transform var(--dur-fast) var(--ease-out-quart);
+}
+.mp-chip:hover { transform: translateY(-1px); }
+.mp-chip.is-on { border-color: var(--color-primary); background: var(--color-primary-soft); color: var(--color-primary-deep); }
+.mp-chip:disabled { opacity: 0.6; cursor: default; }
+
+.mp-join { width: 100%; display: flex; flex-direction: column; gap: var(--space-md); align-items: center; }
+.mp-code-input { text-align: center; font-size: var(--fs-2xl); font-weight: 800; letter-spacing: 0.3em; text-transform: uppercase; max-width: 220px; }
+
+.mp-code {
+    display: inline-flex; align-items: center; gap: var(--space-sm); align-self: center; cursor: pointer;
+    padding: 8px 18px; border-radius: var(--radius-lg); border: 1.5px dashed var(--color-border-strong);
+    background: var(--color-bg-elev-2); color: var(--color-ink);
+}
+.mp-code__label { font-size: var(--fs-xs); font-weight: 700; color: var(--color-ink-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.mp-code__value { font-size: var(--fs-xl); font-weight: 800; letter-spacing: 0.18em; }
+
+.mp-players { width: 100%; display: flex; flex-wrap: wrap; gap: var(--space-sm); justify-content: center; }
+.mp-player { display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 72px; }
+.mp-player__name { font-size: var(--fs-xs); font-weight: 700; max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mp-waiting { display: flex; flex-direction: column; align-items: center; gap: var(--space-sm); }
+.mp-summary { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
+
+.mp-hud { display: flex; gap: var(--space-sm); flex-wrap: wrap; justify-content: center; }
+.mp-question { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.mp-game .flag-image { max-height: 180px; }
+
+.mp-scoreboard { width: 100%; display: flex; flex-direction: column; gap: 5px; }
+.mp-score-row {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 10px; border-radius: var(--radius-md); background: var(--color-bg-elev-2); border: 1px solid var(--color-border);
+}
+.mp-score-row.is-me { border-color: var(--color-primary); background: var(--color-primary-soft); }
+.mp-score-row .leaderboard-rank { flex: none; }
+.mp-score-name { flex: 1 1 auto; min-width: 0; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mp-score-bar { flex: 2 1 50px; height: 8px; border-radius: var(--radius-pill); background: var(--color-bg-soft); overflow: hidden; }
+.mp-score-bar__fill { display: block; height: 100%; background: var(--grad-primary); border-radius: var(--radius-pill); transition: width .3s var(--ease-out-quart); }
+.mp-score-val { font-weight: 800; color: var(--color-primary-deep); white-space: nowrap; }

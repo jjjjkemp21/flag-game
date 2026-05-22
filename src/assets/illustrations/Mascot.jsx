@@ -91,7 +91,7 @@ export default function Mascot({ size = 96, mood = 'idle', cosmetics, still = fa
             animate={calm ? undefined : bobVariants[mood]}
             initial={false}
         >
-            <svg width={size} height={size} viewBox="0 0 96 96" xmlns="http://www.w3.org/2000/svg">
+            <svg width={size} height={size} viewBox="0 0 96 96" overflow="visible" style={{ overflow: 'visible' }} xmlns="http://www.w3.org/2000/svg">
                 <defs>
                     <radialGradient id={bodyId} cx="0.35" cy="0.3" r="0.8">
                         <stop offset="0" stopColor={palette.stops[0]}>

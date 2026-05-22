@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Icon from './Icon';
 import { Modal, Button, Pill } from './ui';
 import { useToast } from './ui/Toast';
@@ -17,23 +17,60 @@ const FLAG_BASE = './assets/flags/';
 function ProfileCard({ row, flagsData, onClose }) {
     const { user } = useAuth();
     const toast = useToast();
-    const [sent, setSent] = useState(false);
+    const isMe = user && row.id === user.id;
+    // Relationship: 'unknown' | 'none' | 'friends' | 'outgoing' | 'incoming'
+    const [rel, setRel] = useState(isMe ? 'self' : 'unknown');
+    const [incomingId, setIncomingId] = useState(null);
     const [busy, setBusy] = useState(false);
 
     const total = (flagsData && flagsData.length) || 0;
     const rank = masteryRank(row.masteredCount || 0, total);
     const badges = (row.showcase || []).map((id) => ACHIEVEMENTS_BY_ID[id]).filter(Boolean);
-    const isMe = user && row.id === user.id;
     const petName = row.petName || 'Atlas';
+
+    // Look up the real relationship so we don't offer "Add friend" to someone
+    // who's already a friend (or has a pending request either direction).
+    useEffect(() => {
+        if (isMe) return;
+        let cancelled = false;
+        (async () => {
+            try {
+                const { friends, incoming, outgoing } = await api.get('/friends');
+                if (cancelled) return;
+                if ((friends || []).some((f) => f.id === row.id)) { setRel('friends'); return; }
+                const inc = (incoming || []).find((f) => f.id === row.id);
+                if (inc) { setRel('incoming'); setIncomingId(inc.requestId); return; }
+                if ((outgoing || []).some((f) => f.id === row.id)) { setRel('outgoing'); return; }
+                setRel('none');
+            } catch (_) {
+                if (!cancelled) setRel('none');
+            }
+        })();
+        return () => { cancelled = true; };
+    }, [row.id, isMe]);
 
     const addFriend = async () => {
         setBusy(true);
         try {
             const res = await api.post('/friends/request', { username: row.username });
-            toast.success(res.status === 'accepted' ? 'Friend added!' : 'Request sent!');
-            setSent(true);
+            const accepted = res.status === 'accepted';
+            toast.success(accepted ? 'Friend added!' : 'Request sent!');
+            setRel(accepted ? 'friends' : 'outgoing');
         } catch (err) {
             toast.danger(err.message || 'Could not send request.');
+        } finally {
+            setBusy(false);
+        }
+    };
+
+    const acceptRequest = async () => {
+        setBusy(true);
+        try {
+            await api.post('/friends/respond', { requestId: incomingId, accept: true });
+            toast.success('Friend added!');
+            setRel('friends');
+        } catch (err) {
+            toast.danger(err.message || 'Could not accept request.');
         } finally {
             setBusy(false);
         }
@@ -80,15 +117,24 @@ function ProfileCard({ row, flagsData, onClose }) {
                     </div>
                 )}
 
-                {!isMe && (
-                    <Button
-                        variant="primary"
-                        fullWidth
-                        icon={sent ? 'check' : 'person_add'}
-                        onClick={addFriend}
-                        disabled={busy || sent}
-                    >
-                        {sent ? 'Request sent' : 'Add friend'}
+                {!isMe && rel === 'friends' && (
+                    <Button variant="secondary" fullWidth icon="how_to_reg" disabled>
+                        Friends
+                    </Button>
+                )}
+                {!isMe && rel === 'outgoing' && (
+                    <Button variant="secondary" fullWidth icon="schedule" disabled>
+                        Request sent
+                    </Button>
+                )}
+                {!isMe && rel === 'incoming' && (
+                    <Button variant="primary" fullWidth icon="person_add" onClick={acceptRequest} disabled={busy}>
+                        Accept friend request
+                    </Button>
+                )}
+                {!isMe && rel === 'none' && (
+                    <Button variant="primary" fullWidth icon="person_add" onClick={addFriend} disabled={busy}>
+                        Add friend
                     </Button>
                 )}
             </div>

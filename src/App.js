@@ -13,14 +13,16 @@ import Friends from './components/Friends';
 import Achievements from './components/Achievements';
 import AdminAnnounce from './components/AdminAnnounce';
 import StoreScreen from './components/StoreScreen';
+import StatsScreen from './components/StatsScreen';
+import MultiplayerScreen from './components/MultiplayerScreen';
 import TopBar from './components/TopBar';
 import Spinner from './assets/illustrations/Spinner';
 import { useAudio } from './audio/AudioProvider';
 import { useAuth } from './auth/AuthProvider';
 import { api } from './api/client';
-import { applyStatsToFlags, zeroFlagStats, pushStats } from './lib/syncStats';
+import { applyStatsToFlags, zeroFlagStats, pushStats, flushStats } from './lib/syncStats';
 import { computeXp, readBonusScores } from './lib/xp';
-import { setAuthed, loadBonus, resetBonus } from './lib/progress';
+import { setAuthed, loadBonus, resetBonus, loadEarnedXp, resetEarnedXp } from './lib/progress';
 import { loadPet, resetPet, recordCorrect, recordIncorrect, getPet } from './lib/pet';
 import { loadProfile, resetProfile, setAchievementsUnlocked } from './lib/profile';
 import { buildContext, evaluate } from './lib/achievements';
@@ -70,6 +72,9 @@ function App() {
     // login/logout (which would otherwise push before account progress loads).
     const authedRef = useRef(isAuthed);
     authedRef.current = isAuthed;
+    // Latest flagsData for the unload flush (which closes over a one-time effect).
+    const flagsDataRef = useRef(flagsData);
+    flagsDataRef.current = flagsData;
     const progressReadyRef = useRef(false);
     // Baseline answer counts so we can feed the pet by how much they grew.
     const answerTotalsRef = useRef({ correct: 0, incorrect: 0 });
@@ -131,9 +136,25 @@ function App() {
         if (!progressReadyRef.current) return;
         if (authedRef.current) {
             pushStats(flagsData);
-            patchUser({ xp: computeXp(flagsData, readBonusScores()) });
+            patchUser({ xp: computeXp() });
         }
     }, [flagsData, isLoading, patchUser]);
+
+    // Flush any pending progress when the tab is hidden or closed so a long
+    // session's most recent answers / streak / XP aren't lost (a debounced push
+    // would otherwise be dropped on unload, especially when backgrounded on mobile).
+    useEffect(() => {
+        const flush = () => {
+            if (authedRef.current && progressReadyRef.current) flushStats(flagsDataRef.current);
+        };
+        const onVisibility = () => { if (document.visibilityState === 'hidden') flush(); };
+        window.addEventListener('pagehide', flush);
+        document.addEventListener('visibilitychange', onVisibility);
+        return () => {
+            window.removeEventListener('pagehide', flush);
+            document.removeEventListener('visibilitychange', onVisibility);
+        };
+    }, []);
 
     // Feed the pet by how much the answer counts grew (covers the standard quizzes,
     // which update flagsData). Suppressed until progress has loaded so loading an
@@ -169,13 +190,14 @@ function App() {
                     const remote = await api.get('/stats');
                     if (cancelled) return;
                     loadBonus(remote.bonusScores || {});
+                    loadEarnedXp(remote.earnedXp || 0);
                     setFlagsData(prev => {
                         const next = applyStatsToFlags(zeroFlagStats(prev), remote.flagStats || []);
                         // Anchor the feed baseline so loading progress doesn't feed the pet.
                         answerTotalsRef.current = sumAnswers(next);
                         return next;
                     });
-                    patchUser({ xp: computeXp(remote.flagStats || [], remote.bonusScores || {}) });
+                    patchUser({ xp: computeXp() });
                 } catch (_) {
                     /* leave zeroed progress if the load fails */
                 }
@@ -194,6 +216,7 @@ function App() {
             } else {
                 setAuthed(false);
                 resetBonus();
+                resetEarnedXp();
                 resetPet();
                 resetProfile();
                 answerTotalsRef.current = { correct: 0, incorrect: 0 };
@@ -208,9 +231,10 @@ function App() {
 
     const handleResetStats = () => {
         resetBonus();
+        resetEarnedXp();
         setFlagsData(prev => zeroFlagStats(prev));
         if (authedRef.current) {
-            api.put('/stats', { flagStats: [], bonusScores: {} }).catch(() => {});
+            api.put('/stats', { flagStats: [], bonusScores: {}, earnedXp: 0 }).catch(() => {});
             patchUser({ xp: 0 });
         }
         setView('menu');
@@ -221,7 +245,7 @@ function App() {
             <div className="app-container">
                 <div className="loading-box">
                     <Spinner size={56} />
-                    <span>Loading Flag Quest…</span>
+                    <span>Loading Flag Game…</span>
                 </div>
             </div>
         );
@@ -302,6 +326,10 @@ function App() {
                 return <AdminAnnounce setView={setView} />;
             case 'store':
                 return <StoreScreen setView={setView} flagsData={flagsData} />;
+            case 'statistics':
+                return <StatsScreen setView={setView} flagsData={flagsData} />;
+            case 'multiplayer':
+                return <MultiplayerScreen setView={setView} flagsData={flagsData} />;
             case 'settings':
                 return (
                     <Settings
