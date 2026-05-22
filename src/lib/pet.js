@@ -42,7 +42,6 @@ const CARE = { correct: 6, incorrect: 2, play: 5 };
 // Atlas Battle (multiplayer) outcomes act on a SEPARATE battle-HP track so a lost
 // duel can knock Atlas out without ever triggering the neglect death. A KO is
 // purely a battle state and heals back as you play other modes.
-const BATTLE_LOSS_DAMAGE = 55;     // HP lost when you lose a duel
 const BATTLE_WIN_HEAL = 15;        // small reward for winning
 const BATTLE_HEAL_PER_PLAY = 6;    // battle-HP recovered per answer/play
 const KO_RECOVER_AT = 50;          // battle-HP needed to get back up after a KO
@@ -182,10 +181,13 @@ export function recordBattleResult(won) {
     const next = applyDecay(state, now() - state.lastTick);
     const cur = next.battleHp == null ? 100 : next.battleHp;
     if (won) {
+        // Survived the duel — patch up a little.
         next.battleHp = clamp(cur + BATTLE_WIN_HEAL);
+        next.ko = false;
     } else {
-        next.battleHp = clamp(cur - BATTLE_LOSS_DAMAGE);
-        if (next.battleHp <= 0) { next.battleHp = 0; next.ko = true; }
+        // The battle ends on a KO, so the loser's Atlas is the one knocked out.
+        next.battleHp = 0;
+        next.ko = true;
     }
     commit(next);
     persist();

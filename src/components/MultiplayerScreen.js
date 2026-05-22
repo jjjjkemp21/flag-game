@@ -457,8 +457,11 @@ function Game({ lobby, code, flagsData, meId }) {
             {config.questionType === 'mc' ? (
                 <div className="options-box">
                     {question.options.map((opt, i) => {
-                        // Opponents who picked this option for the question I'm on.
-                        const pickers = lobby.members.filter((m) => m.id !== meId && m.pick === opt);
+                        // Opponents who picked this option for the question I'm on —
+                        // only revealed once I've locked in my own answer.
+                        const pickers = answered
+                            ? lobby.members.filter((m) => m.id !== meId && m.pick === opt)
+                            : [];
                         return (
                             <div className="mp-choice-wrap" key={`${qIndex}-${opt}`}>
                                 <ChoiceCard label={opt} index={i} state={choiceState(opt)} disabled={answered || finished} onSelect={onChoice} />

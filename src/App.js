@@ -186,17 +186,16 @@ function App() {
         (async () => {
             if (isAuthed) {
                 setAuthed(true);
+                let loadedFlags = null;
                 try {
                     const remote = await api.get('/stats');
                     if (cancelled) return;
                     loadBonus(remote.bonusScores || {});
                     loadEarnedXp(remote.earnedXp || 0);
-                    setFlagsData(prev => {
-                        const next = applyStatsToFlags(zeroFlagStats(prev), remote.flagStats || []);
-                        // Anchor the feed baseline so loading progress doesn't feed the pet.
-                        answerTotalsRef.current = sumAnswers(next);
-                        return next;
-                    });
+                    loadedFlags = applyStatsToFlags(zeroFlagStats(flagsDataRef.current), remote.flagStats || []);
+                    // Anchor the feed baseline so loading progress doesn't feed the pet.
+                    answerTotalsRef.current = sumAnswers(loadedFlags);
+                    setFlagsData(loadedFlags);
                     patchUser({ xp: computeXp() });
                 } catch (_) {
                     /* leave zeroed progress if the load fails */
@@ -212,6 +211,14 @@ function App() {
                     if (!cancelled) loadProfile(prof);
                 } catch (_) {
                     /* profile stays at defaults if the load fails */
+                }
+                // Recompute unlocked achievements from the just-loaded progress so the
+                // account's count + showcase are correct. Without this they stay at the
+                // load-time defaults (unlocked=[]) and a later cosmetic-only persist
+                // would wipe the stored achievements to 0.
+                if (!cancelled && loadedFlags) {
+                    const ctx = buildContext(loadedFlags, readBonusScores(), getPet().level);
+                    setAchievementsUnlocked(evaluate(ctx));
                 }
             } else {
                 setAuthed(false);

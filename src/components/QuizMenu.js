@@ -3,6 +3,7 @@ import { motion, useReducedMotion } from 'framer-motion';
 import Icon from './Icon';
 import ScoringInfo from './ScoringInfo';
 import { useAudio } from '../audio/AudioProvider';
+import { MASTERY_STREAK } from '../lib/xp';
 import { springs } from '../motion';
 
 const formatCategoryName = (name) =>
@@ -12,9 +13,10 @@ const getCategoryStats = (flags) => {
     if (!flags || flags.length === 0) {
         return { mastered: 0, total: 0, needsReview: 0 };
     }
-    const masteredThreshold = 3;
+    // Mastery threshold must match everywhere else (MainMenu, Stats, achievements,
+    // server): a flag is mastered once its streak passes MASTERY_STREAK.
     const now = Date.now();
-    const mastered = flags.filter(f => f.streak > masteredThreshold).length;
+    const mastered = flags.filter(f => f.streak > MASTERY_STREAK).length;
     const needsReview = flags.filter(f => f.nextReview !== null && f.nextReview <= now).length;
     return { mastered, total: flags.length, needsReview };
 };
