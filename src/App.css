@@ -1,3 +1,0 @@
-/* Deprecated: all global styles now live in src/styles/tokens.css,
-   base.css, components.css, and animations.css. Kept as an empty shim
-   in case any stale import targets it. */

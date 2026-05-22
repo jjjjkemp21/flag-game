@@ -13,16 +13,20 @@ const FLAG_BASE = './assets/flags/';
 
 const SCOPES = [
     { key: 'overall',      label: 'Overall',       icon: 'public',    unit: 'XP' },
-    { key: 'friends',      label: 'Friends',       icon: 'group',     unit: 'XP' },
     { key: 'atlas',        label: 'Atlas Level',   icon: 'pets',      unit: 'Lv' },
+    { key: 'mpwins',       label: 'MP Wins',       icon: 'sports_esports', unit: 'wins' },
     { key: 'frenzy',       label: 'Frenzy',        icon: 'bolt',      unit: 'pts' },
     { key: 'pixelated',    label: 'Pixelated',     icon: 'blur_on',   unit: 'pts' },
     { key: 'longestRoute', label: 'Longest Chain', icon: 'route',     unit: 'pts' },
     { key: 'language',     label: 'Language',      icon: 'translate', unit: 'pts' },
 ];
 
+// How often the open leaderboard refreshes itself so ranks update live.
+const POLL_MS = 15000;
+
 function formatValue(scope, value) {
     if (scope === 'atlas') return `Lv ${value}`;
+    if (scope === 'mpwins') return `${value} ${value === 1 ? 'win' : 'wins'}`;
     if (scope === 'overall' || scope === 'friends') return `${value} XP`;
     return `${value} pts`;
 }
@@ -31,25 +35,36 @@ function Leaderboard({ setView, flagsData }) {
     const { user, isAuthed } = useAuth();
     const total = (flagsData && flagsData.length) || 0;
     const [scope, setScope] = useState('overall');
+    const [filter, setFilter] = useState('global'); // 'global' | 'friends'
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [selected, setSelected] = useState(null);
 
-    const load = useCallback(async () => {
+    // `silent` refreshes (the live poll) update in place without flashing the
+    // loading state or clearing the current rows.
+    const load = useCallback(async (silent = false) => {
         if (!isAuthed) return;
-        setLoading(true);
+        if (!silent) setLoading(true);
         setError(null);
         try {
-            setData(await api.get(`/leaderboard?scope=${scope}`));
+            const next = await api.get(`/leaderboard?scope=${scope}&filter=${filter}`);
+            setData(next);
         } catch (err) {
-            setError(err.message || 'Could not load leaderboard.');
+            if (!silent) setError(err.message || 'Could not load leaderboard.');
         } finally {
-            setLoading(false);
+            if (!silent) setLoading(false);
         }
-    }, [scope, isAuthed]);
+    }, [scope, filter, isAuthed]);
 
     useEffect(() => { load(); }, [load]);
+
+    // Live updates: re-fetch the current scope/filter on an interval while open.
+    useEffect(() => {
+        if (!isAuthed) return undefined;
+        const id = setInterval(() => load(true), POLL_MS);
+        return () => clearInterval(id);
+    }, [load, isAuthed]);
 
     if (!isAuthed) {
         return (
@@ -90,6 +105,22 @@ function Leaderboard({ setView, flagsData }) {
                 ))}
             </div>
 
+            {/* Global vs Friends applies to whichever scope is selected. */}
+            <div className="lb-filter">
+                <button
+                    className={`lb-filter__btn ${filter === 'global' ? 'is-active' : ''}`}
+                    onClick={() => setFilter('global')}
+                >
+                    <Icon name="public" /> Global
+                </button>
+                <button
+                    className={`lb-filter__btn ${filter === 'friends' ? 'is-active' : ''}`}
+                    onClick={() => setFilter('friends')}
+                >
+                    <Icon name="group" /> Friends
+                </button>
+            </div>
+
             {data && data.myRank != null && (
                 <div className="my-rank-pill">
                     <Pill tone="primary" icon="star">Your rank: #{data.myRank} · {formatValue(scope, data.myValue)}</Pill>
@@ -103,7 +134,7 @@ function Leaderboard({ setView, flagsData }) {
                 <ol className="leaderboard-list">
                     {data.entries.length === 0 && (
                         <p className="text-center auth-hint">
-                            {scope === 'friends' ? 'Add friends to see a friends leaderboard.' : 'No players yet.'}
+                            {filter === 'friends' ? 'Add friends to see them ranked here.' : 'No players yet.'}
                         </p>
                     )}
                     {data.entries.map((row) => {
@@ -138,8 +169,11 @@ function Leaderboard({ setView, flagsData }) {
                                     </span>
                                     <span className="leaderboard-sub">
                                         <span className={`rank-tag rank-pill--${r.tier}`}>{r.title}</span>
-                                        {' · '}{row.petName || 'Atlas'} Lv {row.petLevel}
-                                        {(scope === 'overall' || scope === 'friends') && ` · ${row.masteredCount} mastered`}
+                                        {' · '}{row.petName || 'Atlas'} · {row.petStage || 'Hatchling'} Lv {row.petLevel}
+                                        {scope === 'overall' && ` · ${row.masteredCount} mastered`}
+                                        {row.bestStreak > 0 && (
+                                            <span className="leaderboard-streak"><Icon name="local_fire_department" /> {row.bestStreak}</span>
+                                        )}
                                     </span>
                                 </span>
                                 <span className="leaderboard-xp">{formatValue(scope, row.value)}</span>

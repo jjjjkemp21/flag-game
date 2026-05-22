@@ -16,10 +16,14 @@ export const mp = {
 
 // ---- Config metadata (shared by the lobby UI) ------------------------------
 export const MP_MODES = [
-    { key: 'race',   title: 'Race',        icon: 'flag',  desc: 'First to N correct wins', maxPlayers: 8 },
-    { key: 'blitz',  title: '1v1 Blitz',   icon: 'timer', desc: 'Most correct before time runs out', maxPlayers: 2 },
-    { key: 'streak', title: 'Streak Duel', icon: 'local_fire_department', desc: 'Highest answer streak before time runs out', maxPlayers: 8 },
+    { key: 'race',   title: 'Race',         icon: 'flag',  desc: 'First to N correct wins', maxPlayers: 8 },
+    { key: 'blitz',  title: '1v1 Blitz',    icon: 'timer', desc: 'Most correct before time runs out', maxPlayers: 2 },
+    { key: 'streak', title: 'Streak Duel',  icon: 'local_fire_department', desc: 'Highest answer streak before time runs out', maxPlayers: 8 },
+    { key: 'battle', title: 'Atlas Battle', icon: 'sports_mma', desc: 'Each correct hits your rival\'s Atlas — KO to win', maxPlayers: 2 },
 ];
+
+// Modes that end when a player hits the target score (vs. timed modes).
+export const TARGET_MODES = ['race', 'battle'];
 
 export const DEFAULT_MP_CONFIG = {
     mode: 'race',

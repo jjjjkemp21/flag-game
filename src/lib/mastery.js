@@ -37,12 +37,16 @@ function tieredTitle(value, tiers) {
     return { title: pick.title, tier: pick.tier };
 }
 
-const ATLAS_TIERS = [
-    { min: 0,  title: 'Hatchling',       tier: 'stone' },
-    { min: 5,  title: 'Atlas Companion', tier: 'bronze' },
-    { min: 10, title: 'Atlas Caretaker', tier: 'silver' },
-    { min: 20, title: 'Atlas Guardian',  tier: 'gold' },
-];
+// Pet life-stage -> badge tier, so the Atlas leaderboard shows the SAME stage
+// label players see on their pet panel (deriveStage in src/lib/pet.js).
+const STAGE_TIERS = {
+    Hatchling:    'stone',
+    Sprout:       'bronze',
+    Explorer:     'silver',
+    Globetrotter: 'gold',
+    Legend:       'platinum',
+    Resting:      'stone',
+};
 
 // Bonus-mode tiers keyed to the achievement thresholds for each mode.
 const BONUS_TIERS = {
@@ -56,8 +60,19 @@ const BONUS_TIERS = {
 // always matches the value being ranked. Overall/Friends keep the mastery rank;
 // Atlas and the bonus modes get a title for that metric. `entry` is a leaderboard
 // entry; `value` is the row's metric value for the scope.
+const MP_WIN_TIERS = [
+    { min: 0,  title: 'Rookie',     tier: 'stone' },
+    { min: 5,  title: 'Contender',  tier: 'bronze' },
+    { min: 15, title: 'Challenger', tier: 'silver' },
+    { min: 30, title: 'Champion',   tier: 'gold' },
+];
+
 export function scopeRank(scope, entry, total) {
-    if (scope === 'atlas') return tieredTitle(entry.petLevel || 1, ATLAS_TIERS);
+    if (scope === 'atlas') {
+        const stage = entry.petStage || 'Hatchling';
+        return { title: stage, tier: STAGE_TIERS[stage] || 'stone' };
+    }
+    if (scope === 'mpwins') return tieredTitle(entry.value || 0, MP_WIN_TIERS);
     if (BONUS_TIERS[scope]) return tieredTitle(entry.value || 0, BONUS_TIERS[scope]);
     return masteryRank(entry.masteredCount || 0, total); // overall / friends
 }

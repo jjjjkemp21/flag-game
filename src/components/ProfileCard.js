@@ -82,7 +82,7 @@ function ProfileCard({ row, flagsData, onClose }) {
                 <div className="profile-card__atlas">
                     <Mascot size={104} mood="idle" cosmetics={row.cosmetics} still />
                     <span className="profile-card__petname">
-                        {petName} · Lv {row.petLevel || 1}
+                        {petName} · {row.petStage || 'Hatchling'} · Lv {row.petLevel || 1}
                     </span>
                 </div>
 

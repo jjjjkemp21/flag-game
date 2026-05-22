@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import Icon from './Icon';
 import Mascot from '../assets/illustrations/Mascot';
+import ScoringInfo from './ScoringInfo';
 import { useAudio } from '../audio/AudioProvider';
 import { getBonus } from '../lib/progress';
 import { springs } from '../motion';
@@ -43,22 +44,24 @@ function BonusMenu({ setView }) {
             <p className="menu-subtitle">Try a fun challenge!</p>
             <div className="mode-grid">
                 {MODES.map((mode, i) => (
-                    <motion.button
-                        key={mode.key}
-                        className={`mode-card tone-${mode.tone}`}
-                        onClick={() => { audio.play('click'); setView(mode.key); }}
-                        initial={prefersReduced ? false : { opacity: 0, y: 18 }}
-                        animate={prefersReduced ? false : { opacity: 1, y: 0 }}
-                        transition={{ ...springs.gentle, delay: 0.08 * i }}
-                        whileHover={prefersReduced ? undefined : { y: -3 }}
-                        whileTap={prefersReduced ? undefined : { scale: 0.97 }}
-                        aria-label={`${mode.title} — High score ${scores[mode.scoreKey] || 0}`}
-                    >
-                        <div className="mode-card__badge">High Score: {scores[mode.scoreKey] || 0}</div>
-                        <div className="mode-card__title">{mode.title}</div>
-                        <div className="mode-card__desc">{mode.desc}</div>
-                        <Icon name={mode.icon} className="mode-card__icon" />
-                    </motion.button>
+                    <div className="mode-card-wrap" key={mode.key}>
+                        <motion.button
+                            className={`mode-card tone-${mode.tone}`}
+                            onClick={() => { audio.play('click'); setView(mode.key); }}
+                            initial={prefersReduced ? false : { opacity: 0, y: 18 }}
+                            animate={prefersReduced ? false : { opacity: 1, y: 0 }}
+                            transition={{ ...springs.gentle, delay: 0.08 * i }}
+                            whileHover={prefersReduced ? undefined : { y: -3 }}
+                            whileTap={prefersReduced ? undefined : { scale: 0.97 }}
+                            aria-label={`${mode.title} — High score ${scores[mode.scoreKey] || 0}`}
+                        >
+                            <div className="mode-card__badge">High Score: {scores[mode.scoreKey] || 0}</div>
+                            <div className="mode-card__title">{mode.title}</div>
+                            <div className="mode-card__desc">{mode.desc}</div>
+                            <Icon name={mode.icon} className="mode-card__icon" />
+                        </motion.button>
+                        <ScoringInfo mode={mode.scoreKey} className="mode-card__info" />
+                    </div>
                 ))}
             </div>
         </div>

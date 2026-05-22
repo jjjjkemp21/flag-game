@@ -40,6 +40,15 @@ function FrenzyQuiz({ allFlagsData, setView }) {
     const gameTimerRef = useRef(null);
     const lastTickRef = useRef(null);
     const tickedRef = useRef(false);
+    // Authoritative copy of the slots so the animation frame can read + write them
+    // synchronously without depending on React's async state. Every writer goes
+    // through commitSlots so the ref and state never diverge.
+    const slotsRef = useRef(slots);
+    const liveRef = useRef({});
+    const commitSlots = useCallback((next) => {
+        slotsRef.current = next;
+        setSlots(next);
+    }, []);
 
     useEffect(() => {
         setHighScore(getHighScore('frenzy'));
@@ -55,22 +64,6 @@ function FrenzyQuiz({ allFlagsData, setView }) {
         return newFlag;
     }, [allFlagsData]);
 
-    const populateSlot = useCallback((index) => {
-        setSlots(prevSlots => {
-            const currentFlags = prevSlots.map(s => s.flag);
-            const newFlag = getUniqueFlag(currentFlags);
-            const newSlots = [...prevSlots];
-            newSlots[index] = {
-                flag: newFlag,
-                inputValue: '',
-                timer: FLAG_TIMER_MS,
-                cooldown: 0,
-                isCorrect: null,
-            };
-            return newSlots;
-        });
-    }, [getUniqueFlag]);
-
     const startGame = () => {
         setShowNotification(false);
         setGameStarted(true);
@@ -82,8 +75,8 @@ function FrenzyQuiz({ allFlagsData, setView }) {
             const newFlag = getUniqueFlag(initialFlags);
             initialFlags.push(newFlag);
         }
-        setSlots(initialFlags.map(flag => ({ ...initialSlotState, flag })));
-        lastTickRef.current = performance.now();
+        commitSlots(initialFlags.map(flag => ({ ...initialSlotState, flag })));
+        lastTickRef.current = null;
         tickedRef.current = false;
     };
 
@@ -123,12 +116,10 @@ function FrenzyQuiz({ allFlagsData, setView }) {
         if (!isExpired) triggerShake();
         audio.play('incorrect');
         triggerScoreDelta(INCORRECT_POINTS);
-        setSlots(prev => {
-            const newSlots = [...prev];
-            newSlots[index] = { ...newSlots[index], cooldown: COOLDOWN_MS, isCorrect: false, timer: 0 };
-            return newSlots;
-        });
-    }, [triggerShake, triggerScoreDelta, audio]);
+        commitSlots(slotsRef.current.map((slot, i) =>
+            i === index ? { ...slot, cooldown: COOLDOWN_MS, isCorrect: false, timer: 0 } : slot
+        ));
+    }, [triggerShake, triggerScoreDelta, audio, commitSlots]);
 
     useEffect(() => {
         if (gameOver) {
@@ -143,69 +134,90 @@ function FrenzyQuiz({ allFlagsData, setView }) {
         if (gameOver) recordPlay(1.5);
     }, [gameOver]);
 
+    // Keep the latest helpers in a ref so the animation loop never needs them in
+    // its dependency array — re-subscribing the loop on every render (e.g. when
+    // the audio context object changes identity) can starve requestAnimationFrame
+    // and freeze the timer bars even as the clock keeps counting down.
+    liveRef.current = { getUniqueFlag, audio, triggerScoreDelta };
+
     useEffect(() => {
-        if (!gameStarted || gameOver) return;
+        if (!gameStarted || gameOver) return undefined;
+        let raf = 0;
 
         const tick = (timestamp) => {
-            if (!lastTickRef.current) lastTickRef.current = timestamp;
+            if (lastTickRef.current == null) lastTickRef.current = timestamp;
             const delta = timestamp - lastTickRef.current;
             lastTickRef.current = timestamp;
+            const { getUniqueFlag: pick, audio: sfx, triggerScoreDelta: flashDelta } = liveRef.current;
 
             setGameTimer(prev => {
                 const newTime = prev - delta;
                 if (newTime <= 5000 && !tickedRef.current) {
-                    audio.play('tick');
+                    sfx.play('tick');
                     tickedRef.current = true;
                     setTimeout(() => { tickedRef.current = false; }, 800);
                 }
                 if (newTime <= 0) {
-                    audio.play('gameOver');
+                    sfx.play('gameOver');
                     setGameOver(true);
                     return 0;
                 }
                 return newTime;
             });
 
-            setSlots(prevSlots => prevSlots.map((slot, index) => {
+            // Advance slot timers/cooldowns synchronously off the ref so we can also
+            // tally expiries this frame (instead of triggering setState inside a
+            // setState updater, which doesn't compose).
+            const prev = slotsRef.current;
+            const currentFlags = prev.map(s => s.flag);
+            let expired = 0;
+            const next = prev.map((slot) => {
                 if (slot.cooldown > 0) {
                     const newCooldown = slot.cooldown - delta;
                     if (newCooldown <= 0) {
-                        populateSlot(index);
-                        return { ...slot, cooldown: 0 };
+                        return { flag: pick(currentFlags), inputValue: '', timer: FLAG_TIMER_MS, cooldown: 0, isCorrect: null };
                     }
                     return { ...slot, cooldown: newCooldown };
-                } else if (slot.timer > 0) {
+                }
+                if (slot.timer > 0) {
                     const newTimer = slot.timer - delta;
                     if (newTimer <= 0) {
-                        triggerIncorrect(index, true);
-                        return { ...slot, timer: 0 };
+                        expired += 1;
+                        return { ...slot, timer: 0, cooldown: COOLDOWN_MS, isCorrect: false };
                     }
                     return { ...slot, timer: newTimer };
                 }
                 return slot;
-            }));
+            });
+            commitSlots(next);
 
-            gameTimerRef.current = requestAnimationFrame(tick);
+            if (expired > 0) {
+                setScore(s => Math.max(0, s + INCORRECT_POINTS * expired));
+                sfx.play('incorrect');
+                flashDelta(INCORRECT_POINTS);
+            }
+
+            raf = requestAnimationFrame(tick);
+            gameTimerRef.current = raf;
         };
 
-        gameTimerRef.current = requestAnimationFrame(tick);
-        return () => cancelAnimationFrame(gameTimerRef.current);
-    }, [gameStarted, gameOver, populateSlot, triggerIncorrect, audio]);
+        raf = requestAnimationFrame(tick);
+        gameTimerRef.current = raf;
+        return () => cancelAnimationFrame(raf);
+    }, [gameStarted, gameOver, commitSlots]);
 
     const handleSubmit = (e, index) => {
         e.preventDefault();
-        const slot = slots[index];
+        const slot = slotsRef.current[index];
         if (slot.cooldown > 0 || gameOver || !gameStarted) return;
 
         if (checkAnswer(slot.inputValue, slot.flag)) {
             audio.play('correct');
             setScore(s => s + CORRECT_POINTS);
             triggerScoreDelta(CORRECT_POINTS);
-            setSlots(prev => {
-                const newSlots = [...prev];
-                newSlots[index] = { ...newSlots[index], cooldown: COOLDOWN_MS, isCorrect: true, timer: 0 };
-                return newSlots;
-            });
+            commitSlots(slotsRef.current.map((s, i) =>
+                i === index ? { ...s, cooldown: COOLDOWN_MS, isCorrect: true, timer: 0 } : s
+            ));
             setTimeout(() => inputRefs.current[index]?.blur(), 100);
         } else {
             triggerIncorrect(index);
@@ -214,11 +226,9 @@ function FrenzyQuiz({ allFlagsData, setView }) {
 
     const handleInputChange = (e, index) => {
         const value = e.target.value;
-        setSlots(prev => {
-            const newSlots = [...prev];
-            newSlots[index] = { ...newSlots[index], inputValue: value };
-            return newSlots;
-        });
+        commitSlots(slotsRef.current.map((s, i) =>
+            i === index ? { ...s, inputValue: value } : s
+        ));
     };
 
     const formatTime = (ms) => {

@@ -83,6 +83,10 @@ if (!hasCol('achievements_json')) db.exec('ALTER TABLE users ADD COLUMN achievem
 // migrated/written; the stats route seeds it from the legacy formula so totals
 // carry over for accounts that predate per-answer scaling.
 if (!hasCol('earned_xp')) db.exec('ALTER TABLE users ADD COLUMN earned_xp INTEGER');
+// Per-gamemode best run streaks (JSON map, e.g. {"multiple-choice":12}) and the
+// running tally of multiplayer match wins (for the multiplayer leaderboard).
+if (!hasCol('streaks_json')) db.exec('ALTER TABLE users ADD COLUMN streaks_json TEXT');
+if (!hasCol('mp_wins')) db.exec('ALTER TABLE users ADD COLUMN mp_wins INTEGER NOT NULL DEFAULT 0');
 
 // Seed / promote the admin account from env. If ADMIN_PASSWORD is set, the admin
 // account is created (or its password reset) on boot so it can always log in.

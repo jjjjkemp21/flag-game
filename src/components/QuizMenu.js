@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import Icon from './Icon';
+import ScoringInfo from './ScoringInfo';
 import { useAudio } from '../audio/AudioProvider';
 import { springs } from '../motion';
 
@@ -110,7 +111,10 @@ function QuizMenu({ setView, setQuizCategory, flagsData, quizMode }) {
                 </button>
             </div>
 
-            <h1 className="menu-title">Choose a Deck</h1>
+            <div className="menu-title-row">
+                <h1 className="menu-title">Choose a Deck</h1>
+                <ScoringInfo mode={quizMode} />
+            </div>
             <p className="menu-subtitle">Select a set of flags to begin your quiz.</p>
 
             <div className="mode-grid">

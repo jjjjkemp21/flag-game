@@ -47,9 +47,10 @@ export function getEarnedXp() {
 // in; the normal stats push also carries the absolute value, so this is safe to
 // call freely. Returns the new total.
 export function addEarnedXp(amount) {
-    const a = Math.max(0, Math.round(Number(amount) || 0));
-    if (a <= 0) return earnedXp;
-    earnedXp += a;
+    const a = Math.round(Number(amount) || 0);
+    if (a === 0) return earnedXp;
+    // Allow negative deltas (a wrong answer costs XP), but never below zero.
+    earnedXp = Math.max(0, earnedXp + a);
     if (authed) pushBonus();
     return earnedXp;
 }

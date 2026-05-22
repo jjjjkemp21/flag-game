@@ -28,7 +28,11 @@ const MODES = {
     blitz:  { players: 2 },  // 1v1: most correct before the clock runs out
     race:   { players: 8 },  // first to N correct wins
     streak: { players: 8 },  // highest answer streak before time runs out
+    battle: { players: 2 },  // 1v1 Atlas Battle: each correct hits the rival's Atlas; KO to win
 };
+
+// Modes that end when a player reaches the target score (vs. timed modes).
+const TARGET_MODES = new Set(['race', 'battle']);
 
 function normalizeConfig(c) {
     c = c || {};
@@ -39,7 +43,7 @@ function normalizeConfig(c) {
         ? c.scope.slice(0, 32)
         : 'all';
     let maxPlayers = clampInt(c.maxPlayers, 2, MODES[mode].players, MODES[mode].players);
-    if (mode === 'blitz') maxPlayers = 2;
+    if (mode === 'blitz' || mode === 'battle') maxPlayers = 2;
     return {
         mode,
         content,
@@ -79,6 +83,8 @@ function newMember(user) {
         streak: 0,
         bestStreak: 0,
         finished: false,
+        qIndex: 0,
+        picks: {},
         joinedAt: Date.now(),
         lastSeen: Date.now(),
     };
@@ -90,7 +96,7 @@ function evaluate(lobby) {
     const members = Object.values(lobby.members);
     const { mode, target } = lobby.config;
 
-    if (mode === 'race') {
+    if (TARGET_MODES.has(mode)) {
         const reached = members.filter((m) => m.score >= target);
         if (reached.length > 0) {
             reached.sort((a, b) => b.score - a.score);
@@ -111,12 +117,23 @@ function finish(lobby, winnerId) {
     lobby.state = 'finished';
     lobby.winnerId = winnerId;
     lobby.finishedAt = Date.now();
+    // Tally the win for the multiplayer leaderboard (once per match — finish only
+    // runs on the playing -> finished transition). Multiplayer never grants XP.
+    if (winnerId) {
+        try {
+            db.prepare('UPDATE users SET mp_wins = COALESCE(mp_wins, 0) + 1 WHERE id = ?').run(winnerId);
+        } catch (_) { /* a transient match win isn't worth failing the request over */ }
+    }
 }
 
 // Strip internals and present members as a sorted array for the scoreboard.
 function view(lobby, meId) {
     const { mode, target } = lobby.config;
     const metric = mode === 'streak' ? (m) => m.bestStreak : (m) => m.score;
+    // The question the viewer is currently on — used to surface what each opponent
+    // picked for *that* question (null if they haven't reached/answered it).
+    const me = lobby.members[meId];
+    const viewerQ = me && me.qIndex != null ? String(me.qIndex) : null;
     const members = Object.values(lobby.members)
         .map((m) => ({
             id: m.id,
@@ -126,6 +143,7 @@ function view(lobby, meId) {
             streak: m.streak,
             bestStreak: m.bestStreak,
             finished: m.finished,
+            pick: (m.id !== meId && viewerQ != null && m.picks) ? (m.picks[viewerQ] || null) : null,
         }))
         .sort((a, b) => metric(b) - metric(a) || a.score - b.score);
     return {
@@ -226,7 +244,7 @@ router.post('/lobby/:code/start', (req, res) => {
     lobby.state = 'playing';
     lobby.seed = Math.floor(Math.random() * 2 ** 31);
     lobby.startedAt = Date.now();
-    if (lobby.config.mode !== 'race') {
+    if (!TARGET_MODES.has(lobby.config.mode)) {
         lobby.endsAt = lobby.startedAt + lobby.config.duration * 1000;
     }
     Object.values(lobby.members).forEach((m) => {
@@ -256,11 +274,19 @@ router.post('/lobby/:code/progress', (req, res) => {
     const m = lobby.members[req.user.id];
     if (!m) return res.status(404).json({ error: 'You are not in this lobby.' });
     const b = req.body || {};
-    // Scores only move forward (guards against out-of-order posts).
-    m.score = Math.max(m.score, clampInt(b.score, 0, 100000, m.score));
+    // The client is authoritative for its own score. It can move down as well as
+    // up because a wrong answer costs a point, so we set (not max) it, clamped >= 0.
+    if (b.score != null) m.score = clampInt(b.score, 0, 100000, m.score);
     m.streak = clampInt(b.streak, 0, 100000, m.streak);
     m.bestStreak = Math.max(m.bestStreak, clampInt(b.bestStreak, 0, 100000, m.bestStreak));
     if (b.finished) m.finished = true;
+    // Track where this player is and what they picked, so other clients can show
+    // each opponent's Atlas sitting on the option they chose for that question.
+    if (b.qIndex != null) m.qIndex = clampInt(b.qIndex, 0, 1000000, m.qIndex || 0);
+    if (typeof b.pick === 'string' && b.qIndex != null) {
+        m.picks = m.picks || {};
+        m.picks[String(clampInt(b.qIndex, 0, 1000000, 0))] = b.pick.slice(0, 80);
+    }
     m.lastSeen = Date.now();
     evaluate(lobby);
     res.json(view(lobby, req.user.id));

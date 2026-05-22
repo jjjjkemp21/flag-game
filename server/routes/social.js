@@ -30,11 +30,22 @@ function acceptedFriendIds(userId) {
 }
 
 const BONUS_MODES = ['frenzy', 'pixelated', 'longestRoute', 'language'];
-const VALID_SCOPES = ['overall', 'friends', 'atlas', ...BONUS_MODES];
+const VALID_SCOPES = ['overall', 'friends', 'atlas', 'mpwins', ...BONUS_MODES];
+
+function bestStreakOf(row) {
+    if (!row.streaks_json) return 0;
+    try {
+        const m = JSON.parse(row.streaks_json) || {};
+        return Object.values(m).reduce((max, v) => Math.max(max, Number(v) || 0), 0);
+    } catch (_) {
+        return 0;
+    }
+}
 
 // The score that ranks a row for a given scope.
 function metricValue(row, scope) {
     if (scope === 'atlas') return row.pet_level || 1;
+    if (scope === 'mpwins') return row.mp_wins || 0;
     if (BONUS_MODES.includes(scope)) {
         try {
             const b = row.bonus_scores_json ? JSON.parse(row.bonus_scores_json) : {};
@@ -46,14 +57,25 @@ function metricValue(row, scope) {
     return row.xp || 0; // overall / friends
 }
 
-function petNameOf(row) {
+function petOf(row) {
     if (!row.pet_json) return null;
     try {
-        const p = JSON.parse(row.pet_json);
-        return p && p.name ? String(p.name) : null;
+        return JSON.parse(row.pet_json);
     } catch (_) {
         return null;
     }
+}
+
+// Mirror of deriveStage() in src/lib/pet.js so the leaderboard shows the SAME
+// life-stage label players see on their own pet panel (keep the two in sync).
+function petStageOf(pet) {
+    if (!pet || pet.alive === false) return 'Resting';
+    const days = (Date.now() - (pet.bornAt || Date.now())) / 86400000;
+    if (days < 0.04) return 'Hatchling';
+    if (days < 1) return 'Sprout';
+    if (days < 3) return 'Explorer';
+    if (days < 7) return 'Globetrotter';
+    return 'Legend';
 }
 
 function achievementsOf(row) {
@@ -72,6 +94,7 @@ function buildEntry(row, scope) {
         try { mastered = masteredCount(JSON.parse(row.stats_json)); } catch (_) { /* ignore */ }
     }
     const ach = achievementsOf(row);
+    const pet = petOf(row);
     return {
         id: row.id,
         username: row.username,
@@ -79,8 +102,11 @@ function buildEntry(row, scope) {
         region: row.region || null,
         cosmetics: row.cosmetics_json ? JSON.parse(row.cosmetics_json) : null,
         petLevel: row.pet_level || 1,
-        petName: petNameOf(row),
+        petName: pet && pet.name ? String(pet.name) : null,
+        petStage: petStageOf(pet),
         masteredCount: mastered,
+        bestStreak: bestStreakOf(row),
+        mpWins: row.mp_wins || 0,
         showcase: ach.showcase,
         achievementCount: ach.count,
         value: metricValue(row, scope),
@@ -88,12 +114,17 @@ function buildEntry(row, scope) {
 }
 
 router.get('/leaderboard', (req, res) => {
-    const scope = VALID_SCOPES.includes(req.query.scope) ? req.query.scope : 'overall';
+    // `scope` chooses the metric (overall/atlas/bonus modes). `filter=friends`
+    // narrows ANY scope to the caller + their friends. ('friends' as a scope is
+    // still accepted for backward compatibility and behaves like overall+filter.)
+    let scope = VALID_SCOPES.includes(req.query.scope) ? req.query.scope : 'overall';
+    let friendsOnly = req.query.filter === 'friends';
+    if (scope === 'friends') { scope = 'overall'; friendsOnly = true; }
     const limit = Math.min(parseInt(req.query.limit, 10) || 100, 200);
-    const cols = 'id, username, xp, region, cosmetics_json, pet_level, pet_json, achievements_json, bonus_scores_json, stats_json';
+    const cols = 'id, username, xp, region, cosmetics_json, pet_level, pet_json, achievements_json, bonus_scores_json, stats_json, streaks_json, mp_wins';
 
     let rows;
-    if (scope === 'friends') {
+    if (friendsOnly) {
         const ids = acceptedFriendIds(req.user.id);
         ids.push(req.user.id);
         const placeholders = ids.map(() => '?').join(',');

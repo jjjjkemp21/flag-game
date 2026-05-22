@@ -9,6 +9,7 @@ import PetPanel from './PetPanel';
 import { useAudio } from '../audio/AudioProvider';
 import { usePet } from '../lib/pet';
 import { useProfile } from '../lib/profile';
+import { getStreak } from '../lib/streak';
 import { springs } from '../motion';
 
 const MODES = [
@@ -22,7 +23,7 @@ const MODES = [
     { key: 'statistics',      title: 'Statistics',      desc: 'Your progress and high scores', icon: 'insights', tone: 'neutral' },
 ];
 
-function ModeCard({ mode, onClick, index, masteryHint }) {
+function ModeCard({ mode, onClick, index, masteryHint, streak }) {
     const audio = useAudio();
     const prefersReduced = useReducedMotion();
     return (
@@ -37,6 +38,11 @@ function ModeCard({ mode, onClick, index, masteryHint }) {
             aria-label={mode.title}
         >
             {masteryHint && <div className="mode-card__badge">{masteryHint}</div>}
+            {streak > 0 && (
+                <div className="mode-card__streak" title={`${streak} answer streak`}>
+                    <Icon name="local_fire_department" /> {streak}
+                </div>
+            )}
             <div className="mode-card__title">{mode.title}</div>
             <div className="mode-card__desc">{mode.desc}</div>
             <Icon name={mode.icon} className="mode-card__icon" />
@@ -91,7 +97,7 @@ function MainMenu({ setView, flagsData, setQuizMode }) {
                     Master 250+ world flags with spaced repetition, frenzy challenges, and pixel reveals.
                 </p>
                 <div style={{ position: 'relative', zIndex: 2, marginTop: 'var(--space-xs)' }}>
-                    <Mascot size={92} mood={pet.mood} cosmetics={profile.cosmetics} chubby={pet.obese} />
+                    <Mascot size={92} mood={pet.mood} cosmetics={profile.cosmetics} chubby={pet.obese} bruised={pet.bruised} />
                 </div>
                 {masteryHint && (
                     <div className="knowledge-stats" style={{ position: 'relative', zIndex: 2 }}>
@@ -112,6 +118,7 @@ function MainMenu({ setView, flagsData, setQuizMode }) {
                         index={i}
                         onClick={() => onCardClick(mode.key)}
                         masteryHint={mode.key === 'multiple-choice' ? masteryHint : null}
+                        streak={(mode.key === 'multiple-choice' || mode.key === 'free-response') ? getStreak(mode.key) : 0}
                     />
                 ))}
             </div>

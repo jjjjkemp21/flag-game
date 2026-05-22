@@ -178,4 +178,22 @@ router.get('/me', requireAuth, (req, res) => {
     res.json({ user: publicUser(req.user) });
 });
 
+// Change username. Must be unique case-insensitively (so "Bob" can't co-exist
+// with "bob"), but the user can re-case their own name.
+router.post('/username', requireAuth, (req, res) => {
+    const { username } = req.body || {};
+    if (!validUsername(username)) {
+        return res.status(400).json({ error: 'Username must be 3-20 letters, numbers, or underscores.' });
+    }
+    const taken = db
+        .prepare('SELECT id FROM users WHERE username = ? COLLATE NOCASE AND id != ?')
+        .get(username, req.user.id);
+    if (taken) {
+        return res.status(409).json({ error: 'That username is taken.' });
+    }
+    db.prepare('UPDATE users SET username = ? WHERE id = ?').run(username, req.user.id);
+    const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.user.id);
+    res.json({ user: publicUser(user) });
+});
+
 module.exports = router;

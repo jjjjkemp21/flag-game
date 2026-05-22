@@ -1,14 +1,36 @@
 import React, { useState } from 'react';
 import Icon from './Icon';
-import { Toggle, Modal } from './ui';
+import { Toggle, Modal, Button } from './ui';
+import { useToast } from './ui/Toast';
 import { useAudio } from '../audio/AudioProvider';
+import { useAuth } from '../auth/AuthProvider';
+import { api } from '../api/client';
 
 function Settings({ theme, setTheme, strictSpelling, setStrictSpelling, onResetStats, setView }) {
     const audio = useAudio();
+    const toast = useToast();
+    const { isAuthed, user, patchUser } = useAuth();
     const [resetOpen, setResetOpen] = useState(false);
+    const [nameDraft, setNameDraft] = useState(user?.username || '');
+    const [savingName, setSavingName] = useState(false);
 
     const onSetTheme = (isDark) => setTheme(isDark ? 'dark' : 'light');
     const onSetVolume = (e) => audio.setVolume(parseFloat(e.target.value));
+
+    const onChangeUsername = async () => {
+        const next = nameDraft.trim();
+        if (!next || next === user?.username) return;
+        setSavingName(true);
+        try {
+            const { user: updated } = await api.post('/auth/username', { username: next });
+            patchUser({ username: updated.username });
+            toast.success('Username updated!');
+        } catch (err) {
+            toast.danger(err.message || 'Could not change username.');
+        } finally {
+            setSavingName(false);
+        }
+    };
 
     return (
         <div className="settings-box">
@@ -18,6 +40,35 @@ function Settings({ theme, setTheme, strictSpelling, setStrictSpelling, onResetS
                 </button>
             </div>
             <h2 className="text-center">Settings</h2>
+
+            {isAuthed && (
+                <section className="settings-section">
+                    <h3 className="settings-section-title">Account</h3>
+                    <div className="setting-row">
+                        <div className="setting-row__label">
+                            <span className="setting-row__title">Username</span>
+                            <span className="setting-row__desc">3–20 letters, numbers, or underscores. Must be unique.</span>
+                        </div>
+                    </div>
+                    <div className="friend-add">
+                        <input
+                            className="auth-field__input"
+                            value={nameDraft}
+                            maxLength={20}
+                            onChange={(e) => setNameDraft(e.target.value)}
+                            placeholder="Your username"
+                        />
+                        <Button
+                            variant="primary"
+                            icon="badge"
+                            onClick={onChangeUsername}
+                            disabled={savingName || !nameDraft.trim() || nameDraft.trim() === user?.username}
+                        >
+                            Save
+                        </Button>
+                    </div>
+                </section>
+            )}
 
             <section className="settings-section">
                 <h3 className="settings-section-title">Appearance</h3>

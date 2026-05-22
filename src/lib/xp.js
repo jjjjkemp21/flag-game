@@ -57,3 +57,10 @@ export function awardForAnswer(flag, mode, newStreak) {
     const amount = Math.max(1, Math.round(base * modeMult * multiplier));
     return { amount, multiplier, base };
 }
+
+// A gentle XP cost for a wrong answer, scaled by mode difficulty (the accumulator
+// is clamped at zero, so this can never push a total negative).
+export function penaltyForAnswer(mode) {
+    const modeMult = MODE_XP[mode] || 1;
+    return Math.max(1, Math.round(5 * modeMult));
+}

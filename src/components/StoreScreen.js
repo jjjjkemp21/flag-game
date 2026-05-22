@@ -25,6 +25,9 @@ function StoreScreen({ setView, flagsData }) {
         [flagsData]
     );
 
+    // Owned vs. shop (not-yet-unlocked) cosmetics.
+    const [shopTab, setShopTab] = useState('owned');
+
     // Cosmetic placement (drag to move, slider to scale).
     const [adjust, setAdjust] = useState('hat');
     const dragRef = useRef(null);
@@ -113,7 +116,7 @@ function StoreScreen({ setView, flagsData }) {
                     onPointerCancel={onPointerUp}
                     style={{ touchAction: 'none', cursor: (hasHat || hasGlasses) ? 'grab' : 'default' }}
                 >
-                    <Mascot size={120} mood={pet.alive ? pet.mood : 'idle'} cosmetics={profile.cosmetics} chubby={pet.obese} />
+                    <Mascot size={120} mood={pet.alive ? pet.mood : 'idle'} cosmetics={profile.cosmetics} chubby={pet.obese} bruised={pet.bruised} />
                 </div>
                 <p className="auth-hint">You have <strong>{xp} XP</strong> to unlock cosmetics.</p>
 
@@ -195,12 +198,32 @@ function StoreScreen({ setView, flagsData }) {
                 </div>
             </div>
 
+            {/* Owned vs. Shop toggle */}
+            <div className="lb-filter store-tabs">
+                <button
+                    className={`lb-filter__btn ${shopTab === 'owned' ? 'is-active' : ''}`}
+                    onClick={() => setShopTab('owned')}
+                >
+                    <Icon name="check_circle" /> Owned
+                </button>
+                <button
+                    className={`lb-filter__btn ${shopTab === 'shop' ? 'is-active' : ''}`}
+                    onClick={() => setShopTab('shop')}
+                >
+                    <Icon name="shopping_bag" /> Not owned
+                </button>
+            </div>
+
             {/* Cosmetics */}
-            {CATEGORIES.map((cat) => (
+            {CATEGORIES.map((cat) => {
+                const entries = Object.entries(cat.items)
+                    .filter(([, item]) => isUnlocked(xp, item) === (shopTab === 'owned'));
+                if (entries.length === 0) return null;
+                return (
                 <div className="store-section" key={cat.key}>
                     <h3 className="settings-section-title"><Icon name={cat.icon} /> {cat.label}</h3>
                     <div className="cosmetic-grid">
-                        {Object.entries(cat.items).map(([id, item]) => {
+                        {entries.map(([id, item]) => {
                             const unlocked = isUnlocked(xp, item);
                             const equipped = profile.cosmetics[cat.key] === id;
                             // Preview the item on Atlas: colors recolor the globe; hats /
@@ -231,7 +254,8 @@ function StoreScreen({ setView, flagsData }) {
                         })}
                     </div>
                 </div>
-            ))}
+                );
+            })}
         </div>
     );
 }

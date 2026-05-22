@@ -9,7 +9,7 @@ import { renderHat, renderGlasses, renderEffect } from './Cosmetics';
  *      | 'hungry' | 'sleepy' | 'sick' | 'dead'
  * cosmetics: { color, hat, glasses } equips skins/hats/glasses.
  */
-export default function Mascot({ size = 96, mood = 'idle', cosmetics, still = false, chubby = false }) {
+export default function Mascot({ size = 96, mood = 'idle', cosmetics, still = false, chubby = false, bruised = false }) {
     const prefersReduced = useReducedMotion();
     const calm = prefersReduced || still;
     const uid = useId();
@@ -18,12 +18,14 @@ export default function Mascot({ size = 96, mood = 'idle', cosmetics, still = fa
     const cos = cosmetics || {};
     const palette = paletteFor(cos.color);
     const anim = palette.anim;
-    // Cosmetic animations (color cycling, overlays, effects) run via SMIL, so they
-    // play even when the mascot is held "still" (previews, leaderboard avatars).
-    // Only a reduced-motion preference disables them.
-    const animate = !!anim && !prefersReduced;
-    const effectEl = !prefersReduced ? renderEffect(cos.effect) : null;
-    const spinning = cos.effect === 'spin' && !prefersReduced;
+    // Cosmetic animations (color cycling, overlays, effects) run via SMIL so they
+    // play everywhere the mascot appears — previews, leaderboard avatars, other
+    // players — and regardless of `still` or a reduced-motion preference. They're
+    // opt-in flourishes the player unlocked, so we always show them; only the
+    // idle bob (framer) respects `calm`/reduced-motion.
+    const animate = !!anim;
+    const effectEl = renderEffect(cos.effect);
+    const spinning = cos.effect === 'spin';
     const stopVals = (i) => (anim ? [...anim.frames.map((f) => f[i]), anim.frames[0][i]].join(';') : '');
 
     // Player-chosen placement for cosmetics: translate + scale about an anchor.
@@ -161,6 +163,21 @@ export default function Mascot({ size = 96, mood = 'idle', cosmetics, still = fa
                 <circle cx={chubby ? 31 : 34} cy={chubby ? 60 : 58} r={chubby ? 8 : 4} fill={mood === 'sick' ? '#9AD7A0' : '#FF8A98'} opacity=".75" />
                 <circle cx={chubby ? 65 : 62} cy={chubby ? 60 : 58} r={chubby ? 8 : 4} fill={mood === 'sick' ? '#9AD7A0' : '#FF8A98'} opacity=".75" />
 
+                {/* Battle bruises + bandage (Atlas Battle "beat up" look) */}
+                {bruised && mood !== 'dead' && (
+                    <g>
+                        <ellipse cx="30" cy="40" rx="5" ry="4" fill="#8E5BD0" opacity="0.5" />
+                        <ellipse cx="66" cy="54" rx="4.5" ry="3.5" fill="#5B77D0" opacity="0.45" />
+                        {/* Bandage across the cheek */}
+                        <g transform="rotate(24 62 40)">
+                            <rect x="54" y="35" width="16" height="7" rx="2" fill="#FFE7C2" stroke="#E2B98A" strokeWidth="1" />
+                            <line x1="58" y1="35" x2="58" y2="42" stroke="#E2B98A" strokeWidth="1" />
+                            <line x1="62" y1="35" x2="62" y2="42" stroke="#E2B98A" strokeWidth="1" />
+                            <line x1="66" y1="35" x2="66" y2="42" stroke="#E2B98A" strokeWidth="1" />
+                        </g>
+                    </g>
+                )}
+
                 {/* Eyes */}
                 {eyes}
 
@@ -209,8 +226,9 @@ export default function Mascot({ size = 96, mood = 'idle', cosmetics, still = fa
                     </motion.g>
                 )}
 
-                {/* Tiny flag pole + flag — droops/stops when unwell or gone */}
-                {mood !== 'dead' && (
+                {/* Tiny flag pole + flag — the default "hat". Hidden once the player
+                    equips a real hat, and gone when Atlas has died. */}
+                {mood !== 'dead' && !hatEl && (
                     <motion.g
                         style={{ transformOrigin: '76px 22px' }}
                         animate={calm ? undefined : {

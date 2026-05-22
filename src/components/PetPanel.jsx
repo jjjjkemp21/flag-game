@@ -64,6 +64,11 @@ function PetPanel({ setView }) {
                     <Pill tone="info" icon="military_tech">Lv {pet.level}</Pill>
                     <Pill tone="primary" icon="auto_awesome">{pet.stageLabel}</Pill>
                     <Pill tone={pet.health < 25 ? 'danger' : 'success'} icon="favorite">{Math.round(pet.health)}</Pill>
+                    {pet.ko ? (
+                        <Pill tone="danger" icon="sentiment_very_dissatisfied">KO'd</Pill>
+                    ) : pet.bruised ? (
+                        <Pill tone="accent" icon="healing">Bruised</Pill>
+                    ) : null}
                 </span>
             </div>
 
@@ -75,7 +80,10 @@ function PetPanel({ setView }) {
 
             <div className="pet-footer">
                 <p className="pet-status">
-                    <strong>{pet.name}</strong> {STATUS[pet.mood] || STATUS.idle}
+                    <strong>{pet.name}</strong>{' '}
+                    {pet.ko
+                        ? 'was knocked out in an Atlas Battle — play other modes to nurse it back up!'
+                        : (STATUS[pet.mood] || STATUS.idle)}
                 </p>
                 {setView && (
                     <Button variant="secondary" size="sm" icon="storefront" onClick={() => setView('store')}>

@@ -9,7 +9,7 @@ import { topAchievements } from './achievements';
 
 const freshAchievements = () => ({ showcase: [], unlocked: [] });
 
-let state = { region: null, cosmetics: { ...DEFAULT_COSMETICS }, achievements: freshAchievements() };
+let state = { region: null, cosmetics: { ...DEFAULT_COSMETICS }, achievements: freshAchievements(), streaks: {} };
 let authed = false;
 let pushTimer = null;
 const listeners = new Set();
@@ -33,6 +33,7 @@ function persist() {
             region: state.region,
             cosmetics: state.cosmetics,
             achievements: { showcase, count: state.achievements.unlocked.length },
+            streaks: state.streaks,
         }).catch(() => {});
     }, 1000);
 }
@@ -49,14 +50,25 @@ export function loadProfile(serverProfile) {
         cosmetics: normalizeCosmetics(serverProfile && serverProfile.cosmetics),
         // unlocked is recomputed locally from live stats right after load.
         achievements: { showcase: Array.isArray(ach.showcase) ? ach.showcase.slice(0, 3) : [], unlocked: [] },
+        streaks: (serverProfile && serverProfile.streaks && typeof serverProfile.streaks === 'object') ? serverProfile.streaks : {},
     };
     notify();
 }
 
 export function resetProfile() {
     authed = false;
-    state = { region: null, cosmetics: { ...DEFAULT_COSMETICS }, achievements: freshAchievements() };
+    state = { region: null, cosmetics: { ...DEFAULT_COSMETICS }, achievements: freshAchievements(), streaks: {} };
     notify();
+}
+
+// Record a per-mode best run streak. No-ops unless it beats the stored best, so
+// it's cheap to call after every correct answer. Persisted to the account.
+export function recordBestStreak(mode, value) {
+    const v = Math.max(0, Math.floor(Number(value) || 0));
+    if (v <= (state.streaks[mode] || 0)) return;
+    state = { ...state, streaks: { ...state.streaks, [mode]: v } };
+    notify();
+    persist();
 }
 
 export function setRegion(code) {

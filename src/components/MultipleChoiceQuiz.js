@@ -5,12 +5,15 @@ import Icon from './Icon';
 import { ChoiceCard, ScoreBubble } from './ui';
 import Confetti from '../assets/illustrations/Confetti';
 import Mascot from '../assets/illustrations/Mascot';
+import MasteryMeter from './MasteryMeter';
 import Spinner from '../assets/illustrations/Spinner';
 import { useAudio } from '../audio/AudioProvider';
-import { useProfile } from '../lib/profile';
-import { awardForAnswer, streakMultiplier } from '../lib/xp';
+import { useProfile, recordBestStreak } from '../lib/profile';
+import { awardForAnswer, penaltyForAnswer, streakMultiplier, MASTERY_STREAK } from '../lib/xp';
 import { addEarnedXp } from '../lib/progress';
 import { getStreak, saveStreak, resetStreak } from '../lib/streak';
+
+const MODE = 'multiple-choice';
 import { springs } from '../motion';
 
 const IMAGE_BASE_URL = './assets/flags/';
@@ -34,9 +37,10 @@ function MultipleChoiceQuiz({
     const [chosenAnswer, setChosenAnswer] = useState(null);
     const [flashColor, setFlashColor] = useState(null);
     const [score, setScore] = useState(0);
-    const [streak, setStreak] = useState(() => getStreak());
+    const [streak, setStreak] = useState(() => getStreak(MODE));
     const [xpGain, setXpGain] = useState(null); // { amount, multiplier } floating reward
     const [showConfetti, setShowConfetti] = useState(false);
+    const [masteryStreak, setMasteryStreak] = useState(0); // current flag's progress to mastery
     const audio = useAudio();
     const profile = useProfile();
 
@@ -56,6 +60,7 @@ function MultipleChoiceQuiz({
 
         const questionFlag = selectNextFlag(quizFlags, questionHistory);
         setCurrentFlag(questionFlag);
+        setMasteryStreak(questionFlag ? (questionFlag.streak || 0) : 0);
 
         if (questionFlag) {
             updateQuestionHistory(questionFlag.code);
@@ -79,9 +84,14 @@ function MultipleChoiceQuiz({
         const wasCorrect = answer === currentFlag.name;
         setFlashColor(wasCorrect ? 'correct' : 'incorrect');
 
+        const beforeStreak = currentFlag.streak || 0;
         const { message, color, updatedFlags } = update_flag_stats(allFlagsData, currentFlag, wasCorrect);
         setFlagsData(updatedFlags);
         setFeedback({ text: message.text, answer: message.answer, tone: color });
+
+        const after = updatedFlags.find((f) => f.code === currentFlag.code);
+        const afterStreak = after ? (after.streak || 0) : beforeStreak;
+        setMasteryStreak(afterStreak);
 
         if (wasCorrect) {
             audio.play('correct');
@@ -89,17 +99,26 @@ function MultipleChoiceQuiz({
             const next = streak + 1;
             if (next === 3 || next === 5 || next === 10) audio.play('streak');
             setStreak(next);
-            saveStreak(next);
+            saveStreak(MODE, next);
+            recordBestStreak(MODE, next);
             // Scaled XP: harder modes pay more, hot streak multiplies up to 2x,
             // and a brand-new flag is worth more than an already-mastered one.
             const award = awardForAnswer(currentFlag, 'multiple-choice', next);
             addEarnedXp(award.amount);
             setXpGain(award);
             setShowConfetti(true);
+            // A satisfying flourish the moment a flag crosses into "mastered".
+            if (beforeStreak <= MASTERY_STREAK && afterStreak > MASTERY_STREAK) {
+                audio.play('levelUp');
+            }
         } else {
             audio.play('incorrect');
             setStreak(0);
-            resetStreak();
+            resetStreak(MODE);
+            // Wrong answers shave a little earned XP (never below zero).
+            const penalty = penaltyForAnswer('multiple-choice');
+            addEarnedXp(-penalty);
+            setXpGain({ amount: -penalty });
         }
 
         setTimeout(() => {
@@ -113,10 +132,12 @@ function MultipleChoiceQuiz({
         setFlashColor('incorrect');
         audio.play('incorrect');
         setStreak(0);
-        resetStreak();
+        resetStreak(MODE);
         const { message, color, updatedFlags } = update_flag_stats(allFlagsData, currentFlag, false, 'skipped');
         setFlagsData(updatedFlags);
         setFeedback({ text: message.text, answer: message.answer, tone: color });
+        const after = updatedFlags.find((f) => f.code === currentFlag.code);
+        if (after) setMasteryStreak(after.streak || 0);
         setTimeout(() => {
             nextQuestion();
         }, 2000);
@@ -174,6 +195,8 @@ function MultipleChoiceQuiz({
                 <ScoreBubble score={score} icon="star" />
             </div>
 
+            <MasteryMeter streak={masteryStreak} />
+
             <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', width: '100%' }}>
                 <motion.img
                     key={currentFlag.file}
@@ -184,9 +207,6 @@ function MultipleChoiceQuiz({
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.28, ease: [0.25, 0.46, 0.45, 0.94] }}
                 />
-                <AnimatePresence>
-                    {showConfetti && <Confetti pieces={28} />}
-                </AnimatePresence>
                 <AnimatePresence>
                     {answered && flashColor === 'correct' && (
                         <motion.div
@@ -214,7 +234,7 @@ function MultipleChoiceQuiz({
                     )}
                     {xpGain && (
                         <motion.div
-                            className="xp-gain"
+                            className={`xp-gain ${xpGain.amount < 0 ? 'xp-gain--neg' : ''}`}
                             initial={{ x: '-50%', y: 8, opacity: 0, scale: 0.9 }}
                             animate={{ x: '-50%', y: -18, opacity: 1, scale: 1 }}
                             exit={{ opacity: 0 }}
@@ -222,7 +242,9 @@ function MultipleChoiceQuiz({
                             style={{ position: 'absolute', left: '50%', top: 'min(2vw, 12px)' }}
                             aria-hidden="true"
                         >
-                            +{xpGain.amount} XP{xpGain.multiplier > 1 ? ` ×${xpGain.multiplier.toFixed(1)}` : ''}
+                            {xpGain.amount < 0
+                                ? `${xpGain.amount} XP`
+                                : `+${xpGain.amount} XP${xpGain.multiplier > 1 ? ` ×${xpGain.multiplier.toFixed(1)}` : ''}`}
                         </motion.div>
                     )}
                 </AnimatePresence>
@@ -239,14 +261,20 @@ function MultipleChoiceQuiz({
 
             <div className="options-box">
                 {options.map((option, i) => (
-                    <ChoiceCard
-                        key={`${currentFlag.code}-${option}`}
-                        label={option}
-                        index={i}
-                        state={getChoiceState(option)}
-                        disabled={answered}
-                        onSelect={handleAnswer}
-                    />
+                    <div className="choice-wrap" key={`${currentFlag.code}-${option}`}>
+                        <ChoiceCard
+                            label={option}
+                            index={i}
+                            state={getChoiceState(option)}
+                            disabled={answered}
+                            onSelect={handleAnswer}
+                        />
+                        <AnimatePresence>
+                            {showConfetti && option === currentFlag.name && (
+                                <Confetti pieces={16} radius={110} />
+                            )}
+                        </AnimatePresence>
+                    </div>
                 ))}
             </div>
 

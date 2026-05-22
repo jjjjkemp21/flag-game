@@ -33,6 +33,31 @@ function Stats({ flagsData }) {
 
         const answered = flagsData.filter(f => (f.correct || 0) + (f.incorrect || 0) > 0);
         const sortedByKnowledge = [...answered].sort((a, b) => b.streak - a.streak);
+
+        // Lifetime activity + accuracy across every answer ever given.
+        const totalCorrect = flagsData.reduce((s, f) => s + (f.correct || 0), 0);
+        const totalIncorrect = flagsData.reduce((s, f) => s + (f.incorrect || 0), 0);
+        const totalAnswers = totalCorrect + totalIncorrect;
+        const accuracy = totalAnswers > 0 ? totalCorrect / totalAnswers : 0;
+
+        const now = Date.now();
+        const dueForReview = flagsData.filter(f => f.nextReview != null && f.nextReview <= now).length;
+
+        // Mastery split by region so the player sees where they're strong/weak.
+        const regionMap = new Map();
+        for (const f of flagsData) {
+            for (const tag of (f.tags || [])) {
+                if (!tag.startsWith('region:')) continue;
+                const key = tag.split(':')[1];
+                const entry = regionMap.get(key) || { region: key, total: 0, mastered: 0 };
+                entry.total += 1;
+                if (f.streak > masteredThreshold) entry.mastered += 1;
+                regionMap.set(key, entry);
+            }
+        }
+        const regions = [...regionMap.values()]
+            .sort((a, b) => (b.mastered / b.total) - (a.mastered / a.total) || b.total - a.total);
+
         return {
             masteredCount,
             learningCount,
@@ -42,8 +67,17 @@ function Stats({ flagsData }) {
             best: sortedByKnowledge[0] || null,
             worst: sortedByKnowledge[sortedByKnowledge.length - 1] || null,
             hasAnswered: answered.length > 0,
+            totalCorrect,
+            totalIncorrect,
+            totalAnswers,
+            accuracy,
+            answeredCount: answered.length,
+            dueForReview,
+            regions,
         };
     }, [flagsData]);
+
+    const titleCase = (s) => s.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 
     if (!stats) return null;
 
@@ -79,6 +113,50 @@ function Stats({ flagsData }) {
                     <Pill tone="danger" icon="priority_high"><CountUp to={stats.needsPracticeCount} /> needs practice</Pill>
                 </div>
             </div>
+
+            <h3 className="stats-subtitle text-center">Accuracy &amp; Activity</h3>
+            <div className="stats-grid high-score-grid">
+                <div className="stat-item">
+                    <span className="stat-value"><CountUp to={Math.round(stats.accuracy * 100)} />%</span>
+                    <span className="stat-label">Accuracy</span>
+                </div>
+                <div className="stat-item">
+                    <span className="stat-value"><CountUp to={stats.totalAnswers} /></span>
+                    <span className="stat-label">Answers</span>
+                </div>
+                <div className="stat-item">
+                    <span className="stat-value"><CountUp to={stats.answeredCount} /></span>
+                    <span className="stat-label">Flags seen</span>
+                </div>
+                <div className="stat-item">
+                    <span className="stat-value"><CountUp to={stats.dueForReview} /></span>
+                    <span className="stat-label">Due for review</span>
+                </div>
+            </div>
+            <div style={{ display: 'flex', gap: 'var(--space-xs)', flexWrap: 'wrap', justifyContent: 'center' }}>
+                <Pill tone="success" icon="check"><CountUp to={stats.totalCorrect} /> correct</Pill>
+                <Pill tone="danger" icon="close"><CountUp to={stats.totalIncorrect} /> missed</Pill>
+            </div>
+
+            {stats.regions.length > 0 && (
+                <>
+                    <h3 className="stats-subtitle text-center">Mastery by Region</h3>
+                    <div className="region-stats">
+                        {stats.regions.map((r) => {
+                            const pct = Math.round((r.mastered / r.total) * 100);
+                            return (
+                                <div className="region-stat" key={r.region}>
+                                    <span className="region-stat__name">{titleCase(r.region)}</span>
+                                    <span className="region-stat__track">
+                                        <span className="region-stat__fill" style={{ width: `${pct}%` }} />
+                                    </span>
+                                    <span className="region-stat__val">{r.mastered}/{r.total}</span>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </>
+            )}
 
             <h3 className="stats-subtitle text-center">Mastery Tiers</h3>
             <div style={{ display: 'flex', justifyContent: 'center', gap: 'var(--space-md)', flexWrap: 'wrap' }}>

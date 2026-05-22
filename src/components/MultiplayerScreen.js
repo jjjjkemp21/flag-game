@@ -4,9 +4,11 @@ import Icon from './Icon';
 import { Button, Pill, ChoiceCard } from './ui';
 import { useToast } from './ui/Toast';
 import Mascot from '../assets/illustrations/Mascot';
+import ScoringInfo from './ScoringInfo';
 import Spinner from '../assets/illustrations/Spinner';
 import { useAuth } from '../auth/AuthProvider';
 import { useAudio } from '../audio/AudioProvider';
+import { recordBattleResult } from '../lib/pet';
 import {
     mp, useLobbyPoll, makeEngine, checkText,
     MP_MODES, DEFAULT_MP_CONFIG, modeMeta,
@@ -28,12 +30,13 @@ function ConfigEditor({ config, regions, disabled, onChange }) {
         const next = { ...config, ...patch };
         if (patch.mode) {
             const meta = modeMeta(patch.mode);
-            next.maxPlayers = patch.mode === 'blitz' ? 2 : meta.maxPlayers;
+            next.maxPlayers = (patch.mode === 'blitz' || patch.mode === 'battle') ? 2 : meta.maxPlayers;
+            // Battle's "hits to KO" lives on a smaller scale than a race target.
+            if (patch.mode === 'battle' && next.target > 50) next.target = 20;
         }
         if (next.content === 'languages') next.scope = 'all';
         onChange(next);
     };
-    const timed = config.mode !== 'race';
 
     return (
         <div className="mp-config">
@@ -109,7 +112,14 @@ function ConfigEditor({ config, regions, disabled, onChange }) {
                 </div>
             )}
 
-            {config.mode === 'race' ? (
+            {config.mode === 'battle' ? (
+                <div className="mp-field">
+                    <span className="mp-field__label">Hits to KO: <strong>{config.target}</strong></span>
+                    <input type="range" min="5" max="50" step="1" value={config.target} disabled={disabled}
+                        onChange={(e) => set({ target: parseInt(e.target.value, 10) })} style={{ accentColor: 'var(--color-primary)' }} />
+                    <span className="mp-field__hint">Each correct answer lands a hit on your rival's Atlas.</span>
+                </div>
+            ) : config.mode === 'race' ? (
                 <div className="mp-field">
                     <span className="mp-field__label">{config.content === 'languages' ? 'Languages' : 'Flags'} to win: <strong>{config.target}</strong></span>
                     <input type="range" min="5" max="100" step="5" value={config.target} disabled={disabled}
@@ -123,14 +133,15 @@ function ConfigEditor({ config, regions, disabled, onChange }) {
                 </div>
             )}
 
-            {config.mode !== 'blitz' && (
+            {config.mode !== 'blitz' && config.mode !== 'battle' && (
                 <div className="mp-field">
                     <span className="mp-field__label">Max players: <strong>{config.maxPlayers}</strong></span>
                     <input type="range" min="2" max="8" step="1" value={config.maxPlayers} disabled={disabled}
                         onChange={(e) => set({ maxPlayers: parseInt(e.target.value, 10) })} style={{ accentColor: 'var(--color-primary)' }} />
                 </div>
             )}
-            {timed && config.mode === 'blitz' && <p className="mp-field__hint">1v1 Blitz is locked to 2 players.</p>}
+            {config.mode === 'blitz' && <p className="mp-field__hint">1v1 Blitz is locked to 2 players.</p>}
+            {config.mode === 'battle' && <p className="mp-field__hint">Atlas Battle is 1v1 — losing drops your Atlas's battle HP (heal it by playing other modes).</p>}
         </div>
     );
 }
@@ -175,7 +186,10 @@ function Hub({ flagsData, onEnter, setView }) {
                     <Icon name="arrow_back" /> Back
                 </button>
             </div>
-            <h2 className="text-center">Multiplayer</h2>
+            <div className="menu-title-row">
+                <h2 className="text-center" style={{ margin: 0 }}>Multiplayer</h2>
+                <ScoringInfo mode="multiplayer" />
+            </div>
 
             <div className="auth-tabs">
                 <button className={`auth-tab ${tab === 'host' ? 'is-active' : ''}`} onClick={() => setTab('host')}>Host a lobby</button>
@@ -356,6 +370,10 @@ function Game({ lobby, code, flagsData, meId }) {
 
     const post = useCallback((body) => { mp.progress(code, body).catch(() => {}); }, [code]);
 
+    // Let the server know which question we're on so opponents can see our pick on
+    // the matching question (and so we can see theirs).
+    useEffect(() => { post({ qIndex }); }, [qIndex, post]);
+
     useEffect(() => () => { if (advanceTimer.current) clearTimeout(advanceTimer.current); }, []);
     useEffect(() => {
         if (!answered && config.questionType === 'text' && inputRef.current) inputRef.current.focus();
@@ -363,7 +381,7 @@ function Game({ lobby, code, flagsData, meId }) {
 
     const finished = lobby.state === 'finished' || timeUp;
 
-    const handleResult = (correct) => {
+    const handleResult = (correct, pick) => {
         if (answered || finished) return;
         setAnswered(true);
         let s = score, st = streak, bs = bestStreak;
@@ -373,10 +391,12 @@ function Game({ lobby, code, flagsData, meId }) {
             setScore(s); setStreak(st); setBestStreak(bs);
         } else {
             audio.play('incorrect');
-            st = 0; setStreak(0);
+            // A miss costs a point (never below zero) and breaks the streak.
+            s = Math.max(0, score - 1); st = 0;
+            setScore(s); setStreak(0);
         }
         const done = config.mode === 'race' && s >= config.target;
-        post({ score: s, streak: st, bestStreak: bs, finished: done });
+        post({ score: s, streak: st, bestStreak: bs, finished: done, qIndex, pick: pick || null });
         advanceTimer.current = setTimeout(() => {
             setAnswered(false); setChosen(null); setInput('');
             setQIndex((i) => i + 1);
@@ -386,12 +406,12 @@ function Game({ lobby, code, flagsData, meId }) {
     const onChoice = (label) => {
         if (answered || finished) return;
         setChosen(label);
-        handleResult(label === question.answer);
+        handleResult(label === question.answer, label);
     };
     const onSubmit = (e) => {
         e.preventDefault();
         if (answered || finished || !input.trim()) return;
-        handleResult(checkText(input, question, config.strict));
+        handleResult(checkText(input, question, config.strict), null);
     };
 
     const choiceState = (opt) => {
@@ -410,6 +430,8 @@ function Game({ lobby, code, flagsData, meId }) {
             <div className="mp-hud">
                 {config.mode === 'race' ? (
                     <Pill tone="primary" icon="flag">{score} / {config.target}</Pill>
+                ) : config.mode === 'battle' ? (
+                    <Pill tone="primary" icon="sports_mma">{score} / {config.target} hits</Pill>
                 ) : (
                     <Pill tone="primary" icon="check_circle">{score} correct</Pill>
                 )}
@@ -434,9 +456,24 @@ function Game({ lobby, code, flagsData, meId }) {
 
             {config.questionType === 'mc' ? (
                 <div className="options-box">
-                    {question.options.map((opt, i) => (
-                        <ChoiceCard key={`${qIndex}-${opt}`} label={opt} index={i} state={choiceState(opt)} disabled={answered || finished} onSelect={onChoice} />
-                    ))}
+                    {question.options.map((opt, i) => {
+                        // Opponents who picked this option for the question I'm on.
+                        const pickers = lobby.members.filter((m) => m.id !== meId && m.pick === opt);
+                        return (
+                            <div className="mp-choice-wrap" key={`${qIndex}-${opt}`}>
+                                <ChoiceCard label={opt} index={i} state={choiceState(opt)} disabled={answered || finished} onSelect={onChoice} />
+                                {pickers.length > 0 && (
+                                    <span className="mp-pickers" aria-hidden="true">
+                                        {pickers.map((p) => (
+                                            <span key={p.id} className="mp-picker" title={p.username}>
+                                                <Mascot size={26} mood="idle" cosmetics={p.cosmetics} still />
+                                            </span>
+                                        ))}
+                                    </span>
+                                )}
+                            </div>
+                        );
+                    })}
                 </div>
             ) : (
                 <form onSubmit={onSubmit} className="response-form">
@@ -460,11 +497,34 @@ function Game({ lobby, code, flagsData, meId }) {
 }
 
 function Scoreboard({ members, meId, mode, target }) {
-    const metric = (m) => (mode === 'streak' ? m.bestStreak : m.score);
-    const max = mode === 'race' ? target : Math.max(1, ...members.map(metric));
     // Stable lanes: order by id so bars grow in place instead of reshuffling
     // (and jittering) on every poll.
     const rows = [...members].sort((a, b) => a.id - b.id);
+
+    // Atlas Battle shows each player's REMAINING HP (target minus the hits their
+    // rival has landed), so the bars drain toward a KO instead of filling up.
+    if (mode === 'battle') {
+        const damageTo = (m) => members.filter((x) => x.id !== m.id).reduce((s, x) => s + x.score, 0);
+        return (
+            <div className="mp-scoreboard">
+                {rows.map((m) => {
+                    const hp = Math.max(0, target - damageTo(m));
+                    const ko = hp <= 0;
+                    return (
+                        <div key={m.id} className={`mp-score-row mp-score-row--bar ${m.id === meId ? 'is-me' : ''}`}>
+                            <Mascot size={28} mood={ko ? 'dead' : 'idle'} cosmetics={m.cosmetics} still bruised={hp < target * 0.4} />
+                            <span className="mp-score-name">{m.username}</span>
+                            <span className="mp-score-bar"><span className="mp-score-bar__fill mp-score-bar__fill--hp" style={{ width: `${Math.min(100, (hp / target) * 100)}%` }} /></span>
+                            <span className="mp-score-val">{ko ? 'KO' : hp}</span>
+                        </div>
+                    );
+                })}
+            </div>
+        );
+    }
+
+    const metric = (m) => (mode === 'streak' ? m.bestStreak : m.score);
+    const max = mode === 'race' ? target : Math.max(1, ...members.map(metric));
     return (
         <div className="mp-scoreboard">
             {rows.map((m) => (
@@ -492,6 +552,8 @@ function Results({ lobby, meId, code, onLeave, setState }) {
 
     useEffect(() => {
         audio.play(iWon ? 'levelUp' : 'gameOver');
+        // Atlas Battle outcomes act on the (separate, revivable) battle-HP track.
+        if (mode === 'battle') recordBattleResult(iWon);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 

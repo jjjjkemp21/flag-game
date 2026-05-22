@@ -1075,6 +1075,14 @@
     text-align: center;
     box-shadow: var(--shadow-sm);
 }
+
+/* Per-region mastery breakdown on the statistics page. */
+.region-stats { display: flex; flex-direction: column; gap: 6px; width: 100%; }
+.region-stat { display: grid; grid-template-columns: minmax(80px, 120px) 1fr 46px; align-items: center; gap: var(--space-sm); }
+.region-stat__name { font-weight: 700; font-size: var(--fs-sm); color: var(--color-ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.region-stat__track { height: 8px; border-radius: var(--radius-pill); background: var(--color-bg-soft); overflow: hidden; }
+.region-stat__fill { display: block; height: 100%; background: var(--grad-primary); border-radius: var(--radius-pill); }
+.region-stat__val { font-size: var(--fs-xs); font-weight: 800; color: var(--color-ink-soft); text-align: right; }
 .stat-value {
     font-family: var(--font-display);
     font-size: var(--fs-lg);
@@ -1207,6 +1215,16 @@
     margin-bottom: var(--space-xs);
 }
 .mode-card.tone-accent .mode-card__badge { background: rgba(0,0,0,.20); color: #2A1700; }
+
+/* Current per-mode answer streak, top-right of the menu mode card. */
+.mode-card__streak {
+    position: absolute; top: 10px; right: 12px; z-index: 2;
+    display: inline-flex; align-items: center; gap: 3px;
+    background: rgba(0,0,0,.22); color: inherit;
+    border-radius: var(--radius-pill); padding: 2px 9px;
+    font-size: var(--fs-xs); font-weight: 800;
+}
+.mode-card__streak .icon { font-size: 1em; }
 
 .mode-card.tone-primary { --mc-bg: var(--grad-primary); --mc-shadow: var(--color-primary-deep); --mc-fg: #fff; }
 .mode-card.tone-success { --mc-bg: var(--grad-success); --mc-shadow: var(--color-success-deep); --mc-fg: #fff; }
@@ -1554,8 +1572,15 @@
     align-items: center;
     gap: var(--space-sm);
     padding: var(--space-xs) var(--space-sm);
-    position: relative;
+    /* Pin the account/settings/notifications bar to the top of the viewport so
+       it stays reachable while scrolling long screens (store, leaderboard…). */
+    position: sticky;
+    top: 0;
     z-index: var(--z-header);
+    background: color-mix(in srgb, var(--color-bg) 82%, transparent);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    border-radius: var(--radius-lg);
 }
 .topbar__right { display: flex; align-items: center; gap: var(--space-sm); }
 
@@ -1874,6 +1899,35 @@
     border-color: var(--color-primary);
 }
 
+/* Global / Friends segmented filter under the scope tabs. */
+.lb-filter {
+    display: inline-flex;
+    align-self: center;
+    gap: 0;
+    margin: 2px auto 0;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-pill);
+    overflow: hidden;
+    background: var(--color-bg-elev-1);
+}
+.lb-filter__btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 16px;
+    border: none;
+    background: transparent;
+    color: var(--color-ink-soft);
+    font-weight: 700;
+    font-size: var(--fs-xs);
+    cursor: pointer;
+}
+.lb-filter__btn.is-active {
+    background: var(--color-primary);
+    color: #fff;
+}
+.store-tabs { margin: var(--space-xs) auto var(--space-sm); }
+
 .leaderboard-row {
     display: flex;
     grid-template-columns: none;
@@ -1885,6 +1939,11 @@
 .leaderboard-name { display: flex; align-items: center; gap: 6px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .leaderboard-flag { width: 22px; height: 15px; object-fit: cover; border-radius: 3px; box-shadow: var(--shadow-sm); flex: none; }
 .leaderboard-sub { font-size: var(--fs-xs); color: var(--color-ink-muted); }
+.leaderboard-streak {
+    display: inline-flex; align-items: center; gap: 2px;
+    margin-left: 6px; font-weight: 800; color: var(--color-accent-deep);
+}
+.leaderboard-streak .icon { font-size: 1em; }
 
 /* -------- Pet panel footer (customize) -------- */
 .pet-footer { display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm); flex-wrap: wrap; }
@@ -1897,7 +1956,7 @@
 .store-box { overflow: visible; }
 .store-preview {
     display: flex; flex-direction: column; align-items: center; gap: var(--space-xs);
-    position: sticky; top: 0; z-index: 6;
+    position: sticky; top: 56px; z-index: 6;
     background: var(--grad-card);
     padding: var(--space-sm) var(--space-sm) var(--space-xs);
     margin: 0 calc(-1 * var(--space-sm));
@@ -1915,8 +1974,30 @@
     gap: var(--space-sm);
     max-height: 340px;
     overflow-y: auto;
-    padding: 2px 4px 2px 0;
+    -webkit-overflow-scrolling: touch;
+    padding: 2px 10px 2px 0;
     scrollbar-width: thin;
+    scrollbar-color: var(--color-primary) var(--color-bg-elev-1);
+}
+/* Always-visible scrollbar so the grid is obviously scrollable (esp. on touch,
+   where the slim default track is hard to grab). */
+.cosmetic-grid::-webkit-scrollbar { width: 10px; }
+.cosmetic-grid::-webkit-scrollbar-track {
+    background: var(--color-bg-elev-1); border-radius: 8px;
+}
+.cosmetic-grid::-webkit-scrollbar-thumb {
+    background: var(--color-primary); border-radius: 8px;
+    border: 2px solid var(--color-bg-elev-1);
+}
+@media (max-width: 480px) {
+    /* Two columns on phones for roomier cards; taller list + a chunkier thumb
+       that's easy to drag with a thumb tip. */
+    .cosmetic-grid {
+        grid-template-columns: repeat(2, 1fr);
+        max-height: 60vh;
+        padding-right: 14px;
+    }
+    .cosmetic-grid::-webkit-scrollbar { width: 14px; }
 }
 .cosmetic-card {
     display: flex;
@@ -1943,6 +2024,33 @@
     color: var(--color-success-deep);
     text-shadow: 0 1px 0 var(--color-bg-elev-1), 0 2px 6px rgba(0,0,0,0.18);
 }
+.xp-gain--neg { color: var(--color-danger-deep); }
+
+/* Per-flag mastery progress meter shown above the flag in standard quizzes. */
+.mastery-meter {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+.mastery-meter__label {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: var(--fs-xs); font-weight: 800; color: var(--color-ink-soft);
+    white-space: nowrap;
+}
+.mastery-meter__track {
+    flex: 1; height: 8px; border-radius: var(--radius-pill);
+    background: var(--color-bg-soft); overflow: hidden;
+}
+.mastery-meter__fill {
+    display: block; height: 100%; border-radius: var(--radius-pill);
+    background: var(--grad-primary);
+}
+.mastery-meter.is-mastered .mastery-meter__label { color: var(--color-success-deep); }
+.mastery-meter.is-mastered .mastery-meter__fill { background: var(--grad-success, var(--color-success)); }
+
+/* Answer card wrapper so a small confetti burst can sit over the picked choice. */
+.choice-wrap { position: relative; }
 .cosmetic-card.is-equipped { border-color: var(--color-primary); background: var(--color-primary-soft); }
 .cosmetic-card.is-locked { opacity: 0.6; }
 .cosmetic-swatch { width: 28px; height: 28px; border-radius: 50%; box-shadow: var(--shadow-sm); }
@@ -2163,4 +2271,45 @@
 .mp-score-bar { height: 9px; border-radius: var(--radius-pill); background: var(--color-bg-soft); overflow: hidden; }
 .mp-score-row--bar .mp-score-val { text-align: right; }
 .mp-score-bar__fill { display: block; height: 100%; background: var(--grad-primary); border-radius: var(--radius-pill); transition: width .3s var(--ease-out-quart); }
+/* Atlas Battle HP bars drain (red) instead of fill. */
+.mp-score-bar__fill--hp { background: var(--grad-danger, var(--color-danger)); }
 .mp-score-val { font-weight: 800; color: var(--color-primary-deep); white-space: nowrap; }
+
+/* Per-mode scoring info "i" button + rules modal list. */
+.menu-title-row {
+    display: flex; align-items: center; justify-content: center;
+    gap: var(--space-sm); flex-wrap: wrap;
+}
+.info-button {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; flex: none;
+    border-radius: 50%;
+    border: 1px solid var(--color-border);
+    background: var(--color-bg-elev-1);
+    color: var(--color-ink-soft);
+    cursor: pointer;
+}
+.info-button:hover { color: var(--color-primary-deep); border-color: var(--color-primary); }
+.mode-card-wrap { position: relative; display: flex; }
+.mode-card-wrap .mode-card { width: 100%; }
+.mode-card__info {
+    position: absolute; top: 8px; right: 8px; z-index: 2;
+    width: 28px; height: 28px;
+    background: var(--color-bg-elev-1);
+}
+.scoring-info { margin: 0; padding-left: 1.1em; display: flex; flex-direction: column; gap: var(--space-sm); }
+.scoring-info li { color: var(--color-ink-soft); line-height: 1.45; }
+
+/* Opponent "Atlas" markers sitting on the option each rival picked. */
+.mp-choice-wrap { position: relative; }
+.mp-pickers {
+    position: absolute;
+    top: -10px;
+    right: 6px;
+    display: flex;
+    flex-direction: row;
+    pointer-events: none;
+    z-index: 3;
+}
+.mp-picker { margin-left: -8px; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.25)); }
+.mp-picker:first-child { margin-left: 0; }
