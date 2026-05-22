@@ -23,6 +23,11 @@ const LOW_WELLBEING = 20;
 const HIGH_WELLBEING = 60;
 const TICK_MS = 15000;
 
+// Lifetime care XP -> level. Care XP only grows (by playing) and drives the
+// "Atlas Level" leaderboard via peakLevel (kept across revives).
+const LEVEL_XP = 120;
+const CARE = { correct: 6, incorrect: 2, play: 5 };
+
 const clamp = (n) => Math.max(0, Math.min(100, n));
 const now = () => Date.now();
 
@@ -38,6 +43,8 @@ function freshPet() {
         health: 100,
         alive: true,
         deadAt: null,
+        careXp: 0,
+        peakLevel: 1,
     };
 }
 
@@ -74,6 +81,9 @@ function withDerived(s) {
     const stage = deriveStage(next);
     next.stage = stage.key;
     next.stageLabel = stage.label;
+    next.careXp = s.careXp || 0;
+    next.level = Math.floor(next.careXp / LEVEL_XP) + 1;
+    next.peakLevel = Math.max(s.peakLevel || 1, next.level);
     return next;
 }
 
@@ -106,8 +116,8 @@ function persist() {
     if (pushTimer) clearTimeout(pushTimer);
     pushTimer = setTimeout(() => {
         pushTimer = null;
-        const { name, bornAt, lastTick, fed, joy, energy, health, alive, deadAt } = state;
-        api.put('/pet', { pet: { name, bornAt, lastTick, fed, joy, energy, health, alive, deadAt } })
+        const { name, bornAt, lastTick, fed, joy, energy, health, alive, deadAt, careXp, level, peakLevel } = state;
+        api.put('/pet', { pet: { name, bornAt, lastTick, fed, joy, energy, health, alive, deadAt, careXp, level, peakLevel } })
             .catch(() => {});
     }, 1500);
 }
@@ -120,6 +130,7 @@ function feed(kind, times = 1) {
     next.joy = clamp(next.joy + r.joy * times);
     next.energy = clamp(next.energy + r.energy * times);
     next.health = clamp(next.health + 2); // a little love restores health
+    next.careXp = (next.careXp || 0) + (CARE[kind] || 0) * times;
     commit(next);
     persist();
 }
@@ -131,7 +142,17 @@ export function recordIncorrect(times = 1) { feed('incorrect', times); }
 export function recordPlay(times = 1) { feed('play', times); }
 
 export function revivePet() {
-    commit(freshPet());
+    const keptPeak = state.peakLevel || 1;
+    const np = freshPet();
+    np.peakLevel = keptPeak; // a new pet, but your best level still stands
+    commit(np);
+    persist();
+}
+
+export function setPetName(name) {
+    const clean = String(name || '').trim().slice(0, 20);
+    if (!clean) return;
+    commit({ ...state, name: clean });
     persist();
 }
 

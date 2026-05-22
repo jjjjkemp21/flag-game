@@ -19,6 +19,7 @@ app.get('/api/health', (req, res) => res.json({ ok: true }));
 app.use('/api/auth', authLimiter, require('./routes/auth'));
 app.use('/api/stats', require('./routes/stats'));
 app.use('/api/pet', require('./routes/pet'));
+app.use('/api/profile', require('./routes/profile'));
 app.use('/api/announcements', require('./routes/announcements'));
 app.use('/api', require('./routes/social'));
 

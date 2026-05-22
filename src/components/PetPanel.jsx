@@ -39,7 +39,7 @@ function NeedBar({ label, icon, tone, value }) {
     );
 }
 
-function PetPanel() {
+function PetPanel({ setView }) {
     const pet = usePet();
 
     if (!pet.alive) {
@@ -61,6 +61,7 @@ function PetPanel() {
             <div className="pet-header">
                 <span className="pet-name">{pet.name}</span>
                 <span className="pet-pills">
+                    <Pill tone="info" icon="military_tech">Lv {pet.level}</Pill>
                     <Pill tone="primary" icon="auto_awesome">{pet.stageLabel}</Pill>
                     <Pill tone={pet.health < 25 ? 'danger' : 'success'} icon="favorite">{Math.round(pet.health)}</Pill>
                 </span>
@@ -72,9 +73,16 @@ function PetPanel() {
                 ))}
             </div>
 
-            <p className="pet-status">
-                <strong>{pet.name}</strong> {STATUS[pet.mood] || STATUS.idle}
-            </p>
+            <div className="pet-footer">
+                <p className="pet-status">
+                    <strong>{pet.name}</strong> {STATUS[pet.mood] || STATUS.idle}
+                </p>
+                {setView && (
+                    <Button variant="secondary" size="sm" icon="storefront" onClick={() => setView('store')}>
+                        Customize
+                    </Button>
+                )}
+            </div>
         </div>
     );
 }

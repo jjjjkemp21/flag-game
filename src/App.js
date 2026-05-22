@@ -11,6 +11,7 @@ import AuthScreen from './components/AuthScreen';
 import Leaderboard from './components/Leaderboard';
 import Friends from './components/Friends';
 import AdminAnnounce from './components/AdminAnnounce';
+import StoreScreen from './components/StoreScreen';
 import TopBar from './components/TopBar';
 import Spinner from './assets/illustrations/Spinner';
 import { useAudio } from './audio/AudioProvider';
@@ -20,6 +21,7 @@ import { applyStatsToFlags, zeroFlagStats, pushStats } from './lib/syncStats';
 import { computeXp, readBonusScores } from './lib/xp';
 import { setAuthed, loadBonus, resetBonus } from './lib/progress';
 import { loadPet, resetPet, recordCorrect, recordIncorrect } from './lib/pet';
+import { loadProfile, resetProfile } from './lib/profile';
 import { variants } from './motion';
 
 // Heavy bonus modes — lazy-loaded
@@ -172,10 +174,17 @@ function App() {
                 } catch (_) {
                     /* pet stays at its default if the load fails */
                 }
+                try {
+                    const prof = await api.get('/profile');
+                    if (!cancelled) loadProfile(prof);
+                } catch (_) {
+                    /* profile stays at defaults if the load fails */
+                }
             } else {
                 setAuthed(false);
                 resetBonus();
                 resetPet();
+                resetProfile();
                 answerTotalsRef.current = { correct: 0, incorrect: 0 };
                 setFlagsData(prev => zeroFlagStats(prev));
             }
@@ -278,6 +287,8 @@ function App() {
                 return <Friends setView={setView} />;
             case 'admin':
                 return <AdminAnnounce setView={setView} />;
+            case 'store':
+                return <StoreScreen setView={setView} flagsData={flagsData} />;
             case 'settings':
                 return (
                     <Settings

@@ -15,7 +15,15 @@ const RECOVERY_CODE_COUNT = 8;
 const SALT_ROUNDS = 10;
 
 function publicUser(u) {
-    return { id: u.id, username: u.username, is_admin: !!u.is_admin, xp: u.xp };
+    return {
+        id: u.id,
+        username: u.username,
+        is_admin: !!u.is_admin,
+        xp: u.xp,
+        region: u.region || null,
+        cosmetics: u.cosmetics_json ? JSON.parse(u.cosmetics_json) : null,
+        petLevel: u.pet_level || 1,
+    };
 }
 
 function normalizeAnswer(a) {

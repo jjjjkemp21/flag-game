@@ -71,11 +71,13 @@ if (!announcementCols.some((c) => c.name === 'commit_sha')) {
     db.exec('ALTER TABLE announcements ADD COLUMN commit_sha TEXT');
 }
 
-// Migration: virtual-pet ("Atlas") state per user.
+// Migrations: virtual-pet ("Atlas") state, profile cosmetics, region, pet level.
 const userCols = db.prepare('PRAGMA table_info(users)').all();
-if (!userCols.some((c) => c.name === 'pet_json')) {
-    db.exec('ALTER TABLE users ADD COLUMN pet_json TEXT');
-}
+const hasCol = (name) => userCols.some((c) => c.name === name);
+if (!hasCol('pet_json')) db.exec('ALTER TABLE users ADD COLUMN pet_json TEXT');
+if (!hasCol('cosmetics_json')) db.exec('ALTER TABLE users ADD COLUMN cosmetics_json TEXT');
+if (!hasCol('region')) db.exec('ALTER TABLE users ADD COLUMN region TEXT');
+if (!hasCol('pet_level')) db.exec('ALTER TABLE users ADD COLUMN pet_level INTEGER NOT NULL DEFAULT 1');
 
 // Seed / promote the admin account from env. If ADMIN_PASSWORD is set, the admin
 // account is created (or its password reset) on boot so it can always log in.

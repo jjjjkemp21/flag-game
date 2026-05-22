@@ -9,6 +9,7 @@ import WorldDots from '../assets/illustrations/WorldDots';
 import PetPanel from './PetPanel';
 import { useAudio } from '../audio/AudioProvider';
 import { usePet } from '../lib/pet';
+import { useProfile } from '../lib/profile';
 import { springs } from '../motion';
 
 const MODES = [
@@ -44,6 +45,7 @@ function ModeCard({ mode, onClick, index, masteryHint }) {
 
 function MainMenu({ setView, flagsData, setQuizMode }) {
     const pet = usePet();
+    const profile = useProfile();
     const masteryHint = useMemo(() => {
         if (!flagsData?.length) return null;
         const mastered = flagsData.filter(f => f.streak > 5).length;
@@ -84,7 +86,7 @@ function MainMenu({ setView, flagsData, setQuizMode }) {
                     Master 250+ world flags with spaced repetition, frenzy challenges, and pixel reveals.
                 </p>
                 <div style={{ position: 'relative', zIndex: 2, marginTop: 'var(--space-xs)' }}>
-                    <Mascot size={92} mood={pet.mood} />
+                    <Mascot size={92} mood={pet.mood} cosmetics={profile.cosmetics} />
                 </div>
                 {masteryHint && (
                     <div className="knowledge-stats" style={{ position: 'relative', zIndex: 2 }}>
@@ -95,7 +97,7 @@ function MainMenu({ setView, flagsData, setQuizMode }) {
                 )}
             </section>
 
-            <PetPanel />
+            <PetPanel setView={setView} />
 
             <div className="mode-grid">
                 {MODES.map((mode, i) => (

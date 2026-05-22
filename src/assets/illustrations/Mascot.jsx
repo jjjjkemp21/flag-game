@@ -1,13 +1,22 @@
-import React from 'react';
+import React, { useId } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
+import { paletteFor } from '../../lib/cosmetics';
+import { renderHat, renderGlasses } from './Cosmetics';
 
 /**
  * Friendly globe mascot ("Atlas"). Moods rig the expression and animation.
  * moods: 'idle' | 'cheer' | 'sad' | 'think' | 'wave'
  *      | 'hungry' | 'sleepy' | 'sick' | 'dead'
+ * cosmetics: { color, hat, glasses } equips skins/hats/glasses.
  */
-export default function Mascot({ size = 96, mood = 'idle' }) {
+export default function Mascot({ size = 96, mood = 'idle', cosmetics, still = false }) {
     const prefersReduced = useReducedMotion();
+    const calm = prefersReduced || still;
+    const uid = useId();
+    const bodyId = `globeBody-${uid}`;
+    const flagId = `globeFlag-${uid}`;
+    const cos = cosmetics || {};
+    const palette = paletteFor(cos.color);
 
     const bobVariants = {
         idle:   { y: [0, -3, 0], transition: { duration: 3.2, repeat: Infinity, ease: 'easeInOut' } },
@@ -35,7 +44,7 @@ export default function Mascot({ size = 96, mood = 'idle' }) {
 
     const blinkingEyes = (
         <motion.g
-            animate={prefersReduced ? undefined : { scaleY: mood === 'sad' ? 0.6 : [1, 1, 0.12, 1] }}
+            animate={calm ? undefined : { scaleY: mood === 'sad' ? 0.6 : [1, 1, 0.12, 1] }}
             transition={{ duration: 4, repeat: Infinity, repeatDelay: 2, times: [0, 0.94, 0.97, 1] }}
             style={{ transformOrigin: 'center' }}
         >
@@ -66,17 +75,17 @@ export default function Mascot({ size = 96, mood = 'idle' }) {
         <motion.div
             aria-hidden="true"
             style={{ display: 'inline-block', width: size, height: size }}
-            animate={prefersReduced ? undefined : bobVariants[mood]}
+            animate={calm ? undefined : bobVariants[mood]}
             initial={false}
         >
             <svg width={size} height={size} viewBox="0 0 96 96" xmlns="http://www.w3.org/2000/svg">
                 <defs>
-                    <radialGradient id="globeBody" cx="0.35" cy="0.3" r="0.8">
-                        <stop offset="0" stopColor="#9FE5C9" />
-                        <stop offset="0.55" stopColor="#2EC4D3" />
-                        <stop offset="1" stopColor="#1FA0AC" />
+                    <radialGradient id={bodyId} cx="0.35" cy="0.3" r="0.8">
+                        <stop offset="0" stopColor={palette.stops[0]} />
+                        <stop offset="0.55" stopColor={palette.stops[1]} />
+                        <stop offset="1" stopColor={palette.stops[2]} />
                     </radialGradient>
-                    <linearGradient id="globeFlag" x1="0" x2="1" y1="0" y2="0">
+                    <linearGradient id={flagId} x1="0" x2="1" y1="0" y2="0">
                         <stop offset="0" stopColor="#FF5C6C" />
                         <stop offset="1" stopColor="#FFC247" />
                     </linearGradient>
@@ -86,7 +95,7 @@ export default function Mascot({ size = 96, mood = 'idle' }) {
                 <ellipse cx="48" cy="88" rx="26" ry="4" fill="#1F1A3B" opacity=".18" />
 
                 {/* Globe */}
-                <circle cx="48" cy="48" r="34" fill="url(#globeBody)" stroke="#1FA0AC" strokeWidth="2" />
+                <circle cx="48" cy="48" r="34" fill={`url(#${bodyId})`} stroke={palette.stroke} strokeWidth="2" />
 
                 {/* Continents (stylized) */}
                 <path
@@ -104,6 +113,9 @@ export default function Mascot({ size = 96, mood = 'idle' }) {
 
                 {/* Eyes */}
                 {eyes}
+
+                {/* Glasses cosmetic (over the eyes) */}
+                {mood !== 'dead' && renderGlasses(cos.glasses)}
 
                 {/* Eyebrows for sad / think / hungry */}
                 {(mood === 'sad' || mood === 'hungry') && (
@@ -123,7 +135,7 @@ export default function Mascot({ size = 96, mood = 'idle' }) {
                 {mouth}
 
                 {/* Sweat drop when hungry or sick */}
-                {(mood === 'hungry' || mood === 'sick') && !prefersReduced && (
+                {(mood === 'hungry' || mood === 'sick') && !calm && (
                     <motion.path
                         d="M70 32 q3 6 0 9 q-3 -3 0 -9 Z"
                         fill="#2EC4D3"
@@ -133,7 +145,7 @@ export default function Mascot({ size = 96, mood = 'idle' }) {
                 )}
 
                 {/* Zzz when sleepy */}
-                {mood === 'sleepy' && !prefersReduced && (
+                {mood === 'sleepy' && !calm && (
                     <motion.g
                         fill="#1F1A3B"
                         opacity="0.7"
@@ -149,18 +161,21 @@ export default function Mascot({ size = 96, mood = 'idle' }) {
                 {mood !== 'dead' && (
                     <motion.g
                         style={{ transformOrigin: '76px 22px' }}
-                        animate={prefersReduced ? undefined : {
+                        animate={calm ? undefined : {
                             rotate: mood === 'wave' || mood === 'cheer' ? [0, -10, 10, -8, 0] : [0, -3, 3, 0],
                         }}
                         transition={{ duration: mood === 'wave' ? 1.6 : 3.4, repeat: Infinity, ease: 'easeInOut' }}
                     >
                         <rect x="74" y="14" width="2" height="22" rx="1" fill="#1F1A3B" />
-                        <path d="M76 14 L 92 18 L 76 24 Z" fill="url(#globeFlag)" />
+                        <path d="M76 14 L 92 18 L 76 24 Z" fill={`url(#${flagId})`} />
                     </motion.g>
                 )}
 
+                {/* Hat cosmetic (drawn on top) */}
+                {renderHat(cos.hat)}
+
                 {/* Sparkles on cheer */}
-                {mood === 'cheer' && !prefersReduced && (
+                {mood === 'cheer' && !calm && (
                     <motion.g
                         animate={{ opacity: [0, 1, 0], scale: [0.8, 1.2, 0.8] }}
                         transition={{ duration: 1.0, repeat: Infinity }}

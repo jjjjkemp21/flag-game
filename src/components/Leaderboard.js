@@ -1,12 +1,31 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import Icon from './Icon';
 import { Button, Pill } from './ui';
+import Mascot from '../assets/illustrations/Mascot';
 import { useAuth } from '../auth/AuthProvider';
 import { api } from '../api/client';
 
+const FLAG_BASE = './assets/flags/';
+
+const SCOPES = [
+    { key: 'overall',      label: 'Overall',       icon: 'public',    unit: 'XP' },
+    { key: 'friends',      label: 'Friends',       icon: 'group',     unit: 'XP' },
+    { key: 'atlas',        label: 'Atlas Level',   icon: 'pets',      unit: 'Lv' },
+    { key: 'frenzy',       label: 'Frenzy',        icon: 'bolt',      unit: 'pts' },
+    { key: 'pixelated',    label: 'Pixelated',     icon: 'blur_on',   unit: 'pts' },
+    { key: 'longestRoute', label: 'Longest Chain', icon: 'route',     unit: 'pts' },
+    { key: 'language',     label: 'Language',      icon: 'translate', unit: 'pts' },
+];
+
+function formatValue(scope, value) {
+    if (scope === 'atlas') return `Lv ${value}`;
+    if (scope === 'overall' || scope === 'friends') return `${value} XP`;
+    return `${value} pts`;
+}
+
 function Leaderboard({ setView }) {
     const { user, isAuthed } = useAuth();
-    const [scope, setScope] = useState('global');
+    const [scope, setScope] = useState('overall');
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -16,8 +35,7 @@ function Leaderboard({ setView }) {
         setLoading(true);
         setError(null);
         try {
-            const res = await api.get(`/leaderboard?scope=${scope}`);
-            setData(res);
+            setData(await api.get(`/leaderboard?scope=${scope}`));
         } catch (err) {
             setError(err.message || 'Could not load leaderboard.');
         } finally {
@@ -54,18 +72,21 @@ function Leaderboard({ setView }) {
             </div>
             <h2 className="text-center">Leaderboard</h2>
 
-            <div className="seg-toggle" role="tablist">
-                <button className={`seg-toggle__btn ${scope === 'global' ? 'is-active' : ''}`} onClick={() => setScope('global')}>
-                    <Icon name="public" /> Global
-                </button>
-                <button className={`seg-toggle__btn ${scope === 'friends' ? 'is-active' : ''}`} onClick={() => setScope('friends')}>
-                    <Icon name="group" /> Friends
-                </button>
+            <div className="scope-tabs">
+                {SCOPES.map((s) => (
+                    <button
+                        key={s.key}
+                        className={`scope-tab ${scope === s.key ? 'is-active' : ''}`}
+                        onClick={() => setScope(s.key)}
+                    >
+                        <Icon name={s.icon} /> {s.label}
+                    </button>
+                ))}
             </div>
 
-            {data && (
+            {data && data.myRank != null && (
                 <div className="my-rank-pill">
-                    <Pill tone="primary" icon="star">Your rank: #{data.myRank} · {data.myXp} XP</Pill>
+                    <Pill tone="primary" icon="star">Your rank: #{data.myRank} · {formatValue(scope, data.myValue)}</Pill>
                 </div>
             )}
 
@@ -82,9 +103,19 @@ function Leaderboard({ setView }) {
                     {data.entries.map((row) => (
                         <li key={row.id} className={`leaderboard-row ${user && row.id === user.id ? 'is-me' : ''}`}>
                             <span className="leaderboard-rank">#{row.rank}</span>
-                            <span className="leaderboard-name">{row.username}</span>
-                            <span className="leaderboard-mastered">{row.masteredCount} mastered</span>
-                            <span className="leaderboard-xp">{row.xp} XP</span>
+                            <span className="leaderboard-avatar">
+                                <Mascot size={40} mood="idle" cosmetics={row.cosmetics} still />
+                            </span>
+                            <span className="leaderboard-id">
+                                <span className="leaderboard-name">
+                                    {row.region && (
+                                        <img className="leaderboard-flag" src={`${FLAG_BASE}${row.region.toLowerCase()}.svg`} alt="" />
+                                    )}
+                                    {row.username}
+                                </span>
+                                <span className="leaderboard-sub">Atlas Lv {row.petLevel} · {row.masteredCount} mastered</span>
+                            </span>
+                            <span className="leaderboard-xp">{formatValue(scope, row.value)}</span>
                         </li>
                     ))}
                 </ol>

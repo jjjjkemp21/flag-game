@@ -29,38 +29,70 @@ function acceptedFriendIds(userId) {
     return rows.map((r) => (r.requester_id === userId ? r.addressee_id : r.requester_id));
 }
 
+const BONUS_MODES = ['frenzy', 'pixelated', 'longestRoute', 'language'];
+const VALID_SCOPES = ['overall', 'friends', 'atlas', ...BONUS_MODES];
+
+// The score that ranks a row for a given scope.
+function metricValue(row, scope) {
+    if (scope === 'atlas') return row.pet_level || 1;
+    if (BONUS_MODES.includes(scope)) {
+        try {
+            const b = row.bonus_scores_json ? JSON.parse(row.bonus_scores_json) : {};
+            return Number(b[scope]) || 0;
+        } catch (_) {
+            return 0;
+        }
+    }
+    return row.xp || 0; // overall / friends
+}
+
+function buildEntry(row, scope) {
+    let mastered = 0;
+    if (row.stats_json) {
+        try { mastered = masteredCount(JSON.parse(row.stats_json)); } catch (_) { /* ignore */ }
+    }
+    return {
+        id: row.id,
+        username: row.username,
+        xp: row.xp,
+        region: row.region || null,
+        cosmetics: row.cosmetics_json ? JSON.parse(row.cosmetics_json) : null,
+        petLevel: row.pet_level || 1,
+        masteredCount: mastered,
+        value: metricValue(row, scope),
+    };
+}
+
 router.get('/leaderboard', (req, res) => {
-    const scope = req.query.scope === 'friends' ? 'friends' : 'global';
+    const scope = VALID_SCOPES.includes(req.query.scope) ? req.query.scope : 'overall';
     const limit = Math.min(parseInt(req.query.limit, 10) || 100, 200);
+    const cols = 'id, username, xp, region, cosmetics_json, pet_level, bonus_scores_json, stats_json';
 
     let rows;
     if (scope === 'friends') {
         const ids = acceptedFriendIds(req.user.id);
         ids.push(req.user.id);
         const placeholders = ids.map(() => '?').join(',');
-        rows = db
-            .prepare(
-                `SELECT id, username, xp, stats_json FROM users
-                 WHERE id IN (${placeholders}) ORDER BY xp DESC, username ASC LIMIT ?`
-            )
-            .all(...ids, limit);
+        rows = db.prepare(`SELECT ${cols} FROM users WHERE id IN (${placeholders})`).all(...ids);
     } else {
-        rows = db
-            .prepare(
-                `SELECT id, username, xp, stats_json FROM users
-                 ORDER BY xp DESC, username ASC LIMIT ?`
-            )
-            .all(limit);
+        rows = db.prepare(`SELECT ${cols} FROM users`).all();
     }
 
-    const entries = rows.map((r, i) => ({ ...withMastered(r), rank: i + 1 }));
+    const sorted = rows
+        .map((r) => buildEntry(r, scope))
+        .sort((a, b) => b.value - a.value || a.username.localeCompare(b.username));
 
-    // Caller's overall global rank (independent of the displayed page).
-    const higher = db
-        .prepare('SELECT COUNT(*) AS c FROM users WHERE xp > ?')
-        .get(req.user.xp).c;
+    const myIndex = sorted.findIndex((e) => e.id === req.user.id);
+    const myEntry = myIndex >= 0 ? sorted[myIndex] : null;
 
-    res.json({ scope, entries, myRank: higher + 1, myXp: req.user.xp });
+    const entries = sorted.slice(0, limit).map((e, i) => ({ ...e, rank: i + 1 }));
+
+    res.json({
+        scope,
+        entries,
+        myRank: myIndex >= 0 ? myIndex + 1 : null,
+        myValue: myEntry ? myEntry.value : 0,
+    });
 });
 
 router.get('/friends', (req, res) => {

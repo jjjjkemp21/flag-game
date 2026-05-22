@@ -36,6 +36,10 @@ function TopBar({ setView }) {
                         onClick={() => { setMenuOpen(false); setView('friends'); }}>
                         Friends
                     </Button>
+                    <Button variant="secondary" fullWidth icon="storefront"
+                        onClick={() => { setMenuOpen(false); setView('store'); }}>
+                        Atlas Shop
+                    </Button>
                     {user?.is_admin && (
                         <Button variant="accent" fullWidth icon="campaign"
                             onClick={() => { setMenuOpen(false); setView('admin'); }}>
