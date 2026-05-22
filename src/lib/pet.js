@@ -10,18 +10,28 @@ import { api } from '../api/client';
 
 const PET_NAME = 'Atlas';
 
-// Decay per real hour and per-event refill amounts (tunable).
-const DECAY = { fed: 3, joy: 2.5, energy: 2 };
+// Decay per real hour and per-event refill amounts (tunable). Atlas is needy:
+// stats fall fast and each answer tops them up only a little, so keeping it happy
+// takes regular play.
+const DECAY = { fed: 7, joy: 6, energy: 5 };
 const REFILL = {
-    correct: { fed: 14, joy: 6, energy: 4 },
-    incorrect: { fed: 2, joy: 4, energy: 3 },
-    play: { fed: 0, joy: 6, energy: 6 },
+    correct: { fed: 8, joy: 4, energy: 3 },
+    incorrect: { fed: 2, joy: 3, energy: 2 },
+    play: { fed: 0, joy: 5, energy: 5 },
 };
-const HEALTH_DRAIN = 4; // per hour when wellbeing is very low
-const HEALTH_REGEN = 6; // per hour when wellbeing is high
-const LOW_WELLBEING = 20;
-const HIGH_WELLBEING = 60;
+const HEALTH_DRAIN = 5; // per hour when wellbeing is very low
+const HEALTH_REGEN = 5; // per hour when wellbeing is high
+const LOW_WELLBEING = 28;
+const HIGH_WELLBEING = 65;
 const TICK_MS = 15000;
+
+// Overfeeding: feeding while already full builds "chub", which slowly burns off
+// when you're away. High chub just makes Atlas chubby — it never affects health
+// or causes death.
+const CHUB_DECAY = 2.5;       // per hour
+const CHUB_GAIN = 3;          // per correct answer while already full
+const FULL_THRESHOLD = 85;    // "full" cutoff that triggers chub gain
+const OBESE_THRESHOLD = 70;   // chub at/above this => chubby cheeks
 
 // Care XP -> level. Care XP grows by playing and drives the "Atlas Level"
 // leaderboard. It is wiped if Atlas passes away and you hatch a new egg — a
@@ -45,6 +55,7 @@ function freshPet() {
         alive: true,
         deadAt: null,
         careXp: 0,
+        chub: 0,
     };
 }
 
@@ -83,6 +94,8 @@ function withDerived(s) {
     next.stageLabel = stage.label;
     next.careXp = s.careXp || 0;
     next.level = Math.floor(next.careXp / LEVEL_XP) + 1;
+    next.chub = Math.max(0, Math.min(100, s.chub || 0));
+    next.obese = next.chub >= OBESE_THRESHOLD;
     return next;
 }
 
@@ -107,7 +120,8 @@ function applyDecay(s, elapsedMs) {
         alive = false;
         deadAt = now();
     }
-    return { ...s, fed, joy, energy, health, alive, deadAt, lastTick: now() };
+    const chub = clamp((s.chub || 0) - CHUB_DECAY * h);
+    return { ...s, fed, joy, energy, health, chub, alive, deadAt, lastTick: now() };
 }
 
 function persist() {
@@ -115,8 +129,8 @@ function persist() {
     if (pushTimer) clearTimeout(pushTimer);
     pushTimer = setTimeout(() => {
         pushTimer = null;
-        const { name, bornAt, lastTick, fed, joy, energy, health, alive, deadAt, careXp, level } = state;
-        api.put('/pet', { pet: { name, bornAt, lastTick, fed, joy, energy, health, alive, deadAt, careXp, level } })
+        const { name, bornAt, lastTick, fed, joy, energy, health, alive, deadAt, careXp, level, chub } = state;
+        api.put('/pet', { pet: { name, bornAt, lastTick, fed, joy, energy, health, alive, deadAt, careXp, level, chub } })
             .catch(() => {});
     }, 1500);
 }
@@ -125,11 +139,16 @@ function feed(kind, times = 1) {
     if (!state.alive) return;
     const r = REFILL[kind] || REFILL.play;
     const next = applyDecay(state, now() - state.lastTick);
+    const wasFull = next.fed >= FULL_THRESHOLD;
     next.fed = clamp(next.fed + r.fed * times);
     next.joy = clamp(next.joy + r.joy * times);
     next.energy = clamp(next.energy + r.energy * times);
     next.health = clamp(next.health + 2); // a little love restores health
     next.careXp = (next.careXp || 0) + (CARE[kind] || 0) * times;
+    // Stuffing Atlas while it's already full puts on chub (purely cosmetic).
+    if (kind === 'correct' && wasFull) {
+        next.chub = Math.min(100, (next.chub || 0) + CHUB_GAIN * times);
+    }
     commit(next);
     persist();
 }

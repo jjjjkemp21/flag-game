@@ -1,5 +1,5 @@
 import React from 'react';
-import { HATS, GLASSES } from '../../lib/cosmetics';
+import { HATS, GLASSES, EFFECTS } from '../../lib/cosmetics';
 
 // SVG cosmetic overlays drawn in the Mascot's 96x96 viewBox.
 // Globe is centered at (48,48) with radius 34 (top edge ~y14); eyes sit at y46.
@@ -407,6 +407,111 @@ const GLASS_SHAPES = {
         </g>
     ),
 };
+
+// ---- Effects ---------------------------------------------------------------
+// Animated flourishes drawn over (or around) the globe. They use SMIL <animate>
+// so they play even when the mascot's framer motion is held still (e.g. shop
+// previews, leaderboard avatars). 'spin' is handled directly in the Mascot.
+const spark = (cx, cy, r) =>
+    `M${cx} ${cy - r} Q${cx} ${cy} ${cx + r} ${cy} Q${cx} ${cy} ${cx} ${cy + r} Q${cx} ${cy} ${cx - r} ${cy} Q${cx} ${cy} ${cx} ${cy - r} Z`;
+const heartPath = (cx, cy, s) =>
+    `M${cx} ${cy} C ${cx - s * 1.8} ${cy - s * 1.6}, ${cx - s * 1.8} ${cy - s * 3.4}, ${cx} ${cy - s * 2} C ${cx + s * 1.8} ${cy - s * 3.4}, ${cx + s * 1.8} ${cy - s * 1.6}, ${cx} ${cy} Z`;
+
+const EFFECT_SHAPES = {
+    orbit: () => (
+        <g>
+            <animateTransform attributeName="transform" type="rotate" from="0 48 48" to="360 48 48" dur="6s" repeatCount="indefinite" />
+            <circle cx="48" cy="4" r="5" fill="#D7DEE8" stroke="#AAB4C2" strokeWidth="1" />
+            <circle cx="46" cy="3" r="1.3" fill="#AAB4C2" />
+        </g>
+    ),
+    sparkle: () => (
+        <g fill="#FFE08A">
+            {[[16, 18, 2.6, 1.8], [80, 24, 2.2, 2.4], [20, 70, 2.0, 2.0], [78, 66, 2.4, 2.8], [48, 6, 2.2, 2.2], [10, 46, 1.8, 3.0]].map((s, i) => (
+                <path key={i} d={spark(s[0], s[1], s[2])}>
+                    <animate attributeName="opacity" values="0.1;1;0.1" dur={`${s[3]}s`} repeatCount="indefinite" />
+                </path>
+            ))}
+        </g>
+    ),
+    rings: () => (
+        <g transform="rotate(-20 48 48)" fill="none">
+            <ellipse cx="48" cy="48" rx="47" ry="13" stroke="#FFD86B" strokeWidth="3" opacity="0.85">
+                <animate attributeName="opacity" values="0.5;0.95;0.5" dur="3s" repeatCount="indefinite" />
+            </ellipse>
+            <ellipse cx="48" cy="48" rx="41" ry="10" stroke="#FFEFC2" strokeWidth="1.5" opacity="0.6" />
+        </g>
+    ),
+    bubbles: () => (
+        <g fill="none" stroke="#9AD0FF" strokeWidth="1.5">
+            {[[30, 3.2, 2.6, 0], [50, 2.4, 3.2, 0.6], [66, 3, 2.2, 1.2], [40, 2, 3.6, 1.8]].map((b, i) => (
+                <circle key={i} cx={b[0]} cy="82" r={b[1]}>
+                    <animate attributeName="cy" values="82;6" dur={`${b[2]}s`} begin={`${b[3]}s`} repeatCount="indefinite" />
+                    <animate attributeName="opacity" values="0;0.9;0" dur={`${b[2]}s`} begin={`${b[3]}s`} repeatCount="indefinite" />
+                </circle>
+            ))}
+        </g>
+    ),
+    snow: () => (
+        <g fill="#FFFFFF">
+            {[[24, 2, 3.4, 0], [40, 1.6, 4, 0.8], [56, 2.2, 3, 1.4], [70, 1.8, 3.8, 2.0]].map((s, i) => (
+                <circle key={i} cx={s[0]} cy="6" r={s[1]}>
+                    <animate attributeName="cy" values="6;86" dur={`${s[2]}s`} begin={`${s[3]}s`} repeatCount="indefinite" />
+                    <animate attributeName="opacity" values="0;0.95;0" dur={`${s[2]}s`} begin={`${s[3]}s`} repeatCount="indefinite" />
+                </circle>
+            ))}
+        </g>
+    ),
+    hearts: () => (
+        <g fill="#FF7BA0">
+            {[[28, 3.4, 0], [48, 4, 0.8], [66, 3, 1.6]].map((h, i) => (
+                <g key={i}>
+                    <animateTransform attributeName="transform" type="translate" values="0 0;0 -78" dur={`${h[1]}s`} begin={`${h[2]}s`} repeatCount="indefinite" />
+                    <path d={heartPath(h[0], 84, 3)} opacity="0">
+                        <animate attributeName="opacity" values="0;1;0" dur={`${h[1]}s`} begin={`${h[2]}s`} repeatCount="indefinite" />
+                    </path>
+                </g>
+            ))}
+        </g>
+    ),
+    flames: () => (
+        <g>
+            {[[34, '#FF6A2E', 1.6], [48, '#FFC247', 1.2], [62, '#FF6A2E', 1.9]].map((f, i) => (
+                <path key={i} d={`M${f[0]} 86 q 4 -9 0 -16 q -4 7 0 16 Z`} fill={f[1]}>
+                    <animate attributeName="opacity" values="0.55;1;0.55" dur={`${f[2]}s`} repeatCount="indefinite" />
+                </path>
+            ))}
+        </g>
+    ),
+    electric: () => (
+        <g stroke="#9AD0FF" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+            {['M16 40 L22 46 L18 50 L26 58', 'M80 38 L74 46 L78 50 L70 60'].map((d, i) => (
+                <path key={i} d={d}>
+                    <animate attributeName="opacity" values="0;1;0;0.2;0" dur="1.2s" begin={`${i * 0.4}s`} repeatCount="indefinite" />
+                </path>
+            ))}
+        </g>
+    ),
+    confetti: () => (
+        <g>
+            {[['#FF5C6C', 26, 0, 3.2], ['#FFC247', 42, 0.6, 3.8], ['#19C37D', 58, 1.2, 3.0], ['#5B5BF6', 70, 1.8, 3.6]].map((c, i) => (
+                <g key={i}>
+                    <animateTransform attributeName="transform" type="translate" values="0 0;0 82" dur={`${c[3]}s`} begin={`${c[2]}s`} repeatCount="indefinite" />
+                    <rect x={c[1]} y="2" width="3.6" height="3.6" rx="0.6" fill={c[0]} opacity="0">
+                        <animate attributeName="opacity" values="0;1;0" dur={`${c[3]}s`} begin={`${c[2]}s`} repeatCount="indefinite" />
+                    </rect>
+                </g>
+            ))}
+        </g>
+    ),
+};
+
+export function renderEffect(id) {
+    const item = EFFECTS[id];
+    if (!item || !item.kind || item.kind === 'spin') return null; // 'spin' handled in Mascot
+    const draw = EFFECT_SHAPES[item.kind];
+    return draw ? draw() : null;
+}
 
 export function renderHat(id) {
     const item = HATS[id];

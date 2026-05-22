@@ -713,10 +713,14 @@
     font-weight: 700;
     margin-right: var(--space-xs);
 }
-.choice-card:hover:not(:disabled) {
-    transform: translateY(-2px);
-    border-color: var(--color-primary);
-    box-shadow: 0 7px 0 var(--color-border-strong), var(--shadow-md);
+/* Guard hover styling to real pointers — on touch screens :hover sticks after a
+   tap, making the last-tapped option look selected on the next question. */
+@media (hover: hover) {
+    .choice-card:hover:not(:disabled) {
+        transform: translateY(-2px);
+        border-color: var(--color-primary);
+        box-shadow: 0 7px 0 var(--color-border-strong), var(--shadow-md);
+    }
 }
 .choice-card:active:not(:disabled) {
     transform: translateY(2px);
@@ -2047,24 +2051,25 @@
     z-index: 60; width: max-content; max-width: 220px;
     display: flex; flex-direction: column; gap: 3px;
     padding: 8px 10px; border-radius: var(--radius-md);
-    background: var(--color-ink); color: #fff;
+    background: var(--color-bg-elev-1); color: var(--color-ink);
+    border: 1px solid var(--color-border-strong);
     box-shadow: var(--shadow-lg); pointer-events: none; text-align: left;
 }
 .ach-popover::after {
     content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
-    border: 6px solid transparent; border-top-color: var(--color-ink);
+    border: 6px solid transparent; border-top-color: var(--color-bg-elev-1);
 }
 /* Portal-rendered variant: fixed to the viewport (escapes scroll/overflow clipping). */
 .ach-popover--fixed { position: fixed; bottom: auto; }
 .ach-popover--fixed.ach-popover--above { transform: translate(-50%, -100%); }
 .ach-popover--fixed.ach-popover--below { transform: translate(-50%, 0); }
 /* Flip the caret to the top edge when the popover sits below the badge. */
-.ach-popover--below::after { top: auto; bottom: 100%; border-top-color: transparent; border-bottom-color: var(--color-ink); }
+.ach-popover--below::after { top: auto; bottom: 100%; border-top-color: transparent; border-bottom-color: var(--color-bg-elev-1); }
 .ach-popover__title { display: inline-flex; align-items: center; gap: 5px; font-weight: 800; font-size: var(--fs-sm); }
 .ach-popover__title .app-icon { color: inherit; }
 .ach-popover__title--gold, .ach-popover__title--legend { color: #FFD86B; }
 .ach-popover__title--platinum { color: #7FE3EE; }
-.ach-popover__desc { font-size: var(--fs-xs); color: rgba(255,255,255,0.82); line-height: 1.35; }
+.ach-popover__desc { font-size: var(--fs-xs); color: var(--color-ink-soft); line-height: 1.35; }
 
 /* -------- Clickable leaderboard rows -------- */
 .leaderboard-row.is-clickable { cursor: pointer; }
@@ -2147,6 +2152,15 @@
 .mp-score-row.is-me { border-color: var(--color-primary); background: var(--color-primary-soft); }
 .mp-score-row .leaderboard-rank { flex: none; }
 .mp-score-name { flex: 1 1 auto; min-width: 0; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.mp-score-bar { flex: 2 1 50px; height: 8px; border-radius: var(--radius-pill); background: var(--color-bg-soft); overflow: hidden; }
+/* In-game rows use a fixed grid so every bar lane is exactly the same width
+   (and the row order is stable), instead of flexing with each name's length. */
+.mp-score-row--bar {
+    display: grid;
+    grid-template-columns: 28px minmax(56px, 92px) 1fr 34px;
+    gap: 8px;
+}
+.mp-score-row--bar .mp-score-name { flex: none; }
+.mp-score-bar { height: 9px; border-radius: var(--radius-pill); background: var(--color-bg-soft); overflow: hidden; }
+.mp-score-row--bar .mp-score-val { text-align: right; }
 .mp-score-bar__fill { display: block; height: 100%; background: var(--grad-primary); border-radius: var(--radius-pill); transition: width .3s var(--ease-out-quart); }
 .mp-score-val { font-weight: 800; color: var(--color-primary-deep); white-space: nowrap; }

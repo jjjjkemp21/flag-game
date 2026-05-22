@@ -44,6 +44,7 @@ function normalizeConfig(c) {
         mode,
         content,
         questionType,
+        strict: !!c.strict,
         scope,
         target: clampInt(c.target, 5, 200, 50),     // race: correct answers to win
         duration: clampInt(c.duration, 20, 300, 60), // blitz/streak: seconds

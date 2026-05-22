@@ -91,7 +91,7 @@ function MainMenu({ setView, flagsData, setQuizMode }) {
                     Master 250+ world flags with spaced repetition, frenzy challenges, and pixel reveals.
                 </p>
                 <div style={{ position: 'relative', zIndex: 2, marginTop: 'var(--space-xs)' }}>
-                    <Mascot size={92} mood={pet.mood} cosmetics={profile.cosmetics} />
+                    <Mascot size={92} mood={pet.mood} cosmetics={profile.cosmetics} chubby={pet.obese} />
                 </div>
                 {masteryHint && (
                     <div className="knowledge-stats" style={{ position: 'relative', zIndex: 2 }}>

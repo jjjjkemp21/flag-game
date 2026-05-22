@@ -1,7 +1,7 @@
 import React, { useId } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { paletteFor } from '../../lib/cosmetics';
-import { renderHat, renderGlasses } from './Cosmetics';
+import { renderHat, renderGlasses, renderEffect } from './Cosmetics';
 
 /**
  * Friendly globe mascot ("Atlas"). Moods rig the expression and animation.
@@ -9,7 +9,7 @@ import { renderHat, renderGlasses } from './Cosmetics';
  *      | 'hungry' | 'sleepy' | 'sick' | 'dead'
  * cosmetics: { color, hat, glasses } equips skins/hats/glasses.
  */
-export default function Mascot({ size = 96, mood = 'idle', cosmetics, still = false }) {
+export default function Mascot({ size = 96, mood = 'idle', cosmetics, still = false, chubby = false }) {
     const prefersReduced = useReducedMotion();
     const calm = prefersReduced || still;
     const uid = useId();
@@ -18,7 +18,12 @@ export default function Mascot({ size = 96, mood = 'idle', cosmetics, still = fa
     const cos = cosmetics || {};
     const palette = paletteFor(cos.color);
     const anim = palette.anim;
-    const animate = !!anim && !calm;
+    // Cosmetic animations (color cycling, overlays, effects) run via SMIL, so they
+    // play even when the mascot is held "still" (previews, leaderboard avatars).
+    // Only a reduced-motion preference disables them.
+    const animate = !!anim && !prefersReduced;
+    const effectEl = !prefersReduced ? renderEffect(cos.effect) : null;
+    const spinning = cos.effect === 'spin' && !prefersReduced;
     const stopVals = (i) => (anim ? [...anim.frames.map((f) => f[i]), anim.frames[0][i]].join(';') : '');
 
     // Player-chosen placement for cosmetics: translate + scale about an anchor.
@@ -116,12 +121,17 @@ export default function Mascot({ size = 96, mood = 'idle', cosmetics, still = fa
                 {/* Globe */}
                 <circle cx="48" cy="48" r="34" fill={`url(#${bodyId})`} stroke={palette.stroke} strokeWidth="2" />
 
-                {/* Continents (stylized) */}
-                <path
-                    d="M22 44 C 30 36, 36 40, 42 36 C 44 44, 36 52, 28 50 Z M58 30 C 64 30, 70 36, 68 44 C 60 46, 56 38, 58 30 Z M50 56 C 60 54, 68 60, 64 70 C 56 70, 50 64, 50 56 Z"
-                    fill="#19C37D"
-                    opacity=".85"
-                />
+                {/* Continents (stylized) — rotate for the "spinning globe" effect */}
+                <g>
+                    {spinning && (
+                        <animateTransform attributeName="transform" type="rotate" from="0 48 48" to="360 48 48" dur="8s" repeatCount="indefinite" />
+                    )}
+                    <path
+                        d="M22 44 C 30 36, 36 40, 42 36 C 44 44, 36 52, 28 50 Z M58 30 C 64 30, 70 36, 68 44 C 60 46, 56 38, 58 30 Z M50 56 C 60 54, 68 60, 64 70 C 56 70, 50 64, 50 56 Z"
+                        fill="#19C37D"
+                        opacity=".85"
+                    />
+                </g>
 
                 {/* Animated overlays for flashy globe skins (twinkle / rising embers) */}
                 {animate && palette.overlay === 'stars' && (
@@ -147,9 +157,9 @@ export default function Mascot({ size = 96, mood = 'idle', cosmetics, still = fa
                 {/* Queasy tint when sick */}
                 {mood === 'sick' && <circle cx="48" cy="48" r="34" fill="#19C37D" opacity=".22" />}
 
-                {/* Cheeks (flushed brighter when sick) */}
-                <circle cx="34" cy="58" r="4" fill={mood === 'sick' ? '#9AD7A0' : '#FF8A98'} opacity=".75" />
-                <circle cx="62" cy="58" r="4" fill={mood === 'sick' ? '#9AD7A0' : '#FF8A98'} opacity=".75" />
+                {/* Cheeks (flushed brighter when sick; puffed out when chubby) */}
+                <circle cx={chubby ? 31 : 34} cy={chubby ? 60 : 58} r={chubby ? 8 : 4} fill={mood === 'sick' ? '#9AD7A0' : '#FF8A98'} opacity=".75" />
+                <circle cx={chubby ? 65 : 62} cy={chubby ? 60 : 58} r={chubby ? 8 : 4} fill={mood === 'sick' ? '#9AD7A0' : '#FF8A98'} opacity=".75" />
 
                 {/* Eyes */}
                 {eyes}
@@ -228,6 +238,9 @@ export default function Mascot({ size = 96, mood = 'idle', cosmetics, still = fa
                         <circle cx="86" cy="14" r="1.5" fill="#19C37D" />
                     </motion.g>
                 )}
+
+                {/* Cosmetic effect overlay (animated flourish) */}
+                {effectEl}
             </svg>
         </motion.div>
     );

@@ -20,6 +20,16 @@ export const COLORS = {
     gold:    { name: 'Gold',     xp: 2200, stops: ['#FFECA8', '#FFC247', '#E5A018'], stroke: '#E5A018' },
     galaxy:  { name: 'Galaxy',   xp: 4000, stops: ['#A89BE0', '#5B3FA0', '#241850'], stroke: '#1A1240' },
 
+    // More static colorways.
+    mint:      { name: 'Mint',       xp: 250,  stops: ['#C8F4DE', '#6FE0B0', '#2FB98A'], stroke: '#2FB98A' },
+    coral:     { name: 'Coral',      xp: 550,  stops: ['#FFD2C2', '#FF8A6B', '#E5532E'], stroke: '#E5532E' },
+    sky:       { name: 'Sky',        xp: 650,  stops: ['#CDEBFF', '#7FC2F5', '#3F8FD8'], stroke: '#3F8FD8' },
+    lavender:  { name: 'Lavender',   xp: 950,  stops: ['#E6DBFF', '#B79CF0', '#8A6FD0'], stroke: '#8A6FD0' },
+    amber:     { name: 'Amber',      xp: 1100, stops: ['#FFE6A8', '#FFB23F', '#E5841A'], stroke: '#E5841A' },
+    forest:    { name: 'Forest',     xp: 1500, stops: ['#BFE6B0', '#5BAE5B', '#2F7D3F'], stroke: '#2F7D3F' },
+    bubblegum: { name: 'Bubblegum',  xp: 1900, stops: ['#FFD6F0', '#FF8AD0', '#E54FA8'], stroke: '#E54FA8' },
+    charcoal:  { name: 'Charcoal',   xp: 2400, stops: ['#B7C0CC', '#566173', '#2A3140'], stroke: '#1F2430' },
+
     // Animated — expensive, eye-catching unlocks.
     aurora: {
         name: 'Aurora', xp: 3000, stroke: '#2E8B8B',
@@ -64,6 +74,24 @@ export const COLORS = {
             ['#FFE08A', '#FF6A2E', '#B5301A'],
             ['#FFC247', '#E5412E', '#8A1F0F'],
             ['#FFEFA8', '#FF8A3F', '#C5401A'],
+        ] },
+    },
+    candy: {
+        name: 'Candy Swirl', xp: 4600, stroke: '#E54FA8',
+        stops: ['#FFD6F0', '#FF8AD0', '#E54FA8'],
+        anim: { dur: '5s', frames: [
+            ['#FFD6F0', '#FF8AD0', '#E54FA8'],
+            ['#D6E8FF', '#8AB0FF', '#5B6FE0'],
+            ['#FFEFC2', '#FFC247', '#E5A018'],
+        ] },
+    },
+    toxic: {
+        name: 'Toxic', xp: 5600, stroke: '#1F8A4F', overlay: 'stars',
+        stops: ['#D6FFB0', '#7FE05B', '#2FB94F'],
+        anim: { dur: '4s', frames: [
+            ['#D6FFB0', '#7FE05B', '#2FB94F'],
+            ['#B0FFD6', '#5BE0A0', '#2FB98A'],
+            ['#EFFFB0', '#A0E05B', '#5FB92F'],
         ] },
     },
     rainbow: {
@@ -145,6 +173,23 @@ export const HATS = {
     halo:          { name: 'Halo',              xp: 4400, shape: 'halo',      c: hc('#FFD86B', '#E5A018', '#FFD86B') },
     tophat_gold:   { name: 'Golden Top Hat',    xp: 5200, shape: 'tophat',    c: GOLD },
     tiara_diamond: { name: 'Diamond Tiara',     xp: 6500, shape: 'tiara',     c: hc('#EAF2FF', '#B7C6DA', '#9AD0FF') },
+
+    // More colorways of existing shapes.
+    party_purple:  { name: 'Purple Party Hat',  xp: 95,   shape: 'party',     c: PURPLE },
+    party_gold:    { name: 'Gold Party Hat',    xp: 140,  shape: 'party',     c: GOLD },
+    cap_black:     { name: 'Black Cap',         xp: 250,  shape: 'cap',       c: BLACK },
+    beanie_green:  { name: 'Green Beanie',      xp: 330,  shape: 'beanie',    c: GREEN },
+    beret_blue:    { name: 'Blue Beret',        xp: 430,  shape: 'beret',     c: BLUE },
+    beret_green:   { name: 'Green Beret',       xp: 445,  shape: 'beret',     c: GREEN },
+    fez_blue:      { name: 'Blue Fez',          xp: 470,  shape: 'fez',       c: BLUE },
+    flower_blue:   { name: 'Bluebell Crown',    xp: 790,  shape: 'flower',    c: BLUE },
+    cowboy_white:  { name: 'White Hat',         xp: 880,  shape: 'cowboy',    c: WHITE },
+    cap_gold:      { name: 'Gold Cap',          xp: 1080, shape: 'cap',       c: GOLD },
+    horns_purple:  { name: 'Imp Horns',         xp: 1250, shape: 'horns',     c: PURPLE },
+    tiara_pink:    { name: 'Pink Tiara',        xp: 1360, shape: 'tiara',     c: PINK },
+    crown_silver:  { name: 'Silver Crown',      xp: 1850, shape: 'crown',     c: SILVER },
+    tophat_blue:   { name: 'Dapper Hat',        xp: 2100, shape: 'tophat',    c: BLUE },
+    wizard_green:  { name: 'Druid Hat',         xp: 2550, shape: 'wizard',    c: GREEN },
 };
 
 // ---- Glasses colorways -----------------------------------------------------
@@ -198,19 +243,52 @@ export const GLASSES = {
     eyepatch:      { name: 'Eye Patch',         xp: 3000, shape: 'eyepatch',  c: gc('#1F1A3B', '#16122A') },
     heart_gold:    { name: 'Golden Hearts',     xp: 3400, shape: 'heart',     c: gc('#E5A018', '#FFD86B') },
     visorband_gold:{ name: 'Gold Visor',        xp: 4000, shape: 'visorBand', c: gc('#E5A018', '#FFD86B') },
+
+    // More colorways of existing shapes.
+    round_blue:      { name: 'Blue Round Specs',   xp: 240,  shape: 'round',     c: gc('#3F6FF6', 'rgba(150,200,255,0.2)') },
+    nerd_blue:       { name: 'Blue Nerd Glasses',  xp: 280,  shape: 'nerd',      c: gc('#3F6FF6', 'rgba(150,200,255,0.2)', '#FFC247') },
+    square_green:    { name: 'Green Squares',      xp: 360,  shape: 'square',    c: gc('#19A36B', 'rgba(200,255,220,0.2)') },
+    shades_gold:     { name: 'Gold Shades',        xp: 780,  shape: 'shades',    c: shade('#A07A1A') },
+    aviator_pink:    { name: 'Rose Aviators',      xp: 1040, shape: 'aviator',   c: gc('#E5417A', 'rgba(255,200,220,0.35)') },
+    heart_purple:    { name: 'Purple Hearts',      xp: 1080, shape: 'heart',     c: gc('#7A4FD0', '#A270FF') },
+    goggles_green:   { name: 'Green Goggles',      xp: 1180, shape: 'goggles',   c: gc('#19A36B', 'rgba(180,255,210,0.5)') },
+    cateye_blue:     { name: 'Blue Cat-Eye',       xp: 1420, shape: 'cateye',    c: gc('#3F6FF6', 'rgba(150,200,255,0.2)') },
+    pixel_pink:      { name: 'Synthwave Shades',   xp: 1680, shape: 'pixel',     c: gc('#2A0E33', '#FF5CD0') },
+    star_pink:       { name: 'Pink Star Glasses',  xp: 1740, shape: 'star',      c: gc('#E5417A', 'rgba(255,200,220,0.4)') },
+    visorband_purple:{ name: 'Purple Visor',       xp: 2000, shape: 'visorBand', c: gc('#7A4FD0', '#A270FF') },
+    monocle_silver:  { name: 'Silver Monocle',     xp: 2100, shape: 'monocle',   c: gc('#B7C0CC', 'rgba(220,235,255,0.25)') },
+};
+
+// ---- Effects ---------------------------------------------------------------
+// Animated flourishes layered onto Atlas. `kind` selects an SVG renderer in
+// assets/illustrations/Cosmetics.jsx ('spin' rotates the globe's continents and
+// is handled directly in the Mascot).
+export const EFFECTS = {
+    none:     { name: 'None',           xp: 0 },
+    spin:     { name: 'Spinning Globe', xp: 500,  kind: 'spin' },
+    orbit:    { name: 'Orbiting Moon',  xp: 900,  kind: 'orbit' },
+    sparkle:  { name: 'Sparkles',       xp: 1200, kind: 'sparkle' },
+    bubbles:  { name: 'Bubbles',        xp: 1800, kind: 'bubbles' },
+    snow:     { name: 'Snowfall',       xp: 2400, kind: 'snow' },
+    hearts:   { name: 'Lovestruck',     xp: 3000, kind: 'hearts' },
+    rings:    { name: 'Planet Rings',   xp: 3600, kind: 'rings' },
+    flames:   { name: 'Blazing',        xp: 4400, kind: 'flames' },
+    electric: { name: 'Electric',       xp: 5400, kind: 'electric' },
+    confetti: { name: 'Party Time',     xp: 6800, kind: 'confetti' },
 };
 
 export const CATEGORIES = [
     { key: 'color',   label: 'Globe Color', icon: 'palette',        items: COLORS },
     { key: 'hat',     label: 'Hats',        icon: 'theater_comedy', items: HATS },
     { key: 'glasses', label: 'Glasses',     icon: 'eyeglasses',     items: GLASSES },
+    { key: 'effect',  label: 'Effects',     icon: 'auto_awesome',   items: EFFECTS },
 ];
 
 // Per-slot placement: x/y offset (in the 96-unit viewBox) and a scale `s`,
 // applied as a transform in Mascot. Lets players nudge hats/glasses anywhere.
 export const DEFAULT_POS = { x: 0, y: 0, s: 1 };
 export const DEFAULT_COSMETICS = {
-    color: 'teal', hat: 'none', glasses: 'none',
+    color: 'teal', hat: 'none', glasses: 'none', effect: 'none',
     hatPos: { ...DEFAULT_POS }, glassesPos: { ...DEFAULT_POS },
 };
 
@@ -241,6 +319,7 @@ export function normalizeCosmetics(c) {
         color: COLORS[c && c.color] ? c.color : 'teal',
         hat: HATS[c && c.hat] ? c.hat : 'none',
         glasses: GLASSES[c && c.glasses] ? c.glasses : 'none',
+        effect: EFFECTS[c && c.effect] ? c.effect : 'none',
         hatPos: clampPos(c && c.hatPos),
         glassesPos: clampPos(c && c.glassesPos),
     };

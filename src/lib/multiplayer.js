@@ -25,6 +25,7 @@ export const DEFAULT_MP_CONFIG = {
     mode: 'race',
     content: 'flags',     // 'flags' | 'languages'
     questionType: 'mc',   // 'mc' | 'text'
+    strict: false,        // free-text: require exact spelling
     scope: 'all',         // 'all' | region key (flags only)
     target: 50,           // race: correct answers to win
     duration: 60,         // blitz / streak: seconds

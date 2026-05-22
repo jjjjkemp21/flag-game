@@ -113,7 +113,7 @@ function StoreScreen({ setView, flagsData }) {
                     onPointerCancel={onPointerUp}
                     style={{ touchAction: 'none', cursor: (hasHat || hasGlasses) ? 'grab' : 'default' }}
                 >
-                    <Mascot size={120} mood={pet.alive ? pet.mood : 'idle'} cosmetics={profile.cosmetics} />
+                    <Mascot size={120} mood={pet.alive ? pet.mood : 'idle'} cosmetics={profile.cosmetics} chubby={pet.obese} />
                 </div>
                 <p className="auth-hint">You have <strong>{xp} XP</strong> to unlock cosmetics.</p>
 

@@ -79,6 +79,21 @@ function ConfigEditor({ config, regions, disabled, onChange }) {
                 </div>
             </div>
 
+            {config.questionType === 'text' && (
+                <div className="mp-field">
+                    <span className="mp-field__label">Spelling</span>
+                    <div className="mp-choices">
+                        <button type="button" disabled={disabled} className={`mp-chip ${!config.strict ? 'is-on' : ''}`} onClick={() => set({ strict: false })}>
+                            <Icon name="spellcheck" /> Lenient
+                        </button>
+                        <button type="button" disabled={disabled} className={`mp-chip ${config.strict ? 'is-on' : ''}`} onClick={() => set({ strict: true })}>
+                            <Icon name="rule" /> Strict
+                        </button>
+                    </div>
+                    <span className="mp-field__hint">Strict requires exact spelling.</span>
+                </div>
+            )}
+
             {config.content === 'flags' && (
                 <div className="mp-field">
                     <span className="mp-field__label">Which flags</span>
@@ -96,7 +111,7 @@ function ConfigEditor({ config, regions, disabled, onChange }) {
 
             {config.mode === 'race' ? (
                 <div className="mp-field">
-                    <span className="mp-field__label">Flags to win: <strong>{config.target}</strong></span>
+                    <span className="mp-field__label">{config.content === 'languages' ? 'Languages' : 'Flags'} to win: <strong>{config.target}</strong></span>
                     <input type="range" min="5" max="100" step="5" value={config.target} disabled={disabled}
                         onChange={(e) => set({ target: parseInt(e.target.value, 10) })} style={{ accentColor: 'var(--color-primary)' }} />
                 </div>
@@ -376,7 +391,7 @@ function Game({ lobby, code, flagsData, meId }) {
     const onSubmit = (e) => {
         e.preventDefault();
         if (answered || finished || !input.trim()) return;
-        handleResult(checkText(input, question));
+        handleResult(checkText(input, question, config.strict));
     };
 
     const choiceState = (opt) => {
@@ -447,10 +462,13 @@ function Game({ lobby, code, flagsData, meId }) {
 function Scoreboard({ members, meId, mode, target }) {
     const metric = (m) => (mode === 'streak' ? m.bestStreak : m.score);
     const max = mode === 'race' ? target : Math.max(1, ...members.map(metric));
+    // Stable lanes: order by id so bars grow in place instead of reshuffling
+    // (and jittering) on every poll.
+    const rows = [...members].sort((a, b) => a.id - b.id);
     return (
         <div className="mp-scoreboard">
-            {members.map((m) => (
-                <div key={m.id} className={`mp-score-row ${m.id === meId ? 'is-me' : ''}`}>
+            {rows.map((m) => (
+                <div key={m.id} className={`mp-score-row mp-score-row--bar ${m.id === meId ? 'is-me' : ''}`}>
                     <Mascot size={28} mood="idle" cosmetics={m.cosmetics} still />
                     <span className="mp-score-name">{m.username}</span>
                     <span className="mp-score-bar"><span className="mp-score-bar__fill" style={{ width: `${Math.min(100, (metric(m) / max) * 100)}%` }} /></span>
