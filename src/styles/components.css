@@ -1311,6 +1311,17 @@
 }
 .frenzy-form { width: 100%; }
 .frenzy-input { font-size: var(--fs-sm); min-height: 44px; padding: var(--space-sm) var(--space-md); }
+
+/* Pre-game 3-2-1 countdown */
+.frenzy-countdown {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(64px, 22vw, 140px);
+    line-height: 1;
+    color: var(--color-primary-deep);
+    text-shadow: 0 4px 0 var(--color-bg-elev-1), 0 8px 18px rgba(0,0,0,0.18);
+}
+.frenzy-countdown-hint { margin-top: var(--space-sm); color: var(--color-ink-soft); font-weight: 700; }
 .frenzy-timer-bar-container {
     width: 100%;
     height: 8px;

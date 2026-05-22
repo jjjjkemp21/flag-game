@@ -35,6 +35,7 @@ function FrenzyQuiz({ allFlagsData, setView }) {
     const [showNotification, setShowNotification] = useState(true);
     const [scoreDelta, setScoreDelta] = useState(null);
     const [shake, setShake] = useState(false);
+    const [countdown, setCountdown] = useState(null); // 3..1 pre-game, then null
     const audio = useAudio();
     const inputRefs = useRef([]);
     const gameTimerRef = useRef(null);
@@ -64,8 +65,8 @@ function FrenzyQuiz({ allFlagsData, setView }) {
         return newFlag;
     }, [allFlagsData]);
 
-    const startGame = () => {
-        setShowNotification(false);
+    // Actually start the round (called when the pre-game countdown hits zero).
+    const launch = () => {
         setGameStarted(true);
         setGameOver(false);
         setScore(0);
@@ -78,7 +79,29 @@ function FrenzyQuiz({ allFlagsData, setView }) {
         commitSlots(initialFlags.map(flag => ({ ...initialSlotState, flag })));
         lastTickRef.current = null;
         tickedRef.current = false;
+        setCountdown(null);
     };
+
+    // Kick off the 3-2-1 countdown before the round begins.
+    const startGame = () => {
+        setShowNotification(false);
+        setGameOver(false);
+        setGameStarted(false);
+        setCountdown(3);
+    };
+
+    // Drive the pre-game countdown: tick once a second, then launch at zero.
+    useEffect(() => {
+        if (countdown == null) return undefined;
+        if (countdown <= 0) {
+            launch();
+            return undefined;
+        }
+        audio.play('tick');
+        const t = setTimeout(() => setCountdown((c) => c - 1), 1000);
+        return () => clearTimeout(t);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [countdown]);
 
     const handleBack = () => setView('menu');
 
@@ -293,6 +316,23 @@ function FrenzyQuiz({ allFlagsData, setView }) {
                         <Icon name="arrow_back" /> Back to Menu
                     </button>
                 </motion.div>
+            </div>
+        );
+    }
+
+    if (countdown != null && !gameStarted) {
+        return (
+            <div className="frenzy-notification-overlay">
+                <motion.div
+                    key={countdown}
+                    className="frenzy-countdown"
+                    initial={{ scale: 0.4, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={springs.bouncy}
+                >
+                    {countdown > 0 ? countdown : 'Go!'}
+                </motion.div>
+                <p className="frenzy-countdown-hint">Get ready…</p>
             </div>
         );
     }
