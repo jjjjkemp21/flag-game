@@ -62,34 +62,90 @@ export default function Mascot({ size = 96, mood = 'idle', cosmetics, still = fa
         dead:   <path d="M41 64 L 55 64" stroke="#1F1A3B" strokeWidth="3" strokeLinecap="round" />,
     }[mood];
 
-    const blinkingEyes = (
-        <motion.g
-            animate={calm ? undefined : { scaleY: mood === 'sad' ? 0.6 : [1, 1, 0.12, 1] }}
-            transition={{ duration: 4, repeat: Infinity, repeatDelay: 2, times: [0, 0.94, 0.97, 1] }}
-            style={{ transformOrigin: 'center' }}
-        >
+    const openEyes = (
+        <>
             <circle cx="38" cy="46" r="4.5" fill="#1F1A3B" />
             <circle cx="58" cy="46" r="4.5" fill="#1F1A3B" />
             <circle cx="39.5" cy="44.5" r="1.4" fill="#fff" />
             <circle cx="59.5" cy="44.5" r="1.4" fill="#fff" />
-        </motion.g>
+        </>
     );
+    const blink = (dur, delay) => ({
+        animate: calm ? undefined : { scaleY: [1, 1, 0.12, 1] },
+        transition: { duration: dur, repeat: Infinity, repeatDelay: delay, times: [0, 0.94, 0.97, 1] },
+        style: { transformOrigin: 'center' },
+    });
 
-    const sleepyEyes = (
-        <g stroke="#1F1A3B" strokeWidth="3" strokeLinecap="round" fill="none">
-            <path d="M33 46 Q38 50 43 46" />
-            <path d="M53 46 Q58 50 63 46" />
-        </g>
-    );
+    // Each mood gets its own eye shape; combined with the mood-specific eyebrows
+    // and mouth below, Atlas shows a distinct expression for every state.
+    const eyesByMood = {
+        idle:   <motion.g {...blink(4, 2)}>{openEyes}</motion.g>,
+        wave:   <motion.g {...blink(3.4, 1.4)}>{openEyes}</motion.g>,
+        cheer: (
+            <g stroke="#1F1A3B" strokeWidth="3" strokeLinecap="round" fill="none">
+                <path d="M33 48 Q38 42 43 48" />
+                <path d="M53 48 Q58 42 63 48" />
+            </g>
+        ),
+        think: (
+            <g fill="#1F1A3B">
+                <circle cx="38" cy="46" r="4.5" />
+                <circle cx="58" cy="46" r="4.5" />
+                <circle cx="38" cy="43.8" r="1.6" fill="#fff" />
+                <circle cx="58" cy="43.8" r="1.6" fill="#fff" />
+            </g>
+        ),
+        hungry: (
+            <g fill="#1F1A3B">
+                <circle cx="38" cy="46" r="5.6" />
+                <circle cx="58" cy="46" r="5.6" />
+                <circle cx="39.9" cy="43.9" r="1.9" fill="#fff" />
+                <circle cx="59.9" cy="43.9" r="1.9" fill="#fff" />
+            </g>
+        ),
+        sad: (
+            <g>
+                <circle cx="38" cy="47.5" r="4" fill="#1F1A3B" />
+                <circle cx="58" cy="47.5" r="4" fill="#1F1A3B" />
+                <circle cx="39" cy="46.4" r="1.2" fill="#fff" />
+                <circle cx="59" cy="46.4" r="1.2" fill="#fff" />
+                <path d="M33 45 Q38 48 43 45" stroke="#1F1A3B" strokeWidth="2.4" strokeLinecap="round" fill="none" />
+                <path d="M53 45 Q58 48 63 45" stroke="#1F1A3B" strokeWidth="2.4" strokeLinecap="round" fill="none" />
+            </g>
+        ),
+        sick: (
+            <g stroke="#1F1A3B" strokeWidth="3" strokeLinecap="round" fill="none">
+                <path d="M34 46 Q38 49 42 46" />
+                <path d="M54 47 Q58 44 62 47" />
+            </g>
+        ),
+        sleepy: (
+            <g stroke="#1F1A3B" strokeWidth="3" strokeLinecap="round" fill="none">
+                <path d="M33 46 Q38 50 43 46" />
+                <path d="M53 46 Q58 50 63 46" />
+            </g>
+        ),
+        dead: (
+            <g stroke="#1F1A3B" strokeWidth="3" strokeLinecap="round">
+                <path d="M34 42 L 42 50 M42 42 L 34 50" />
+                <path d="M54 42 L 62 50 M62 42 L 54 50" />
+            </g>
+        ),
+    };
+    const eyes = eyesByMood[mood] || eyesByMood.idle;
 
-    const deadEyes = (
-        <g stroke="#1F1A3B" strokeWidth="3" strokeLinecap="round">
-            <path d="M34 42 L 42 50 M42 42 L 34 50" />
-            <path d="M54 42 L 62 50 M62 42 L 54 50" />
-        </g>
-    );
-
-    const eyes = mood === 'dead' ? deadEyes : mood === 'sleepy' ? sleepyEyes : blinkingEyes;
+    // Mood-specific eyebrows (none for 'dead').
+    const browsByMood = {
+        idle:   <><path d="M33 39 Q38 37.5 43 39" /><path d="M53 39 Q58 37.5 63 39" /></>,
+        cheer:  <><path d="M31 36 Q38 32 45 36" /><path d="M51 36 Q58 32 65 36" /></>,
+        wave:   <><path d="M32 37 Q38 35 44 37" /><path d="M52 37 Q58 35 64 37" /></>,
+        think:  <><path d="M30 40 L 44 37" /><path d="M66 37 L 52 37" /></>,
+        hungry: <><path d="M31 37 Q38 34 45 37" /><path d="M51 37 Q58 34 65 37" /></>,
+        sad:    <><path d="M32 38 L 44 42" /><path d="M64 38 L 52 42" /></>,
+        sick:   <><path d="M32 39 L 44 42" /><path d="M64 39 L 52 42" /></>,
+        sleepy: <><path d="M33 41 Q38 42.5 43 41" /><path d="M53 41 Q58 42.5 63 41" /></>,
+    };
+    const brows = browsByMood[mood];
 
     return (
         <motion.div
@@ -191,18 +247,11 @@ export default function Mascot({ size = 96, mood = 'idle', cosmetics, still = fa
                     <g transform={placement(cos.glassesPos, 48, 46)}>{glassesEl}</g>
                 )}
 
-                {/* Eyebrows for sad / think / hungry */}
-                {(mood === 'sad' || mood === 'hungry') && (
-                    <>
-                        <path d="M32 38 L 44 42" stroke="#1F1A3B" strokeWidth="2.5" strokeLinecap="round" />
-                        <path d="M64 38 L 52 42" stroke="#1F1A3B" strokeWidth="2.5" strokeLinecap="round" />
-                    </>
-                )}
-                {mood === 'think' && (
-                    <>
-                        <path d="M30 40 L 44 38" stroke="#1F1A3B" strokeWidth="2.5" strokeLinecap="round" />
-                        <path d="M66 38 L 52 38" stroke="#1F1A3B" strokeWidth="2.5" strokeLinecap="round" />
-                    </>
+                {/* Mood-specific eyebrows */}
+                {brows && (
+                    <g stroke="#1F1A3B" strokeWidth="2.5" strokeLinecap="round" fill="none">
+                        {brows}
+                    </g>
                 )}
 
                 {/* Mouth */}
