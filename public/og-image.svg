@@ -1,0 +1,59 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FFF7EC"/>
+      <stop offset="1" stop-color="#FCEEDC"/>
+    </linearGradient>
+    <radialGradient id="globe" cx="0.35" cy="0.3" r="0.8">
+      <stop offset="0" stop-color="#9FE5C9"/>
+      <stop offset="0.55" stop-color="#2EC4D3"/>
+      <stop offset="1" stop-color="#1FA0AC"/>
+    </radialGradient>
+    <linearGradient id="flag" x1="0" x2="1">
+      <stop offset="0" stop-color="#FF5C6C"/>
+      <stop offset="1" stop-color="#FFC247"/>
+    </linearGradient>
+    <linearGradient id="title" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#5B5BF6"/>
+      <stop offset="1" stop-color="#3F3FD1"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <!-- soft decorative blobs -->
+  <circle cx="110" cy="560" r="190" fill="#FFC247" opacity="0.13"/>
+  <circle cx="1110" cy="80" r="170" fill="#5B5BF6" opacity="0.10"/>
+  <circle cx="1050" cy="600" r="120" fill="#19C37D" opacity="0.10"/>
+
+  <!-- Atlas mascot (the globe pet), drawn in its native 96 unit space and scaled up -->
+  <g transform="translate(95,150) scale(3.7)">
+    <ellipse cx="48" cy="88" rx="26" ry="4" fill="#1F1A3B" opacity="0.18"/>
+    <circle cx="48" cy="48" r="34" fill="url(#globe)" stroke="#1FA0AC" stroke-width="2"/>
+    <path d="M22 44 C 30 36, 36 40, 42 36 C 44 44, 36 52, 28 50 Z M58 30 C 64 30, 70 36, 68 44 C 60 46, 56 38, 58 30 Z M50 56 C 60 54, 68 60, 64 70 C 56 70, 50 64, 50 56 Z" fill="#19C37D" opacity="0.85"/>
+    <circle cx="34" cy="58" r="4" fill="#FF8A98" opacity="0.75"/>
+    <circle cx="62" cy="58" r="4" fill="#FF8A98" opacity="0.75"/>
+    <circle cx="38" cy="46" r="4.5" fill="#1F1A3B"/>
+    <circle cx="58" cy="46" r="4.5" fill="#1F1A3B"/>
+    <circle cx="39.5" cy="44.5" r="1.4" fill="#ffffff"/>
+    <circle cx="59.5" cy="44.5" r="1.4" fill="#ffffff"/>
+    <path d="M40 60 Q48 66 56 60" stroke="#1F1A3B" stroke-width="3" stroke-linecap="round" fill="none"/>
+    <rect x="74" y="14" width="2" height="22" rx="1" fill="#1F1A3B"/>
+    <path d="M76 14 L 92 18 L 76 24 Z" fill="url(#flag)"/>
+  </g>
+
+  <!-- Text block -->
+  <text x="500" y="250" font-family="'Trebuchet MS','Segoe UI',Arial,sans-serif" font-size="120" font-weight="800" fill="url(#title)">Flag Game</text>
+  <text x="505" y="320" font-family="'Trebuchet MS','Segoe UI',Arial,sans-serif" font-size="44" font-weight="700" fill="#56506E">Learn the flags of the world</text>
+  <text x="505" y="380" font-family="'Trebuchet MS','Segoe UI',Arial,sans-serif" font-size="30" font-weight="600" fill="#7A7390">250+ flags · spaced repetition · multiplayer races</text>
+
+  <!-- little flag swatches -->
+  <g>
+    <rect x="505" y="430" width="66" height="44" rx="6" fill="#C8102E"/>
+    <rect x="585" y="430" width="66" height="44" rx="6" fill="#0055A4"/><rect x="585" y="430" width="22" height="44" rx="6" fill="#0055A4"/><rect x="607" y="430" width="22" height="44" fill="#FFFFFF"/><rect x="629" y="430" width="22" height="44" fill="#EF4135"/>
+    <rect x="665" y="430" width="66" height="44" rx="6" fill="#009639"/>
+    <rect x="745" y="430" width="66" height="44" rx="6" fill="#FFB81C"/>
+    <rect x="825" y="430" width="66" height="44" rx="6" fill="#012169"/>
+  </g>
+
+  <text x="505" y="540" font-family="'Trebuchet MS','Segoe UI',Arial,sans-serif" font-size="34" font-weight="800" fill="#1FA0AC">flag-game.org</text>
+</svg>
