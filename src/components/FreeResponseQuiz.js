@@ -13,10 +13,9 @@ import { useProfile, recordBestStreak } from '../lib/profile';
 import { awardForAnswer, penaltyForAnswer, streakMultiplier, MASTERY_STREAK } from '../lib/xp';
 import { addEarnedXp } from '../lib/progress';
 import { getStreak, saveStreak, resetStreak } from '../lib/streak';
-
-const MODE = 'free-response';
 import { springs } from '../motion';
 
+const MODE = 'free-response';
 const IMAGE_BASE_URL = './assets/flags/';
 
 function FreeResponseQuiz({
