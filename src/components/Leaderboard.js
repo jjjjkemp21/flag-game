@@ -2,6 +2,8 @@ import React, { useEffect, useState, useCallback } from 'react';
 import Icon from './Icon';
 import { Button, Pill } from './ui';
 import Mascot from '../assets/illustrations/Mascot';
+import AchievementBadge from './AchievementBadge';
+import ProfileCard from './ProfileCard';
 import { useAuth } from '../auth/AuthProvider';
 import { api } from '../api/client';
 import { masteryRank } from '../lib/mastery';
@@ -32,6 +34,7 @@ function Leaderboard({ setView, flagsData }) {
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [selected, setSelected] = useState(null);
 
     const load = useCallback(async () => {
         if (!isAuthed) return;
@@ -107,7 +110,14 @@ function Leaderboard({ setView, flagsData }) {
                         const r = masteryRank(row.masteredCount, total);
                         const badges = (row.showcase || []).map((id) => ACHIEVEMENTS_BY_ID[id]).filter(Boolean);
                         return (
-                            <li key={row.id} className={`leaderboard-row ${user && row.id === user.id ? 'is-me' : ''}`}>
+                            <li
+                                key={row.id}
+                                className={`leaderboard-row is-clickable ${user && row.id === user.id ? 'is-me' : ''}`}
+                                onClick={() => setSelected(row)}
+                                role="button"
+                                tabIndex={0}
+                                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelected(row); } }}
+                            >
                                 <span className="leaderboard-rank">#{row.rank}</span>
                                 <span className="leaderboard-avatar">
                                     <Mascot size={40} mood="idle" cosmetics={row.cosmetics} still />
@@ -121,9 +131,7 @@ function Leaderboard({ setView, flagsData }) {
                                         {badges.length > 0 && (
                                             <span className="leaderboard-badges">
                                                 {badges.map((a) => (
-                                                    <span key={a.id} className={`ach-badge ach-badge--${a.tier}`} title={a.name}>
-                                                        <Icon name={a.icon} />
-                                                    </span>
+                                                    <AchievementBadge key={a.id} ach={a} />
                                                 ))}
                                             </span>
                                         )}
@@ -138,6 +146,10 @@ function Leaderboard({ setView, flagsData }) {
                         );
                     })}
                 </ol>
+            )}
+
+            {selected && (
+                <ProfileCard row={selected} flagsData={flagsData} onClose={() => setSelected(null)} />
             )}
         </div>
     );

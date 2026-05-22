@@ -206,7 +206,26 @@ export const CATEGORIES = [
     { key: 'glasses', label: 'Glasses',     icon: 'eyeglasses',     items: GLASSES },
 ];
 
-export const DEFAULT_COSMETICS = { color: 'teal', hat: 'none', glasses: 'none' };
+// Per-slot placement: x/y offset (in the 96-unit viewBox) and a scale `s`,
+// applied as a transform in Mascot. Lets players nudge hats/glasses anywhere.
+export const DEFAULT_POS = { x: 0, y: 0, s: 1 };
+export const DEFAULT_COSMETICS = {
+    color: 'teal', hat: 'none', glasses: 'none',
+    hatPos: { ...DEFAULT_POS }, glassesPos: { ...DEFAULT_POS },
+};
+
+const clampNum = (v, min, max, d) => (Number.isFinite(+v) ? Math.min(max, Math.max(min, +v)) : d);
+
+// Clamp a stored placement to sane bounds so a cosmetic can't be dragged off
+// the canvas or scaled into nonsense.
+export function clampPos(p) {
+    p = p || {};
+    return {
+        x: clampNum(p.x, -30, 30, 0),
+        y: clampNum(p.y, -38, 28, 0),
+        s: clampNum(p.s, 0.6, 1.7, 1),
+    };
+}
 
 export function isUnlocked(xp, item) {
     return (xp || 0) >= (item ? item.xp || 0 : 0);
@@ -216,11 +235,13 @@ export function paletteFor(color) {
     return COLORS[color] || COLORS.teal;
 }
 
-// Coerce stored cosmetics to valid, known ids (falls back to defaults).
+// Coerce stored cosmetics to valid, known ids + clamped placements.
 export function normalizeCosmetics(c) {
     return {
         color: COLORS[c && c.color] ? c.color : 'teal',
         hat: HATS[c && c.hat] ? c.hat : 'none',
         glasses: GLASSES[c && c.glasses] ? c.glasses : 'none',
+        hatPos: clampPos(c && c.hatPos),
+        glassesPos: clampPos(c && c.glassesPos),
     };
 }

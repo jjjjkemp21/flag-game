@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from 'react';
 import { api } from '../api/client';
-import { DEFAULT_COSMETICS, normalizeCosmetics } from './cosmetics';
+import { DEFAULT_COSMETICS, normalizeCosmetics, clampPos } from './cosmetics';
 
 // Account-tied profile: region flag, equipped cosmetics, and achievements
 // (the up-to-3 showcased ids + the unlocked set). Loaded on sign-in, persisted
@@ -60,6 +60,14 @@ export function setRegion(code) {
 
 export function setCosmetic(category, id) {
     state = { ...state, cosmetics: { ...state.cosmetics, [category]: id } };
+    notify();
+    persist();
+}
+
+// Move/scale a cosmetic slot ('hat' | 'glasses'). Clamped to canvas bounds.
+export function setCosmeticPos(slot, pos) {
+    const key = slot === 'hat' ? 'hatPos' : 'glassesPos';
+    state = { ...state, cosmetics: { ...state.cosmetics, [key]: clampPos(pos) } };
     notify();
     persist();
 }

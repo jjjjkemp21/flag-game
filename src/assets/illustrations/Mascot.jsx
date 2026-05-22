@@ -21,6 +21,16 @@ export default function Mascot({ size = 96, mood = 'idle', cosmetics, still = fa
     const animate = !!anim && !calm;
     const stopVals = (i) => (anim ? [...anim.frames.map((f) => f[i]), anim.frames[0][i]].join(';') : '');
 
+    // Player-chosen placement for cosmetics: translate + scale about an anchor.
+    const placement = (p, ax, ay) => {
+        const x = (p && p.x) || 0;
+        const y = (p && p.y) || 0;
+        const s = p && p.s != null ? p.s : 1;
+        return `translate(${x} ${y}) translate(${ax} ${ay}) scale(${s}) translate(${-ax} ${-ay})`;
+    };
+    const hatEl = renderHat(cos.hat);
+    const glassesEl = renderGlasses(cos.glasses);
+
     const bobVariants = {
         idle:   { y: [0, -3, 0], transition: { duration: 3.2, repeat: Infinity, ease: 'easeInOut' } },
         cheer:  { y: [0, -10, 0], transition: { duration: 0.5, repeat: Infinity, ease: 'easeInOut' } },
@@ -145,7 +155,9 @@ export default function Mascot({ size = 96, mood = 'idle', cosmetics, still = fa
                 {eyes}
 
                 {/* Glasses cosmetic (over the eyes) */}
-                {mood !== 'dead' && renderGlasses(cos.glasses)}
+                {mood !== 'dead' && glassesEl && (
+                    <g transform={placement(cos.glassesPos, 48, 46)}>{glassesEl}</g>
+                )}
 
                 {/* Eyebrows for sad / think / hungry */}
                 {(mood === 'sad' || mood === 'hungry') && (
@@ -202,7 +214,7 @@ export default function Mascot({ size = 96, mood = 'idle', cosmetics, still = fa
                 )}
 
                 {/* Hat cosmetic (drawn on top) */}
-                {renderHat(cos.hat)}
+                {hatEl && <g transform={placement(cos.hatPos, 48, 12)}>{hatEl}</g>}
 
                 {/* Sparkles on cheer */}
                 {mood === 'cheer' && !calm && (

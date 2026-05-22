@@ -4,6 +4,7 @@ import { Modal, Button } from './ui';
 import { useAuth } from '../auth/AuthProvider';
 import { useProfile } from '../lib/profile';
 import { ACHIEVEMENTS_BY_ID } from '../lib/achievements';
+import AchievementBadge from './AchievementBadge';
 import NotificationBell from './NotificationBell';
 
 function TopBar({ setView }) {
@@ -34,9 +35,7 @@ function TopBar({ setView }) {
                 {badges.length > 0 && (
                     <div className="profile-badges">
                         {badges.map((a) => (
-                            <span key={a.id} className={`ach-badge ach-badge--${a.tier}`} title={a.name}>
-                                <Icon name={a.icon} /> <span className="profile-badge__name">{a.name}</span>
-                            </span>
+                            <AchievementBadge key={a.id} ach={a} showName />
                         ))}
                     </div>
                 )}
