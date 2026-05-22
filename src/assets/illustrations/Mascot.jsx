@@ -17,6 +17,9 @@ export default function Mascot({ size = 96, mood = 'idle', cosmetics, still = fa
     const flagId = `globeFlag-${uid}`;
     const cos = cosmetics || {};
     const palette = paletteFor(cos.color);
+    const anim = palette.anim;
+    const animate = !!anim && !calm;
+    const stopVals = (i) => (anim ? [...anim.frames.map((f) => f[i]), anim.frames[0][i]].join(';') : '');
 
     const bobVariants = {
         idle:   { y: [0, -3, 0], transition: { duration: 3.2, repeat: Infinity, ease: 'easeInOut' } },
@@ -81,9 +84,15 @@ export default function Mascot({ size = 96, mood = 'idle', cosmetics, still = fa
             <svg width={size} height={size} viewBox="0 0 96 96" xmlns="http://www.w3.org/2000/svg">
                 <defs>
                     <radialGradient id={bodyId} cx="0.35" cy="0.3" r="0.8">
-                        <stop offset="0" stopColor={palette.stops[0]} />
-                        <stop offset="0.55" stopColor={palette.stops[1]} />
-                        <stop offset="1" stopColor={palette.stops[2]} />
+                        <stop offset="0" stopColor={palette.stops[0]}>
+                            {animate && <animate attributeName="stop-color" values={stopVals(0)} dur={anim.dur} repeatCount="indefinite" />}
+                        </stop>
+                        <stop offset="0.55" stopColor={palette.stops[1]}>
+                            {animate && <animate attributeName="stop-color" values={stopVals(1)} dur={anim.dur} repeatCount="indefinite" />}
+                        </stop>
+                        <stop offset="1" stopColor={palette.stops[2]}>
+                            {animate && <animate attributeName="stop-color" values={stopVals(2)} dur={anim.dur} repeatCount="indefinite" />}
+                        </stop>
                     </radialGradient>
                     <linearGradient id={flagId} x1="0" x2="1" y1="0" y2="0">
                         <stop offset="0" stopColor="#FF5C6C" />
@@ -103,6 +112,27 @@ export default function Mascot({ size = 96, mood = 'idle', cosmetics, still = fa
                     fill="#19C37D"
                     opacity=".85"
                 />
+
+                {/* Animated overlays for flashy globe skins (twinkle / rising embers) */}
+                {animate && palette.overlay === 'stars' && (
+                    <g fill="#FFFFFF">
+                        {[[30, 40, 1.2, 2.2], [60, 38, 1, 2.6], [40, 60, 1.3, 3], [64, 56, 0.9, 2], [48, 30, 1, 2.4], [26, 52, 0.8, 3.2]].map((s, i) => (
+                            <circle key={i} cx={s[0]} cy={s[1]} r={s[2]}>
+                                <animate attributeName="opacity" values="0.15;1;0.15" dur={`${s[3]}s`} repeatCount="indefinite" />
+                            </circle>
+                        ))}
+                    </g>
+                )}
+                {animate && palette.overlay === 'embers' && (
+                    <g fill="#FFD08A">
+                        {[[34, 66, 1.4, 2.4], [50, 68, 1.1, 3], [62, 64, 1.3, 2], [42, 70, 1, 2.7]].map((s, i) => (
+                            <circle key={i} cx={s[0]} cy={s[1]} r={s[2]}>
+                                <animate attributeName="cy" values={`${s[1]};${s[1] - 22}`} dur={`${s[3]}s`} repeatCount="indefinite" />
+                                <animate attributeName="opacity" values="0;0.9;0" dur={`${s[3]}s`} repeatCount="indefinite" />
+                            </circle>
+                        ))}
+                    </g>
+                )}
 
                 {/* Queasy tint when sick */}
                 {mood === 'sick' && <circle cx="48" cy="48" r="34" fill="#19C37D" opacity=".22" />}

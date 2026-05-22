@@ -46,11 +46,32 @@ function metricValue(row, scope) {
     return row.xp || 0; // overall / friends
 }
 
+function petNameOf(row) {
+    if (!row.pet_json) return null;
+    try {
+        const p = JSON.parse(row.pet_json);
+        return p && p.name ? String(p.name) : null;
+    } catch (_) {
+        return null;
+    }
+}
+
+function achievementsOf(row) {
+    if (!row.achievements_json) return { showcase: [], count: 0 };
+    try {
+        const a = JSON.parse(row.achievements_json);
+        return { showcase: Array.isArray(a.showcase) ? a.showcase : [], count: a.count || 0 };
+    } catch (_) {
+        return { showcase: [], count: 0 };
+    }
+}
+
 function buildEntry(row, scope) {
     let mastered = 0;
     if (row.stats_json) {
         try { mastered = masteredCount(JSON.parse(row.stats_json)); } catch (_) { /* ignore */ }
     }
+    const ach = achievementsOf(row);
     return {
         id: row.id,
         username: row.username,
@@ -58,7 +79,10 @@ function buildEntry(row, scope) {
         region: row.region || null,
         cosmetics: row.cosmetics_json ? JSON.parse(row.cosmetics_json) : null,
         petLevel: row.pet_level || 1,
+        petName: petNameOf(row),
         masteredCount: mastered,
+        showcase: ach.showcase,
+        achievementCount: ach.count,
         value: metricValue(row, scope),
     };
 }
@@ -66,7 +90,7 @@ function buildEntry(row, scope) {
 router.get('/leaderboard', (req, res) => {
     const scope = VALID_SCOPES.includes(req.query.scope) ? req.query.scope : 'overall';
     const limit = Math.min(parseInt(req.query.limit, 10) || 100, 200);
-    const cols = 'id, username, xp, region, cosmetics_json, pet_level, bonus_scores_json, stats_json';
+    const cols = 'id, username, xp, region, cosmetics_json, pet_level, pet_json, achievements_json, bonus_scores_json, stats_json';
 
     let rows;
     if (scope === 'friends') {

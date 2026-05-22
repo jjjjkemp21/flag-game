@@ -129,11 +129,14 @@ function StoreScreen({ setView, flagsData }) {
                                 >
                                     {cat.key === 'color' && (
                                         <span
-                                            className="cosmetic-swatch"
-                                            style={{ background: `linear-gradient(135deg, ${item.stops[0]}, ${item.stops[2]})` }}
+                                            className={`cosmetic-swatch ${item.anim ? 'cosmetic-swatch--anim' : ''}`}
+                                            style={{
+                                                background: `linear-gradient(135deg, ${item.stops[0]}, ${item.stops[1]}, ${item.stops[2]})`,
+                                                backgroundSize: item.anim ? '220% 220%' : undefined,
+                                            }}
                                         />
                                     )}
-                                    <span className="cosmetic-name">{item.name}</span>
+                                    <span className="cosmetic-name">{item.name}{item.anim ? ' ✨' : ''}</span>
                                     {equipped ? (
                                         <span className="cosmetic-tag cosmetic-tag--on"><Icon name="check" /> Equipped</span>
                                     ) : unlocked ? (

@@ -78,6 +78,7 @@ if (!hasCol('pet_json')) db.exec('ALTER TABLE users ADD COLUMN pet_json TEXT');
 if (!hasCol('cosmetics_json')) db.exec('ALTER TABLE users ADD COLUMN cosmetics_json TEXT');
 if (!hasCol('region')) db.exec('ALTER TABLE users ADD COLUMN region TEXT');
 if (!hasCol('pet_level')) db.exec('ALTER TABLE users ADD COLUMN pet_level INTEGER NOT NULL DEFAULT 1');
+if (!hasCol('achievements_json')) db.exec('ALTER TABLE users ADD COLUMN achievements_json TEXT');
 
 // Seed / promote the admin account from env. If ADMIN_PASSWORD is set, the admin
 // account is created (or its password reset) on boot so it can always log in.

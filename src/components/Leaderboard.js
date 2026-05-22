@@ -4,6 +4,8 @@ import { Button, Pill } from './ui';
 import Mascot from '../assets/illustrations/Mascot';
 import { useAuth } from '../auth/AuthProvider';
 import { api } from '../api/client';
+import { masteryRank } from '../lib/mastery';
+import { ACHIEVEMENTS_BY_ID } from '../lib/achievements';
 
 const FLAG_BASE = './assets/flags/';
 
@@ -23,8 +25,9 @@ function formatValue(scope, value) {
     return `${value} pts`;
 }
 
-function Leaderboard({ setView }) {
+function Leaderboard({ setView, flagsData }) {
     const { user, isAuthed } = useAuth();
+    const total = (flagsData && flagsData.length) || 0;
     const [scope, setScope] = useState('overall');
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(false);
@@ -100,24 +103,40 @@ function Leaderboard({ setView }) {
                             {scope === 'friends' ? 'Add friends to see a friends leaderboard.' : 'No players yet.'}
                         </p>
                     )}
-                    {data.entries.map((row) => (
-                        <li key={row.id} className={`leaderboard-row ${user && row.id === user.id ? 'is-me' : ''}`}>
-                            <span className="leaderboard-rank">#{row.rank}</span>
-                            <span className="leaderboard-avatar">
-                                <Mascot size={40} mood="idle" cosmetics={row.cosmetics} still />
-                            </span>
-                            <span className="leaderboard-id">
-                                <span className="leaderboard-name">
-                                    {row.region && (
-                                        <img className="leaderboard-flag" src={`${FLAG_BASE}${row.region.toLowerCase()}.svg`} alt="" />
-                                    )}
-                                    {row.username}
+                    {data.entries.map((row) => {
+                        const r = masteryRank(row.masteredCount, total);
+                        const badges = (row.showcase || []).map((id) => ACHIEVEMENTS_BY_ID[id]).filter(Boolean);
+                        return (
+                            <li key={row.id} className={`leaderboard-row ${user && row.id === user.id ? 'is-me' : ''}`}>
+                                <span className="leaderboard-rank">#{row.rank}</span>
+                                <span className="leaderboard-avatar">
+                                    <Mascot size={40} mood="idle" cosmetics={row.cosmetics} still />
                                 </span>
-                                <span className="leaderboard-sub">Atlas Lv {row.petLevel} · {row.masteredCount} mastered</span>
-                            </span>
-                            <span className="leaderboard-xp">{formatValue(scope, row.value)}</span>
-                        </li>
-                    ))}
+                                <span className="leaderboard-id">
+                                    <span className="leaderboard-name">
+                                        {row.region && (
+                                            <img className="leaderboard-flag" src={`${FLAG_BASE}${row.region.toLowerCase()}.svg`} alt="" />
+                                        )}
+                                        <span className="leaderboard-username">{row.username}</span>
+                                        {badges.length > 0 && (
+                                            <span className="leaderboard-badges">
+                                                {badges.map((a) => (
+                                                    <span key={a.id} className={`ach-badge ach-badge--${a.tier}`} title={a.name}>
+                                                        <Icon name={a.icon} />
+                                                    </span>
+                                                ))}
+                                            </span>
+                                        )}
+                                    </span>
+                                    <span className="leaderboard-sub">
+                                        <span className={`rank-tag rank-pill--${r.tier}`}>{r.title}</span>
+                                        {' · '}{row.petName || 'Atlas'} Lv {row.petLevel} · {row.masteredCount} mastered
+                                    </span>
+                                </span>
+                                <span className="leaderboard-xp">{formatValue(scope, row.value)}</span>
+                            </li>
+                        );
+                    })}
                 </ol>
             )}
         </div>

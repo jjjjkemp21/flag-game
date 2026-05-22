@@ -16,8 +16,9 @@ router.put('/', (req, res) => {
     if (!pet || typeof pet !== 'object') {
         return res.status(400).json({ error: 'pet object is required.' });
     }
-    // Cache the pet's peak level in a column so the Atlas leaderboard can sort fast.
-    const level = Math.max(1, parseInt(pet.peakLevel || pet.level || 1, 10) || 1);
+    // Cache the pet's current level in a column so the Atlas leaderboard can sort
+    // fast. This drops back to 1 when Atlas dies and a fresh egg is hatched.
+    const level = Math.max(1, parseInt(pet.level || 1, 10) || 1);
     db.prepare('UPDATE users SET pet_json = ?, pet_level = ? WHERE id = ?')
         .run(JSON.stringify(pet), level, req.user.id);
     res.json({ ok: true });

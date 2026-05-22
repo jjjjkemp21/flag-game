@@ -17,6 +17,7 @@ const MODES = [
     { key: 'free-response',   title: 'Free Response',   desc: 'Type the country name', icon: 'edit_note',  tone: 'success' },
     { key: 'bonus',           title: 'Bonus Modes',     desc: 'Frenzy, Pixelated, Language…', icon: 'rocket_launch', tone: 'accent' },
     { key: 'leaderboard',     title: 'Leaderboard',     desc: 'Compete on the global ranks', icon: 'leaderboard', tone: 'primary' },
+    { key: 'achievements',    title: 'Achievements',    desc: 'Earn badges and mastery ranks', icon: 'emoji_events', tone: 'accent' },
     { key: 'friends',         title: 'Friends',         desc: 'Add friends, compare progress', icon: 'group', tone: 'success' },
     { key: 'settings',        title: 'Settings',        desc: 'Theme, sound, spelling', icon: 'tune', tone: 'neutral' },
 ];
@@ -64,6 +65,8 @@ function MainMenu({ setView, flagsData, setQuizMode }) {
             setView('bonus-menu');
         } else if (modeKey === 'leaderboard') {
             setView('leaderboard');
+        } else if (modeKey === 'achievements') {
+            setView('achievements');
         } else if (modeKey === 'friends') {
             setView('friends');
         } else if (modeKey === 'settings') {

@@ -23,8 +23,9 @@ const LOW_WELLBEING = 20;
 const HIGH_WELLBEING = 60;
 const TICK_MS = 15000;
 
-// Lifetime care XP -> level. Care XP only grows (by playing) and drives the
-// "Atlas Level" leaderboard via peakLevel (kept across revives).
+// Care XP -> level. Care XP grows by playing and drives the "Atlas Level"
+// leaderboard. It is wiped if Atlas passes away and you hatch a new egg — a
+// fresh companion starts back at Level 1.
 const LEVEL_XP = 120;
 const CARE = { correct: 6, incorrect: 2, play: 5 };
 
@@ -44,7 +45,6 @@ function freshPet() {
         alive: true,
         deadAt: null,
         careXp: 0,
-        peakLevel: 1,
     };
 }
 
@@ -83,7 +83,6 @@ function withDerived(s) {
     next.stageLabel = stage.label;
     next.careXp = s.careXp || 0;
     next.level = Math.floor(next.careXp / LEVEL_XP) + 1;
-    next.peakLevel = Math.max(s.peakLevel || 1, next.level);
     return next;
 }
 
@@ -116,8 +115,8 @@ function persist() {
     if (pushTimer) clearTimeout(pushTimer);
     pushTimer = setTimeout(() => {
         pushTimer = null;
-        const { name, bornAt, lastTick, fed, joy, energy, health, alive, deadAt, careXp, level, peakLevel } = state;
-        api.put('/pet', { pet: { name, bornAt, lastTick, fed, joy, energy, health, alive, deadAt, careXp, level, peakLevel } })
+        const { name, bornAt, lastTick, fed, joy, energy, health, alive, deadAt, careXp, level } = state;
+        api.put('/pet', { pet: { name, bornAt, lastTick, fed, joy, energy, health, alive, deadAt, careXp, level } })
             .catch(() => {});
     }, 1500);
 }
@@ -141,11 +140,10 @@ export function recordCorrect(times = 1) { feed('correct', times); }
 export function recordIncorrect(times = 1) { feed('incorrect', times); }
 export function recordPlay(times = 1) { feed('play', times); }
 
+// Hatch a brand-new egg after Atlas has passed away. All progress — care XP,
+// level, age — is wiped; the new companion starts fresh at Level 1.
 export function revivePet() {
-    const keptPeak = state.peakLevel || 1;
-    const np = freshPet();
-    np.peakLevel = keptPeak; // a new pet, but your best level still stands
-    commit(np);
+    commit(freshPet());
     persist();
 }
 
@@ -177,6 +175,11 @@ export function loadPet(serverPet) {
 export function resetPet() {
     authed = false;
     commit(freshPet());
+}
+
+// Snapshot accessor for non-React callers (e.g. achievement computation).
+export function getPet() {
+    return state;
 }
 
 // React binding

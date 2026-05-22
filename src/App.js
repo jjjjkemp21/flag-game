@@ -10,6 +10,7 @@ import BonusMenu from './components/BonusMenu';
 import AuthScreen from './components/AuthScreen';
 import Leaderboard from './components/Leaderboard';
 import Friends from './components/Friends';
+import Achievements from './components/Achievements';
 import AdminAnnounce from './components/AdminAnnounce';
 import StoreScreen from './components/StoreScreen';
 import TopBar from './components/TopBar';
@@ -20,8 +21,9 @@ import { api } from './api/client';
 import { applyStatsToFlags, zeroFlagStats, pushStats } from './lib/syncStats';
 import { computeXp, readBonusScores } from './lib/xp';
 import { setAuthed, loadBonus, resetBonus } from './lib/progress';
-import { loadPet, resetPet, recordCorrect, recordIncorrect } from './lib/pet';
-import { loadProfile, resetProfile } from './lib/profile';
+import { loadPet, resetPet, recordCorrect, recordIncorrect, getPet } from './lib/pet';
+import { loadProfile, resetProfile, setAchievementsUnlocked } from './lib/profile';
+import { buildContext, evaluate } from './lib/achievements';
 import { variants } from './motion';
 
 // Heavy bonus modes — lazy-loaded
@@ -144,6 +146,15 @@ function App() {
         answerTotalsRef.current = totals;
         if (dCorrect > 0) recordCorrect(dCorrect);
         if (dIncorrect > 0) recordIncorrect(dIncorrect);
+    }, [flagsData, isLoading]);
+
+    // Recompute unlocked achievements from live stats (mastery / continents /
+    // accuracy update right after standard quizzes). Bonus- and Atlas-level
+    // ones also refresh whenever the player opens the Achievements screen.
+    useEffect(() => {
+        if (isLoading || flagsData.length === 0 || !progressReadyRef.current || !authedRef.current) return;
+        const ctx = buildContext(flagsData, readBonusScores(), getPet().level);
+        setAchievementsUnlocked(evaluate(ctx));
     }, [flagsData, isLoading]);
 
     // Load the account's progress when logged in; clear it for guests / on logout.
@@ -282,9 +293,11 @@ function App() {
             case 'login':
                 return <AuthScreen setView={setView} />;
             case 'leaderboard':
-                return <Leaderboard setView={setView} />;
+                return <Leaderboard setView={setView} flagsData={flagsData} />;
             case 'friends':
                 return <Friends setView={setView} />;
+            case 'achievements':
+                return <Achievements setView={setView} flagsData={flagsData} />;
             case 'admin':
                 return <AdminAnnounce setView={setView} />;
             case 'store':
