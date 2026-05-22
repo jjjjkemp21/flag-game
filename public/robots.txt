@@ -1,4 +1,2 @@
 User-agent: *
 Allow: /
-
-Sitemap: https://flag-game.org/sitemap.xml
