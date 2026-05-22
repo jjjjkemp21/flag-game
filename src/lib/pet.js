@@ -46,6 +46,8 @@ const BATTLE_WIN_HEAL = 15;        // small reward for winning
 const BATTLE_HEAL_PER_PLAY = 6;    // battle-HP recovered per answer/play
 const KO_RECOVER_AT = 50;          // battle-HP needed to get back up after a KO
 const BRUISED_BELOW = 45;          // show the beat-up look under this battle-HP
+const KO_HEALTH_HIT = 40;          // health lost on a KO
+const KO_HEALTH_FLOOR = 12;        // ...but a battle never drops health to fatal
 
 const clamp = (n) => Math.max(0, Math.min(100, n));
 const now = () => Date.now();
@@ -76,6 +78,7 @@ const listeners = new Set();
 
 function deriveMood(s) {
     if (!s.alive) return 'dead';
+    if (s.ko) return 'sick';            // knocked out in a battle — looks unwell
     if (s.health < 25) return 'sick';
     if (s.energy < 20) return 'sleepy';
     if (s.fed < 20) return 'hungry';
@@ -98,10 +101,6 @@ function deriveStage(s) {
 function withDerived(s) {
     const wellbeing = Math.round((s.fed + s.joy + s.energy) / 3);
     const next = { ...s, wellbeing };
-    next.mood = deriveMood(next);
-    const stage = deriveStage(next);
-    next.stage = stage.key;
-    next.stageLabel = stage.label;
     next.careXp = s.careXp || 0;
     next.level = Math.floor(next.careXp / LEVEL_XP) + 1;
     next.chub = Math.max(0, Math.min(100, s.chub || 0));
@@ -109,6 +108,11 @@ function withDerived(s) {
     next.battleHp = Math.max(0, Math.min(100, s.battleHp == null ? 100 : s.battleHp));
     next.ko = !!s.ko && next.battleHp < KO_RECOVER_AT;
     next.bruised = next.ko || next.battleHp < BRUISED_BELOW;
+    // Mood/stage are derived last so they can react to the KO + battle state above.
+    next.mood = deriveMood(next);
+    const stage = deriveStage(next);
+    next.stage = stage.key;
+    next.stageLabel = stage.label;
     return next;
 }
 
@@ -188,6 +192,9 @@ export function recordBattleResult(won) {
         // The battle ends on a KO, so the loser's Atlas is the one knocked out.
         next.battleHp = 0;
         next.ko = true;
+        // A KO takes a real toll on health too — but a battle can never be fatal,
+        // so health is floored well above zero (recovers as you play).
+        next.health = Math.max(KO_HEALTH_FLOOR, next.health - KO_HEALTH_HIT);
     }
     commit(next);
     persist();

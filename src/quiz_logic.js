@@ -199,11 +199,10 @@ function update_flag_stats(flags, correct_flag_object, user_was_correct, reason 
         flag.incorrect += 1;
         flag.lapses = (flag.lapses || 0) + 1;
 
-        if (flag.streak > 2) {
-            flag.streak = Math.floor(flag.streak * 0.5);
-        } else {
-            flag.streak = 0;
-        }
+        // Losing mastery is gradual: a miss costs a single streak step instead of
+        // halving the streak, so a well-practiced flag survives the occasional slip
+        // and it takes repeated misses to fall out of mastery.
+        flag.streak = Math.max(0, flag.streak - 1);
 
         const LEECH_THRESHOLD = 4;
         if (flag.lapses > LEECH_THRESHOLD) {

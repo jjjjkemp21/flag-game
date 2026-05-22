@@ -370,7 +370,7 @@ function FrenzyQuiz({ allFlagsData, setView }) {
                                     <div className="frenzy-timer-bar-container">
                                         <div
                                             className={`frenzy-timer-bar ${barClass}`}
-                                            style={{ width: `${slotTimerPct * 100}%` }}
+                                            style={{ transform: `scaleX(${Math.max(0, slotTimerPct)})` }}
                                         />
                                     </div>
                                     <form onSubmit={(e) => handleSubmit(e, index)} className="frenzy-form">

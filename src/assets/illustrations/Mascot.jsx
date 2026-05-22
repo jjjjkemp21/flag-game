@@ -163,18 +163,23 @@ export default function Mascot({ size = 96, mood = 'idle', cosmetics, still = fa
                 <circle cx={chubby ? 31 : 34} cy={chubby ? 60 : 58} r={chubby ? 8 : 4} fill={mood === 'sick' ? '#9AD7A0' : '#FF8A98'} opacity=".75" />
                 <circle cx={chubby ? 65 : 62} cy={chubby ? 60 : 58} r={chubby ? 8 : 4} fill={mood === 'sick' ? '#9AD7A0' : '#FF8A98'} opacity=".75" />
 
-                {/* Battle bruises + bandage (Atlas Battle "beat up" look) */}
+                {/* Battle bruises + bandages (Atlas Battle "beat up" look) */}
                 {bruised && mood !== 'dead' && (
                     <g>
-                        <ellipse cx="30" cy="40" rx="5" ry="4" fill="#8E5BD0" opacity="0.5" />
-                        <ellipse cx="66" cy="54" rx="4.5" ry="3.5" fill="#5B77D0" opacity="0.45" />
-                        {/* Bandage across the cheek */}
-                        <g transform="rotate(24 62 40)">
-                            <rect x="54" y="35" width="16" height="7" rx="2" fill="#FFE7C2" stroke="#E2B98A" strokeWidth="1" />
-                            <line x1="58" y1="35" x2="58" y2="42" stroke="#E2B98A" strokeWidth="1" />
-                            <line x1="62" y1="35" x2="62" y2="42" stroke="#E2B98A" strokeWidth="1" />
-                            <line x1="66" y1="35" x2="66" y2="42" stroke="#E2B98A" strokeWidth="1" />
+                        {/* Bold purple/blue bruise patches */}
+                        <ellipse cx="29" cy="41" rx="6.5" ry="5" fill="#7A3FB0" opacity="0.72" />
+                        <ellipse cx="67" cy="56" rx="6" ry="4.8" fill="#3F5BC8" opacity="0.68" />
+                        {/* A swelling lump near the brow */}
+                        <circle cx="64" cy="33" r="4.2" fill="#9A4FC8" opacity="0.7" />
+                        {/* Crossed plaster on the cheek */}
+                        <g transform="rotate(28 62 44)">
+                            <rect x="52" y="39" width="20" height="9" rx="3" fill="#FFE7C2" stroke="#D9A86A" strokeWidth="1.4" />
+                            <line x1="57" y1="39" x2="57" y2="48" stroke="#D9A86A" strokeWidth="1" />
+                            <line x1="62" y1="39" x2="62" y2="48" stroke="#D9A86A" strokeWidth="1" />
+                            <line x1="67" y1="39" x2="67" y2="48" stroke="#D9A86A" strokeWidth="1" />
                         </g>
+                        {/* A single plaster strip on the other cheek */}
+                        <rect x="22" y="50" width="14" height="6" rx="2.5" transform="rotate(-18 29 53)" fill="#FFE7C2" stroke="#D9A86A" strokeWidth="1.2" />
                     </g>
                 )}
 

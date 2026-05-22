@@ -1320,9 +1320,14 @@
 }
 .frenzy-timer-bar {
     height: 100%;
+    width: 100%;
+    /* Animate via transform (GPU-composited) instead of width — width animation
+       repaints unreliably on mobile, leaving the bar visually frozen. */
+    transform-origin: left center;
+    will-change: transform;
     background: var(--grad-primary);
     border-radius: var(--radius-pill);
-    transition: width 0.1s linear, background var(--dur-base);
+    transition: transform 0.12s linear, background var(--dur-base);
 }
 .frenzy-timer-bar.warn { background: var(--grad-accent); }
 .frenzy-timer-bar.danger { background: var(--grad-danger); }
