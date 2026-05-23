@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { variants } from '../../motion';
+import Icon from '../Icon';
 
 export default function Modal({ open, onClose, title, children, labelledBy }) {
     const ref = useRef(null);
@@ -45,6 +46,16 @@ export default function Modal({ open, onClose, title, children, labelledBy }) {
                         animate="animate"
                         exit="exit"
                     >
+                        {onClose && (
+                            <button
+                                type="button"
+                                className="ui-modal-close"
+                                aria-label="Close"
+                                onClick={() => onClose?.()}
+                            >
+                                <Icon name="close" />
+                            </button>
+                        )}
                         {title && <h2 id="ui-modal-title">{title}</h2>}
                         {children}
                     </motion.div>

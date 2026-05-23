@@ -877,6 +877,7 @@
     padding: var(--space-lg);
 }
 .ui-modal {
+    position: relative;
     background: var(--grad-card);
     border-radius: var(--radius-xl);
     border: 1px solid var(--color-border);
@@ -891,6 +892,36 @@
     flex-direction: column;
     gap: var(--space-md);
 }
+
+/* Close (X) button — corner of every dialog; essential on mobile where there's no Esc key.
+   Sticky so it stays reachable even when the dialog body (e.g. announcements) scrolls. */
+.ui-modal-close {
+    position: sticky;
+    top: 0;
+    align-self: flex-end;
+    /* Pull tight into the top-right padding so it reads as a corner button, and collapse
+       the space below it so the title/content sits right under it (not a full empty row). */
+    margin: calc(-1 * var(--space-md)) calc(-1 * var(--space-md)) calc(-1 * (38px + var(--space-md))) 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border: none;
+    border-radius: var(--radius-full);
+    background: var(--color-surface-2, rgba(15, 14, 30, .06));
+    color: var(--color-ink-soft);
+    cursor: pointer;
+    z-index: 2;
+    transition: background .15s ease, color .15s ease, transform .1s ease;
+}
+
+.ui-modal-close:hover { background: var(--color-surface-3, rgba(15, 14, 30, .12)); color: var(--color-ink); }
+.ui-modal-close:active { transform: scale(.92); }
+.ui-modal-close .material-symbols-rounded { font-size: 22px; }
+
+/* Keep the title clear of the floating close button */
+.ui-modal-close + h2 { padding-right: 44px; }
 
 /* Section heading */
 .section-heading {
