@@ -10,16 +10,34 @@
     <title>Flag Game – Free Quiz to Learn the Flags of the World</title>
     <meta
       name="description"
-      content="Learn the flags of every country with Flag Game — a free, playful quiz. Master 250+ world flags with spaced repetition, frenzy challenges, pixel reveals, language rounds, and live multiplayer races."
+      content="Flag Game is a free online flag quiz that helps you learn and memorize the flags of every country in the world. Master 250+ world flags with spaced repetition, Frenzy time challenges, pixelated flag reveals, language and capital rounds, and live multiplayer races. No signup required — play instantly in your browser."
     />
     <meta
       name="keywords"
-      content="flag game, flag quiz, learn world flags, country flags quiz, flags of the world, guess the flag, geography quiz, flag learning game, world flags trivia, spaced repetition flags, multiplayer flag game"
+      content="flag game, flag quiz, world flags quiz, learn world flags, country flags quiz, flags of the world, guess the flag, name the flag, identify the flag, geography quiz, geography game, world geography, countries quiz, country quiz, capitals quiz, flag learning game, flag memorization, world flags trivia, flag trivia, spaced repetition flags, flashcards flags, flag flashcards, multiplayer flag game, flag race, flag frenzy, pixelated flag quiz, languages quiz, language flags, online flag quiz, free flag quiz, flag quiz online, browser flag game, kids geography game, study flags, atlas game, flag mascot, flag-game.org"
     />
     <meta name="author" content="Flag Game" />
+    <meta name="publisher" content="Flag Game" />
     <meta name="application-name" content="Flag Game" />
-    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <meta name="apple-mobile-web-app-title" content="Flag Game" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="googlebot" content="index, follow, max-image-preview:large, max-snippet:-1" />
+    <meta name="rating" content="general" />
     <link rel="canonical" href="https://flag-game.org/" />
+
+    <!-- Favicons (multiple sizes help Google pick a clean icon for search results) -->
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/android-chrome-192x192.png" />
+    <link rel="icon" type="image/png" sizes="512x512" href="/android-chrome-512x512.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="msapplication-TileColor" content="#FFF7EC" />
+    <meta name="msapplication-TileImage" content="/android-chrome-192x192.png" />
 
     <!-- Open Graph (Facebook, iMessage, Discord, etc.) -->
     <meta property="og:type" content="website" />
@@ -27,7 +45,7 @@
     <meta property="og:title" content="Flag Game – Learn the Flags of the World" />
     <meta
       property="og:description"
-      content="A free, playful quiz to master 250+ world flags — spaced repetition, frenzy challenges, language rounds, and live multiplayer races."
+      content="A free, playful quiz to master 250+ world flags — spaced repetition, Frenzy challenges, pixelated reveals, language rounds, and live multiplayer races."
     />
     <meta property="og:url" content="https://flag-game.org/" />
     <meta property="og:image" content="https://flag-game.org/og-image.png" />
@@ -41,34 +59,63 @@
     <meta name="twitter:title" content="Flag Game – Learn the Flags of the World" />
     <meta
       name="twitter:description"
-      content="A free, playful quiz to master 250+ world flags — spaced repetition, frenzy challenges, and live multiplayer races."
+      content="A free, playful quiz to master 250+ world flags — spaced repetition, Frenzy challenges, and live multiplayer races."
     />
     <meta name="twitter:image" content="https://flag-game.org/og-image.png" />
+    <meta name="twitter:image:alt" content="Flag Game logo with Atlas the globe mascot and a row of country flags." />
 
-    <!-- Structured data: helps Google understand the app -->
+    <!-- Structured data: WebSite + Organization + WebApplication.
+         The Organization.logo points at the 512px PNG so Google can use it as the
+         brand icon next to search results. -->
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
-        "@type": "WebApplication",
-        "name": "Flag Game",
-        "alternateName": "Flag Game – Learn World Flags",
-        "url": "https://flag-game.org/",
-        "description": "A free, playful quiz to learn the flags of every country, with spaced repetition, frenzy challenges, pixel reveals, language rounds, and live multiplayer races.",
-        "applicationCategory": "EducationalApplication",
-        "applicationSubCategory": "Geography Quiz Game",
-        "operatingSystem": "Any modern web browser",
-        "browserRequirements": "Requires JavaScript.",
-        "inLanguage": "en",
-        "offers": {
-          "@type": "Offer",
-          "price": "0",
-          "priceCurrency": "USD"
-        }
+        "@graph": [
+          {
+            "@type": "WebSite",
+            "@id": "https://flag-game.org/#website",
+            "url": "https://flag-game.org/",
+            "name": "Flag Game",
+            "description": "Free online quiz to learn the flags of every country.",
+            "inLanguage": "en",
+            "publisher": { "@id": "https://flag-game.org/#org" }
+          },
+          {
+            "@type": "Organization",
+            "@id": "https://flag-game.org/#org",
+            "name": "Flag Game",
+            "url": "https://flag-game.org/",
+            "logo": {
+              "@type": "ImageObject",
+              "url": "https://flag-game.org/android-chrome-512x512.png",
+              "width": 512,
+              "height": 512
+            }
+          },
+          {
+            "@type": "WebApplication",
+            "name": "Flag Game",
+            "alternateName": "Flag Game – Learn World Flags",
+            "url": "https://flag-game.org/",
+            "description": "A free, playful quiz to learn the flags of every country, with spaced repetition, frenzy challenges, pixel reveals, language rounds, and live multiplayer races.",
+            "applicationCategory": "EducationalApplication",
+            "applicationSubCategory": "Geography Quiz Game",
+            "operatingSystem": "Any modern web browser",
+            "browserRequirements": "Requires JavaScript.",
+            "inLanguage": "en",
+            "image": "https://flag-game.org/og-image.png",
+            "screenshot": "https://flag-game.org/og-image.png",
+            "publisher": { "@id": "https://flag-game.org/#org" },
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "USD"
+            }
+          }
+        ]
       }
     </script>
 
-    <link rel="icon" type="image/png" href="%PUBLIC_URL%/favicon.png" />
-    <link rel="apple-touch-icon" href="%PUBLIC_URL%/favicon.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
