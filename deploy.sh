@@ -9,10 +9,9 @@ BEFORE=$(git rev-parse HEAD)
 git pull origin main
 AFTER=$(git rev-parse HEAD)
 
-# Load secrets (JWT_SECRET, ADMIN_USERNAME) from an untracked .env file on the Pi.
+# Load secrets (JWT_SECRET) from an untracked .env file on the Pi.
 # Example .env contents:
 #   JWT_SECRET=some-long-random-string
-#   ADMIN_USERNAME=jjjjkemp
 if [ -f .env ]; then
     set -a
     . ./.env
@@ -28,12 +27,12 @@ docker build -t flag-game .
 
 # Run the new container on the shared proxy network.
 # - SQLite lives on a host volume so accounts/scores survive redeploys.
+# - Admin status is no longer seeded from env vars; any signed-in user can
+#   self-promote via the in-app 5-tap title prompt (see server/routes/auth.js).
 docker run -d --restart always --name flag-game --network=my_proxy_network \
   -v /home/jjjjkemp/flag-game-data:/data \
   -e DB_PATH=/data/flagquest.db \
   -e JWT_SECRET="${JWT_SECRET}" \
-  -e ADMIN_USERNAME="${ADMIN_USERNAME}" \
-  -e ADMIN_PASSWORD="${ADMIN_PASSWORD}" \
   flag-game
 
 # Auto-publish release notes for this deploy. Writes straight to the SQLite DB
