@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Icon from './Icon';
-import { Button } from './ui';
+import { Button, Modal } from './ui';
 import { useToast } from './ui/Toast';
 import { useAuth } from '../auth/AuthProvider';
 import { api } from '../api/client';
@@ -12,6 +12,8 @@ function AdminAnnounce({ setView }) {
     const [title, setTitle] = useState('');
     const [body, setBody] = useState('');
     const [busy, setBusy] = useState(false);
+    const [clearOpen, setClearOpen] = useState(false);
+    const [clearBusy, setClearBusy] = useState(false);
 
     if (!user?.is_admin) {
         return (
@@ -42,11 +44,28 @@ function AdminAnnounce({ setView }) {
             toast.success('Announcement published!');
             setTitle('');
             setBody('');
+            // Let the bell re-fetch so the new post lands immediately.
+            window.dispatchEvent(new CustomEvent('flagGame:announcementsChanged'));
             setView('menu');
         } catch (err) {
             toast.danger(err.message || 'Could not publish.');
         } finally {
             setBusy(false);
+        }
+    };
+
+    const clearAll = async () => {
+        setClearBusy(true);
+        try {
+            const res = await api.del('/announcements');
+            toast.success(`Cleared ${res.deleted || 0} announcement${(res.deleted || 0) === 1 ? '' : 's'}.`);
+            // Force the bell to refresh so the badge clears across the app.
+            window.dispatchEvent(new CustomEvent('flagGame:announcementsChanged'));
+            setClearOpen(false);
+        } catch (err) {
+            toast.danger(err.message || 'Could not clear.');
+        } finally {
+            setClearBusy(false);
         }
     };
 
@@ -91,6 +110,37 @@ function AdminAnnounce({ setView }) {
                     {busy ? 'Publishing…' : 'Publish announcement'}
                 </Button>
             </form>
+
+            {/* Bulk wipe — separated from the publish form so an accidental Enter
+                in the title/body fields can't trigger it. Confirmation modal
+                gates the actual DELETE call. */}
+            <div className="admin-danger">
+                <h3 className="settings-section-title">Danger zone</h3>
+                <p className="auth-hint">Removes every announcement from the bell for every player. There is no undo.</p>
+                <Button
+                    variant="danger"
+                    icon="delete_sweep"
+                    onClick={() => setClearOpen(true)}
+                    disabled={clearBusy}
+                >
+                    Clear all alerts
+                </Button>
+            </div>
+
+            <Modal open={clearOpen} onClose={() => setClearOpen(false)} title="Clear all alerts?">
+                <p style={{ color: 'var(--color-ink-soft)' }}>
+                    Every announcement will be deleted for every player, and the unread
+                    badge will reset to zero. This cannot be undone.
+                </p>
+                <div style={{ display: 'flex', gap: 'var(--space-md)', justifyContent: 'flex-end' }}>
+                    <Button variant="secondary" onClick={() => setClearOpen(false)} disabled={clearBusy}>
+                        Cancel
+                    </Button>
+                    <Button variant="danger" icon="delete_sweep" onClick={clearAll} disabled={clearBusy}>
+                        {clearBusy ? 'Clearing…' : 'Yes, clear all'}
+                    </Button>
+                </div>
+            </Modal>
         </div>
     );
 }

@@ -29,6 +29,14 @@ function NotificationBell() {
 
     useEffect(() => { load(); }, [load]);
 
+    // Refresh whenever the admin posts a new announcement or wipes the list so
+    // the badge updates without a page reload (TopBar + bell are persistent).
+    useEffect(() => {
+        const onChanged = () => load();
+        window.addEventListener('flagGame:announcementsChanged', onChanged);
+        return () => window.removeEventListener('flagGame:announcementsChanged', onChanged);
+    }, [load]);
+
     const openPanel = async () => {
         setOpen(true);
         if (unread > 0) {

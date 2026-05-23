@@ -97,4 +97,30 @@ if (!hasCol('selected_title')) db.exec('ALTER TABLE users ADD COLUMN selected_ti
 // so a previously-promoted account doesn't silently lose access on this boot.
 // ADMIN_USERNAME / ADMIN_PASSWORD env vars are intentionally ignored.
 
+// --- One-shot migrations ---------------------------------------------------
+// Simple key/value table used to gate one-time DB operations across boots.
+db.exec(`
+    CREATE TABLE IF NOT EXISTS _meta (
+        key   TEXT PRIMARY KEY,
+        value TEXT
+    );
+`);
+
+// 2026-05-22: wipe every existing announcement so the app starts fresh from
+// curated user-facing release notes only (the auto-publish fallback used to
+// post raw commit bodies, which polluted the bell). Also resets each user's
+// last_read_announcement_id and the AUTOINCREMENT counter so future posts
+// start from id = 1 and read as unread for everyone. Guarded by the meta
+// key so this never runs twice — re-deploys are safe.
+const WIPE_KEY = 'announcements_wiped_2026_05_22';
+const alreadyWiped = db.prepare('SELECT 1 FROM _meta WHERE key = ?').get(WIPE_KEY);
+if (!alreadyWiped) {
+    db.exec('DELETE FROM announcements');
+    db.exec('UPDATE users SET last_read_announcement_id = 0');
+    try {
+        db.exec("DELETE FROM sqlite_sequence WHERE name = 'announcements'");
+    } catch (_) { /* table absent if AUTOINCREMENT never used */ }
+    db.prepare('INSERT INTO _meta (key, value) VALUES (?, ?)').run(WIPE_KEY, String(Date.now()));
+}
+
 module.exports = db;

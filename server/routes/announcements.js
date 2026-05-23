@@ -31,4 +31,17 @@ router.post('/', requireAdmin, (req, res) => {
     res.json({ ok: true, id: info.lastInsertRowid });
 });
 
+// Wipe every announcement (admin only). Also resets every user's
+// last_read_announcement_id and the AUTOINCREMENT counter so any future
+// announcement starts from id = 1 and reads as unread for everyone. The
+// undo path is "post a new announcement" — this is intentionally permanent.
+router.delete('/', requireAdmin, (req, res) => {
+    const info = db.prepare('DELETE FROM announcements').run();
+    db.exec('UPDATE users SET last_read_announcement_id = 0');
+    try {
+        db.exec("DELETE FROM sqlite_sequence WHERE name = 'announcements'");
+    } catch (_) { /* table doesn't exist if AUTOINCREMENT never used */ }
+    res.json({ ok: true, deleted: info.changes });
+});
+
 module.exports = router;
