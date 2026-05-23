@@ -192,7 +192,7 @@ function Hub({ flagsData, onEnter, setView }) {
             </div>
 
             <div className="auth-tabs">
-                <button className={`auth-tab ${tab === 'host' ? 'is-active' : ''}`} onClick={() => setTab('host')}>Host a lobby</button>
+                <button className={`auth-tab ${tab === 'host' ? 'is-active' : ''}`} onClick={() => setTab('host')}>Host</button>
                 <button className={`auth-tab ${tab === 'join' ? 'is-active' : ''}`} onClick={() => setTab('join')}>Join a lobby</button>
             </div>
 

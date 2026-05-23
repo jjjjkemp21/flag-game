@@ -67,7 +67,9 @@ router.post('/register', (req, res) => {
     }
 
     const passwordHash = bcrypt.hashSync(password, SALT_ROUNDS);
-    const isAdmin = process.env.ADMIN_USERNAME && username === process.env.ADMIN_USERNAME ? 1 : 0;
+    // New accounts are never admin — admin is now claimed via POST /claim-admin
+    // (5-tap title -> password prompt) rather than tied to a username.
+    const isAdmin = 0;
 
     const recoveryCodes = Array.from({ length: RECOVERY_CODE_COUNT }, generateRecoveryCode);
 
@@ -179,6 +181,23 @@ router.post('/reset', (req, res) => {
 
 router.get('/me', requireAuth, (req, res) => {
     res.json({ user: publicUser(req.user) });
+});
+
+// Promote the current user to admin if they know the secret password. This
+// replaces the env-seeded "admin" account: there is no privileged username
+// anymore — anyone signed in who knows the password becomes an admin. Inherits
+// the /api/auth/* rate limiter (60 req / 15 min per IP) so brute-forcing the
+// password is impractical even with the value sitting in the source.
+const ADMIN_CLAIM_PASSWORD = 'adminpassword';
+
+router.post('/claim-admin', requireAuth, (req, res) => {
+    const { password } = req.body || {};
+    if (typeof password !== 'string' || password !== ADMIN_CLAIM_PASSWORD) {
+        return res.status(401).json({ error: 'Wrong password.' });
+    }
+    db.prepare('UPDATE users SET is_admin = 1 WHERE id = ?').run(req.user.id);
+    const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.user.id);
+    res.json({ user: publicUser(user) });
 });
 
 // Change username. Must be unique case-insensitively (so "Bob" can't co-exist

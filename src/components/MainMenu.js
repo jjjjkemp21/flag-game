@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import Icon from './Icon';
 import Logo from '../assets/illustrations/Logo';
@@ -6,11 +6,21 @@ import Mascot from '../assets/illustrations/Mascot';
 import BackgroundBlobs from '../assets/illustrations/BackgroundBlobs';
 import WorldDots from '../assets/illustrations/WorldDots';
 import PetPanel from './PetPanel';
+import { Modal, Button } from './ui';
+import { useToast } from './ui/Toast';
 import { useAudio } from '../audio/AudioProvider';
+import { useAuth } from '../auth/AuthProvider';
+import { api } from '../api/client';
 import { usePet } from '../lib/pet';
 import { useProfile } from '../lib/profile';
 import { getStreak } from '../lib/streak';
 import { springs } from '../motion';
+
+// Number of consecutive title taps that exposes the hidden admin password
+// prompt, and the no-tap window after which the counter resets so normal
+// clicks don't accumulate over the course of a session.
+const ADMIN_TAPS_REQUIRED = 5;
+const ADMIN_TAP_WINDOW_MS = 3000;
 
 const MODES = [
     { key: 'multiple-choice', title: 'Multiple Choice', desc: 'Pick from four options', icon: 'quiz', tone: 'primary' },
@@ -53,11 +63,54 @@ function ModeCard({ mode, onClick, index, masteryHint, streak }) {
 function MainMenu({ setView, flagsData, setQuizMode }) {
     const pet = usePet();
     const profile = useProfile();
+    const toast = useToast();
+    const { isAuthed, refresh } = useAuth();
     const masteryHint = useMemo(() => {
         if (!flagsData?.length) return null;
         const mastered = flagsData.filter(f => f.streak > 5).length;
         return `${mastered}/${flagsData.length} mastered`;
     }, [flagsData]);
+
+    // Hidden admin promotion: tap the "Flag Game" title five times within a
+    // short window to expose the password prompt. Stealth-gated to authed
+    // users so a guest tap-mashing the title never even sees the modal.
+    const tapCountRef = useRef(0);
+    const tapTimerRef = useRef(null);
+    const [adminOpen, setAdminOpen] = useState(false);
+    const [adminPassword, setAdminPassword] = useState('');
+    const [adminBusy, setAdminBusy] = useState(false);
+
+    const onTitleTap = () => {
+        if (!isAuthed) return;
+        if (tapTimerRef.current) clearTimeout(tapTimerRef.current);
+        tapCountRef.current += 1;
+        if (tapCountRef.current >= ADMIN_TAPS_REQUIRED) {
+            tapCountRef.current = 0;
+            setAdminOpen(true);
+            return;
+        }
+        tapTimerRef.current = setTimeout(() => { tapCountRef.current = 0; }, ADMIN_TAP_WINDOW_MS);
+    };
+
+    const closeAdmin = () => {
+        setAdminOpen(false);
+        setAdminPassword('');
+    };
+
+    const submitAdmin = async () => {
+        if (adminBusy || !adminPassword) return;
+        setAdminBusy(true);
+        try {
+            await api.post('/auth/claim-admin', { password: adminPassword });
+            toast.success('Admin access granted.');
+            await refresh();
+            closeAdmin();
+        } catch (err) {
+            toast.danger(err.message || 'Wrong password.');
+        } finally {
+            setAdminBusy(false);
+        }
+    };
 
     const handleStartQuiz = (mode) => {
         setQuizMode(mode);
@@ -91,7 +144,15 @@ function MainMenu({ setView, flagsData, setQuizMode }) {
                 </div>
                 <div className="hero-band__logo-row">
                     <Logo size={56} />
-                    <h1 id="main-menu-title" className="menu-title hero-band__title">Flag Game</h1>
+                    {/* Tapping the title is the only entry point to the hidden admin
+                        password prompt; the heading stays a plain <h1> for screen
+                        readers (no role/aria), so the easter egg is invisible. */}
+                    <h1
+                        id="main-menu-title"
+                        className="menu-title hero-band__title"
+                        onClick={onTitleTap}
+                        style={{ cursor: isAuthed ? 'pointer' : undefined, userSelect: 'none' }}
+                    >Flag Game</h1>
                 </div>
                 <p className="menu-subtitle hero-band__subtitle">
                     Master 250+ world flags with spaced repetition, frenzy challenges, and pixel reveals.
@@ -122,6 +183,25 @@ function MainMenu({ setView, flagsData, setQuizMode }) {
                     />
                 ))}
             </div>
+
+            <Modal open={adminOpen} onClose={closeAdmin} title="Enter Admin Password">
+                <p className="auth-hint">Grant this account admin access.</p>
+                <input
+                    type="password"
+                    className="auth-field__input"
+                    value={adminPassword}
+                    autoFocus
+                    placeholder="Password"
+                    onChange={(e) => setAdminPassword(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === 'Enter') submitAdmin(); }}
+                />
+                <div style={{ display: 'flex', gap: 'var(--space-md)', justifyContent: 'flex-end' }}>
+                    <Button variant="secondary" onClick={closeAdmin} disabled={adminBusy}>Cancel</Button>
+                    <Button variant="primary" icon="check" onClick={submitAdmin} disabled={adminBusy || !adminPassword}>
+                        Submit
+                    </Button>
+                </div>
+            </Modal>
         </div>
     );
 }

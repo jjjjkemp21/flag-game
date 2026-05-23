@@ -1,6 +1,5 @@
 const path = require('path');
 const fs = require('fs');
-const bcrypt = require('bcryptjs');
 const Database = require('better-sqlite3');
 
 const DB_PATH = process.env.DB_PATH || '/data/flagquest.db';
@@ -92,23 +91,10 @@ if (!hasCol('mp_wins')) db.exec('ALTER TABLE users ADD COLUMN mp_wins INTEGER NO
 // the existing behaviour for accounts that haven't picked one yet.
 if (!hasCol('selected_title')) db.exec('ALTER TABLE users ADD COLUMN selected_title TEXT');
 
-// Seed / promote the admin account from env. If ADMIN_PASSWORD is set, the admin
-// account is created (or its password reset) on boot so it can always log in.
-const adminUsername = process.env.ADMIN_USERNAME;
-const adminPassword = process.env.ADMIN_PASSWORD;
-if (adminUsername) {
-    const existing = db.prepare('SELECT id FROM users WHERE username = ?').get(adminUsername);
-    if (existing) {
-        db.prepare('UPDATE users SET is_admin = 1 WHERE id = ?').run(existing.id);
-        if (adminPassword) {
-            db.prepare('UPDATE users SET password_hash = ? WHERE id = ?')
-                .run(bcrypt.hashSync(adminPassword, 10), existing.id);
-        }
-    } else if (adminPassword) {
-        db.prepare(
-            'INSERT INTO users (username, password_hash, created_at, is_admin) VALUES (?, ?, ?, 1)'
-        ).run(adminUsername, bcrypt.hashSync(adminPassword, 10), Date.now());
-    }
-}
+// No dedicated/seeded admin account anymore — admin is now claimed at runtime
+// by any signed-in user who enters the secret password (see POST
+// /api/auth/claim-admin). Existing is_admin flags on real users are preserved
+// so a previously-promoted account doesn't silently lose access on this boot.
+// ADMIN_USERNAME / ADMIN_PASSWORD env vars are intentionally ignored.
 
 module.exports = db;
