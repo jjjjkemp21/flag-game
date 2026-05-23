@@ -109,6 +109,9 @@ function buildEntry(row, scope) {
         mpWins: row.mp_wins || 0,
         showcase: ach.showcase,
         achievementCount: ach.count,
+        // Player-chosen title; the client renders this in place of the scope's
+        // auto-derived rank label when it's set.
+        selectedTitle: row.selected_title || null,
         value: metricValue(row, scope),
     };
 }
@@ -121,7 +124,7 @@ router.get('/leaderboard', (req, res) => {
     let friendsOnly = req.query.filter === 'friends';
     if (scope === 'friends') { scope = 'overall'; friendsOnly = true; }
     const limit = Math.min(parseInt(req.query.limit, 10) || 100, 200);
-    const cols = 'id, username, xp, region, cosmetics_json, pet_level, pet_json, achievements_json, bonus_scores_json, stats_json, streaks_json, mp_wins';
+    const cols = 'id, username, xp, region, cosmetics_json, pet_level, pet_json, achievements_json, bonus_scores_json, stats_json, streaks_json, mp_wins, selected_title';
 
     let rows;
     if (friendsOnly) {

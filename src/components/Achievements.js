@@ -4,10 +4,10 @@ import { Button } from './ui';
 import { useToast } from './ui/Toast';
 import { useAuth } from '../auth/AuthProvider';
 import { usePet } from '../lib/pet';
-import { useProfile, setShowcase, setAchievementsUnlocked } from '../lib/profile';
+import { useProfile, setShowcase, setSelectedTitle, setAchievementsUnlocked } from '../lib/profile';
 import { getBonus } from '../lib/progress';
 import { buildContext, evaluate, ACHIEVEMENTS, ACHIEVEMENT_GROUPS } from '../lib/achievements';
-import { masteryRank, nextRank } from '../lib/mastery';
+import { masteryRank, nextRank, MASTERY_RANKS } from '../lib/mastery';
 
 function Achievements({ setView, flagsData }) {
     const { isAuthed } = useAuth();
@@ -49,6 +49,36 @@ function Achievements({ setView, flagsData }) {
     const showcase = profile.achievements.showcase;
     const rank = masteryRank(ctx.mastered, ctx.total);
     const nr = nextRank(ctx.mastered, ctx.total);
+    const selectedTitle = profile.selectedTitle || null;
+
+    // Mastery ranks become unlockable display titles — each tier is "earned" once
+    // you've mastered enough flags. World Champion only unlocks when you've
+    // mastered every flag in the catalog. The 9 entries match MASTERY_RANKS + the
+    // champion capstone in src/lib/mastery.js.
+    const titles = [
+        ...MASTERY_RANKS.map((r) => ({
+            title: r.title,
+            tier: r.tier,
+            unlocked: ctx.mastered >= r.min,
+            requirement: r.min === 0
+                ? 'Default starting title.'
+                : `Master ${r.min} flags.`,
+        })),
+        {
+            title: 'World Champion',
+            tier: 'legend',
+            unlocked: ctx.total > 0 && ctx.mastered >= ctx.total,
+            requirement: `Master every flag${ctx.total ? ` (${ctx.total})` : ''}.`,
+        },
+    ];
+
+    const pickTitle = (t) => {
+        if (!t.unlocked) return;
+        // Tapping the currently-selected title clears the choice (auto-rank again).
+        const next = t.title === selectedTitle ? null : t.title;
+        setSelectedTitle(next);
+        toast.success(next ? `Title set to "${next}".` : 'Title cleared.');
+    };
 
     const toggleFeature = (id) => {
         if (!unlockedSet.has(id)) return;
@@ -87,6 +117,47 @@ function Achievements({ setView, flagsData }) {
                             : `Next: ${nr.title}.`}
                     </p>
                 )}
+            </div>
+
+            <div className="titles-section">
+                <h3 className="settings-section-title">
+                    Titles
+                    <span className="ach-group__count">
+                        {titles.filter((t) => t.unlocked).length}/{titles.length}
+                    </span>
+                </h3>
+                <p className="ach-hint auth-hint">
+                    <Icon name="military_tech" /> Pick a mastery title to display next to your name. Tap your current
+                    choice again to clear it and fall back to the leaderboard's auto-rank.
+                </p>
+                <div className="title-grid">
+                    {titles.map((t) => {
+                        const isSelected = t.unlocked && t.title === selectedTitle;
+                        return (
+                            <button
+                                key={t.title}
+                                type="button"
+                                disabled={!t.unlocked}
+                                className={`title-card title-card--${t.tier} ${t.unlocked ? 'is-unlocked' : 'is-locked'} ${isSelected ? 'is-selected' : ''}`}
+                                onClick={() => pickTitle(t)}
+                                aria-pressed={isSelected}
+                            >
+                                <span className="title-card__icon">
+                                    <Icon name={t.unlocked ? 'military_tech' : 'lock'} />
+                                </span>
+                                <span className="title-card__body">
+                                    <span className={`rank-tag rank-pill--${t.tier}`}>{t.title}</span>
+                                    <span className="title-card__req">{t.requirement}</span>
+                                </span>
+                                {isSelected && (
+                                    <span className="title-card__check" aria-hidden="true">
+                                        <Icon name="check_circle" />
+                                    </span>
+                                )}
+                            </button>
+                        );
+                    })}
+                </div>
             </div>
 
             <p className="ach-hint auth-hint">

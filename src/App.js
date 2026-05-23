@@ -236,13 +236,42 @@ function App() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isAuthed, status, isLoading]);
 
-    const handleResetStats = () => {
+    const handleResetStats = async () => {
+        // Local zero first so the UI doesn't flash old numbers while the network
+        // round-trip lands. Refs are anchored so the pet-feed effect doesn't
+        // interpret the zeroing as a wave of incorrect answers.
         resetBonus();
         resetEarnedXp();
+        answerTotalsRef.current = { correct: 0, incorrect: 0 };
         setFlagsData(prev => zeroFlagStats(prev));
+        // Clear per-mode current + best run streaks (the streak store reads
+        // these straight from localStorage so the keys must go).
+        try {
+            localStorage.removeItem('flagGameStreaks');
+            localStorage.removeItem('flagGameBestStreaks');
+        } catch (_) { /* private mode etc. */ }
+
         if (authedRef.current) {
-            api.put('/stats', { flagStats: [], bonusScores: {}, earnedXp: 0 }).catch(() => {});
+            // Server-side full wipe — clears stats, bonus, earned/cached XP,
+            // streaks, pet (json + level), cosmetics, achievements, region,
+            // mp_wins, and any selected title. Keeps identity + recovery rows.
+            try { await api.post('/stats/reset'); } catch (_) { /* offline — local wipe still applies */ }
             patchUser({ xp: 0 });
+            // Re-hydrate the account-tied stores from the now-empty server state.
+            // loadPet / loadProfile flip authed back on (resetPet/resetProfile
+            // turn it off) so future changes persist again.
+            try {
+                const { pet } = await api.get('/pet');
+                loadPet(pet);
+            } catch (_) { resetPet(); }
+            try {
+                const prof = await api.get('/profile');
+                loadProfile(prof);
+            } catch (_) { resetProfile(); }
+        } else {
+            // Guests: clear the in-memory pet + profile (never persisted).
+            resetPet();
+            resetProfile();
         }
         setView('menu');
     };

@@ -74,11 +74,23 @@ function cosmeticsOf(userId) {
     }
 }
 
+// Player-chosen display title. Joined into the lobby member at create-time so
+// the lobby roster + results scoreboard can render it next to each username.
+function selectedTitleOf(userId) {
+    try {
+        const row = db.prepare('SELECT selected_title FROM users WHERE id = ?').get(userId);
+        return row && row.selected_title ? row.selected_title : null;
+    } catch (_) {
+        return null;
+    }
+}
+
 function newMember(user) {
     return {
         id: user.id,
         username: user.username,
         cosmetics: cosmeticsOf(user.id),
+        selectedTitle: selectedTitleOf(user.id),
         score: 0,
         streak: 0,
         bestStreak: 0,
@@ -139,6 +151,7 @@ function view(lobby, meId) {
             id: m.id,
             username: m.username,
             cosmetics: m.cosmetics,
+            selectedTitle: m.selectedTitle || null,
             score: m.score,
             streak: m.streak,
             bestStreak: m.bestStreak,

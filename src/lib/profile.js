@@ -9,7 +9,7 @@ import { topAchievements } from './achievements';
 
 const freshAchievements = () => ({ showcase: [], unlocked: [] });
 
-let state = { region: null, cosmetics: { ...DEFAULT_COSMETICS }, achievements: freshAchievements(), streaks: {} };
+let state = { region: null, cosmetics: { ...DEFAULT_COSMETICS }, achievements: freshAchievements(), streaks: {}, selectedTitle: null };
 let authed = false;
 let pushTimer = null;
 const listeners = new Set();
@@ -34,6 +34,7 @@ function persist() {
             cosmetics: state.cosmetics,
             achievements: { showcase, count: state.achievements.unlocked.length },
             streaks: state.streaks,
+            selectedTitle: state.selectedTitle,
         }).catch(() => {});
     }, 1000);
 }
@@ -51,13 +52,14 @@ export function loadProfile(serverProfile) {
         // unlocked is recomputed locally from live stats right after load.
         achievements: { showcase: Array.isArray(ach.showcase) ? ach.showcase.slice(0, 3) : [], unlocked: [] },
         streaks: (serverProfile && serverProfile.streaks && typeof serverProfile.streaks === 'object') ? serverProfile.streaks : {},
+        selectedTitle: (serverProfile && serverProfile.selectedTitle) || null,
     };
     notify();
 }
 
 export function resetProfile() {
     authed = false;
-    state = { region: null, cosmetics: { ...DEFAULT_COSMETICS }, achievements: freshAchievements(), streaks: {} };
+    state = { region: null, cosmetics: { ...DEFAULT_COSMETICS }, achievements: freshAchievements(), streaks: {}, selectedTitle: null };
     notify();
 }
 
@@ -102,6 +104,19 @@ export function setAchievementsUnlocked(ids) {
     const showcaseSame = showcase.length === state.achievements.showcase.length;
     if (same && showcaseSame) return;
     state = { ...state, achievements: { showcase, unlocked } };
+    notify();
+    persist();
+}
+
+// Player picks a mastery-rank title to display on leaderboards / MP / topbar.
+// `null` (or empty) clears the choice and falls back to the auto-derived rank
+// for the current leaderboard scope.
+export function setSelectedTitle(title) {
+    const next = title === null || title === '' || title === undefined
+        ? null
+        : String(title).slice(0, 40);
+    if (next === state.selectedTitle) return;
+    state = { ...state, selectedTitle: next };
     notify();
     persist();
 }

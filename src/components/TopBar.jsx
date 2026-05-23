@@ -12,6 +12,9 @@ function TopBar({ setView }) {
     const profile = useProfile();
     const [menuOpen, setMenuOpen] = useState(false);
     const badges = (profile.achievements.showcase || []).map((id) => ACHIEVEMENTS_BY_ID[id]).filter(Boolean);
+    // Profile store loads on sign-in; before then we fall back to the title baked
+    // into the user payload so the chip never shows a blank line.
+    const selectedTitle = profile.selectedTitle || user?.selectedTitle || null;
 
     return (
         <header className="topbar">
@@ -25,7 +28,12 @@ function TopBar({ setView }) {
                 {isAuthed ? (
                     <button className="account-chip" onClick={() => setMenuOpen(true)} aria-label="Account">
                         <Icon name="account_circle" />
-                        <span className="account-chip__name">{user?.username}</span>
+                        <span className="account-chip__name">
+                            {user?.username}
+                            {selectedTitle && (
+                                <span className="account-chip__title">{selectedTitle}</span>
+                            )}
+                        </span>
                     </button>
                 ) : (
                     <button className="account-chip account-chip--guest" onClick={() => setView('login')}>
@@ -35,7 +43,10 @@ function TopBar({ setView }) {
             </div>
 
             <Modal open={menuOpen} onClose={() => setMenuOpen(false)} title={user?.username}>
-                <p className="auth-hint">{user?.xp ?? 0} XP{user?.is_admin ? ' · admin' : ''}</p>
+                <p className="auth-hint">
+                    {selectedTitle && <strong>{selectedTitle} · </strong>}
+                    {user?.xp ?? 0} XP{user?.is_admin ? ' · admin' : ''}
+                </p>
                 {badges.length > 0 && (
                     <div className="profile-badges">
                         {badges.map((a) => (

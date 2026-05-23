@@ -138,7 +138,13 @@ function Leaderboard({ setView, flagsData }) {
                         </p>
                     )}
                     {data.entries.map((row) => {
-                        const r = scopeRank(scope, row, total);
+                        const auto = scopeRank(scope, row, total);
+                        // Player-chosen title overrides the scope's auto-rank label,
+                        // but the tier (colour) still tracks their mastery so the
+                        // pill colour can't lie about ranking.
+                        const r = row.selectedTitle
+                            ? { title: row.selectedTitle, tier: auto.tier }
+                            : auto;
                         const badges = (row.showcase || []).map((id) => ACHIEVEMENTS_BY_ID[id]).filter(Boolean);
                         return (
                             <li

@@ -7,7 +7,7 @@ const router = express.Router();
 router.use(requireAuth);
 
 router.get('/', (req, res) => {
-    const row = db.prepare('SELECT region, cosmetics_json, achievements_json, streaks_json FROM users WHERE id = ?').get(req.user.id);
+    const row = db.prepare('SELECT region, cosmetics_json, achievements_json, streaks_json, selected_title FROM users WHERE id = ?').get(req.user.id);
     let achievements = null;
     if (row.achievements_json) {
         try { achievements = JSON.parse(row.achievements_json); } catch (_) { /* ignore malformed */ }
@@ -21,12 +21,14 @@ router.get('/', (req, res) => {
         cosmetics: row.cosmetics_json ? JSON.parse(row.cosmetics_json) : null,
         achievements,
         streaks,
+        selectedTitle: row.selected_title || null,
     });
 });
 
-// Partial update of region, equipped cosmetics, and/or achievements.
+// Partial update of region, equipped cosmetics, achievements, streaks, and/or
+// the player's chosen display title.
 router.put('/', (req, res) => {
-    const { region, cosmetics, achievements, streaks } = req.body || {};
+    const { region, cosmetics, achievements, streaks, selectedTitle } = req.body || {};
     if (region !== undefined) {
         const code = region === null ? null : String(region).slice(0, 8);
         db.prepare('UPDATE users SET region = ? WHERE id = ?').run(code, req.user.id);
@@ -57,6 +59,15 @@ router.put('/', (req, res) => {
         }
         db.prepare('UPDATE users SET streaks_json = ? WHERE id = ?')
             .run(JSON.stringify(merged), req.user.id);
+    }
+    if (selectedTitle !== undefined) {
+        // Stored as a free-form short string; the client is the source of truth
+        // for which titles are unlocked. Length-capped so a clever caller can't
+        // bloat the row, and `null`/empty clears the choice (back to auto-rank).
+        const t = selectedTitle === null || selectedTitle === ''
+            ? null
+            : String(selectedTitle).slice(0, 40);
+        db.prepare('UPDATE users SET selected_title = ? WHERE id = ?').run(t, req.user.id);
     }
     res.json({ ok: true });
 });

@@ -23,6 +23,9 @@ function publicUser(u) {
         region: u.region || null,
         cosmetics: u.cosmetics_json ? JSON.parse(u.cosmetics_json) : null,
         petLevel: u.pet_level || 1,
+        // Player-chosen display title (mastery-rank label). NULL until they pick
+        // one in Achievements; the UI falls back to the auto-rank in that case.
+        selectedTitle: u.selected_title || null,
     };
 }
 

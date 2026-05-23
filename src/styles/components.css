@@ -2196,6 +2196,52 @@
 .ach-feature:hover .app-icon { color: var(--color-accent); }
 .ach-feature.is-on .app-icon { color: var(--color-accent); font-variation-settings: 'FILL' 1; }
 
+/* ===== Titles (selectable mastery-rank labels) =====
+   Mirrors the achievement-card grid but each card is a button: tap an unlocked
+   one to set it as your display title (shown on the leaderboard, MP rosters
+   and the TopBar chip). Locked tiles preview the next rank you can earn. */
+.titles-section { width: 100%; display: flex; flex-direction: column; gap: var(--space-sm); }
+.title-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: var(--space-sm); }
+.title-card {
+    position: relative;
+    display: flex; align-items: center; gap: var(--space-sm);
+    padding: var(--space-sm) var(--space-md);
+    border: 1px solid var(--color-border); border-left-width: 4px;
+    border-radius: var(--radius-md); background: var(--color-bg-elev-2);
+    font: inherit; color: inherit; text-align: left; cursor: pointer;
+    transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
+}
+.title-card:disabled { cursor: not-allowed; opacity: 0.6; }
+.title-card.is-unlocked:hover { transform: translateY(-1px); box-shadow: var(--shadow-md); }
+.title-card.is-selected { box-shadow: 0 0 0 2px var(--color-primary); border-color: var(--color-primary); }
+.title-card--stone    { border-left-color: #8794A6; }
+.title-card--bronze   { border-left-color: #C77B3C; }
+.title-card--silver   { border-left-color: #9AA7B4; }
+.title-card--gold     { border-left-color: #E5A018; }
+.title-card--platinum { border-left-color: #3FB6C4; }
+.title-card--legend   { border-left-color: #8B5BF6; }
+.title-card__icon { flex: none; display: inline-flex; color: var(--color-ink-muted); }
+.title-card__icon .app-icon { font-size: 26px; }
+.title-card--gold .title-card__icon,
+.title-card--legend .title-card__icon { color: var(--color-accent-deep); }
+.title-card__body { display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1; }
+.title-card__req { font-size: var(--fs-xs); color: var(--color-ink-soft); }
+.title-card__check { flex: none; color: var(--color-primary); display: inline-flex; }
+.title-card__check .app-icon { font-size: 22px; }
+
+/* Small inline title labels next to usernames in the topbar + MP rosters. */
+.account-chip__title {
+    display: block; font-size: 10px; font-weight: 700; line-height: 1.1;
+    color: var(--color-ink-muted); text-transform: uppercase; letter-spacing: 0.04em;
+    max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.mp-player__title {
+    font-size: 10px; font-weight: 700; line-height: 1.1;
+    color: var(--color-ink-muted); text-transform: uppercase; letter-spacing: 0.04em;
+    max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.mp-score-title { font-weight: 600; color: var(--color-ink-muted); font-size: var(--fs-xs); }
+
 /* -------- Achievement badge + info popover -------- */
 /* .ach-badge is rendered as a <button>; reset its native chrome. */
 .ach-badge { font: inherit; cursor: pointer; padding: 0; -webkit-appearance: none; appearance: none; }
@@ -2321,6 +2367,36 @@
 /* Atlas Battle HP bars drain (red) instead of fill. */
 .mp-score-bar__fill--hp { background: var(--grad-danger, var(--color-danger)); }
 .mp-score-val { font-weight: 800; color: var(--color-primary-deep); white-space: nowrap; }
+
+/* --- Mobile fill: non-host lobby + results -------------------------------
+   On phones the natural flow leaves the bottom half of the screen empty for
+   the waiting (non-host) lobby and the results screen. Make those two boxes
+   span the viewport so the spinner can center in the open space and the
+   action buttons sit at the bottom where a thumb actually reaches them.   */
+@media (max-width: 480px) {
+    .mp-box--waiting,
+    .mp-box--results {
+        min-height: calc(100dvh - 2 * var(--space-md));
+        min-height: calc(100vh  - 2 * var(--space-md)); /* fallback for older mobile browsers */
+    }
+    /* Non-host waiting block stretches into the available space; the spinner
+       (first child) grabs both auto margins to center vertically and the
+       "Waiting…" hint + ConfigSummary slide to the bottom. */
+    .mp-box--waiting .mp-waiting {
+        flex: 1;
+        width: 100%;
+        padding-block: var(--space-md);
+    }
+    .mp-box--waiting .mp-waiting > :first-child { margin: auto 0; }
+
+    /* Results screen — bottom action buttons pinned to the bottom of the box
+       with safe-area padding so they clear the home indicator. */
+    .mp-box--results .account-menu {
+        margin-top: auto;
+        width: 100%;
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+}
 
 /* Per-mode scoring info "i" button + rules modal list. */
 .menu-title-row {

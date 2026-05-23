@@ -23,7 +23,10 @@ function Settings({ theme, setTheme, strictSpelling, setStrictSpelling, onResetS
         setSavingName(true);
         try {
             const { user: updated } = await api.post('/auth/username', { username: next });
-            patchUser({ username: updated.username });
+            // Apply the full server-returned user object so the cache stays in sync
+            // (xp, region, pet level, etc.). Server keeps everything keyed by user_id
+            // and only updates the username column, so no progress is touched here.
+            patchUser(updated);
             toast.success('Username updated!');
         } catch (err) {
             toast.danger(err.message || 'Could not change username.');

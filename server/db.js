@@ -87,6 +87,10 @@ if (!hasCol('earned_xp')) db.exec('ALTER TABLE users ADD COLUMN earned_xp INTEGE
 // running tally of multiplayer match wins (for the multiplayer leaderboard).
 if (!hasCol('streaks_json')) db.exec('ALTER TABLE users ADD COLUMN streaks_json TEXT');
 if (!hasCol('mp_wins')) db.exec('ALTER TABLE users ADD COLUMN mp_wins INTEGER NOT NULL DEFAULT 0');
+// Player-chosen display title (one of the mastery-rank titles they've unlocked).
+// NULL means "use the auto-derived rank for the current leaderboard scope" —
+// the existing behaviour for accounts that haven't picked one yet.
+if (!hasCol('selected_title')) db.exec('ALTER TABLE users ADD COLUMN selected_title TEXT');
 
 // Seed / promote the admin account from env. If ADMIN_PASSWORD is set, the admin
 // account is created (or its password reset) on boot so it can always log in.

@@ -247,7 +247,9 @@ function LobbyRoom({ lobby, code, flagsData, onLeave, refresh, setState }) {
     };
 
     return (
-        <div className="quiz-box mp-box">
+        // Non-host: tag the box so mobile CSS can fill the viewport and pin the
+        // waiting block (spinner centered, "Waiting…" tethered to bottom).
+        <div className={`quiz-box mp-box${isHost ? '' : ' mp-box--waiting'}`}>
             <div className="quiz-topbar">
                 <button className="back-button" onClick={onLeave} aria-label="Leave">
                     <Icon name="arrow_back" /> Leave
@@ -266,6 +268,9 @@ function LobbyRoom({ lobby, code, flagsData, onLeave, refresh, setState }) {
                     <div key={p.id} className="mp-player">
                         <Mascot size={44} mood="idle" cosmetics={p.cosmetics} still />
                         <span className="mp-player__name">{p.username}</span>
+                        {p.selectedTitle && (
+                            <span className="mp-player__title">{p.selectedTitle}</span>
+                        )}
                         {p.id === lobby.hostId && <Pill tone="accent" icon="star">Host</Pill>}
                     </div>
                 ))}
@@ -565,15 +570,22 @@ function Results({ lobby, meId, code, onLeave, setState }) {
     };
 
     return (
-        <div className="quiz-box mp-box">
+        // Results screen — mobile CSS uses this modifier to fill the viewport and
+        // pin the bottom .account-menu buttons to the bottom of the screen.
+        <div className="quiz-box mp-box mp-box--results">
             <h2 className="text-center">{iWon ? 'You win! 🏆' : `${winner ? winner.username : 'Nobody'} wins!`}</h2>
-            <Mascot size={120} mood={iWon ? 'cheer' : 'wave'} cosmetics={winner ? winner.cosmetics : null} />
+            <Mascot size={120} mood={iWon ? 'cheer' : 'sad'} cosmetics={winner ? winner.cosmetics : null} />
             <div className="mp-scoreboard">
                 {ranked.map((m, i) => (
                     <div key={m.id} className={`mp-score-row ${m.id === meId ? 'is-me' : ''}`}>
                         <span className="leaderboard-rank">#{i + 1}</span>
                         <Mascot size={28} mood="idle" cosmetics={m.cosmetics} still />
-                        <span className="mp-score-name">{m.username}</span>
+                        <span className="mp-score-name">
+                            {m.username}
+                            {m.selectedTitle && (
+                                <span className="mp-score-title"> · {m.selectedTitle}</span>
+                            )}
+                        </span>
                         <span className="mp-score-val">{metric(m)}{mode === 'streak' ? ' streak' : ''}</span>
                     </div>
                 ))}
