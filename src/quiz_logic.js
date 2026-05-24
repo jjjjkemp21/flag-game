@@ -217,4 +217,51 @@ function update_flag_stats(flags, correct_flag_object, user_was_correct, reason 
     return { message, color, updatedFlags };
 }
 
-export { select_next_flag, get_distractor_options, update_flag_stats };
+// Geography stats updater for Globe mode. Lives on the same per-flag record
+// but tracks geo-knowledge independently from flag-recognition (geoCorrect /
+// geoStreak / etc.). Returns { message, color, updatedFlags } in the same
+// shape as update_flag_stats so the GlobeQuiz screen can share feedback UI.
+function update_geo_stats(flags, correct_flag_object, user_was_correct) {
+    const target = typeof correct_flag_object === 'string'
+        ? { name: correct_flag_object }
+        : (correct_flag_object || {});
+
+    let flagIndex = -1;
+    if (target.code) flagIndex = flags.findIndex(f => f.code === target.code);
+    if (flagIndex === -1 && target.name) flagIndex = flags.findIndex(f => f.name === target.name);
+    if (flagIndex === -1 && target.country) flagIndex = flags.findIndex(f => f.country === target.country);
+
+    if (flagIndex === -1) {
+        const fallbackName = target.name || target.country || 'this country';
+        return {
+            message: { text: user_was_correct ? 'Correct! The answer was:' : 'The answer was:', answer: fallbackName },
+            color: user_was_correct ? 'green' : 'red',
+            updatedFlags: flags,
+        };
+    }
+
+    const updatedFlags = JSON.parse(JSON.stringify(flags));
+    const flag = updatedFlags[flagIndex];
+    flag.geoLastAnswered = Date.now();
+
+    const answerString = [flag.name || flag.country, ...(flag.aliases || [])].filter(Boolean).join(' / ');
+    let message, color;
+
+    if (user_was_correct) {
+        message = { text: 'Correct! The answer was:', answer: answerString };
+        color = 'green';
+        flag.geoCorrect = (flag.geoCorrect || 0) + 1;
+        flag.geoStreak = (flag.geoStreak || 0) + 1;
+        flag.geoLapses = flag.geoLapses ? Math.max(0, flag.geoLapses - 1) : 0;
+    } else {
+        message = { text: 'Incorrect. The answer was:', answer: answerString };
+        color = 'red';
+        flag.geoIncorrect = (flag.geoIncorrect || 0) + 1;
+        flag.geoStreak = Math.max(0, (flag.geoStreak || 0) - 1);
+        flag.geoLapses = (flag.geoLapses || 0) + 1;
+    }
+
+    return { message, color, updatedFlags };
+}
+
+export { select_next_flag, get_distractor_options, update_flag_stats, update_geo_stats };

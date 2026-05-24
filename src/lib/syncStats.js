@@ -2,7 +2,14 @@ import { api } from '../api/client';
 import { readBonusScores } from './xp';
 import { getEarnedXp } from './progress';
 
-const STAT_FIELDS = ['correct', 'incorrect', 'streak', 'lapses', 'isLeech', 'nextReview', 'lastAnswered'];
+const STAT_FIELDS = [
+    'correct', 'incorrect', 'streak', 'lapses', 'isLeech', 'nextReview', 'lastAnswered',
+    // Geography stats (Globe mode) — independent from flag-recognition stats so a
+    // player can be a flag expert without yet knowing where a country lives, and
+    // vice versa. Rides on the same per-flag record (no DB schema change needed:
+    // server stores the whole array as stats_json).
+    'geoCorrect', 'geoIncorrect', 'geoStreak', 'geoLapses', 'geoLastAnswered',
+];
 
 // Pull the minimal per-flag progress records out of the full flagsData array.
 export function extractFlagStats(flagsData) {
@@ -17,6 +24,11 @@ export function extractFlagStats(flagsData) {
             isLeech: !!f.isLeech,
             nextReview: f.nextReview ?? null,
             lastAnswered: f.lastAnswered ?? null,
+            geoCorrect: f.geoCorrect || 0,
+            geoIncorrect: f.geoIncorrect || 0,
+            geoStreak: f.geoStreak || 0,
+            geoLapses: f.geoLapses || 0,
+            geoLastAnswered: f.geoLastAnswered ?? null,
         }));
 }
 
@@ -28,6 +40,11 @@ const ZERO = {
     isLeech: false,
     nextReview: null,
     lastAnswered: null,
+    geoCorrect: 0,
+    geoIncorrect: 0,
+    geoStreak: 0,
+    geoLapses: 0,
+    geoLastAnswered: null,
 };
 
 // Return the flags with all progress fields reset (used for guests / logout).

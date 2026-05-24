@@ -153,6 +153,31 @@
     --z-overlay:     900;
     --z-modal:      1000;
 
+    /* -------- Globe (Three.js surface palette + reveal colours) --------
+       Read by src/lib/globe/Globe.js via getComputedStyle, so the 3D scene
+       re-tints in lockstep with [data-theme]. Light theme leans into the
+       brand cream / yellow land / indigo highlight; dark theme inverts. */
+    --globe-ocean:           #B8E0E6;
+    --globe-ocean-emit:      #8FC9D1;
+    --globe-ocean-spec:      #E5F5F8;
+    --globe-land:            #FFC247;
+    --globe-land-emit:       #C98A12;
+    /* Selection fill: a vivid indigo that pops off the warm-yellow base land
+       so the picked country is unmistakable. Border highlight switches to a
+       bright accent so it still reads on top of the fill. */
+    --globe-land-hover:      #5B5BF6;
+    --globe-land-hover-emit: #2C2CB8;
+    --globe-border:          #5B5677;
+    --globe-highlight:       #FFC247;
+    --globe-atmosphere:      #5B5BF6;
+    --globe-amb-light:       #FFE9C2;
+    --globe-key-light:       #FFFFFF;
+    --globe-rim-light:       #8A8CFF;
+    --globe-correct:         #19C37D;
+    --globe-correct-emit:    #0E7A4F;
+    --globe-wrong:           #FF5C6C;
+    --globe-wrong-emit:      #8E2230;
+
     color-scheme: light;
 }
 
@@ -210,6 +235,27 @@
     --shadow-glow-accent:  0 0 0 4px rgba(255,208,117,.30);
 
     --focus-ring: 0 0 0 4px rgba(var(--color-primary-rgb), .45);
+
+    /* -------- Globe (dark) -------- */
+    --globe-ocean:           #11233F;
+    --globe-ocean-emit:      #06101F;
+    --globe-ocean-spec:      #244166;
+    --globe-land:            #CDB88F;
+    --globe-land-emit:       #2A2417;
+    /* Selection fill: vivid orange-red against the muted tan land. Border
+       outline jumps to bright yellow for contrast against the orange. */
+    --globe-land-hover:      #FF6A3D;
+    --globe-land-hover-emit: #8E1F0C;
+    --globe-border:          #04060B;
+    --globe-highlight:       #FFE066;
+    --globe-atmosphere:      #3F6BFF;
+    --globe-amb-light:       #99AACC;
+    --globe-key-light:       #FFF0DD;
+    --globe-rim-light:       #4F74FF;
+    --globe-correct:         #2DDE94;
+    --globe-correct-emit:    #15623F;
+    --globe-wrong:           #FF7782;
+    --globe-wrong-emit:      #6A1A24;
 
     color-scheme: dark;
 }

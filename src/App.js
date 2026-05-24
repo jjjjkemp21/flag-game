@@ -33,6 +33,8 @@ const PixelatedQuiz    = lazy(() => import('./components/PixelatedQuiz'));
 const FrenzyQuiz       = lazy(() => import('./components/FrenzyQuiz'));
 const LongestRouteQuiz = lazy(() => import('./components/LongestRouteQuiz'));
 const LanguageQuiz     = lazy(() => import('./components/LanguageQuiz'));
+// Globe mode pulls in Three.js + earcut; keep it out of the main bundle.
+const GlobeQuiz        = lazy(() => import('./components/GlobeQuiz'));
 
 const DATA_URL = './data/flags.json';
 
@@ -116,6 +118,11 @@ function App() {
                 isLeech: false,
                 nextReview: null,
                 lastAnswered: null,
+                geoCorrect: 0,
+                geoIncorrect: 0,
+                geoStreak: 0,
+                geoLapses: 0,
+                geoLastAnswered: null,
             }));
             setFlagsData(initializedData);
         } catch (error) {
@@ -323,6 +330,14 @@ function App() {
                     return <MultipleChoiceQuiz {...quizProps} quizFlags={quizFlags} />;
                 }
                 return <FreeResponseQuiz {...quizProps} quizFlags={quizFlags} strictSpelling={strictSpelling} />;
+            }
+            case 'globe': {
+                const quizFlags = getFilteredFlags();
+                return (
+                    <Suspense fallback={<LazyFallback label="Loading Globe…" />}>
+                        <GlobeQuiz {...quizProps} quizFlags={quizFlags} />
+                    </Suspense>
+                );
             }
             case 'pixelated-quiz':
                 return (

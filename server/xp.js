@@ -13,6 +13,15 @@ function masteredCount(flagStats) {
     return flags.filter((f) => (Number(f.streak) || 0) > MASTERY_STREAK).length;
 }
 
+// Countries the player has placed correctly on the globe (Globe mode). Uses the
+// geoStreak field which rides on the same per-flag stat record alongside the
+// flag-recognition streak. Stats_json carries both axes so this needs no DB
+// schema change.
+function geoMasteredCount(flagStats) {
+    const flags = Array.isArray(flagStats) ? flagStats : [];
+    return flags.filter((f) => (Number(f.geoStreak) || 0) > MASTERY_STREAK).length;
+}
+
 function bonusTotal(bonusScores) {
     const b = bonusScores || {};
     return BONUS_MODES.reduce((sum, k) => sum + (Number(b[k]) || 0), 0);
@@ -35,4 +44,4 @@ function totalXp(earnedXp, bonusScores) {
     return Math.max(0, Math.round(Number(earnedXp) || 0)) + bonusTotal(bonusScores);
 }
 
-module.exports = { masteredCount, bonusTotal, legacyBaseXp, totalXp, MASTERY_STREAK };
+module.exports = { masteredCount, geoMasteredCount, bonusTotal, legacyBaseXp, totalXp, MASTERY_STREAK };

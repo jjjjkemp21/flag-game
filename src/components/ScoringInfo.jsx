@@ -26,6 +26,17 @@ const INFO = {
             'Master a flag by answering it correctly 6 times in a row.',
         ],
     },
+    'globe': {
+        title: 'Globe — scoring',
+        lines: [
+            'Tap a country on the 3D globe, then confirm (double-tap or the Confirm button).',
+            'Each correct placement earns XP. Wrong answers reset your streak.',
+            'Globe mode tracks a separate geography mastery — independent from how well you recognise the flag.',
+            'Hardest mode: pays a 1.75× mode bonus.',
+            'A hot streak multiplies XP from 1× up to a 2× cap, reached at a 30-answer streak.',
+            'Stuck? The Hint button rotates the globe to the correct continent — uses cost half XP if you still answer correctly.',
+        ],
+    },
     multiplayer: {
         title: 'Multiplayer — scoring',
         lines: [

@@ -7,7 +7,7 @@ import { usePet } from '../lib/pet';
 import { useProfile, setShowcase, setSelectedTitle, setAchievementsUnlocked } from '../lib/profile';
 import { getBonus } from '../lib/progress';
 import { buildContext, evaluate, ACHIEVEMENTS, ACHIEVEMENT_GROUPS } from '../lib/achievements';
-import { masteryRank, nextRank, MASTERY_RANKS } from '../lib/mastery';
+import { masteryRank, nextRank, MASTERY_RANKS, geoMasteryRank, nextGeoRank, GEO_MASTERY_RANKS } from '../lib/mastery';
 
 function Achievements({ setView, flagsData }) {
     const { isAuthed } = useAuth();
@@ -49,6 +49,8 @@ function Achievements({ setView, flagsData }) {
     const showcase = profile.achievements.showcase;
     const rank = masteryRank(ctx.mastered, ctx.total);
     const nr = nextRank(ctx.mastered, ctx.total);
+    const geoRank = geoMasteryRank(ctx.geoMastered, ctx.total);
+    const geoNr = nextGeoRank(ctx.geoMastered, ctx.total);
     const selectedTitle = profile.selectedTitle || null;
 
     // Mastery ranks become unlockable display titles — each tier is "earned" once
@@ -69,6 +71,25 @@ function Achievements({ setView, flagsData }) {
             tier: 'legend',
             unlocked: ctx.total > 0 && ctx.mastered >= ctx.total,
             requirement: `Master every flag${ctx.total ? ` (${ctx.total})` : ''}.`,
+        },
+    ];
+
+    // Parallel geography ladder, unlocked by countries placed correctly on the
+    // globe (geoStreak > MASTERY_STREAK).
+    const geoTitles = [
+        ...GEO_MASTERY_RANKS.map((r) => ({
+            title: r.title,
+            tier: r.tier,
+            unlocked: ctx.geoMastered >= r.min,
+            requirement: r.min === 0
+                ? 'Default geography title.'
+                : `Place ${r.min} countries on the globe.`,
+        })),
+        {
+            title: 'Atlas Cartographer',
+            tier: 'legend',
+            unlocked: ctx.total > 0 && ctx.geoMastered >= ctx.total,
+            requirement: `Place every country on the globe${ctx.total ? ` (${ctx.total})` : ''}.`,
         },
     ];
 
@@ -106,8 +127,13 @@ function Achievements({ setView, flagsData }) {
                 <span className={`rank-pill rank-pill--${rank.tier}`}>
                     <Icon name="military_tech" /> {rank.title}
                 </span>
+                {' '}
+                <span className={`rank-pill rank-pill--${geoRank.tier}`}>
+                    <Icon name="public" /> {geoRank.title}
+                </span>
                 <p className="rank-summary">
                     <strong>{ctx.mastered}</strong> / {ctx.total} flags mastered ·{' '}
+                    <strong>{ctx.geoMastered}</strong> / {ctx.total} placed on the globe ·{' '}
                     <strong>{unlocked.length}</strong> / {ACHIEVEMENTS.length} achievements
                 </p>
                 {nr && (
@@ -117,11 +143,18 @@ function Achievements({ setView, flagsData }) {
                             : `Next: ${nr.title}.`}
                     </p>
                 )}
+                {geoNr && (
+                    <p className="rank-next auth-hint">
+                        {geoNr.remaining > 0
+                            ? `Place ${geoNr.remaining} more on the globe to reach ${geoNr.title}.`
+                            : `Next geography rank: ${geoNr.title}.`}
+                    </p>
+                )}
             </div>
 
             <div className="titles-section">
                 <h3 className="settings-section-title">
-                    Titles
+                    Flag Mastery Titles
                     <span className="ach-group__count">
                         {titles.filter((t) => t.unlocked).length}/{titles.length}
                     </span>
@@ -144,6 +177,47 @@ function Achievements({ setView, flagsData }) {
                             >
                                 <span className="title-card__icon">
                                     <Icon name={t.unlocked ? 'military_tech' : 'lock'} />
+                                </span>
+                                <span className="title-card__body">
+                                    <span className={`rank-tag rank-pill--${t.tier}`}>{t.title}</span>
+                                    <span className="title-card__req">{t.requirement}</span>
+                                </span>
+                                {isSelected && (
+                                    <span className="title-card__check" aria-hidden="true">
+                                        <Icon name="check_circle" />
+                                    </span>
+                                )}
+                            </button>
+                        );
+                    })}
+                </div>
+            </div>
+
+            <div className="titles-section">
+                <h3 className="settings-section-title">
+                    Geography Titles
+                    <span className="ach-group__count">
+                        {geoTitles.filter((t) => t.unlocked).length}/{geoTitles.length}
+                    </span>
+                </h3>
+                <p className="ach-hint auth-hint">
+                    <Icon name="public" /> Earned by placing countries on the globe. Pick one to wear it instead of your
+                    flag-mastery title.
+                </p>
+                <div className="title-grid">
+                    {geoTitles.map((t) => {
+                        const isSelected = t.unlocked && t.title === selectedTitle;
+                        return (
+                            <button
+                                key={`geo-${t.title}`}
+                                type="button"
+                                disabled={!t.unlocked}
+                                className={`title-card title-card--${t.tier} ${t.unlocked ? 'is-unlocked' : 'is-locked'} ${isSelected ? 'is-selected' : ''}`}
+                                onClick={() => pickTitle(t)}
+                                aria-pressed={isSelected}
+                            >
+                                <span className="title-card__icon">
+                                    <Icon name={t.unlocked ? 'public' : 'lock'} />
                                 </span>
                                 <span className="title-card__body">
                                     <span className={`rank-tag rank-pill--${t.tier}`}>{t.title}</span>

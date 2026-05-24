@@ -13,6 +13,7 @@ const FLAG_BASE = './assets/flags/';
 
 const SCOPES = [
     { key: 'overall',      label: 'Overall',       icon: 'public',    unit: 'XP' },
+    { key: 'globe',        label: 'Globe',         icon: 'travel_explore', unit: 'placed' },
     { key: 'atlas',        label: 'Atlas Level',   icon: 'pets',      unit: 'Lv' },
     { key: 'mpwins',       label: 'MP Wins',       icon: 'sports_esports', unit: 'wins' },
     { key: 'frenzy',       label: 'Frenzy',        icon: 'bolt',      unit: 'pts' },
@@ -28,6 +29,7 @@ function formatValue(scope, value) {
     if (scope === 'atlas') return `Lv ${value}`;
     if (scope === 'mpwins') return `${value} ${value === 1 ? 'win' : 'wins'}`;
     if (scope === 'overall' || scope === 'friends') return `${value} XP`;
+    if (scope === 'globe') return `${value} placed`;
     return `${value} pts`;
 }
 
@@ -177,6 +179,7 @@ function Leaderboard({ setView, flagsData }) {
                                         <span className={`rank-tag rank-pill--${r.tier}`}>{r.title}</span>
                                         {' · '}{row.petName || 'Atlas'} · {row.petStage || 'Hatchling'} Lv {row.petLevel}
                                         {scope === 'overall' && ` · ${row.masteredCount} mastered`}
+                                        {scope === 'globe' && ` · ${row.geoMasteredCount || 0} placed`}
                                         {row.bestStreak > 0 && (
                                             <span className="leaderboard-streak"><Icon name="local_fire_department" /> {row.bestStreak}</span>
                                         )}

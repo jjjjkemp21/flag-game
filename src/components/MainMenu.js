@@ -25,6 +25,7 @@ const ADMIN_TAP_WINDOW_MS = 3000;
 const MODES = [
     { key: 'multiple-choice', title: 'Multiple Choice', desc: 'Pick from four options', icon: 'quiz', tone: 'primary' },
     { key: 'free-response',   title: 'Free Response',   desc: 'Type the country name', icon: 'edit_note',  tone: 'success' },
+    { key: 'globe',           title: 'Globe',           desc: 'Find the country on a 3D globe', icon: 'public', tone: 'info' },
     { key: 'multiplayer',     title: 'Multiplayer',     desc: 'Host a lobby, race friends live', icon: 'sports_esports', tone: 'versus' },
     { key: 'bonus',           title: 'Bonus Modes',     desc: 'Frenzy, Pixelated, Language…', icon: 'rocket_launch', tone: 'purple' },
     { key: 'leaderboard',     title: 'Leaderboard',     desc: 'Compete on the global ranks', icon: 'leaderboard', tone: 'info' },
@@ -118,7 +119,7 @@ function MainMenu({ setView, flagsData, setQuizMode }) {
     };
 
     const onCardClick = (modeKey) => {
-        if (modeKey === 'multiple-choice' || modeKey === 'free-response') {
+        if (modeKey === 'multiple-choice' || modeKey === 'free-response' || modeKey === 'globe') {
             handleStartQuiz(modeKey);
         } else if (modeKey === 'multiplayer') {
             setView('multiplayer');
@@ -179,7 +180,7 @@ function MainMenu({ setView, flagsData, setQuizMode }) {
                         index={i}
                         onClick={() => onCardClick(mode.key)}
                         masteryHint={mode.key === 'multiple-choice' ? masteryHint : null}
-                        streak={(mode.key === 'multiple-choice' || mode.key === 'free-response') ? getStreak(mode.key) : 0}
+                        streak={(mode.key === 'multiple-choice' || mode.key === 'free-response' || mode.key === 'globe') ? getStreak(mode.key) : 0}
                     />
                 ))}
             </div>

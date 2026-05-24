@@ -31,6 +31,15 @@ function Stats({ flagsData }) {
         const needsPracticeCount = flagsData.filter(f => f.streak <= learningThreshold).length;
         const total = flagsData.length;
 
+        // Geography mastery is a separate axis (Globe mode). A flag's
+        // geo-mastery threshold mirrors the flag-recognition one.
+        const geoMastered = flagsData.filter(f => (f.geoStreak || 0) > masteredThreshold).length;
+        const geoAnswered = flagsData.filter(f => (f.geoCorrect || 0) + (f.geoIncorrect || 0) > 0).length;
+        const geoCorrectTotal = flagsData.reduce((s, f) => s + (f.geoCorrect || 0), 0);
+        const geoIncorrectTotal = flagsData.reduce((s, f) => s + (f.geoIncorrect || 0), 0);
+        const geoAnswers = geoCorrectTotal + geoIncorrectTotal;
+        const geoAccuracy = geoAnswers > 0 ? geoCorrectTotal / geoAnswers : 0;
+
         const answered = flagsData.filter(f => (f.correct || 0) + (f.incorrect || 0) > 0);
         const sortedByKnowledge = [...answered].sort((a, b) => b.streak - a.streak);
 
@@ -74,6 +83,13 @@ function Stats({ flagsData }) {
             answeredCount: answered.length,
             dueForReview,
             regions,
+            geoMastered,
+            geoAnswered,
+            geoMastery: total > 0 ? geoMastered / total : 0,
+            geoAnswers,
+            geoCorrectTotal,
+            geoAccuracy,
+            hasPlayedGlobe: geoAnswers > 0,
         };
     }, [flagsData]);
 
@@ -111,6 +127,25 @@ function Stats({ flagsData }) {
                     <Pill tone="success" icon="check_circle"><CountUp to={stats.masteredCount} /> mastered</Pill>
                     <Pill tone="info" icon="school"><CountUp to={stats.learningCount} /> learning</Pill>
                     <Pill tone="danger" icon="priority_high"><CountUp to={stats.needsPracticeCount} /> needs practice</Pill>
+                </div>
+            </div>
+
+            <h3 className="stats-subtitle text-center">Geography Mastery</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'var(--space-md)' }}>
+                <ProgressRing value={stats.geoMastery} size={100} stroke={10} tone="info" label={`${stats.geoMastered} of ${stats.total} placed on the globe`}>
+                    <div style={{ fontSize: 'var(--fs-lg)' }}>
+                        <CountUp to={Math.round(stats.geoMastery * 100)} />%
+                    </div>
+                    <div style={{ fontSize: 'var(--fs-xs)', color: 'var(--color-ink-soft)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                        Globe
+                    </div>
+                </ProgressRing>
+                <div style={{ display: 'flex', gap: 'var(--space-xs)', flexWrap: 'wrap', justifyContent: 'center' }}>
+                    <Pill tone="info" icon="public"><CountUp to={stats.geoMastered} /> placed</Pill>
+                    <Pill tone="accent" icon="explore"><CountUp to={stats.geoAnswered} /> seen</Pill>
+                    {stats.hasPlayedGlobe && (
+                        <Pill tone="success" icon="trending_up"><CountUp to={Math.round(stats.geoAccuracy * 100)} />% accuracy</Pill>
+                    )}
                 </div>
             </div>
 

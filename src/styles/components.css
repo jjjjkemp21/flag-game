@@ -2448,3 +2448,186 @@
 }
 .mp-picker { margin-left: -8px; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.25)); }
 .mp-picker:first-child { margin-left: 0; }
+
+/* =================================================================
+   Globe Mode — Three.js scene + floating flag prompt + action row.
+   Stage is a fixed-aspect block so the canvas can't push the screen
+   taller than the viewport. Topbar / feedback / action row live in
+   normal document flow above + below it.
+   ================================================================= */
+.globe-quiz {
+    gap: var(--space-md);
+    /* Give the globe more horizontal room than the standard quiz-box;
+       the dotted base pattern hides automatically under the stage. */
+    max-width: 920px;
+}
+@media (min-width: 1024px) { .globe-quiz { max-width: 980px; } }
+@media (min-width: 1440px) { .globe-quiz { max-width: 1080px; } }
+.globe-quiz__topbar { width: 100%; }
+
+.globe-quiz__stage {
+    position: relative;
+    width: 100%;
+    /* Height grows to fill most of the screen on desktop, capped so we
+       always leave room for the feedback row and the action row. */
+    height: min(62vh, 560px);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    background:
+        radial-gradient(ellipse 120% 90% at 50% 35%, var(--color-bg-elev-2) 0%, var(--color-bg) 55%, var(--color-bg-soft) 100%);
+    box-shadow: var(--shadow-md), inset 0 0 0 1px var(--color-border);
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+}
+.globe-quiz__canvas {
+    position: absolute;
+    inset: 0;
+    /* Three.js canvas styles itself to 100% inside */
+}
+.globe-quiz__canvas canvas {
+    cursor: grab;
+}
+.globe-quiz__canvas canvas:active { cursor: grabbing; }
+
+.globe-quiz__overlay {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-content: center;
+    gap: var(--space-sm);
+    color: var(--color-ink-muted);
+    font-size: var(--fs-sm);
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: rgba(255, 247, 236, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 4;
+    pointer-events: none;
+}
+[data-theme='dark'] .globe-quiz__overlay {
+    background: rgba(15, 14, 30, 0.7);
+}
+.globe-quiz__overlay--error {
+    color: var(--color-danger-deep);
+    pointer-events: auto;
+    text-transform: none;
+    letter-spacing: 0;
+    text-align: center;
+    padding: var(--space-lg);
+}
+
+.globe-quiz__prompt {
+    position: absolute;
+    bottom: var(--space-md);
+    right: var(--space-md);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: var(--space-sm) var(--space-md) var(--space-md);
+    border-radius: var(--radius-md);
+    background: var(--color-bg-elev-1);
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--color-border);
+    z-index: 3;
+    max-width: 220px;
+}
+.globe-quiz__prompt-tag {
+    font-size: var(--fs-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+    color: var(--color-primary-deep);
+}
+.globe-quiz__prompt-flag {
+    width: 168px;
+    max-width: 100%;
+    height: auto;
+    aspect-ratio: 3 / 2;
+    object-fit: cover;
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-sm), inset 0 0 0 1px var(--color-border);
+}
+.globe-quiz__prompt-hint {
+    font-size: var(--fs-xs);
+    color: var(--color-ink-soft);
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    text-align: center;
+}
+
+.globe-quiz__mascot {
+    position: absolute;
+    top: var(--space-md);
+    left: var(--space-md);
+    z-index: 3;
+    pointer-events: none;
+}
+.globe-quiz__confetti {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 3;
+    display: grid;
+    place-items: center;
+}
+
+.globe-quiz__feedback {
+    width: 100%;
+    text-align: center;
+}
+
+.globe-quiz__actions {
+    display: flex;
+    gap: var(--space-md);
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    width: 100%;
+}
+.globe-quiz__actions .skip-button { margin-left: var(--space-sm); }
+
+/* -------- Mobile (≤720px): stage takes more vertical room, flag prompt
+   slides to bottom-center so it doesn't crowd the right edge near the
+   thumb-zone. ---------- */
+@media (max-width: 720px) {
+    .globe-quiz__stage {
+        height: min(58vh, 480px);
+        border-radius: var(--radius-md);
+    }
+    .globe-quiz__prompt {
+        left: 50%;
+        right: auto;
+        transform: translateX(-50%);
+        bottom: var(--space-sm);
+        max-width: calc(100% - var(--space-xl));
+        flex-direction: row;
+        padding: var(--space-xs) var(--space-sm);
+        gap: var(--space-sm);
+        align-items: center;
+    }
+    .globe-quiz__prompt-tag { display: none; }
+    .globe-quiz__prompt-flag {
+        width: 88px;
+    }
+    .globe-quiz__prompt-hint {
+        max-width: 130px;
+        text-align: left;
+    }
+    .globe-quiz__mascot {
+        top: var(--space-sm);
+        left: var(--space-sm);
+    }
+    .globe-quiz__actions {
+        gap: var(--space-sm);
+    }
+}
+
+@media (max-width: 420px) {
+    .globe-quiz__stage { height: 56vh; }
+    .globe-quiz__prompt-flag { width: 72px; }
+    .globe-quiz__prompt-hint { font-size: 11px; }
+}

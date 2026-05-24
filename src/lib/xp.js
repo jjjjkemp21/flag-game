@@ -31,6 +31,7 @@ export function readBonusScores() {
 export const MODE_XP = {
     'multiple-choice': 1,     // easiest
     'free-response': 1.5,     // harder — type it from memory
+    'globe': 1.75,            // hardest — find the country on the globe
 };
 
 // 1.0 at streak 0, ramping to the 2x cap at a 30-answer streak.

@@ -14,6 +14,48 @@ export const MASTERY_RANKS = [
 
 const CHAMPION = { title: 'World Champion', tier: 'legend' };
 
+// Geography mastery ranks — parallel to MASTERY_RANKS, but tied to how many
+// countries the player has correctly placed on the globe (Globe mode). Names
+// are intentionally distinct from the flag-mastery titles so a player can hold
+// both axes' ranks side-by-side without confusion.
+export const GEO_MASTERY_RANKS = [
+    { min: 0,   title: 'Pin Dropper',       tier: 'stone' },
+    { min: 5,   title: 'Roamer',            tier: 'bronze' },
+    { min: 15,  title: 'Globe Wanderer',    tier: 'bronze' },
+    { min: 30,  title: 'Pathfinder',        tier: 'silver' },
+    { min: 60,  title: 'Trailblazer',       tier: 'silver' },
+    { min: 100, title: 'Topographer',       tier: 'gold' },
+    { min: 150, title: 'Geomancer',         tier: 'gold' },
+    { min: 200, title: 'Continental Master', tier: 'platinum' },
+];
+
+const GEO_CHAMPION = { title: 'Atlas Cartographer', tier: 'legend' };
+
+export function geoMasteryRank(geoMastered, total) {
+    const m = Number(geoMastered) || 0;
+    if (total && m >= total) {
+        return { ...GEO_CHAMPION, index: GEO_MASTERY_RANKS.length };
+    }
+    let rank = GEO_MASTERY_RANKS[0];
+    let index = 0;
+    for (let i = 0; i < GEO_MASTERY_RANKS.length; i++) {
+        if (m >= GEO_MASTERY_RANKS[i].min) { rank = GEO_MASTERY_RANKS[i]; index = i; }
+    }
+    return { ...rank, index };
+}
+
+export function nextGeoRank(geoMastered, total) {
+    const m = Number(geoMastered) || 0;
+    const current = geoMasteryRank(m, total);
+    if (current.tier === 'legend') return null;
+    const next = GEO_MASTERY_RANKS[current.index + 1];
+    if (!next) {
+        if (!total) return null;
+        return { title: GEO_CHAMPION.title, goal: total, remaining: Math.max(0, total - m) };
+    }
+    return { title: next.title, goal: next.min, remaining: Math.max(0, next.min - m) };
+}
+
 // Returns { title, tier, index }. When `total` is known and everything is
 // mastered, awards the legendary "World Champion".
 export function masteryRank(mastered, total) {
@@ -73,6 +115,11 @@ export function scopeRank(scope, entry, total) {
         return { title: stage, tier: STAGE_TIERS[stage] || 'stone' };
     }
     if (scope === 'mpwins') return tieredTitle(entry.value || 0, MP_WIN_TIERS);
+    if (scope === 'globe') {
+        // Use the geography ladder — title tracks countries placed on the globe
+        // so the pill matches the scope being ranked.
+        return geoMasteryRank(entry.geoMasteredCount || entry.value || 0, total);
+    }
     if (BONUS_TIERS[scope]) return tieredTitle(entry.value || 0, BONUS_TIERS[scope]);
     return masteryRank(entry.masteredCount || 0, total); // overall / friends
 }

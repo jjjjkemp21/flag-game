@@ -1,7 +1,7 @@
 const express = require('express');
 const db = require('../db');
 const { requireAuth } = require('../middleware');
-const { masteredCount } = require('../xp');
+const { masteredCount, geoMasteredCount } = require('../xp');
 
 const router = express.Router();
 
@@ -30,7 +30,7 @@ function acceptedFriendIds(userId) {
 }
 
 const BONUS_MODES = ['frenzy', 'pixelated', 'longestRoute', 'language'];
-const VALID_SCOPES = ['overall', 'friends', 'atlas', 'mpwins', ...BONUS_MODES];
+const VALID_SCOPES = ['overall', 'friends', 'atlas', 'mpwins', 'globe', ...BONUS_MODES];
 
 function bestStreakOf(row) {
     if (!row.streaks_json) return 0;
@@ -46,6 +46,13 @@ function bestStreakOf(row) {
 function metricValue(row, scope) {
     if (scope === 'atlas') return row.pet_level || 1;
     if (scope === 'mpwins') return row.mp_wins || 0;
+    if (scope === 'globe') {
+        try {
+            return row.stats_json ? geoMasteredCount(JSON.parse(row.stats_json)) : 0;
+        } catch (_) {
+            return 0;
+        }
+    }
     if (BONUS_MODES.includes(scope)) {
         try {
             const b = row.bonus_scores_json ? JSON.parse(row.bonus_scores_json) : {};
@@ -90,8 +97,13 @@ function achievementsOf(row) {
 
 function buildEntry(row, scope) {
     let mastered = 0;
+    let geoMastered = 0;
     if (row.stats_json) {
-        try { mastered = masteredCount(JSON.parse(row.stats_json)); } catch (_) { /* ignore */ }
+        try {
+            const stats = JSON.parse(row.stats_json);
+            mastered = masteredCount(stats);
+            geoMastered = geoMasteredCount(stats);
+        } catch (_) { /* ignore */ }
     }
     const ach = achievementsOf(row);
     const pet = petOf(row);
@@ -105,6 +117,7 @@ function buildEntry(row, scope) {
         petName: pet && pet.name ? String(pet.name) : null,
         petStage: petStageOf(pet),
         masteredCount: mastered,
+        geoMasteredCount: geoMastered,
         bestStreak: bestStreakOf(row),
         mpWins: row.mp_wins || 0,
         showcase: ach.showcase,

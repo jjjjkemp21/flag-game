@@ -14,22 +14,35 @@ export const CONTINENTS = [
 ];
 
 // Build the evaluation context from the full flagsData + bonus high scores + pet level.
+// Geography stats (Globe mode) live on the same per-flag record so we walk the
+// list once and accumulate both axes.
 export function buildContext(flagsData, bonus, petLevel) {
     const flags = Array.isArray(flagsData) ? flagsData : [];
     const continents = {};
-    CONTINENTS.forEach((c) => { continents[c.key] = { mastered: 0, total: 0 }; });
+    const geoContinents = {};
+    CONTINENTS.forEach((c) => {
+        continents[c.key] = { mastered: 0, total: 0 };
+        geoContinents[c.key] = { mastered: 0, total: 0 };
+    });
 
     let totalCorrect = 0;
     let mastered = 0;
+    let geoTotalCorrect = 0;
+    let geoMastered = 0;
     for (const f of flags) {
         totalCorrect += Number(f.correct) || 0;
         const isMastered = (Number(f.streak) || 0) > MASTERY_STREAK;
         if (isMastered) mastered += 1;
+        geoTotalCorrect += Number(f.geoCorrect) || 0;
+        const isGeoMastered = (Number(f.geoStreak) || 0) > MASTERY_STREAK;
+        if (isGeoMastered) geoMastered += 1;
         const tags = f.tags || [];
         for (const c of CONTINENTS) {
             if (tags.includes(c.tag)) {
                 continents[c.key].total += 1;
                 if (isMastered) continents[c.key].mastered += 1;
+                geoContinents[c.key].total += 1;
+                if (isGeoMastered) geoContinents[c.key].mastered += 1;
             }
         }
     }
@@ -41,6 +54,9 @@ export function buildContext(flagsData, bonus, petLevel) {
         continents,
         bonus: bonus || {},
         petLevel: Number(petLevel) || 1,
+        geoTotalCorrect,
+        geoMastered,
+        geoContinents,
     };
 }
 
@@ -103,6 +119,43 @@ const atlasMilestone = (n, name, tier) => ({
     progress: (x) => ({ cur: x.petLevel, goal: n }),
 });
 
+// Globe-mode achievements. Mirrors the flag-mastery ladder but counts geography
+// mastery (countries the player has placed correctly on the 3D globe). The
+// per-continent variants are gated to continents with at least one country in
+// the catalog so they only unlock once the deck actually contains them.
+const geoMasteryMilestone = (n, name, tier) => ({
+    id: `geo_mastery_${n}`,
+    group: 'Globe',
+    name,
+    desc: `Place ${n} countries on the globe`,
+    icon: 'public',
+    tier,
+    check: (x) => x.geoMastered >= n,
+    progress: (x) => ({ cur: x.geoMastered, goal: n }),
+});
+
+const geoCorrectMilestone = (n, name, tier) => ({
+    id: `geo_correct_${n}`,
+    group: 'Globe',
+    name,
+    desc: `Correctly place ${n.toLocaleString()} countries on the globe`,
+    icon: 'travel_explore',
+    tier,
+    check: (x) => x.geoTotalCorrect >= n,
+    progress: (x) => ({ cur: x.geoTotalCorrect, goal: n }),
+});
+
+const geoContinentAchievements = CONTINENTS.map((c) => ({
+    id: `geo_continent_${c.key}`,
+    group: 'Globe',
+    name: `${c.label} Atlas`,
+    desc: `Place every country in ${c.label} on the globe`,
+    icon: 'explore',
+    tier: 'silver',
+    check: (x) => x.geoContinents[c.key].total > 0 && x.geoContinents[c.key].mastered >= x.geoContinents[c.key].total,
+    progress: (x) => ({ cur: x.geoContinents[c.key].mastered, goal: x.geoContinents[c.key].total }),
+}));
+
 export const ACHIEVEMENTS = [
     { id: 'first_steps', group: 'Mastery', name: 'First Steps', desc: 'Answer your first flag correctly', icon: 'flag', tier: 'stone',
         check: (x) => x.totalCorrect >= 1, progress: (x) => ({ cur: Math.min(x.totalCorrect, 1), goal: 1 }) },
@@ -135,6 +188,20 @@ export const ACHIEVEMENTS = [
     atlasMilestone(5, 'Atlas Companion', 'bronze'),
     atlasMilestone(10, 'Atlas Caretaker', 'silver'),
     atlasMilestone(20, 'Atlas Guardian', 'gold'),
+
+    // Globe mode — geography mastery axis.
+    { id: 'geo_first_landing', group: 'Globe', name: 'First Landing', desc: 'Correctly place your first country on the globe', icon: 'flag', tier: 'stone',
+        check: (x) => x.geoTotalCorrect >= 1, progress: (x) => ({ cur: Math.min(x.geoTotalCorrect, 1), goal: 1 }) },
+    geoMasteryMilestone(10,  'Map Reader',       'bronze'),
+    geoMasteryMilestone(50,  'World Wanderer',   'silver'),
+    geoMasteryMilestone(100, 'Globe Trotter',    'gold'),
+    geoMasteryMilestone(200, 'Earth Scholar',    'platinum'),
+    geoCorrectMilestone(100,  'Sure Hand',       'bronze'),
+    geoCorrectMilestone(1000, 'Steady Compass',  'silver'),
+    geoCorrectMilestone(5000, 'True North',      'gold'),
+    ...geoContinentAchievements,
+    { id: 'geo_all_flags', group: 'Globe', name: 'Atlas Cartographer', desc: 'Place every country on the globe', icon: 'public', tier: 'legend',
+        check: (x) => x.total > 0 && x.geoMastered >= x.total, progress: (x) => ({ cur: x.geoMastered, goal: x.total }) },
 ];
 
 export const ACHIEVEMENTS_BY_ID = Object.fromEntries(ACHIEVEMENTS.map((a) => [a.id, a]));
@@ -155,7 +222,7 @@ export function topAchievements(unlockedIds, n = 3) {
         .map((a) => a.id);
 }
 
-export const ACHIEVEMENT_GROUPS = ['Mastery', 'Continents', 'Accuracy', 'Bonus Modes', 'Atlas'];
+export const ACHIEVEMENT_GROUPS = ['Mastery', 'Continents', 'Accuracy', 'Globe', 'Bonus Modes', 'Atlas'];
 
 // Returns the array of unlocked achievement ids for a context.
 export function evaluate(ctx) {
