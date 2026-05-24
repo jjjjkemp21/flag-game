@@ -15,6 +15,7 @@ const CODE_CHARS = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'; // no ambiguous 0/O/1/I/L
 const LOBBY_TTL_MS = 2 * 60 * 60 * 1000;   // hard cap on lobby age
 const IDLE_MS = 3 * 60 * 1000;             // drop members who stop polling
 const EMPTY_GRACE_MS = 30 * 1000;          // close empty lobbies after a grace period
+const PREMATCH_COUNTDOWN_MS = 3000;        // 3-2-1 countdown before play begins
 
 function clampInt(v, min, max, dflt) {
     const n = parseInt(v, 10);
@@ -59,7 +60,30 @@ function normalizeConfig(c) {
         target: clampInt(c.target, 5, 200, 50),     // race: correct answers to win
         duration: clampInt(c.duration, 20, 300, 60), // blitz/streak: seconds
         maxPlayers,
+        // Atlas Bucks gambling: each player antes this amount into the pot at
+        // start; winner takes it all. 0 disables wagering (default).
+        ante: clampInt(c.ante, 0, 10000, 0),
     };
+}
+
+// Atomically debit a player's Atlas Bucks balance. Returns true if the debit
+// succeeded (the WHERE-guard ensures we never let a balance go negative even
+// if two requests race). Used to collect antes at match start.
+function tryDebitBucks(userId, amount) {
+    if (!amount || amount <= 0) return true;
+    const info = db.prepare('UPDATE users SET bucks = bucks - ? WHERE id = ? AND bucks >= ?')
+        .run(amount, userId, amount);
+    return info.changes === 1;
+}
+
+function creditBucks(userId, amount) {
+    if (!amount || amount <= 0) return;
+    db.prepare('UPDATE users SET bucks = bucks + ? WHERE id = ?').run(amount, userId);
+}
+
+function bucksOf(userId) {
+    const row = db.prepare('SELECT bucks FROM users WHERE id = ?').get(userId);
+    return Math.max(0, Math.round(Number(row && row.bucks) || 0));
 }
 
 function generateCode() {
@@ -111,6 +135,10 @@ function newMember(user) {
 // Decide whether a playing lobby has ended, and who won.
 function evaluate(lobby) {
     if (lobby.state !== 'playing') return;
+    // Don't tally results during the pre-match countdown — endsAt was placed
+    // after playsAt, but a stray progress post shouldn't end a target-mode
+    // race before everyone has even started.
+    if (lobby.playsAt && Date.now() < lobby.playsAt) return;
     const members = Object.values(lobby.members);
     const { mode, target } = lobby.config;
 
@@ -141,6 +169,24 @@ function finish(lobby, winnerId) {
         try {
             db.prepare('UPDATE users SET mp_wins = COALESCE(mp_wins, 0) + 1 WHERE id = ?').run(winnerId);
         } catch (_) { /* a transient match win isn't worth failing the request over */ }
+    }
+    // Pay out the Atlas Bucks pot. Winner takes the lot. If the lobby finishes
+    // without a winner (timed mode with no answers), refund equally so nobody
+    // loses their stake to a non-event.
+    const pot = Math.max(0, Math.round(Number(lobby.pot) || 0));
+    if (pot > 0) {
+        if (winnerId) {
+            try { creditBucks(winnerId, pot); } catch (_) { /* losing pot to an error is worse than a missed credit retry */ }
+            lobby.payout = { winnerId, amount: pot };
+        } else {
+            const ids = Object.keys(lobby.members).map((id) => parseInt(id, 10));
+            if (ids.length > 0) {
+                const each = Math.floor(pot / ids.length);
+                try { ids.forEach((id) => creditBucks(id, each)); } catch (_) { /* ignore */ }
+                lobby.payout = { refunded: true, perPlayer: each };
+            }
+        }
+        lobby.pot = 0;
     }
 }
 
@@ -173,11 +219,17 @@ function view(lobby, meId) {
         config: lobby.config,
         seed: lobby.seed,
         startedAt: lobby.startedAt || null,
+        playsAt: lobby.playsAt || null,
         endsAt: lobby.endsAt || null,
         serverNow: Date.now(),
         winnerId: lobby.winnerId || null,
         target,
         members,
+        // Atlas Bucks pot info — populated for wagering matches so the lobby +
+        // results screens can show the stakes and the payout.
+        pot: Math.max(0, Math.round(Number(lobby.pot) || 0)),
+        payout: lobby.payout || null,
+        meBucks: bucksOf(meId),
     };
 }
 
@@ -260,11 +312,47 @@ router.post('/lobby/:code/start', (req, res) => {
     if (!lobby) return;
     if (lobby.hostId !== req.user.id) return res.status(403).json({ error: 'Only the host can start.' });
     if (lobby.state !== 'lobby') return res.status(409).json({ error: 'Already started.' });
+
+    // Wagering: every member must be able to afford the ante before we start.
+    // Check first (cheap), then debit atomically. If any debit fails (race
+    // with another tab spending bucks), we refund anything taken and abort.
+    const ante = Math.max(0, Math.round(Number(lobby.config.ante) || 0));
+    const memberIds = Object.keys(lobby.members).map((id) => parseInt(id, 10));
+    if (ante > 0) {
+        const broke = memberIds
+            .map((id) => ({ id, bucks: bucksOf(id), name: lobby.members[id]?.username || `player ${id}` }))
+            .filter((m) => m.bucks < ante);
+        if (broke.length > 0) {
+            return res.status(409).json({
+                error: `Can't start — ${broke.map((m) => m.name).join(', ')} can't cover the ${ante} Atlas Bucks ante.`,
+            });
+        }
+        const debited = [];
+        try {
+            for (const id of memberIds) {
+                if (tryDebitBucks(id, ante)) debited.push(id);
+                else throw new Error('debit-race');
+            }
+            lobby.pot = ante * memberIds.length;
+            lobby.payout = null;
+        } catch (_) {
+            // Refund anything we already took so nobody loses bucks to a race.
+            debited.forEach((id) => creditBucks(id, ante));
+            return res.status(409).json({ error: 'Could not collect every ante — try again.' });
+        }
+    } else {
+        lobby.pot = 0;
+        lobby.payout = null;
+    }
+
     lobby.state = 'playing';
     lobby.seed = Math.floor(Math.random() * 2 ** 31);
     lobby.startedAt = Date.now();
+    // 3-2-1 countdown: play actually begins at `playsAt`. Timed modes count
+    // from there, scoring is gated client-side until then.
+    lobby.playsAt = lobby.startedAt + PREMATCH_COUNTDOWN_MS;
     if (!TARGET_MODES.has(lobby.config.mode)) {
-        lobby.endsAt = lobby.startedAt + lobby.config.duration * 1000;
+        lobby.endsAt = lobby.playsAt + lobby.config.duration * 1000;
     }
     Object.values(lobby.members).forEach((m) => {
         m.score = 0; m.streak = 0; m.bestStreak = 0; m.finished = false; m.lastSeen = Date.now();
@@ -279,8 +367,13 @@ router.post('/lobby/:code/reset', (req, res) => {
     lobby.state = 'lobby';
     lobby.winnerId = null;
     lobby.startedAt = null;
+    lobby.playsAt = null;
     lobby.endsAt = null;
     lobby.seed = 0;
+    // Clear wager bookkeeping — the next start will collect fresh antes (which
+    // gives players a chance to bow out before re-paying).
+    lobby.pot = 0;
+    lobby.payout = null;
     Object.values(lobby.members).forEach((m) => {
         m.score = 0; m.streak = 0; m.bestStreak = 0; m.finished = false; m.lastSeen = Date.now();
     });

@@ -3,20 +3,25 @@ import Icon from './Icon';
 import { Button } from './ui';
 import { useToast } from './ui/Toast';
 import Mascot from '../assets/illustrations/Mascot';
+import AtlasBucksIcon from '../assets/illustrations/AtlasBucks';
 import { useAuth } from '../auth/AuthProvider';
 import { usePet, setPetName } from '../lib/pet';
 import { useProfile, setRegion, setCosmetic, setCosmeticPos } from '../lib/profile';
-import { CATEGORIES, isUnlocked, DEFAULT_POS } from '../lib/cosmetics';
+import { CATEGORIES, priceOf, isDefaultItem, DEFAULT_POS } from '../lib/cosmetics';
+import { useCurrency, loadCurrency, claimBucks, buyCosmetic, isOwnedKey, CURRENCY_RATE } from '../lib/currency';
 
 const FLAG_BASE = './assets/flags/';
 
 function StoreScreen({ setView, flagsData }) {
-    const { isAuthed, user } = useAuth();
+    const { isAuthed, user, patchUser } = useAuth();
     const toast = useToast();
     const pet = usePet();
     const profile = useProfile();
+    const currency = useCurrency();
     const [nameDraft, setNameDraft] = useState(pet.name);
     const xp = user?.xp || 0;
+    const bucks = currency.bucks;
+    const claimable = currency.claimableBucks;
 
     const countries = useMemo(
         () => (flagsData || [])
@@ -25,7 +30,7 @@ function StoreScreen({ setView, flagsData }) {
         [flagsData]
     );
 
-    // Owned vs. shop (not-yet-unlocked) cosmetics.
+    // Owned vs. shop (not-yet-bought) cosmetics.
     const [shopTab, setShopTab] = useState('owned');
 
     // Cosmetic placement (drag to move, slider to scale).
@@ -41,6 +46,13 @@ function StoreScreen({ setView, flagsData }) {
         else if (adjust === 'glasses' && !hasGlasses && hasHat) setAdjust('hat');
     }, [adjust, hasHat, hasGlasses]);
 
+    // Pull the latest currency summary on mount so the trade-in shows the
+    // accurate `claimable` even if the shop is opened before App's post-login
+    // sync has finished (e.g. on a fresh page load).
+    useEffect(() => {
+        if (isAuthed) loadCurrency().catch(() => {});
+    }, [isAuthed]);
+
     if (!isAuthed) {
         return (
             <div className="quiz-box store-box">
@@ -52,7 +64,7 @@ function StoreScreen({ setView, flagsData }) {
                 <div className="signin-prompt">
                     <Icon name="storefront" size="xl" />
                     <h2>Atlas Shop</h2>
-                    <p>Log in to customize Atlas, set your country, and unlock cosmetics by earning XP.</p>
+                    <p>Log in to customize Atlas, set your country, and buy cosmetics with Atlas Bucks.</p>
                     <Button variant="primary" icon="login" onClick={() => setView('login')}>Log in or sign up</Button>
                 </div>
             </div>
@@ -66,10 +78,42 @@ function StoreScreen({ setView, flagsData }) {
         toast.success(`Renamed to ${n}!`);
     };
 
-    const onEquip = (categoryKey, id, item) => {
-        if (!isUnlocked(xp, item)) {
-            toast.danger(`Unlocks at ${item.xp} XP`);
+    // Trading in XP for bucks: server mints (earned - already-minted) ÷ rate
+    // bucks. XP balance is untouched. patchUser updates the topbar chip.
+    const onTradeIn = async () => {
+        if (claimable <= 0) {
+            toast.info('No new XP to trade in yet.');
             return;
+        }
+        try {
+            const out = await claimBucks();
+            patchUser({ bucks: out.bucks });
+            toast.success(`Traded XP for ${out.claimed.toLocaleString()} Atlas Bucks!`);
+        } catch (err) {
+            toast.danger(err.message || 'Could not trade XP right now.');
+        }
+    };
+
+    // Try to buy — on success, auto-equip the item so the click feels direct.
+    const onBuy = async (categoryKey, id, item) => {
+        const cost = priceOf(item);
+        if (bucks < cost) {
+            toast.danger(`Need ${cost.toLocaleString()} Atlas Bucks — trade in some XP first.`);
+            return;
+        }
+        try {
+            const out = await buyCosmetic(categoryKey, id);
+            patchUser({ bucks: out.bucks, ownedCosmetics: Array.from(out.ownedCosmetics || []) });
+            setCosmetic(categoryKey, id);
+            toast.success(`Bought ${item.name}!`);
+        } catch (err) {
+            toast.danger(err.message || 'Could not buy that.');
+        }
+    };
+
+    const onEquip = (categoryKey, id, item) => {
+        if (!isDefaultItem(categoryKey, id) && !isOwnedKey(categoryKey, id)) {
+            return onBuy(categoryKey, id, item);
         }
         setCosmetic(categoryKey, id);
     };
@@ -97,6 +141,8 @@ function StoreScreen({ setView, flagsData }) {
     };
     const onResetPos = () => setCosmeticPos(slot, { ...DEFAULT_POS });
 
+    const isItemOwned = (categoryKey, id) => isDefaultItem(categoryKey, id) || isOwnedKey(categoryKey, id);
+
     return (
         <div className="quiz-box store-box">
             <div className="quiz-topbar">
@@ -118,7 +164,31 @@ function StoreScreen({ setView, flagsData }) {
                 >
                     <Mascot size={120} mood={pet.alive ? pet.mood : 'idle'} cosmetics={profile.cosmetics} chubby={pet.obese} bruised={pet.bruised} />
                 </div>
-                <p className="auth-hint">You have <strong>{xp} XP</strong> to unlock cosmetics.</p>
+
+                {/* Wallet: bucks balance + XP-trade-in. The "trade-in" is the
+                    only way to get bucks from your XP — XP itself never drops. */}
+                <div className="ab-wallet">
+                    <div className="ab-wallet__balance" aria-label="Atlas Bucks balance">
+                        <AtlasBucksIcon size={26} />
+                        <span className="ab-wallet__num">{bucks.toLocaleString()}</span>
+                        <span className="ab-wallet__label">Atlas Bucks</span>
+                    </div>
+                    <div className="ab-wallet__trade">
+                        <span className="ab-wallet__xp">{xp.toLocaleString()} XP</span>
+                        <Button
+                            variant={claimable > 0 ? 'primary' : 'secondary'}
+                            size="sm"
+                            icon="paid"
+                            onClick={onTradeIn}
+                            disabled={claimable <= 0}
+                        >
+                            Trade XP{claimable > 0 ? ` (+${claimable.toLocaleString()})` : ''}
+                        </Button>
+                    </div>
+                    <p className="ab-wallet__hint">
+                        {CURRENCY_RATE} XP = 1 Atlas Buck · your XP stays after trading.
+                    </p>
+                </div>
 
                 {(hasHat || hasGlasses) && (
                     <div className="cosmetic-adjust">
@@ -161,7 +231,7 @@ function StoreScreen({ setView, flagsData }) {
 
             {/* Rename */}
             <div className="store-section">
-                <h3 className="settings-section-title">Name</h3>
+                <h3 className="store-section-title"><Icon name="badge" /> Name</h3>
                 <div className="friend-add">
                     <input
                         className="auth-field__input"
@@ -176,7 +246,7 @@ function StoreScreen({ setView, flagsData }) {
 
             {/* Region */}
             <div className="store-section">
-                <h3 className="settings-section-title">Region</h3>
+                <h3 className="store-section-title"><Icon name="public" /> Region</h3>
                 <div className="region-row">
                     {profile.region && (
                         <img
@@ -210,22 +280,30 @@ function StoreScreen({ setView, flagsData }) {
                     className={`lb-filter__btn ${shopTab === 'shop' ? 'is-active' : ''}`}
                     onClick={() => setShopTab('shop')}
                 >
-                    <Icon name="shopping_bag" /> Not owned
+                    <Icon name="shopping_bag" /> Shop
                 </button>
             </div>
 
-            {/* Cosmetics */}
+            {/* Cosmetics — grouped by category. Section headers are wrapped in a
+                .store-section-head divider so each group reads as its own card. */}
             {CATEGORIES.map((cat) => {
                 const entries = Object.entries(cat.items)
-                    .filter(([, item]) => isUnlocked(xp, item) === (shopTab === 'owned'));
+                    .filter(([id, item]) => isItemOwned(cat.key, id) === (shopTab === 'owned'));
                 if (entries.length === 0) return null;
                 return (
-                <div className="store-section" key={cat.key}>
-                    <h3 className="settings-section-title"><Icon name={cat.icon} /> {cat.label}</h3>
+                <div className="store-section store-section--cards" key={cat.key}>
+                    <div className="store-section-head">
+                        <h3 className="store-section-title store-section-title--big">
+                            <Icon name={cat.icon} /> {cat.label}
+                        </h3>
+                        <span className="store-section-count">{entries.length}</span>
+                    </div>
                     <div className="cosmetic-grid">
                         {entries.map(([id, item]) => {
-                            const unlocked = isUnlocked(xp, item);
+                            const owned = isItemOwned(cat.key, id);
                             const equipped = profile.cosmetics[cat.key] === id;
+                            const cost = priceOf(item);
+                            const canAfford = bucks >= cost;
                             // Preview the item on Atlas: colors recolor the globe; hats /
                             // glasses sit on the player's current globe color.
                             const previewCos = cat.key === 'color'
@@ -234,7 +312,7 @@ function StoreScreen({ setView, flagsData }) {
                             return (
                                 <button
                                     key={id}
-                                    className={`cosmetic-card ${equipped ? 'is-equipped' : ''} ${unlocked ? '' : 'is-locked'}`}
+                                    className={`cosmetic-card ${equipped ? 'is-equipped' : ''} ${owned ? '' : 'is-locked'}`}
                                     onClick={() => onEquip(cat.key, id, item)}
                                     aria-label={item.name}
                                 >
@@ -244,10 +322,12 @@ function StoreScreen({ setView, flagsData }) {
                                     <span className="cosmetic-name">{item.name}{item.anim ? ' ✨' : ''}</span>
                                     {equipped ? (
                                         <span className="cosmetic-tag cosmetic-tag--on"><Icon name="check" /> Equipped</span>
-                                    ) : unlocked ? (
+                                    ) : owned ? (
                                         <span className="cosmetic-tag">Equip</span>
                                     ) : (
-                                        <span className="cosmetic-tag cosmetic-tag--lock"><Icon name="lock" /> {item.xp} XP</span>
+                                        <span className={`cosmetic-tag cosmetic-tag--buy ${canAfford ? '' : 'cosmetic-tag--cant'}`}>
+                                            <AtlasBucksIcon size={12} /> {cost.toLocaleString()}
+                                        </span>
                                     )}
                                 </button>
                             );

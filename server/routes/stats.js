@@ -90,18 +90,15 @@ router.put('/', (req, res) => {
     res.json(result);
 });
 
-// Full Reset Data — wipes every per-account progress column on the user row so
-// the account becomes a "blank slate" while staying logged in. Preserved:
-// identity (username/password_hash/created_at/is_admin), security questions +
-// recovery codes (still needed to recover the account), and
-// last_read_announcement_id (so the user doesn't re-see every old announcement).
+// Full Reset Data — wipes per-account progress (flag stats, streaks, pet,
+// cosmetics, achievements) so the account becomes a "blank slate" while
+// staying logged in. XP and Atlas Bucks are intentionally preserved — the
+// player keeps the rewards they've earned even after a reset, so the trade-in
+// economy never "punishes" a clean-up.
 router.post('/reset', (req, res) => {
     db.prepare(
         `UPDATE users SET
-            xp = 0,
-            earned_xp = 0,
             stats_json = NULL,
-            bonus_scores_json = NULL,
             streaks_json = NULL,
             pet_json = NULL,
             pet_level = 1,

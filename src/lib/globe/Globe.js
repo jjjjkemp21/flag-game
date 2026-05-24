@@ -545,6 +545,11 @@ class Globe {
         } else if (colorState === 'wrong') {
             mesh.material.color.copy(this.palette.wrong);
             mesh.material.emissive.copy(this.palette.wrongEmit);
+        } else if (colorState === 'other') {
+            // Opponent picked this country — reuse the atmosphere/highlight
+            // blue so it doesn't read as right-or-wrong.
+            mesh.material.color.copy(this.palette.highlight);
+            mesh.material.emissive.copy(this.palette.highlight).multiplyScalar(0.4);
         } else {
             mesh.material.color.copy(mesh === this.selected ? this.palette.landHover : this.palette.land);
             mesh.material.emissive.copy(mesh === this.selected ? this.palette.landHoverEmit : this.palette.landEmit);
@@ -562,7 +567,7 @@ class Globe {
     // position. Constraining Rz=0, solving Rx(α) * Ry(β) * c = (0,0,1) gives
     // β = atan2(-cx, cz), α = atan2(cy, √(cx²+cz²)).
     _flyToDirection(c, opts = {}) {
-        const { duration = FOCUS_DUR_MS, zoom = null } = opts;
+        const { duration = FOCUS_DUR_MS, zoom = null, noZoomOut = false } = opts;
         if (!c || c.lengthSq() === 0) return;
         const dir = c.clone().normalize();
         const targetY = Math.atan2(-dir.x, dir.z);
@@ -576,7 +581,10 @@ class Globe {
         let dy = targetY - startY;
         dy = ((dy + Math.PI) % (2 * Math.PI)) - Math.PI;
         const startZ = this.camera.position.z;
-        const targetZ = zoom == null ? startZ : zoom;
+        // noZoomOut: callers like onSelect want to focus a country without
+        // ever ejecting the player further out than they already pinched in.
+        let targetZ = zoom == null ? startZ : zoom;
+        if (noZoomOut && targetZ > startZ) targetZ = startZ;
         // Cancel any in-flight fly so the new tween isn't racing the old one.
         this._flyToken = (this._flyToken || 0) + 1;
         const myToken = this._flyToken;

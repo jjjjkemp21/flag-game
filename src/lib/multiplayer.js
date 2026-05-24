@@ -34,7 +34,13 @@ export const DEFAULT_MP_CONFIG = {
     target: 50,           // race: correct answers to win
     duration: 60,         // blitz / streak: seconds
     maxPlayers: 8,
+    // Atlas Bucks wager — each player antes this many bucks at start,
+    // winner takes the whole pot. 0 disables wagering.
+    ante: 0,
 };
+
+// Ante presets shown as quick chips in the lobby UI.
+export const ANTE_PRESETS = [0, 25, 100, 500, 2000];
 
 export function modeMeta(key) {
     return MP_MODES.find((m) => m.key === key) || MP_MODES[0];

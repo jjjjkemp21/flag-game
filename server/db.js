@@ -90,6 +90,16 @@ if (!hasCol('mp_wins')) db.exec('ALTER TABLE users ADD COLUMN mp_wins INTEGER NO
 // NULL means "use the auto-derived rank for the current leaderboard scope" —
 // the existing behaviour for accounts that haven't picked one yet.
 if (!hasCol('selected_title')) db.exec('ALTER TABLE users ADD COLUMN selected_title TEXT');
+// ---- Atlas Bucks (currency) ----
+// `bucks` is the player's spendable balance. `bucks_minted_xp` tracks how much
+// earned XP has already been converted to bucks so a trade-in claim only mints
+// the *new* delta. `owned_cosmetics_json` stores the JSON array of "cat:id"
+// strings the player has bought — equipping requires ownership now (instead
+// of an XP threshold). Defaults (color:teal, none for the other slots) are
+// always considered owned by the client/server normalizers.
+if (!hasCol('bucks')) db.exec('ALTER TABLE users ADD COLUMN bucks INTEGER NOT NULL DEFAULT 0');
+if (!hasCol('bucks_minted_xp')) db.exec('ALTER TABLE users ADD COLUMN bucks_minted_xp INTEGER NOT NULL DEFAULT 0');
+if (!hasCol('owned_cosmetics_json')) db.exec('ALTER TABLE users ADD COLUMN owned_cosmetics_json TEXT');
 
 // No dedicated/seeded admin account anymore — admin is now claimed at runtime
 // by any signed-in user who enters the secret password (see POST

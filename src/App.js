@@ -25,6 +25,7 @@ import { computeXp, readBonusScores } from './lib/xp';
 import { setAuthed, loadBonus, resetBonus, loadEarnedXp, resetEarnedXp } from './lib/progress';
 import { loadPet, resetPet, recordCorrect, recordIncorrect, getPet } from './lib/pet';
 import { loadProfile, resetProfile, setAchievementsUnlocked } from './lib/profile';
+import { loadCurrency, resetCurrency } from './lib/currency';
 import { buildContext, evaluate } from './lib/achievements';
 import { variants } from './motion';
 
@@ -219,6 +220,11 @@ function App() {
                 } catch (_) {
                     /* profile stays at defaults if the load fails */
                 }
+                // Atlas Bucks balance + owned cosmetics — needed before the
+                // shop screen renders so cards know "owned" vs "buy".
+                if (!cancelled) {
+                    try { await loadCurrency(); } catch (_) { /* shop will lazy-retry */ }
+                }
                 // Recompute unlocked achievements from the just-loaded progress so the
                 // account's count + showcase are correct. Without this they stay at the
                 // load-time defaults (unlocked=[]) and a later cosmetic-only persist
@@ -233,6 +239,7 @@ function App() {
                 resetEarnedXp();
                 resetPet();
                 resetProfile();
+                resetCurrency();
                 answerTotalsRef.current = { correct: 0, incorrect: 0 };
                 setFlagsData(prev => zeroFlagStats(prev));
             }

@@ -2123,6 +2123,169 @@
 .cosmetic-tag { font-size: var(--fs-xs); font-weight: 700; color: var(--color-ink-soft); display: inline-flex; align-items: center; gap: 3px; }
 .cosmetic-tag--on { color: var(--color-primary); }
 .cosmetic-tag--lock { color: var(--color-ink-muted); }
+/* Atlas Bucks price tag on shop cards — chip-style with the map-$ glyph. */
+.cosmetic-tag--buy {
+    background: var(--color-bg-soft);
+    color: var(--color-ink);
+    padding: 3px 8px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--color-border);
+}
+.cosmetic-tag--cant { color: var(--color-danger-deep); border-color: var(--color-danger); opacity: 0.85; }
+
+/* -------- Shop section headers --------
+   The customization screen groups cosmetics by category (Globe color / Hats /
+   Glasses / Effects). The original .settings-section-title was a quiet
+   uppercase chip; for the shop we want a more obvious divider so each
+   category visually reads as its own card. */
+.store-section--cards {
+    background: var(--color-bg-elev-2);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-md) var(--space-md) calc(var(--space-md) + 2px);
+    margin-top: var(--space-sm);
+    box-shadow: var(--shadow-sm);
+}
+.store-section-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-sm);
+    padding: 0 0 var(--space-sm);
+    margin-bottom: var(--space-sm);
+    border-bottom: 2px solid var(--color-border);
+}
+.store-section-title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: var(--fs-md);
+    color: var(--color-ink);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+.store-section-title--big {
+    font-size: var(--fs-lg);
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--color-primary-deep, var(--color-primary));
+}
+.store-section-title--big .material-symbols-rounded {
+    color: var(--color-primary);
+    background: var(--color-primary-soft);
+    padding: 4px;
+    border-radius: var(--radius-md);
+    font-size: 20px;
+}
+.store-section-count {
+    font-size: var(--fs-xs);
+    font-weight: 800;
+    color: var(--color-ink-soft);
+    background: var(--color-bg-soft);
+    padding: 3px 10px;
+    border-radius: var(--radius-pill);
+}
+
+/* -------- Atlas Bucks (currency) -------- */
+.atlas-bucks-icon { display: inline-block; flex: none; }
+.ab-amount { display: inline-flex; align-items: center; gap: 4px; font-weight: 800; }
+
+/* Topbar bucks chip — clickable shortcut to the shop. */
+.ab-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 10px 4px 6px;
+    border-radius: var(--radius-pill);
+    background: var(--color-bg-elev-2);
+    border: 1px solid var(--color-border);
+    color: var(--color-ink);
+    font-weight: 800;
+    font-size: var(--fs-sm);
+    cursor: pointer;
+    transition: transform var(--dur-fast) var(--ease-out-quart), background var(--dur-fast);
+}
+.ab-chip:hover { background: var(--color-bg-soft); transform: translateY(-1px); }
+.ab-chip:active { transform: translateY(0); }
+
+/* Pill variant used in the multiplayer HUD for the active pot. */
+.ab-pill { display: inline-flex; align-items: center; gap: 4px; }
+
+/* Store wallet block — balance + XP trade-in. */
+.ab-wallet {
+    width: 100%;
+    margin-top: var(--space-sm);
+    padding: var(--space-sm) var(--space-md);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-bg-elev-2);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.ab-wallet__balance {
+    display: flex; align-items: center; gap: 8px;
+    font-family: var(--font-display);
+}
+.ab-wallet__num {
+    font-size: var(--fs-xl);
+    font-weight: 900;
+    color: var(--color-ink);
+}
+.ab-wallet__label { font-size: var(--fs-sm); color: var(--color-ink-soft); font-weight: 700; }
+.ab-wallet__trade {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: var(--space-sm);
+    flex-wrap: wrap;
+}
+.ab-wallet__xp { font-weight: 800; color: var(--color-ink-soft); font-size: var(--fs-sm); }
+.ab-wallet__hint {
+    margin: 0;
+    font-size: var(--fs-xs);
+    color: var(--color-ink-muted);
+}
+
+/* Multiplayer wallet chip (in the host/join hub). */
+.mp-wallet-chip {
+    align-self: center;
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 12px;
+    border-radius: var(--radius-pill);
+    background: var(--color-bg-elev-2);
+    border: 1px solid var(--color-border);
+    font-weight: 800;
+    color: var(--color-ink);
+}
+
+/* Pot summary in the lobby room. */
+.mp-pot {
+    padding: var(--space-sm) var(--space-md);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--color-border);
+    background: var(--color-bg-elev-2);
+    margin-bottom: var(--space-sm);
+}
+.mp-pot--broke { border-color: var(--color-danger); background: var(--color-danger-soft, var(--color-bg-elev-2)); }
+.mp-pot__row { display: flex; justify-content: space-between; align-items: center; gap: var(--space-sm); }
+.mp-pot__label { display: inline-flex; align-items: center; gap: 6px; font-weight: 800; }
+.mp-pot__pot { font-weight: 800; color: var(--color-primary); }
+.mp-pot__hint { margin: 4px 0 0; font-size: var(--fs-sm); color: var(--color-ink-soft); }
+
+/* Results screen payout banner. */
+.mp-payout {
+    display: inline-flex; align-items: center; gap: 8px;
+    align-self: center;
+    padding: 8px 16px;
+    border-radius: var(--radius-pill);
+    background: var(--color-bg-elev-2);
+    border: 1px solid var(--color-border);
+    font-weight: 700;
+    margin: var(--space-sm) 0;
+}
+.mp-payout--won {
+    background: linear-gradient(120deg, #19C37D22, #FFD86B33);
+    border-color: var(--color-success, #19C37D);
+    color: var(--color-success-deep, #109764);
+}
 
 /* -------- Rank tiers (mastery rank + achievement badges) -------- */
 /* tier colors: stone / bronze / silver / gold / platinum / legend */
@@ -2727,4 +2890,50 @@
     }
     .mp-globe-prompt__tag { display: none; }
     .mp-globe-prompt__flag { width: 84px; }
+}
+
+/* ==== Multiplayer pre-match countdown ====================================
+   Full-screen 3-2-1 overlay shown to every player after the host hits Start.
+   Inputs are gated server-side via playsAt; this just makes the wait obvious. */
+.mp-countdown {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    display: grid;
+    place-content: center;
+    gap: var(--space-sm);
+    background: rgba(15, 14, 30, 0.55);
+    backdrop-filter: blur(6px);
+    color: #FFFFFF;
+    text-align: center;
+    pointer-events: none;
+    animation: mpCountdownFade 0.2s ease-out;
+}
+.mp-countdown__number {
+    font-size: 160px;
+    font-weight: 900;
+    line-height: 1;
+    color: #FFFFFF;
+    text-shadow: 0 8px 32px rgba(91, 91, 246, 0.45);
+    animation: mpCountdownPop 0.9s cubic-bezier(.18,.9,.32,1.2);
+}
+.mp-countdown__label {
+    font-size: var(--fs-md);
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    opacity: 0.85;
+}
+@keyframes mpCountdownPop {
+    0%   { transform: scale(0.4); opacity: 0; }
+    35%  { transform: scale(1.18); opacity: 1; }
+    70%  { transform: scale(1); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+}
+@keyframes mpCountdownFade {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+@media (max-width: 720px) {
+    .mp-countdown__number { font-size: 120px; }
 }

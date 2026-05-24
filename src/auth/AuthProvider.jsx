@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { api, setToken, getToken } from '../api/client';
+import { hydrateFromUser as hydrateCurrencyFromUser } from '../lib/currency';
 
 const AuthContext = createContext(null);
 
@@ -17,6 +18,7 @@ export function AuthProvider({ children }) {
             const { user: u } = await api.get('/auth/me');
             setUser(u);
             setStatus('authed');
+            hydrateCurrencyFromUser(u);
             return u;
         } catch (_) {
             setToken(null);
@@ -35,6 +37,7 @@ export function AuthProvider({ children }) {
         setToken(token);
         setUser(u);
         setStatus('authed');
+        hydrateCurrencyFromUser(u);
         return u;
     }, []);
 
@@ -43,6 +46,7 @@ export function AuthProvider({ children }) {
         setToken(token);
         setUser(u);
         setStatus('authed');
+        hydrateCurrencyFromUser(u);
         return { user: u, recoveryCodes };
     }, []);
 

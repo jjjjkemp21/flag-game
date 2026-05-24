@@ -4,15 +4,17 @@ import Icon from './Icon';
 import { Button, Pill, ChoiceCard } from './ui';
 import { useToast } from './ui/Toast';
 import Mascot from '../assets/illustrations/Mascot';
+import AtlasBucksIcon from '../assets/illustrations/AtlasBucks';
 import ScoringInfo from './ScoringInfo';
 import Spinner from '../assets/illustrations/Spinner';
 import { useAuth } from '../auth/AuthProvider';
 import { useAudio } from '../audio/AudioProvider';
 import { recordBattleResult } from '../lib/pet';
+import { useCurrency, setBucksLocal } from '../lib/currency';
 import Globe from '../lib/globe/Globe';
 import {
     mp, useLobbyPoll, makeEngine, checkText, checkGlobePick,
-    MP_MODES, DEFAULT_MP_CONFIG, modeMeta,
+    MP_MODES, DEFAULT_MP_CONFIG, ANTE_PRESETS, modeMeta,
 } from '../lib/multiplayer';
 
 const titleCase = (s) => s.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
@@ -164,6 +166,34 @@ function ConfigEditor({ config, regions, disabled, onChange }) {
             )}
             {config.mode === 'blitz' && <p className="mp-field__hint">1v1 Blitz is locked to 2 players.</p>}
             {config.mode === 'battle' && <p className="mp-field__hint">Atlas Battle is 1v1 — losing drops your Atlas's battle HP (heal it by playing other modes).</p>}
+
+            <div className="mp-field">
+                <span className="mp-field__label">
+                    <AtlasBucksIcon size={14} /> Wager (per player)
+                </span>
+                <div className="mp-choices">
+                    {ANTE_PRESETS.map((amount) => (
+                        <button
+                            key={amount}
+                            type="button"
+                            disabled={disabled}
+                            className={`mp-chip ${(+config.ante || 0) === amount ? 'is-on' : ''}`}
+                            onClick={() => set({ ante: amount })}
+                        >
+                            {amount === 0 ? (
+                                <><Icon name="not_interested" /> Free</>
+                            ) : (
+                                <><AtlasBucksIcon size={12} /> {amount}</>
+                            )}
+                        </button>
+                    ))}
+                </div>
+                <span className="mp-field__hint">
+                    {(+config.ante || 0) === 0
+                        ? 'A friendly free match — no Atlas Bucks on the line.'
+                        : `Every player antes ${(+config.ante).toLocaleString()} on start. Winner takes the whole pot.`}
+                </span>
+            </div>
         </div>
     );
 }
@@ -174,6 +204,7 @@ function ConfigEditor({ config, regions, disabled, onChange }) {
 function Hub({ flagsData, onEnter, setView }) {
     const toast = useToast();
     const regions = useMemo(() => regionsOf(flagsData), [flagsData]);
+    const currency = useCurrency();
     const [tab, setTab] = useState('host');
     const [draft, setDraft] = useState(DEFAULT_MP_CONFIG);
     const [joinCode, setJoinCode] = useState('');
@@ -211,6 +242,11 @@ function Hub({ flagsData, onEnter, setView }) {
             <div className="menu-title-row">
                 <h2 className="text-center" style={{ margin: 0 }}>Multiplayer</h2>
                 <ScoringInfo mode="multiplayer" />
+            </div>
+
+            <div className="mp-wallet-chip" aria-label="Your Atlas Bucks">
+                <AtlasBucksIcon size={16} />
+                <span>{(currency.bucks || 0).toLocaleString()} Atlas Bucks</span>
             </div>
 
             <div className="auth-tabs">
@@ -253,6 +289,16 @@ function LobbyRoom({ lobby, code, flagsData, onLeave, refresh, setState }) {
     const [busy, setBusy] = useState(false);
     const isHost = lobby.isHost;
     const players = lobby.members;
+    const ante = Math.max(0, +(lobby.config && lobby.config.ante) || 0);
+    const meBucks = Math.max(0, +(lobby.meBucks) || 0);
+    const canAffordAnte = ante === 0 || meBucks >= ante;
+    const pot = ante * players.length;
+
+    // Mirror the server's meBucks into the local currency store on each poll
+    // so the topbar chip / shop preview stay accurate while in the lobby.
+    useEffect(() => {
+        if (typeof lobby.meBucks === 'number') setBucksLocal(lobby.meBucks);
+    }, [lobby.meBucks]);
 
     const pushConfig = async (next) => {
         setState((s) => (s ? { ...s, config: next } : s)); // optimistic
@@ -299,11 +345,38 @@ function LobbyRoom({ lobby, code, flagsData, onLeave, refresh, setState }) {
             </div>
             <p className="auth-hint text-center">{players.length} / {lobby.config.maxPlayers} players</p>
 
+            {ante > 0 && (
+                <div className={`mp-pot ${canAffordAnte ? '' : 'mp-pot--broke'}`}>
+                    <div className="mp-pot__row">
+                        <span className="mp-pot__label">
+                            <AtlasBucksIcon size={16} /> Wagering match
+                        </span>
+                        <span className="mp-pot__pot">
+                            Pot: <strong>{pot.toLocaleString()}</strong>
+                        </span>
+                    </div>
+                    <p className="mp-pot__hint">
+                        Ante <strong>{ante.toLocaleString()}</strong> each — your balance: {meBucks.toLocaleString()}.
+                        {!canAffordAnte && ' You can\'t cover the ante yet — trade in XP at the Atlas Shop.'}
+                    </p>
+                </div>
+            )}
+
             {isHost ? (
                 <>
                     <ConfigEditor config={lobby.config} regions={regions} onChange={pushConfig} />
-                    <Button variant="primary" fullWidth icon="play_arrow" onClick={start} disabled={busy || players.length < 2}>
-                        {players.length < 2 ? 'Need at least 2 players' : 'Start match'}
+                    <Button
+                        variant="primary"
+                        fullWidth
+                        icon="play_arrow"
+                        onClick={start}
+                        disabled={busy || players.length < 2 || !canAffordAnte}
+                    >
+                        {players.length < 2
+                            ? 'Need at least 2 players'
+                            : !canAffordAnte
+                                ? `Need ${ante.toLocaleString()} Atlas Bucks to ante`
+                                : 'Start match'}
                     </Button>
                 </>
             ) : (
@@ -408,17 +481,23 @@ function Game({ lobby, code, flagsData, meId }) {
     answeredRef.current = answered;
     const resolveGlobeRef = useRef(null);
 
-    // Clock sync for timed modes.
+    // Clock sync for timed modes + the 3-2-1 pre-match countdown.
     const offsetRef = useRef(0);
     useEffect(() => { if (lobby.serverNow) offsetRef.current = lobby.serverNow - Date.now(); }, [lobby.serverNow]);
     const [now, setNow] = useState(Date.now());
     useEffect(() => {
-        if (!lobby.endsAt) return undefined; // race mode has no clock
-        const t = setInterval(() => setNow(Date.now()), 300);
+        // Tick whenever we either have a clock OR are still in the pre-match
+        // countdown, so both the timer and the 3-2-1 overlay update smoothly.
+        if (!lobby.endsAt && !lobby.playsAt) return undefined;
+        const t = setInterval(() => setNow(Date.now()), 120);
         return () => clearInterval(t);
-    }, [lobby.endsAt]);
+    }, [lobby.endsAt, lobby.playsAt]);
     const timeLeft = lobby.endsAt ? Math.max(0, Math.round((lobby.endsAt - (now + offsetRef.current)) / 1000)) : null;
     const timeUp = timeLeft === 0;
+    // Pre-match countdown — clients gate answers until playsAt elapses so the
+    // race starts on the same moment for everyone.
+    const countdownMsLeft = lobby.playsAt ? Math.max(0, lobby.playsAt - (now + offsetRef.current)) : 0;
+    const inCountdown = countdownMsLeft > 0;
 
     const question = useMemo(() => (engine ? engine.get(qIndex) : null), [engine, qIndex]);
 
@@ -443,7 +522,9 @@ function Game({ lobby, code, flagsData, meId }) {
                 if (answeredRef.current) return;
                 setSelectedIso2(iso2 || null);
                 audio.play('click');
-                if (iso2 && globeRef.current) globeRef.current.flyToIso2(iso2, { zoom: 4.6 });
+                // Focus the country WITHOUT ever ejecting the player further
+                // out than they already pinched in.
+                if (iso2 && globeRef.current) globeRef.current.flyToIso2(iso2, { zoom: 4.6, noZoomOut: true });
             },
             onConfirm: (iso2) => {
                 if (answeredRef.current) return;
@@ -478,10 +559,28 @@ function Game({ lobby, code, flagsData, meId }) {
         return () => observer.disconnect();
     }, [isGlobe]);
 
+    // Paint opponents' picks on the globe once the player has answered, so the
+    // reveal shows where everyone placed without leaking the answer beforehand.
+    // The server only reveals picks for the question the viewer is on, so a
+    // pick we paint here is guaranteed to be for the current question. The
+    // advanceTimer clearAllPaints() between questions wipes them.
+    useEffect(() => {
+        if (!isGlobe || !answered || !globeRef.current || !question || question.kind !== 'globe') return;
+        const correctIso2 = (question.answerIso2 || '').toUpperCase();
+        lobby.members.forEach((m) => {
+            if (m.id === meId || !m.pick) return;
+            const iso2 = String(m.pick).toUpperCase();
+            // Skip painting opponents' picks that match the correct/own-wrong
+            // tile — those already have a stronger feedback color.
+            if (iso2 === correctIso2) return;
+            globeRef.current.paintCountry(iso2, 'other');
+        });
+    }, [isGlobe, answered, lobby.members, question, meId]);
+
     const finished = lobby.state === 'finished' || timeUp;
 
     const handleResult = (correct, pick) => {
-        if (answered || finished) return;
+        if (answered || finished || inCountdown) return;
         setAnswered(true);
         let s = score, st = streak, bs = bestStreak;
         if (correct) {
@@ -511,13 +610,13 @@ function Game({ lobby, code, flagsData, meId }) {
     };
 
     const onChoice = (label) => {
-        if (answered || finished) return;
+        if (answered || finished || inCountdown) return;
         setChosen(label);
         handleResult(label === question.answer, label);
     };
     const onSubmit = (e) => {
         e.preventDefault();
-        if (answered || finished || !input.trim()) return;
+        if (answered || finished || inCountdown || !input.trim()) return;
         handleResult(checkText(input, question, config.strict), null);
     };
 
@@ -526,7 +625,7 @@ function Game({ lobby, code, flagsData, meId }) {
     // handleResult / score / streak; the Globe's onConfirm callback dispatches
     // via resolveGlobeRef which is reassigned on every render below.
     const resolveGlobe = (iso2) => {
-        if (answeredRef.current || finished) return;
+        if (answeredRef.current || finished || inCountdown) return;
         if (!iso2 || !question || question.kind !== 'globe') return;
         const correct = checkGlobePick(iso2, question);
         if (globeRef.current) {
@@ -575,6 +674,11 @@ function Game({ lobby, code, flagsData, meId }) {
                 )}
                 <Pill tone="accent" icon="local_fire_department">Streak {streak}</Pill>
                 {timeLeft != null && <Pill tone={timeLeft <= 10 ? 'danger' : 'info'} icon="timer">{timeLeft}s</Pill>}
+                {lobby.pot > 0 && (
+                    <Pill tone="success" className="ab-pill">
+                        <AtlasBucksIcon size={14} /> Pot {lobby.pot.toLocaleString()}
+                    </Pill>
+                )}
             </div>
 
             <Scoreboard members={lobby.members} meId={meId} mode={config.mode} target={config.target} />
@@ -682,6 +786,15 @@ function Game({ lobby, code, flagsData, meId }) {
             {timeUp && lobby.state !== 'finished' && (
                 <p className="auth-hint text-center">Time! Tallying results…</p>
             )}
+
+            {inCountdown && (
+                <div className="mp-countdown" aria-live="polite">
+                    <div className="mp-countdown__number" key={Math.ceil(countdownMsLeft / 1000)}>
+                        {Math.ceil(countdownMsLeft / 1000)}
+                    </div>
+                    <div className="mp-countdown__label">Get ready…</div>
+                </div>
+            )}
         </div>
     );
 }
@@ -734,16 +847,24 @@ function Scoreboard({ members, meId, mode, target }) {
 // ---------------------------------------------------------------------------
 function Results({ lobby, meId, code, onLeave, setState }) {
     const audio = useAudio();
+    const { patchUser } = useAuth();
     const mode = lobby.config.mode;
     const metric = (m) => (mode === 'streak' ? m.bestStreak : m.score);
     const ranked = [...lobby.members].sort((a, b) => metric(b) - metric(a));
     const winner = lobby.members.find((m) => m.id === lobby.winnerId) || ranked[0];
     const iWon = winner && winner.id === meId;
+    const payout = lobby.payout || null;
 
     useEffect(() => {
         audio.play(iWon ? 'levelUp' : 'gameOver');
         // Atlas Battle outcomes act on the (separate, revivable) battle-HP track.
         if (mode === 'battle') recordBattleResult(iWon);
+        // Update the in-memory bucks balance so the topbar chip / next lobby
+        // shows the payout immediately without an extra refresh round-trip.
+        if (typeof lobby.meBucks === 'number') {
+            patchUser({ bucks: lobby.meBucks });
+            setBucksLocal(lobby.meBucks);
+        }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
@@ -757,6 +878,20 @@ function Results({ lobby, meId, code, onLeave, setState }) {
         <div className="quiz-box mp-box mp-box--results">
             <h2 className="text-center">{iWon ? 'You win! 🏆' : `${winner ? winner.username : 'Nobody'} wins!`}</h2>
             <Mascot size={120} mood={iWon ? 'cheer' : 'sad'} cosmetics={winner ? winner.cosmetics : null} />
+
+            {payout && (payout.amount > 0 || payout.refunded) && (
+                <div className={`mp-payout ${iWon ? 'mp-payout--won' : ''}`}>
+                    <AtlasBucksIcon size={22} />
+                    {payout.refunded ? (
+                        <span>Match unresolved — refunded {payout.perPlayer.toLocaleString()} to each player.</span>
+                    ) : iWon ? (
+                        <span>You take the pot — <strong>+{payout.amount.toLocaleString()}</strong> Atlas Bucks!</span>
+                    ) : (
+                        <span>{winner ? winner.username : 'The winner'} takes <strong>{payout.amount.toLocaleString()}</strong> Atlas Bucks.</span>
+                    )}
+                </div>
+            )}
+
             <div className="mp-scoreboard">
                 {ranked.map((m, i) => (
                     <div key={m.id} className={`mp-score-row ${m.id === meId ? 'is-me' : ''}`}>

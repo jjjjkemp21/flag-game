@@ -1,10 +1,40 @@
 const express = require('express');
 const db = require('../db');
 const { requireAuth } = require('../middleware');
+const { DEFAULTS } = require('../cosmeticsCatalog');
 
 const router = express.Router();
 
 router.use(requireAuth);
+
+// Equipping is allowed for items the player owns (or defaults). Coerce any
+// unknown / unowned ids back to the default for that slot so a bad payload
+// can't make the mascot render a cosmetic the player hasn't bought.
+function ownedSetOf(userId) {
+    const row = db.prepare('SELECT owned_cosmetics_json FROM users WHERE id = ?').get(userId);
+    if (!row || !row.owned_cosmetics_json) return new Set();
+    try {
+        const arr = JSON.parse(row.owned_cosmetics_json);
+        return new Set(Array.isArray(arr) ? arr : []);
+    } catch (_) { return new Set(); }
+}
+
+function gateCosmetics(userId, c) {
+    if (!c || typeof c !== 'object') return c;
+    const owned = ownedSetOf(userId);
+    const gate = (cat, id) => {
+        if (DEFAULTS[cat] === id) return id;
+        if (owned.has(`${cat}:${id}`)) return id;
+        return DEFAULTS[cat];
+    };
+    return {
+        ...c,
+        color: gate('color', c.color),
+        hat: gate('hat', c.hat),
+        glasses: gate('glasses', c.glasses),
+        effect: gate('effect', c.effect),
+    };
+}
 
 router.get('/', (req, res) => {
     const row = db.prepare('SELECT region, cosmetics_json, achievements_json, streaks_json, selected_title FROM users WHERE id = ?').get(req.user.id);
@@ -34,8 +64,9 @@ router.put('/', (req, res) => {
         db.prepare('UPDATE users SET region = ? WHERE id = ?').run(code, req.user.id);
     }
     if (cosmetics && typeof cosmetics === 'object') {
+        const safe = gateCosmetics(req.user.id, cosmetics);
         db.prepare('UPDATE users SET cosmetics_json = ? WHERE id = ?')
-            .run(JSON.stringify(cosmetics), req.user.id);
+            .run(JSON.stringify(safe), req.user.id);
     }
     if (achievements && typeof achievements === 'object') {
         const showcase = Array.isArray(achievements.showcase)

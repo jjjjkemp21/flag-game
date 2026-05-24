@@ -3,22 +3,39 @@ import Icon from './Icon';
 import { Modal, Button } from './ui';
 import { useAuth } from '../auth/AuthProvider';
 import { useProfile } from '../lib/profile';
+import { useCurrency } from '../lib/currency';
 import { ACHIEVEMENTS_BY_ID } from '../lib/achievements';
+import AtlasBucksIcon from '../assets/illustrations/AtlasBucks';
 import AchievementBadge from './AchievementBadge';
 import NotificationBell from './NotificationBell';
 
 function TopBar({ setView }) {
     const { isAuthed, user, logout } = useAuth();
     const profile = useProfile();
+    const currency = useCurrency();
     const [menuOpen, setMenuOpen] = useState(false);
     const badges = (profile.achievements.showcase || []).map((id) => ACHIEVEMENTS_BY_ID[id]).filter(Boolean);
     // Profile store loads on sign-in; before then we fall back to the title baked
     // into the user payload so the chip never shows a blank line.
     const selectedTitle = profile.selectedTitle || user?.selectedTitle || null;
+    // Bucks live in the currency store after login; fall back to the user
+    // payload so the chip doesn't flicker between login and the first poll.
+    const bucks = currency.loaded ? currency.bucks : (user?.bucks || 0);
 
     return (
         <header className="topbar">
             <div className="topbar__right">
+                {isAuthed && (
+                    <button
+                        className="ab-chip"
+                        aria-label={`Atlas Bucks balance: ${bucks}`}
+                        onClick={() => setView('store')}
+                    >
+                        <AtlasBucksIcon size={16} />
+                        <span>{bucks.toLocaleString()}</span>
+                    </button>
+                )}
+
                 {isAuthed && <NotificationBell />}
 
                 <button className="bell-button" aria-label="Settings" onClick={() => setView('settings')}>

@@ -1,5 +1,7 @@
-// Catalog of cosmetics for Atlas. Everything unlocks by XP earned from playing,
-// then equips for free — no separate currency. One item per category is equipped.
+// Catalog of cosmetics for Atlas. Items are bought with Atlas Bucks (the
+// numeric `xp` field on each entry is the price). Defaults (color:teal, none
+// for the other slots) are free and always owned; everything else must be
+// purchased before the player can equip it.
 //
 // Hats and glasses are described as { shape, c } where `shape` selects an SVG
 // renderer (see assets/illustrations/Cosmetics.jsx) and `c` is its colorway, so
@@ -393,21 +395,47 @@ export function clampPos(p) {
     };
 }
 
-export function isUnlocked(xp, item) {
-    return (xp || 0) >= (item ? item.xp || 0 : 0);
+// The numeric `.xp` on each catalog item is now the Atlas Bucks price.
+// Kept under the same key so existing call-sites still work; a thin alias
+// (`priceOf`) is preferred in new code for readability.
+export function priceOf(item) {
+    return item ? Math.max(0, Math.round(Number(item.xp) || 0)) : 0;
+}
+
+// Defaults are free + always owned. Items with price 0 are also "free" — a
+// player gets them implicitly without needing to buy.
+const FREE_BY_DEFAULT = {
+    color: 'teal', hat: 'none', glasses: 'none', effect: 'none',
+};
+export function isDefaultItem(category, id) {
+    return FREE_BY_DEFAULT[category] === id;
 }
 
 export function paletteFor(color) {
     return COLORS[color] || COLORS.teal;
 }
 
-// Coerce stored cosmetics to valid, known ids + clamped placements.
-export function normalizeCosmetics(c) {
+// Coerce stored cosmetics to valid, known ids + clamped placements. If an
+// `ownedKey` predicate is provided we also fall back to the default for any
+// slot whose stored id isn't in the player's owned set — that way an account
+// that had an item "unlocked" under the old XP-threshold system but never
+// bought it under the new currency system won't render a cosmetic it doesn't
+// actually own.
+export function normalizeCosmetics(c, ownedKey) {
+    const ok = (cat, id) => {
+        if (typeof ownedKey !== 'function') return true;
+        if (isDefaultItem(cat, id)) return true;
+        return ownedKey(cat, id);
+    };
+    const pick = (cat, id, table) => {
+        if (!table[id]) return FREE_BY_DEFAULT[cat];
+        return ok(cat, id) ? id : FREE_BY_DEFAULT[cat];
+    };
     return {
-        color: COLORS[c && c.color] ? c.color : 'teal',
-        hat: HATS[c && c.hat] ? c.hat : 'none',
-        glasses: GLASSES[c && c.glasses] ? c.glasses : 'none',
-        effect: EFFECTS[c && c.effect] ? c.effect : 'none',
+        color: pick('color', c && c.color, COLORS),
+        hat: pick('hat', c && c.hat, HATS),
+        glasses: pick('glasses', c && c.glasses, GLASSES),
+        effect: pick('effect', c && c.effect, EFFECTS),
         hatPos: clampPos(c && c.hatPos),
         glassesPos: clampPos(c && c.glassesPos),
     };

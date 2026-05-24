@@ -23,13 +23,21 @@ function renderPatternDef(id, p) {
         );
     }
     if (kind === 'zebra') {
+        // Vertical, slightly tapered black stripes with short branching tails —
+        // the silhouette real zebra stripes have when viewed at distance.
         return (
             <pattern id={id} patternUnits="userSpaceOnUse" width="64" height="64">
                 <rect width="64" height="64" fill={base} />
-                <path d="M-4 4 q10 8 20 0 q12 8 24 0 q12 8 28 0 l0 6 q-14 8 -28 0 q-12 8 -24 0 q-10 6 -20 0 Z" fill={accent} />
-                <path d="M-4 22 q10 6 20 0 q12 6 24 -2 q12 8 28 0 l0 7 q-14 8 -28 0 q-12 8 -24 0 q-10 6 -20 0 Z" fill={accent} />
-                <path d="M-4 40 q10 6 20 0 q12 8 24 0 q12 6 28 0 l0 7 q-14 8 -28 0 q-12 8 -24 0 q-10 6 -20 0 Z" fill={accent} />
-                <path d="M-4 58 q10 6 20 0 q12 6 24 0 q12 6 28 0 l0 6 -68 0 Z" fill={accent} />
+                <g fill={accent}>
+                    <path d="M3 -4 C 5 12, 1 28, 5 44 C 8 56, 6 68, 9 72 L 13 72 C 11 60, 14 44, 10 28 C 7 16, 11 4, 9 -4 Z" />
+                    <path d="M19 -4 C 23 14, 17 28, 21 42 C 25 54, 21 66, 22 72 L 28 72 C 28 60, 31 46, 27 32 C 22 16, 27 6, 24 -4 Z" />
+                    <path d="M36 -4 C 32 12, 36 26, 32 40 C 30 52, 33 64, 33 72 L 39 72 C 37 60, 40 44, 36 30 C 33 18, 38 6, 36 -4 Z" />
+                    <path d="M50 -4 C 54 12, 50 26, 53 40 C 56 54, 52 66, 53 72 L 59 72 C 57 60, 62 46, 58 32 C 53 18, 56 6, 54 -4 Z" />
+                    {/* Smaller fragment stripes break up the rhythm so it doesn't look ruled */}
+                    <path d="M14 8 C 16 16, 14 24, 16 30 L 18 30 C 17 22, 19 14, 17 8 Z" opacity="0.92" />
+                    <path d="M44 22 C 46 32, 44 42, 46 50 L 48 50 C 47 42, 49 32, 47 22 Z" opacity="0.92" />
+                    <path d="M28 50 C 30 58, 28 66, 30 72 L 32 72 C 31 64, 33 58, 31 50 Z" opacity="0.92" />
+                </g>
             </pattern>
         );
     }
@@ -45,13 +53,22 @@ function renderPatternDef(id, p) {
         );
     }
     if (kind === 'cheetah') {
-        // Cheetah: scattered solid spots over a tan base.
-        const spots = [[8,10],[20,18],[34,8],[48,16],[58,26],[12,30],[24,38],[40,30],[52,40],[6,46],[18,54],[32,50],[44,56],[58,52],[28,24],[10,18]];
+        // Dense scatter of small dark spots over a tan base. Spots vary in
+        // size and rotation so the field doesn't look gridded.
+        const spots = [
+            [5, 6, 2.6, 2.2, 18],   [15, 4, 2.2, 2.6, -22], [26, 8, 2.8, 2.4, 8],   [37, 5, 2.4, 2.8, 30],  [48, 9, 2.6, 2.4, -14], [59, 6, 2.2, 2.6, 24],
+            [9, 16, 2.4, 2.6, -28], [21, 14, 2.8, 2.4, 14], [32, 18, 2.4, 2.8, -10], [43, 15, 2.6, 2.6, 22], [54, 17, 2.8, 2.4, -18], [62, 22, 2.2, 2.4, 6],
+            [4, 26, 2.6, 2.4, 28],  [16, 28, 2.4, 2.8, -16], [28, 26, 2.8, 2.6, 12], [40, 28, 2.4, 2.4, -24], [52, 26, 2.6, 2.8, 18],
+            [8, 38, 2.8, 2.4, -12], [20, 36, 2.4, 2.6, 26], [31, 40, 2.6, 2.4, -20], [42, 38, 2.8, 2.6, 14], [54, 40, 2.4, 2.8, -8], [62, 44, 2.2, 2.4, 24],
+            [4, 48, 2.4, 2.6, 16],  [14, 50, 2.6, 2.4, -28], [25, 48, 2.8, 2.6, 10], [37, 50, 2.4, 2.8, -22], [48, 48, 2.6, 2.4, 20], [58, 50, 2.4, 2.6, -12],
+            [10, 58, 2.6, 2.4, 24], [22, 60, 2.4, 2.8, -16], [34, 58, 2.8, 2.4, 12], [46, 60, 2.4, 2.6, -26], [56, 58, 2.6, 2.8, 18],
+        ];
         return (
             <pattern id={id} patternUnits="userSpaceOnUse" width="64" height="64">
                 <rect width="64" height="64" fill={base} />
-                {spots.map(([x, y], i) => (
-                    <ellipse key={i} cx={x} cy={y} rx={2.4 + (i % 3) * 0.4} ry={2 + (i % 2) * 0.5} fill={accent} />
+                {spots.map(([x, y, rx, ry, rot], i) => (
+                    <ellipse key={i} cx={x} cy={y} rx={rx} ry={ry} fill={accent}
+                        transform={`rotate(${rot} ${x} ${y})`} />
                 ))}
             </pattern>
         );
@@ -89,19 +106,31 @@ function renderPatternDef(id, p) {
         );
     }
     if (kind === 'leopard') {
-        // Leopard rosettes: ring of dark dots with a lighter centre spot.
-        const rosettes = [[10,12],[28,8],[46,14],[58,24],[14,26],[34,28],[52,32],[20,42],[40,46],[56,48],[10,52],[30,56]];
+        // Leopard rosettes: a broken ring of small dark crescents around a
+        // lighter golden centre patch. Each rosette is rotated independently so
+        // the pattern reads organic, not stamped.
+        const rosettes = [
+            [9, 10, 0],   [26, 7, 40],  [44, 12, -25], [58, 18, 15],
+            [16, 24, 30], [34, 22, -10], [50, 28, 50],
+            [6, 36, -35], [22, 38, 20], [40, 34, -5], [56, 40, 35],
+            [12, 50, 10], [30, 52, -28], [48, 50, 22], [60, 58, -12],
+            [4, 58, 28], [20, 60, -18], [38, 60, 14],
+        ];
         const ring = accent;
-        const centre = accent2 || base;
+        const inside = accent2 || base;
         return (
             <pattern id={id} patternUnits="userSpaceOnUse" width="64" height="64">
                 <rect width="64" height="64" fill={base} />
-                {rosettes.map(([x, y], i) => (
-                    <g key={i}>
-                        {[[0,-3],[3,-1.5],[3,1.5],[0,3],[-3,1.5],[-3,-1.5]].map(([dx, dy], j) => (
-                            <circle key={j} cx={x + dx} cy={y + dy} r="1.1" fill={ring} />
-                        ))}
-                        <circle cx={x} cy={y} r="1.3" fill={centre} opacity="0.85" />
+                {rosettes.map(([cx, cy, rot], i) => (
+                    <g key={i} transform={`translate(${cx} ${cy}) rotate(${rot})`}>
+                        {/* lighter golden interior — gives the rosette a centre */}
+                        <ellipse cx="0" cy="0" rx="3.4" ry="3.0" fill={inside} opacity="0.65" />
+                        {/* 5 dark "petals" forming an open ring */}
+                        <ellipse cx="0"    cy="-3.2" rx="1.4" ry="0.9" fill={ring} transform="rotate(0 0 -3.2)" />
+                        <ellipse cx="3.0"  cy="-1.0" rx="1.4" ry="0.9" fill={ring} transform="rotate(70 3 -1)" />
+                        <ellipse cx="2.0"  cy="2.6"  rx="1.4" ry="0.9" fill={ring} transform="rotate(130 2 2.6)" />
+                        <ellipse cx="-2.0" cy="2.6"  rx="1.4" ry="0.9" fill={ring} transform="rotate(-130 -2 2.6)" />
+                        <ellipse cx="-3.0" cy="-1.0" rx="1.4" ry="0.9" fill={ring} transform="rotate(-70 -3 -1)" />
                     </g>
                 ))}
             </pattern>

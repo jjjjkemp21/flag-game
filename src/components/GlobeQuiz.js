@@ -194,7 +194,8 @@ function GlobeQuiz({
                 // middle of the stage — gives the player a focused view of
                 // their guess before they confirm.
                 if (iso2 && globeRef.current) {
-                    globeRef.current.flyToIso2(iso2, { zoom: 4.6 });
+                    // Don't eject the player further out than they pinched in.
+                    globeRef.current.flyToIso2(iso2, { zoom: 4.6, noZoomOut: true });
                 }
             },
             onConfirm: (iso2) => {

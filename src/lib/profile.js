@@ -1,6 +1,7 @@
 import { useSyncExternalStore } from 'react';
 import { api } from '../api/client';
-import { DEFAULT_COSMETICS, normalizeCosmetics, clampPos } from './cosmetics';
+import { DEFAULT_COSMETICS, normalizeCosmetics, clampPos, isDefaultItem } from './cosmetics';
+import { isOwnedKey } from './currency';
 import { topAchievements } from './achievements';
 
 // Account-tied profile: region flag, equipped cosmetics, and achievements
@@ -48,7 +49,9 @@ export function loadProfile(serverProfile) {
     const ach = (serverProfile && serverProfile.achievements) || {};
     state = {
         region: (serverProfile && serverProfile.region) || null,
-        cosmetics: normalizeCosmetics(serverProfile && serverProfile.cosmetics),
+        // Pass the ownership predicate so a stored equip for an item the
+        // player no longer (or never) owns falls back to the slot default.
+        cosmetics: normalizeCosmetics(serverProfile && serverProfile.cosmetics, isOwnedKey),
         // unlocked is recomputed locally from live stats right after load.
         achievements: { showcase: Array.isArray(ach.showcase) ? ach.showcase.slice(0, 3) : [], unlocked: [] },
         streaks: (serverProfile && serverProfile.streaks && typeof serverProfile.streaks === 'object') ? serverProfile.streaks : {},
@@ -79,7 +82,12 @@ export function setRegion(code) {
     persist();
 }
 
+// Equip a cosmetic the player owns. Items that aren't owned are silently
+// ignored — the StoreScreen calls a separate buy flow and only equips after
+// purchase, so a no-op here just means the click hit a card the player
+// hasn't bought yet.
 export function setCosmetic(category, id) {
+    if (!isDefaultItem(category, id) && !isOwnedKey(category, id)) return;
     state = { ...state, cosmetics: { ...state.cosmetics, [category]: id } };
     notify();
     persist();

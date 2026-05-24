@@ -15,11 +15,22 @@ const RECOVERY_CODE_COUNT = 8;
 const SALT_ROUNDS = 10;
 
 function publicUser(u) {
+    let owned = [];
+    if (u.owned_cosmetics_json) {
+        try {
+            const arr = JSON.parse(u.owned_cosmetics_json);
+            if (Array.isArray(arr)) owned = arr;
+        } catch (_) { /* malformed — treat as empty */ }
+    }
     return {
         id: u.id,
         username: u.username,
         is_admin: !!u.is_admin,
         xp: u.xp,
+        // Atlas Bucks — spendable currency. Bought cosmetics deduct from this
+        // balance and add their id to ownedCosmetics ("category:id" strings).
+        bucks: Math.max(0, Math.round(Number(u.bucks) || 0)),
+        ownedCosmetics: owned,
         region: u.region || null,
         cosmetics: u.cosmetics_json ? JSON.parse(u.cosmetics_json) : null,
         petLevel: u.pet_level || 1,
