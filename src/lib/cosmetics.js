@@ -105,6 +105,71 @@ export const COLORS = {
             ['#B05BF6', '#FF5C6C', '#FFC247'],
         ] },
     },
+
+    // ---- Animal patterns ------------------------------------------------
+    // `pattern: { kind, base, accent, accent2? }` is honoured by Mascot.jsx —
+    // it switches the globe fill to an SVG <pattern> built from the kind.
+    // `stops`/`stroke` are kept as sensible fallbacks for places that don't
+    // know about patterns.
+    tiger: {
+        name: 'Tiger', xp: 2700, stroke: '#7A2A0F',
+        stops: ['#FFC07A', '#FF8A3F', '#C25A1A'],
+        pattern: { kind: 'tiger', base: '#FF8A3F', accent: '#2A1810' },
+    },
+    zebra: {
+        name: 'Zebra', xp: 2900, stroke: '#1F1A3B',
+        stops: ['#FFFFFF', '#E8E8EE', '#9AA0AE'],
+        pattern: { kind: 'zebra', base: '#F4F4F8', accent: '#1F1A3B' },
+    },
+    cow: {
+        name: 'Cow', xp: 3100, stroke: '#1F1A3B',
+        stops: ['#FFFFFF', '#F4F4F8', '#C9D2DC'],
+        pattern: { kind: 'cow', base: '#FFFFFF', accent: '#1F1A2A' },
+    },
+    cheetah: {
+        name: 'Cheetah', xp: 3300, stroke: '#6F4A26',
+        stops: ['#FFE3AE', '#E5B26A', '#A6743A'],
+        pattern: { kind: 'cheetah', base: '#E5B26A', accent: '#3A2410' },
+    },
+    dalmatian: {
+        name: 'Dalmatian', xp: 3500, stroke: '#1F1A3B',
+        stops: ['#FFFFFF', '#F4F4F8', '#C9D2DC'],
+        pattern: { kind: 'dalmatian', base: '#FFFFFF', accent: '#1F1A2A' },
+    },
+    leopard: {
+        name: 'Leopard', xp: 3900, stroke: '#5A3A18',
+        stops: ['#FFE0A8', '#E5A861', '#A06A2A'],
+        pattern: { kind: 'leopard', base: '#E5A861', accent: '#3A2410', accent2: '#FFC678' },
+    },
+    giraffe: {
+        name: 'Giraffe', xp: 4050, stroke: '#8A5A1A',
+        stops: ['#FFE6A8', '#E5B26A', '#A86F1A'],
+        pattern: { kind: 'giraffe', base: '#E5B26A', accent: '#6F4A1A' },
+    },
+
+    // ---- Neon glow ------------------------------------------------------
+    // `glow: { color }` adds a Gaussian-blur halo around the globe and tints
+    // the gradient stops to a single saturated colour.
+    neon_green: {
+        name: 'Neon Lime', xp: 4200, stroke: '#1F8A1F',
+        stops: ['#E5FFB0', '#7FFF3F', '#39C82A'],
+        glow: { color: '#9CFF3F' },
+    },
+    neon_pink: {
+        name: 'Neon Magenta', xp: 4500, stroke: '#8A1F6A',
+        stops: ['#FFD0F0', '#FF3FB0', '#C8198A'],
+        glow: { color: '#FF3FD0' },
+    },
+    neon_blue: {
+        name: 'Neon Cyan', xp: 4800, stroke: '#1F6A8A',
+        stops: ['#D0F0FF', '#3FB0FF', '#1A8AD8'],
+        glow: { color: '#3FE0FF' },
+    },
+    neon_violet: {
+        name: 'Neon Violet', xp: 5100, stroke: '#5A1F8A',
+        stops: ['#E0CFFF', '#9A3FFF', '#6A19D8'],
+        glow: { color: '#B05BFF' },
+    },
 };
 
 // ---- Hat colorways ---------------------------------------------------------
@@ -190,6 +255,18 @@ export const HATS = {
     crown_silver:  { name: 'Silver Crown',      xp: 1850, shape: 'crown',     c: SILVER },
     tophat_blue:   { name: 'Dapper Hat',        xp: 2100, shape: 'tophat',    c: BLUE },
     wizard_green:  { name: 'Druid Hat',         xp: 2550, shape: 'wizard',    c: GREEN },
+
+    // ---- Silly novelty hats --------------------------------------------
+    pirate:        { name: 'Pirate Tricorn',    xp: 1150, shape: 'pirate',    c: hc('#1F1A2A', '#0F0A18', '#F2F4F8') },
+    mohawk_pink:   { name: 'Pink Mohawk',       xp: 1350, shape: 'mohawk',    c: hc('#FF5CD0', '#C8198A', '#FFFFFF') },
+    mohawk_neon:   { name: 'Neon Mohawk',       xp: 1550, shape: 'mohawk',    c: hc('#7FFF3F', '#39C82A', '#FFFFFF') },
+    rubber_duck:   { name: 'Rubber Duck',       xp: 1700, shape: 'duck',      c: hc('#FFD86B', '#E5A018', '#FF7A2E') },
+    pineapple:     { name: 'Pineapple',         xp: 1900, shape: 'pineapple', c: hc('#FFD86B', '#C29018', '#19A36B') },
+    mushroom:      { name: 'Toadstool',         xp: 2100, shape: 'mushroom',  c: hc('#E5414C', '#B5303A', '#FFFFFF') },
+    cupcake:       { name: 'Cupcake',           xp: 2300, shape: 'cupcake',   c: hc('#FFD6F0', '#E5417A', '#FF5C6C') },
+    traffic_cone:  { name: 'Traffic Cone',      xp: 2500, shape: 'cone',      c: hc('#FF8A4B', '#E5612E', '#FFFFFF') },
+    shark_fin:     { name: 'Shark Fin',         xp: 2750, shape: 'sharkFin',  c: hc('#7B8AA0', '#4F5A70', '#F2F4F8') },
+    disco_ball:    { name: 'Disco Ball',        xp: 3200, shape: 'disco',     c: hc('#D7DEE8', '#8A95A6', '#FFFFFF') },
 };
 
 // ---- Glasses colorways -----------------------------------------------------
@@ -257,6 +334,15 @@ export const GLASSES = {
     star_pink:       { name: 'Pink Star Glasses',  xp: 1740, shape: 'star',      c: gc('#E5417A', 'rgba(255,200,220,0.4)') },
     visorband_purple:{ name: 'Purple Visor',       xp: 2000, shape: 'visorBand', c: gc('#7A4FD0', '#A270FF') },
     monocle_silver:  { name: 'Silver Monocle',     xp: 2100, shape: 'monocle',   c: gc('#B7C0CC', 'rgba(220,235,255,0.25)') },
+
+    // ---- Party / rave eyewear ------------------------------------------
+    rave:            { name: 'Rave Shades',        xp: 3200, shape: 'rave',      c: gc('#1F1A3B', '#FF3FD0') },
+    nyan:            { name: 'Rainbow Bars',       xp: 3500, shape: 'nyan',      c: gc('#1F1A3B', '#FF5C6C') },
+    kaleidoscope:    { name: 'Kaleidoscope',       xp: 3800, shape: 'kaleido',   c: gc('#1F1A3B', '#FFC247') },
+    vr_headset:      { name: 'VR Headset',         xp: 2900, shape: 'vr',        c: gc('#1F1A3B', '#2EC4D3', '#FF5C6C') },
+    swim_goggles:    { name: 'Swim Goggles',       xp: 1300, shape: 'swim',      c: gc('#19A36B', 'rgba(180,255,210,0.55)') },
+    party_shades:    { name: 'Party Shades',       xp: 1900, shape: 'party',     c: gc('#1F1A3B', '#FF5C6C', '#FFC247') },
+    monocle_diamond: { name: 'Diamond Monocle',    xp: 4200, shape: 'monocle',   c: gc('#EAF2FF', '#B7C6DA') },
 };
 
 // ---- Effects ---------------------------------------------------------------
@@ -275,6 +361,8 @@ export const EFFECTS = {
     flames:   { name: 'Blazing',        xp: 4400, kind: 'flames' },
     electric: { name: 'Electric',       xp: 5400, kind: 'electric' },
     confetti: { name: 'Party Time',     xp: 6800, kind: 'confetti' },
+    notes:    { name: 'Music Notes',    xp: 2700, kind: 'notes' },
+    disco:    { name: 'Disco Lights',   xp: 5800, kind: 'disco' },
 };
 
 export const CATEGORIES = [

@@ -2631,3 +2631,100 @@
     .globe-quiz__prompt-flag { width: 72px; }
     .globe-quiz__prompt-hint { font-size: 11px; }
 }
+
+/* ==== Multiplayer Globe stage ============================================
+   Shares look with the single-player globe stage but lives inside the
+   .mp-box layout (scoreboard above, action row below). */
+.mp-globe-stage {
+    position: relative;
+    width: 100%;
+    height: min(48vh, 440px);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    background:
+        radial-gradient(ellipse 120% 90% at 50% 35%, var(--color-bg-elev-2) 0%, var(--color-bg) 55%, var(--color-bg-soft) 100%);
+    box-shadow: var(--shadow-md), inset 0 0 0 1px var(--color-border);
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    margin-top: var(--space-sm);
+}
+.mp-globe-canvas {
+    position: absolute;
+    inset: 0;
+}
+.mp-globe-canvas canvas { cursor: grab; }
+.mp-globe-canvas canvas:active { cursor: grabbing; }
+
+.mp-globe-prompt {
+    position: absolute;
+    bottom: var(--space-md);
+    right: var(--space-md);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: var(--space-sm) var(--space-md);
+    border-radius: var(--radius-md);
+    background: var(--color-bg-elev-1);
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--color-border);
+    z-index: 3;
+    max-width: 220px;
+}
+.mp-globe-prompt__tag {
+    font-size: var(--fs-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+    color: var(--color-primary-deep);
+}
+.mp-globe-prompt__flag {
+    width: 140px;
+    max-width: 100%;
+    height: auto;
+    aspect-ratio: 3 / 2;
+    object-fit: cover;
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-sm), inset 0 0 0 1px var(--color-border);
+}
+.mp-globe-prompt__answer {
+    font-size: var(--fs-sm);
+    font-weight: 700;
+    color: var(--color-ink);
+    text-align: center;
+}
+
+.mp-globe-actions {
+    display: flex;
+    gap: var(--space-md);
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    width: 100%;
+}
+.mp-globe-actions__hint {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+    font-size: var(--fs-xs);
+    color: var(--color-ink-soft);
+}
+
+@media (max-width: 720px) {
+    .mp-globe-stage {
+        height: min(44vh, 380px);
+        border-radius: var(--radius-md);
+    }
+    .mp-globe-prompt {
+        left: 50%;
+        right: auto;
+        transform: translateX(-50%);
+        bottom: var(--space-sm);
+        flex-direction: row;
+        padding: var(--space-xs) var(--space-sm);
+        align-items: center;
+    }
+    .mp-globe-prompt__tag { display: none; }
+    .mp-globe-prompt__flag { width: 84px; }
+}

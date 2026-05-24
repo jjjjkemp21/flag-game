@@ -3,6 +3,113 @@ import { motion, useReducedMotion } from 'framer-motion';
 import { paletteFor } from '../../lib/cosmetics';
 import { renderHat, renderGlasses, renderEffect } from './Cosmetics';
 
+// Build an SVG <pattern> for an animal-skin palette. The pattern tiles across
+// the globe-disc bounding box; the disc itself clips it to a circle. Hand-
+// drawn rather than algorithmic so each animal reads instantly at the small
+// sizes Atlas is rendered at (28-120px).
+function renderPatternDef(id, p) {
+    const { kind, base, accent, accent2 } = p;
+    if (kind === 'tiger') {
+        return (
+            <pattern id={id} patternUnits="userSpaceOnUse" width="64" height="64">
+                <rect width="64" height="64" fill={base} />
+                <path d="M0 6 q10 6 22 0 q-3 5 0 9 q-12 -2 -22 4 Z" fill={accent} />
+                <path d="M30 0 q4 7 12 4 q-2 8 6 12 q-12 0 -18 -8 Z" fill={accent} />
+                <path d="M0 30 q14 -2 22 6 q-8 6 -22 2 Z" fill={accent} />
+                <path d="M40 26 q10 -2 18 8 q-8 6 -16 0 Z" fill={accent} />
+                <path d="M8 50 q14 -4 26 4 q-12 8 -26 0 Z" fill={accent} />
+                <path d="M44 50 q10 -2 18 6 q-10 4 -18 0 Z" fill={accent} />
+            </pattern>
+        );
+    }
+    if (kind === 'zebra') {
+        return (
+            <pattern id={id} patternUnits="userSpaceOnUse" width="64" height="64">
+                <rect width="64" height="64" fill={base} />
+                <path d="M-4 4 q10 8 20 0 q12 8 24 0 q12 8 28 0 l0 6 q-14 8 -28 0 q-12 8 -24 0 q-10 6 -20 0 Z" fill={accent} />
+                <path d="M-4 22 q10 6 20 0 q12 6 24 -2 q12 8 28 0 l0 7 q-14 8 -28 0 q-12 8 -24 0 q-10 6 -20 0 Z" fill={accent} />
+                <path d="M-4 40 q10 6 20 0 q12 8 24 0 q12 6 28 0 l0 7 q-14 8 -28 0 q-12 8 -24 0 q-10 6 -20 0 Z" fill={accent} />
+                <path d="M-4 58 q10 6 20 0 q12 6 24 0 q12 6 28 0 l0 6 -68 0 Z" fill={accent} />
+            </pattern>
+        );
+    }
+    if (kind === 'cow') {
+        return (
+            <pattern id={id} patternUnits="userSpaceOnUse" width="64" height="64">
+                <rect width="64" height="64" fill={base} />
+                <path d="M6 8 q14 -6 22 4 q4 10 -6 14 q-14 4 -20 -6 q-4 -8 4 -12 Z" fill={accent} />
+                <path d="M40 30 q12 -2 16 8 q-2 12 -14 12 q-12 -2 -14 -10 q-2 -8 12 -10 Z" fill={accent} />
+                <path d="M12 44 q8 -2 10 6 q-2 8 -8 8 q-8 -2 -8 -8 q0 -4 6 -6 Z" fill={accent} />
+                <path d="M48 6 q8 0 8 8 q-2 6 -8 6 q-8 -2 -8 -8 q0 -4 8 -6 Z" fill={accent} />
+            </pattern>
+        );
+    }
+    if (kind === 'cheetah') {
+        // Cheetah: scattered solid spots over a tan base.
+        const spots = [[8,10],[20,18],[34,8],[48,16],[58,26],[12,30],[24,38],[40,30],[52,40],[6,46],[18,54],[32,50],[44,56],[58,52],[28,24],[10,18]];
+        return (
+            <pattern id={id} patternUnits="userSpaceOnUse" width="64" height="64">
+                <rect width="64" height="64" fill={base} />
+                {spots.map(([x, y], i) => (
+                    <ellipse key={i} cx={x} cy={y} rx={2.4 + (i % 3) * 0.4} ry={2 + (i % 2) * 0.5} fill={accent} />
+                ))}
+            </pattern>
+        );
+    }
+    if (kind === 'dalmatian') {
+        const spots = [[6,12],[22,6],[40,14],[54,8],[14,24],[30,22],[48,28],[60,32],[8,40],[24,42],[40,40],[56,46],[16,54],[34,56],[50,58],[6,28]];
+        return (
+            <pattern id={id} patternUnits="userSpaceOnUse" width="64" height="64">
+                <rect width="64" height="64" fill={base} />
+                {spots.map(([x, y], i) => (
+                    <ellipse key={i} cx={x} cy={y} rx={2.6 + (i % 4) * 0.5} ry={2.2 + (i % 3) * 0.4} fill={accent} />
+                ))}
+            </pattern>
+        );
+    }
+    if (kind === 'giraffe') {
+        // Irregular polygonal patches separated by thin tan veins — the
+        // characteristic giraffe look. Hand-placed so the tile reads as the
+        // animal even at small avatar sizes.
+        return (
+            <pattern id={id} patternUnits="userSpaceOnUse" width="64" height="64">
+                <rect width="64" height="64" fill={base} />
+                <g fill={accent}>
+                    <polygon points="6,4 18,2 22,10 14,16 4,12" />
+                    <polygon points="28,2 40,4 44,12 36,18 26,12" />
+                    <polygon points="48,6 60,4 62,14 52,18 46,12" />
+                    <polygon points="2,22 12,20 18,28 10,34 0,30" />
+                    <polygon points="22,22 34,20 38,30 28,36 20,30" />
+                    <polygon points="44,22 56,24 60,32 50,38 42,30" />
+                    <polygon points="6,42 18,40 22,48 14,54 4,50" />
+                    <polygon points="26,42 38,44 42,52 32,58 24,52" />
+                    <polygon points="46,44 60,42 62,52 52,58 44,52" />
+                </g>
+            </pattern>
+        );
+    }
+    if (kind === 'leopard') {
+        // Leopard rosettes: ring of dark dots with a lighter centre spot.
+        const rosettes = [[10,12],[28,8],[46,14],[58,24],[14,26],[34,28],[52,32],[20,42],[40,46],[56,48],[10,52],[30,56]];
+        const ring = accent;
+        const centre = accent2 || base;
+        return (
+            <pattern id={id} patternUnits="userSpaceOnUse" width="64" height="64">
+                <rect width="64" height="64" fill={base} />
+                {rosettes.map(([x, y], i) => (
+                    <g key={i}>
+                        {[[0,-3],[3,-1.5],[3,1.5],[0,3],[-3,1.5],[-3,-1.5]].map(([dx, dy], j) => (
+                            <circle key={j} cx={x + dx} cy={y + dy} r="1.1" fill={ring} />
+                        ))}
+                        <circle cx={x} cy={y} r="1.3" fill={centre} opacity="0.85" />
+                    </g>
+                ))}
+            </pattern>
+        );
+    }
+    return null;
+}
+
 /**
  * Friendly globe mascot ("Atlas"). Moods rig the expression and animation.
  * moods: 'idle' | 'cheer' | 'sad' | 'think' | 'wave'
@@ -18,6 +125,9 @@ export default function Mascot({ size = 96, mood = 'idle', cosmetics, still = fa
     const cos = cosmetics || {};
     const palette = paletteFor(cos.color);
     const anim = palette.anim;
+    const pattern = palette.pattern || null;
+    const glow = palette.glow || null;
+    const glowId = `globeGlow-${uid}`;
     // Cosmetic animations (color cycling, overlays, effects) run via SMIL so they
     // play everywhere the mascot appears — previews, leaderboard avatars, other
     // players — and regardless of `still` or a reduced-motion preference. They're
@@ -171,25 +281,54 @@ export default function Mascot({ size = 96, mood = 'idle', cosmetics, still = fa
                         <stop offset="0" stopColor="#FF5C6C" />
                         <stop offset="1" stopColor="#FFC247" />
                     </linearGradient>
+                    {pattern && renderPatternDef(`pat-${uid}`, pattern)}
+                    {glow && (
+                        <filter id={glowId} x="-30%" y="-30%" width="160%" height="160%">
+                            <feGaussianBlur stdDeviation="3.2" result="b1" />
+                            <feMerge>
+                                <feMergeNode in="b1" />
+                                <feMergeNode in="b1" />
+                                <feMergeNode in="SourceGraphic" />
+                            </feMerge>
+                        </filter>
+                    )}
                 </defs>
 
                 {/* Soft shadow */}
                 <ellipse cx="48" cy="88" rx="26" ry="4" fill="#1F1A3B" opacity=".18" />
 
-                {/* Globe */}
-                <circle cx="48" cy="48" r="34" fill={`url(#${bodyId})`} stroke={palette.stroke} strokeWidth="2" />
+                {/* Glow halo behind the globe for neon skins */}
+                {glow && (
+                    <circle cx="48" cy="48" r="38" fill={glow.color} opacity="0.45" filter={`url(#${glowId})`}>
+                        <animate attributeName="opacity" values="0.3;0.65;0.3" dur="2.4s" repeatCount="indefinite" />
+                    </circle>
+                )}
 
-                {/* Continents (stylized) — rotate for the "spinning globe" effect */}
-                <g>
-                    {spinning && (
-                        <animateTransform attributeName="transform" type="rotate" from="0 48 48" to="360 48 48" dur="8s" repeatCount="indefinite" />
-                    )}
-                    <path
-                        d="M22 44 C 30 36, 36 40, 42 36 C 44 44, 36 52, 28 50 Z M58 30 C 64 30, 70 36, 68 44 C 60 46, 56 38, 58 30 Z M50 56 C 60 54, 68 60, 64 70 C 56 70, 50 64, 50 56 Z"
-                        fill="#19C37D"
-                        opacity=".85"
-                    />
-                </g>
+                {/* Globe — solid pattern fill (with subtle gradient overlay for shading) or pure gradient */}
+                {pattern ? (
+                    <>
+                        <circle cx="48" cy="48" r="34" fill={`url(#pat-${uid})`} stroke={palette.stroke} strokeWidth="2" />
+                        {/* Soft highlight to keep the sphere feeling round */}
+                        <circle cx="48" cy="48" r="34" fill={`url(#${bodyId})`} opacity="0.18" style={{ mixBlendMode: 'screen' }} />
+                    </>
+                ) : (
+                    <circle cx="48" cy="48" r="34" fill={`url(#${bodyId})`} stroke={palette.stroke} strokeWidth="2" />
+                )}
+
+                {/* Continents (stylized) — hidden under animal-pattern skins so
+                    the pattern reads cleanly. Rotate for the "spinning globe" effect. */}
+                {!pattern && (
+                    <g>
+                        {spinning && (
+                            <animateTransform attributeName="transform" type="rotate" from="0 48 48" to="360 48 48" dur="8s" repeatCount="indefinite" />
+                        )}
+                        <path
+                            d="M22 44 C 30 36, 36 40, 42 36 C 44 44, 36 52, 28 50 Z M58 30 C 64 30, 70 36, 68 44 C 60 46, 56 38, 58 30 Z M50 56 C 60 54, 68 60, 64 70 C 56 70, 50 64, 50 56 Z"
+                            fill="#19C37D"
+                            opacity=".85"
+                        />
+                    </g>
+                )}
 
                 {/* Animated overlays for flashy globe skins (twinkle / rising embers) */}
                 {animate && palette.overlay === 'stars' && (

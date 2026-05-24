@@ -43,6 +43,7 @@ const INFO = {
             'Multiplayer is just for bragging rights — it never affects your XP or mastery.',
             'A correct answer scores +1 point; a miss costs −1 point (never below zero).',
             'Race: first to the target wins. Blitz / Streak Duel: highest score or streak when the clock runs out.',
+            'Question style: Flags (recognise the flag), Languages (which language is this phrase?), or Globe (find the flag’s country on the 3D globe). Globe rounds work with Race, Blitz, and Streak Duel.',
             'Atlas Battle (1v1): each correct lands a hit on your rival’s Atlas — KO it to win. Losing drops your Atlas’s battle HP and can knock it out, but it heals back as you play other modes (it can never die from a battle).',
         ],
     },

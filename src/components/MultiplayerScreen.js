@@ -9,8 +9,9 @@ import Spinner from '../assets/illustrations/Spinner';
 import { useAuth } from '../auth/AuthProvider';
 import { useAudio } from '../audio/AudioProvider';
 import { recordBattleResult } from '../lib/pet';
+import Globe from '../lib/globe/Globe';
 import {
-    mp, useLobbyPoll, makeEngine, checkText,
+    mp, useLobbyPoll, makeEngine, checkText, checkGlobePick,
     MP_MODES, DEFAULT_MP_CONFIG, modeMeta,
 } from '../lib/multiplayer';
 
@@ -34,26 +35,38 @@ function ConfigEditor({ config, regions, disabled, onChange }) {
             // Battle's "hits to KO" lives on a smaller scale than a race target.
             if (patch.mode === 'battle' && next.target > 50) next.target = 20;
         }
+        if (patch.content === 'globe') {
+            // Globe is click-on-country only; Atlas Battle's rapid pace doesn't
+            // fit a place-the-pin loop, so steer back to Race if needed.
+            if (next.mode === 'battle') next.mode = 'race';
+            next.questionType = 'mc'; // ignored, but kept valid for the server
+        }
         if (next.content === 'languages') next.scope = 'all';
         onChange(next);
     };
+
+    const isGlobe = config.content === 'globe';
 
     return (
         <div className="mp-config">
             <div className="mp-field">
                 <span className="mp-field__label">Game mode</span>
                 <div className="mp-choices">
-                    {MP_MODES.map((m) => (
-                        <button
-                            key={m.key}
-                            type="button"
-                            disabled={disabled}
-                            className={`mp-chip ${config.mode === m.key ? 'is-on' : ''}`}
-                            onClick={() => set({ mode: m.key })}
-                        >
-                            <Icon name={m.icon} /> {m.title}
-                        </button>
-                    ))}
+                    {MP_MODES.map((m) => {
+                        const banned = isGlobe && m.key === 'battle';
+                        return (
+                            <button
+                                key={m.key}
+                                type="button"
+                                disabled={disabled || banned}
+                                className={`mp-chip ${config.mode === m.key ? 'is-on' : ''}`}
+                                onClick={() => set({ mode: m.key })}
+                                title={banned ? 'Atlas Battle is not available for Globe rounds' : undefined}
+                            >
+                                <Icon name={m.icon} /> {m.title}
+                            </button>
+                        );
+                    })}
                 </div>
                 <span className="mp-field__hint">{modeMeta(config.mode).desc}.</span>
             </div>
@@ -67,22 +80,28 @@ function ConfigEditor({ config, regions, disabled, onChange }) {
                     <button type="button" disabled={disabled} className={`mp-chip ${config.content === 'languages' ? 'is-on' : ''}`} onClick={() => set({ content: 'languages' })}>
                         <Icon name="translate" /> Languages
                     </button>
-                </div>
-            </div>
-
-            <div className="mp-field">
-                <span className="mp-field__label">Answer style</span>
-                <div className="mp-choices">
-                    <button type="button" disabled={disabled} className={`mp-chip ${config.questionType === 'mc' ? 'is-on' : ''}`} onClick={() => set({ questionType: 'mc' })}>
-                        <Icon name="list" /> Multiple choice
-                    </button>
-                    <button type="button" disabled={disabled} className={`mp-chip ${config.questionType === 'text' ? 'is-on' : ''}`} onClick={() => set({ questionType: 'text' })}>
-                        <Icon name="keyboard" /> Free text
+                    <button type="button" disabled={disabled} className={`mp-chip ${config.content === 'globe' ? 'is-on' : ''}`} onClick={() => set({ content: 'globe' })}>
+                        <Icon name="public" /> Globe
                     </button>
                 </div>
+                {isGlobe && <span className="mp-field__hint">Find the flag's country on the 3D globe.</span>}
             </div>
 
-            {config.questionType === 'text' && (
+            {!isGlobe && (
+                <div className="mp-field">
+                    <span className="mp-field__label">Answer style</span>
+                    <div className="mp-choices">
+                        <button type="button" disabled={disabled} className={`mp-chip ${config.questionType === 'mc' ? 'is-on' : ''}`} onClick={() => set({ questionType: 'mc' })}>
+                            <Icon name="list" /> Multiple choice
+                        </button>
+                        <button type="button" disabled={disabled} className={`mp-chip ${config.questionType === 'text' ? 'is-on' : ''}`} onClick={() => set({ questionType: 'text' })}>
+                            <Icon name="keyboard" /> Free text
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {!isGlobe && config.questionType === 'text' && (
                 <div className="mp-field">
                     <span className="mp-field__label">Spelling</span>
                     <div className="mp-choices">
@@ -97,16 +116,16 @@ function ConfigEditor({ config, regions, disabled, onChange }) {
                 </div>
             )}
 
-            {config.content === 'flags' && (
+            {(config.content === 'flags' || config.content === 'globe') && (
                 <div className="mp-field">
-                    <span className="mp-field__label">Which flags</span>
+                    <span className="mp-field__label">{isGlobe ? 'Which countries' : 'Which flags'}</span>
                     <select
                         className="auth-field__input"
                         value={config.scope}
                         disabled={disabled}
                         onChange={(e) => set({ scope: e.target.value })}
                     >
-                        <option value="all">All flags</option>
+                        <option value="all">{isGlobe ? 'All countries' : 'All flags'}</option>
                         {regions.map((r) => <option key={r} value={r}>{titleCase(r)}</option>)}
                     </select>
                 </div>
@@ -121,7 +140,10 @@ function ConfigEditor({ config, regions, disabled, onChange }) {
                 </div>
             ) : config.mode === 'race' ? (
                 <div className="mp-field">
-                    <span className="mp-field__label">{config.content === 'languages' ? 'Languages' : 'Flags'} to win: <strong>{config.target}</strong></span>
+                    <span className="mp-field__label">
+                        {config.content === 'languages' ? 'Languages' : config.content === 'globe' ? 'Countries' : 'Flags'} to win:
+                        {' '}<strong>{config.target}</strong>
+                    </span>
                     <input type="range" min="5" max="100" step="5" value={config.target} disabled={disabled}
                         onChange={(e) => set({ target: parseInt(e.target.value, 10) })} style={{ accentColor: 'var(--color-primary)' }} />
                 </div>
@@ -297,15 +319,25 @@ function LobbyRoom({ lobby, code, flagsData, onLeave, refresh, setState }) {
 
 function ConfigSummary({ config }) {
     const meta = modeMeta(config.mode);
+    const isGlobe = config.content === 'globe';
+    const contentIcon = config.content === 'languages' ? 'translate' : isGlobe ? 'public' : 'flag';
+    const contentLabel = config.content === 'languages'
+        ? 'Languages'
+        : (config.scope === 'all'
+            ? (isGlobe ? 'All countries' : 'All flags')
+            : titleCase(config.scope));
     return (
         <div className="mp-summary">
             <Pill tone="primary" icon={meta.icon}>{meta.title}</Pill>
-            <Pill tone="info" icon={config.content === 'languages' ? 'translate' : 'flag'}>
-                {config.content === 'languages' ? 'Languages' : (config.scope === 'all' ? 'All flags' : titleCase(config.scope))}
-            </Pill>
-            <Pill tone="neutral" icon={config.questionType === 'text' ? 'keyboard' : 'list'}>
-                {config.questionType === 'text' ? 'Free text' : 'Multiple choice'}
-            </Pill>
+            <Pill tone="info" icon={contentIcon}>{contentLabel}</Pill>
+            {!isGlobe && (
+                <Pill tone="neutral" icon={config.questionType === 'text' ? 'keyboard' : 'list'}>
+                    {config.questionType === 'text' ? 'Free text' : 'Multiple choice'}
+                </Pill>
+            )}
+            {isGlobe && (
+                <Pill tone="neutral" icon="touch_app">Tap to place</Pill>
+            )}
             <Pill tone="success" icon={config.mode === 'race' ? 'flag' : 'timer'}>
                 {config.mode === 'race' ? `${config.target} to win` : `${config.duration}s`}
             </Pill>
@@ -319,7 +351,11 @@ function ConfigSummary({ config }) {
 function Game({ lobby, code, flagsData, meId }) {
     const audio = useAudio();
     const config = lobby.config;
+    const isGlobe = config.content === 'globe';
     const [lang, setLang] = useState({ languages: null, phrases: null, loading: config.content === 'languages' });
+    // Set of ISO-A2 codes the loaded globe can render. Until ready we can't
+    // build a faithful pool, so the engine waits.
+    const [globeIso2, setGlobeIso2] = useState(null);
 
     useEffect(() => {
         if (config.content !== 'languages') return;
@@ -342,12 +378,14 @@ function Game({ lobby, code, flagsData, meId }) {
     // builds once per match rather than on every poll.
     const engine = useMemo(() => {
         if (config.content === 'languages' && lang.loading) return null;
+        if (isGlobe && !globeIso2) return null;
         return makeEngine({
             config, seed: lobby.seed, flagsData,
             languagesData: lang.languages, phrasesData: lang.phrases,
+            globeIso2,
         });
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [config.content, config.scope, config.questionType, lobby.seed, flagsData, lang.loading]);
+    }, [config.content, config.scope, config.questionType, lobby.seed, flagsData, lang.loading, globeIso2]);
 
     const [qIndex, setQIndex] = useState(0);
     const [score, setScore] = useState(0);
@@ -356,8 +394,19 @@ function Game({ lobby, code, flagsData, meId }) {
     const [answered, setAnswered] = useState(false);
     const [chosen, setChosen] = useState(null);
     const [input, setInput] = useState('');
+    const [selectedIso2, setSelectedIso2] = useState(null);
     const inputRef = useRef(null);
     const advanceTimer = useRef(null);
+    // Globe mount lives directly in Game so it survives between questions; the
+    // Game owns it and disposes on unmount. Wired with refs because the Globe's
+    // callbacks fire from outside React.
+    const globeContainerRef = useRef(null);
+    const globeRef = useRef(null);
+    const [globeReady, setGlobeReady] = useState(false);
+    const [globeError, setGlobeError] = useState(null);
+    const answeredRef = useRef(false);
+    answeredRef.current = answered;
+    const resolveGlobeRef = useRef(null);
 
     // Clock sync for timed modes.
     const offsetRef = useRef(0);
@@ -384,6 +433,51 @@ function Game({ lobby, code, flagsData, meId }) {
         if (!answered && config.questionType === 'text' && inputRef.current) inputRef.current.focus();
     }, [answered, qIndex, config.questionType]);
 
+    // Mount the 3D globe once per match when playing Globe content. Callbacks
+    // hit refs so the latest resolveGlobe is always used.
+    useEffect(() => {
+        if (!isGlobe) return undefined;
+        if (!globeContainerRef.current) return undefined;
+        const globe = new Globe(globeContainerRef.current, {
+            onSelect: (iso2) => {
+                if (answeredRef.current) return;
+                setSelectedIso2(iso2 || null);
+                audio.play('click');
+                if (iso2 && globeRef.current) globeRef.current.flyToIso2(iso2, { zoom: 4.6 });
+            },
+            onConfirm: (iso2) => {
+                if (answeredRef.current) return;
+                if (!iso2) return;
+                resolveGlobeRef.current?.(iso2);
+            },
+            onReady: () => {
+                if (!globeRef.current) return;
+                setGlobeIso2(new Set(globeRef.current.getAvailableIso2().map((s) => s.toUpperCase())));
+                setGlobeReady(true);
+            },
+            onError: (e) => {
+                setGlobeError(e?.message || 'Failed to load the globe — check your connection.');
+            },
+        });
+        globeRef.current = globe;
+        globe.load();
+        return () => {
+            globe.dispose();
+            globeRef.current = null;
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isGlobe]);
+
+    // Repaint when the theme toggles so the ocean/land tints follow.
+    useEffect(() => {
+        if (!isGlobe) return undefined;
+        const observer = new MutationObserver(() => {
+            if (globeRef.current) globeRef.current.applyTheme();
+        });
+        observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+        return () => observer.disconnect();
+    }, [isGlobe]);
+
     const finished = lobby.state === 'finished' || timeUp;
 
     const handleResult = (correct, pick) => {
@@ -402,10 +496,18 @@ function Game({ lobby, code, flagsData, meId }) {
         }
         const done = config.mode === 'race' && s >= config.target;
         post({ score: s, streak: st, bestStreak: bs, finished: done, qIndex, pick: pick || null });
+        // Globe placements need a longer reveal so the player can see where
+        // they were supposed to click.
+        const delay = isGlobe ? (correct ? 1100 : 2000) : (correct ? 650 : 1100);
         advanceTimer.current = setTimeout(() => {
-            setAnswered(false); setChosen(null); setInput('');
+            setAnswered(false); setChosen(null); setInput(''); setSelectedIso2(null);
+            if (globeRef.current) {
+                globeRef.current.clearAllPaints();
+                globeRef.current.setLocked(null);
+                globeRef.current.resetCamera();
+            }
             setQIndex((i) => i + 1);
-        }, correct ? 650 : 1100);
+        }, delay);
     };
 
     const onChoice = (label) => {
@@ -419,6 +521,33 @@ function Game({ lobby, code, flagsData, meId }) {
         handleResult(checkText(input, question, config.strict), null);
     };
 
+    // Globe resolution: lock the camera, paint feedback, then advance.
+    // Regular function (not useCallback) so it always sees the freshest
+    // handleResult / score / streak; the Globe's onConfirm callback dispatches
+    // via resolveGlobeRef which is reassigned on every render below.
+    const resolveGlobe = (iso2) => {
+        if (answeredRef.current || finished) return;
+        if (!iso2 || !question || question.kind !== 'globe') return;
+        const correct = checkGlobePick(iso2, question);
+        if (globeRef.current) {
+            globeRef.current.setLocked(correct ? 'correct' : 'wrong');
+            if (correct) {
+                globeRef.current.paintCountry(question.answerIso2, 'correct');
+            } else {
+                globeRef.current.paintCountry(iso2, 'wrong');
+                globeRef.current.paintCountry(question.answerIso2, 'correct');
+                globeRef.current.flyToIso2(question.answerIso2, { duration: 700, zoom: 4.6 });
+            }
+        }
+        handleResult(correct, iso2);
+    };
+    resolveGlobeRef.current = resolveGlobe;
+
+    const onGlobeConfirmButton = () => {
+        if (!selectedIso2 || answered || finished) return;
+        resolveGlobe(selectedIso2);
+    };
+
     const choiceState = (opt) => {
         if (!answered) return 'idle';
         if (opt === question.answer) return 'correct';
@@ -426,7 +555,11 @@ function Game({ lobby, code, flagsData, meId }) {
         return 'idle';
     };
 
-    if (!engine || !question) {
+    // Globe needs to mount its container *before* the engine is ready — the
+    // engine waits on getAvailableIso2() to filter the pool. So when we're in
+    // globe mode and the engine isn't built yet, render the stage with a
+    // loading overlay rather than the generic loading box.
+    if (!isGlobe && (!engine || !question)) {
         return <div className="loading-box"><Spinner /><span>Setting up the match…</span></div>;
     }
 
@@ -446,20 +579,69 @@ function Game({ lobby, code, flagsData, meId }) {
 
             <Scoreboard members={lobby.members} meId={meId} mode={config.mode} target={config.target} />
 
-            <div className="mp-question">
-                {question.kind === 'flag' ? (
-                    <motion.img key={`${qIndex}-img`} src={question.image} alt="Flag" className="flag-image"
-                        initial={{ opacity: 0, scale: 0.94 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.2 }} />
-                ) : (
-                    <motion.h2 key={`${qIndex}-ph`} className="phrase-text"
-                        initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
-                        "{question.phrase}"
-                    </motion.h2>
-                )}
-                {question.kind === 'language' && <p className="menu-subtitle">Which language is this?</p>}
-            </div>
+            {isGlobe ? (
+                <div className="mp-globe-stage" aria-label="World globe">
+                    <div ref={globeContainerRef} className="mp-globe-canvas" />
+                    {(!globeReady || !engine) && !globeError && (
+                        <div className="globe-quiz__overlay">
+                            <Spinner />
+                            <span>Rendering the globe…</span>
+                        </div>
+                    )}
+                    {globeError && (
+                        <div className="globe-quiz__overlay globe-quiz__overlay--error">
+                            <Icon name="public_off" />
+                            <span>{globeError}</span>
+                        </div>
+                    )}
+                    {question && question.kind === 'globe' && (
+                        <motion.div
+                            className="mp-globe-prompt"
+                            key={`${qIndex}-globeprompt`}
+                            initial={{ opacity: 0, y: 16, scale: 0.94 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.2 }}
+                        >
+                            <div className="mp-globe-prompt__tag">Find this country</div>
+                            <img src={question.image} alt="Flag" className="mp-globe-prompt__flag" />
+                            {answered && (
+                                <div className="mp-globe-prompt__answer">{question.answer}</div>
+                            )}
+                        </motion.div>
+                    )}
+                </div>
+            ) : (
+                <div className="mp-question">
+                    {question.kind === 'flag' ? (
+                        <motion.img key={`${qIndex}-img`} src={question.image} alt="Flag" className="flag-image"
+                            initial={{ opacity: 0, scale: 0.94 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.2 }} />
+                    ) : (
+                        <motion.h2 key={`${qIndex}-ph`} className="phrase-text"
+                            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
+                            "{question.phrase}"
+                        </motion.h2>
+                    )}
+                    {question.kind === 'language' && <p className="menu-subtitle">Which language is this?</p>}
+                </div>
+            )}
 
-            {config.questionType === 'mc' ? (
+            {isGlobe ? (
+                <div className="mp-globe-actions">
+                    <Button
+                        variant="primary"
+                        icon="check"
+                        onClick={onGlobeConfirmButton}
+                        disabled={answered || finished || !selectedIso2}
+                    >
+                        Confirm
+                    </Button>
+                    <span className="mp-globe-actions__hint">
+                        <Icon name="touch_app" />
+                        {selectedIso2 ? 'Tap Confirm or double-tap the country.' : 'Tap the country on the globe.'}
+                    </span>
+                </div>
+            ) : config.questionType === 'mc' ? (
                 <div className="options-box">
                     {question.options.map((opt, i) => {
                         // Opponents who picked this option for the question I'm on —

@@ -252,6 +252,137 @@ const HAT_SHAPES = {
             <circle cx="46" cy="-4" r="2" fill={c.dark} />
         </g>
     ),
+
+    // ---- Silly novelty hats --------------------------------------------
+    pirate: (c) => (
+        <g>
+            {/* Tricorn body */}
+            <path d="M14 22 Q48 -4 82 22 Q72 28 60 24 L48 18 L36 24 Q24 28 14 22 Z" fill={c.main} stroke={c.dark} strokeWidth="1.5" />
+            <path d="M14 22 Q48 14 82 22" stroke={c.dark} strokeWidth="1.2" fill="none" opacity="0.7" />
+            {/* Skull */}
+            <g transform="translate(48 14)">
+                <ellipse cx="0" cy="0" rx="5" ry="4.5" fill={c.accent} />
+                <circle cx="-1.7" cy="-0.4" r="0.9" fill={c.dark} />
+                <circle cx="1.7" cy="-0.4" r="0.9" fill={c.dark} />
+                <path d="M-1.2 2 L 1.2 2" stroke={c.dark} strokeWidth="0.7" />
+                {/* Crossbones */}
+                <path d="M-6 5 L 6 9 M-6 9 L 6 5" stroke={c.accent} strokeWidth="1.6" strokeLinecap="round" />
+            </g>
+        </g>
+    ),
+    mohawk: (c) => (
+        <g>
+            {/* Base headband */}
+            <path d="M24 22 Q48 18 72 22 L70 26 Q48 23 26 26 Z" fill={c.dark} />
+            {/* Spikes — tall central tuft */}
+            <path d="M30 20 L 34 -4 L 38 20 Z" fill={c.main} stroke={c.dark} strokeWidth="0.6" />
+            <path d="M40 20 L 44 -10 L 48 20 Z" fill={c.main} stroke={c.dark} strokeWidth="0.6" />
+            <path d="M50 20 L 54 -8 L 58 20 Z" fill={c.main} stroke={c.dark} strokeWidth="0.6" />
+            <path d="M60 20 L 64 -2 L 68 20 Z" fill={c.main} stroke={c.dark} strokeWidth="0.6" />
+            <path d="M22 22 L 26 4 L 30 22 Z" fill={c.main} stroke={c.dark} strokeWidth="0.6" />
+        </g>
+    ),
+    duck: (c) => (
+        <g>
+            {/* Rubber duck sitting on head */}
+            <ellipse cx="48" cy="20" rx="16" ry="9" fill={c.main} stroke={c.dark} strokeWidth="1" />
+            {/* Head */}
+            <circle cx="58" cy="10" r="8" fill={c.main} stroke={c.dark} strokeWidth="1" />
+            {/* Eye */}
+            <circle cx="60" cy="8" r="1.5" fill="#1F1A3B" />
+            {/* Beak */}
+            <path d="M64 10 L 70 10 L 70 13 L 64 13 Z" fill={c.accent} stroke={c.dark} strokeWidth="0.6" />
+            {/* Tail */}
+            <path d="M32 16 L 26 8 L 34 14 Z" fill={c.main} stroke={c.dark} strokeWidth="0.6" />
+        </g>
+    ),
+    pineapple: (c) => (
+        <g>
+            {/* Body */}
+            <ellipse cx="48" cy="18" rx="14" ry="14" fill={c.main} stroke={c.dark} strokeWidth="1.2" />
+            {/* Cross-hatch on body */}
+            <g stroke={c.dark} strokeWidth="0.8" opacity="0.7" fill="none">
+                <path d="M36 14 L 48 22 L 60 14" />
+                <path d="M36 22 L 48 30 L 60 22" />
+                <path d="M40 6 L 48 14 L 56 6" />
+            </g>
+            {/* Leaves */}
+            <g fill={c.accent} stroke={c.dark} strokeWidth="0.6">
+                <path d="M48 6 L 42 -6 L 46 4 Z" />
+                <path d="M48 6 L 50 -10 L 52 4 Z" />
+                <path d="M48 6 L 58 -4 L 54 6 Z" />
+                <path d="M48 6 L 40 -2 L 46 6 Z" />
+            </g>
+        </g>
+    ),
+    mushroom: (c) => (
+        <g>
+            {/* Cap */}
+            <path d="M22 22 Q22 0 48 0 Q74 0 74 22 Q60 28 48 26 Q36 28 22 22 Z" fill={c.main} stroke={c.dark} strokeWidth="1.2" />
+            {/* White spots */}
+            <circle cx="34" cy="12" r="3.5" fill={c.accent} />
+            <circle cx="48" cy="6" r="3" fill={c.accent} />
+            <circle cx="60" cy="14" r="4" fill={c.accent} />
+            <circle cx="42" cy="20" r="2.4" fill={c.accent} />
+            {/* Stem hint */}
+            <rect x="40" y="22" width="16" height="6" rx="3" fill={c.accent} opacity="0.7" />
+        </g>
+    ),
+    cupcake: (c) => (
+        <g>
+            {/* Wrapper */}
+            <path d="M30 22 L 26 8 L 70 8 L 66 22 Z" fill={c.dark} />
+            <g stroke={c.main} strokeWidth="0.6" opacity="0.5" fill="none">
+                <path d="M34 10 L 32 22" /><path d="M42 10 L 41 22" />
+                <path d="M50 10 L 50 22" /><path d="M58 10 L 59 22" />
+                <path d="M66 10 L 68 22" />
+            </g>
+            {/* Frosting */}
+            <path d="M26 8 Q30 -4 40 0 Q48 -8 56 0 Q66 -4 70 8 Q60 12 48 10 Q36 12 26 8 Z" fill={c.main} stroke={c.dark} strokeWidth="0.8" />
+            {/* Cherry */}
+            <circle cx="48" cy="-6" r="3" fill={c.accent} stroke={c.dark} strokeWidth="0.6" />
+            <path d="M48 -8 q3 -2 5 -6" stroke={c.dark} strokeWidth="0.8" fill="none" />
+            {/* Sprinkles */}
+            <g stroke={c.accent} strokeWidth="1.4" strokeLinecap="round">
+                <line x1="34" y1="4" x2="36" y2="6" />
+                <line x1="62" y1="4" x2="60" y2="6" />
+                <line x1="42" y1="8" x2="44" y2="10" />
+                <line x1="55" y1="8" x2="57" y2="6" />
+            </g>
+        </g>
+    ),
+    cone: (c) => (
+        <g>
+            {/* Traffic cone body */}
+            <path d="M36 24 L 48 -8 L 60 24 Z" fill={c.main} stroke={c.dark} strokeWidth="1" />
+            <path d="M40 12 L 56 12 L 58 16 L 38 16 Z" fill={c.accent} />
+            <path d="M42 4 L 54 4 L 56 8 L 40 8 Z" fill={c.accent} />
+            {/* Base */}
+            <rect x="32" y="22" width="32" height="5" rx="1.5" fill={c.dark} />
+        </g>
+    ),
+    sharkFin: (c) => (
+        <g>
+            <path d="M30 24 L 56 -4 L 62 24 Q48 26 30 24 Z" fill={c.main} stroke={c.dark} strokeWidth="1.2" />
+            {/* Belly */}
+            <path d="M40 22 L 54 6 L 56 22 Z" fill={c.accent} opacity="0.6" />
+        </g>
+    ),
+    disco: (c) => (
+        <g>
+            <circle cx="48" cy="12" r="12" fill={c.main} stroke={c.dark} strokeWidth="1" />
+            {/* Mirror tiles */}
+            <g opacity="0.65">
+                {[[42,6],[48,5],[54,6],[40,11],[46,10],[52,11],[42,16],[48,16],[54,16]].map(([x,y],i)=>(
+                    <rect key={i} x={x-1.8} y={y-1.8} width="3.6" height="3.6" fill={c.accent} />
+                ))}
+            </g>
+            {/* Shine */}
+            <ellipse cx="44" cy="8" rx="3" ry="2" fill="#FFFFFF" opacity="0.7" />
+            {/* Cord */}
+            <path d="M48 0 L 48 -6" stroke={c.dark} strokeWidth="1" />
+        </g>
+    ),
 };
 
 const GLASS_SHAPES = {
@@ -406,6 +537,103 @@ const GLASS_SHAPES = {
             <ellipse cx="58" cy="46" rx="8" ry="9" fill={c.lens} />
         </g>
     ),
+
+    // ---- Party / rave eyewear ------------------------------------------
+    rave: (c) => (
+        // Bold square frames with lenses that cycle through rave colors via
+        // SMIL (so the cycle plays on previews, leaderboards, anywhere).
+        <g stroke={c.frame} strokeWidth="2.5">
+            <rect x="29" y="40" width="16" height="12" rx="2" fill={c.lens}>
+                <animate attributeName="fill" values="#FF3FD0;#3FE0FF;#9CFF3F;#FFC247;#FF3FD0" dur="1.6s" repeatCount="indefinite" />
+            </rect>
+            <rect x="51" y="40" width="16" height="12" rx="2" fill={c.lens}>
+                <animate attributeName="fill" values="#3FE0FF;#9CFF3F;#FFC247;#FF3FD0;#3FE0FF" dur="1.6s" repeatCount="indefinite" />
+            </rect>
+            <path d="M45 45 L51 45" fill="none" />
+            <path d="M29 43 L23 41" fill="none" />
+            <path d="M67 43 L73 41" fill="none" />
+        </g>
+    ),
+    nyan: (c) => (
+        // Rainbow horizontal bars inside square frames.
+        <g>
+            <g stroke={c.frame} strokeWidth="2.5" fill="none">
+                <rect x="29" y="40" width="16" height="12" rx="2" />
+                <rect x="51" y="40" width="16" height="12" rx="2" />
+                <path d="M45 45 L51 45" />
+                <path d="M29 43 L23 41" />
+                <path d="M67 43 L73 41" />
+            </g>
+            {['#FF5C6C','#FFC247','#FFFB6B','#19C37D','#5B5BF6','#B05BF6'].map((color, i) => (
+                <g key={i}>
+                    <rect x="30" y={40.5 + i * 1.8} width="14" height="1.6" fill={color} />
+                    <rect x="52" y={40.5 + i * 1.8} width="14" height="1.6" fill={color} />
+                </g>
+            ))}
+        </g>
+    ),
+    kaleido: (c) => (
+        // Concentric multicolor rings that rotate.
+        <g>
+            <g stroke={c.frame} strokeWidth="2" fill="#1F1A3B">
+                <circle cx="38" cy="46" r="7.5" />
+                <circle cx="58" cy="46" r="7.5" />
+                <path d="M46 46 L50 46" />
+            </g>
+            {[38, 58].map((cx) => (
+                <g key={cx} transform={`rotate(0 ${cx} 46)`}>
+                    <animateTransform attributeName="transform" type="rotate" from={`0 ${cx} 46`} to={`360 ${cx} 46`} dur="3.4s" repeatCount="indefinite" />
+                    {[['#FFC247', 6.4, 0], ['#19C37D', 6.4, 60], ['#2EC4D3', 6.4, 120], ['#5B5BF6', 6.4, 180], ['#B05BF6', 6.4, 240], ['#FF5C6C', 6.4, 300]].map(([color, r, a], i) => {
+                        const rad = (a * Math.PI) / 180;
+                        return <circle key={i} cx={cx + Math.cos(rad) * 3} cy={46 + Math.sin(rad) * 3} r="2" fill={color} />;
+                    })}
+                </g>
+            ))}
+        </g>
+    ),
+    vr: (c) => (
+        // Big rectangular VR headset with a strap line and indicator dot.
+        <g>
+            <rect x="24" y="38" width="48" height="16" rx="3" fill={c.frame} stroke={c.frame} strokeWidth="1" />
+            <rect x="27" y="41" width="18" height="10" rx="1.5" fill={c.lens} />
+            <rect x="51" y="41" width="18" height="10" rx="1.5" fill={c.lens} />
+            <rect x="44" y="44" width="8" height="4" fill={c.frame} />
+            {/* Indicator LED */}
+            <circle cx="48" cy="40" r="1.2" fill={c.accent}>
+                <animate attributeName="opacity" values="0.4;1;0.4" dur="1.6s" repeatCount="indefinite" />
+            </circle>
+            {/* Strap */}
+            <path d="M24 46 L 18 44" stroke={c.frame} strokeWidth="2.5" />
+            <path d="M72 46 L 78 44" stroke={c.frame} strokeWidth="2.5" />
+        </g>
+    ),
+    swim: (c) => (
+        // Two large round goggles joined by a thick strap.
+        <g>
+            <circle cx="38" cy="46" r="8.5" fill={c.lens} stroke={c.frame} strokeWidth="2.5" />
+            <circle cx="58" cy="46" r="8.5" fill={c.lens} stroke={c.frame} strokeWidth="2.5" />
+            <path d="M46 46 L50 46" stroke={c.frame} strokeWidth="2.5" />
+            <path d="M30 44 L22 42" stroke={c.frame} strokeWidth="3" />
+            <path d="M66 44 L74 42" stroke={c.frame} strokeWidth="3" />
+            {/* Shine */}
+            <ellipse cx="35" cy="43" rx="2" ry="1.4" fill="#FFFFFF" opacity="0.6" />
+            <ellipse cx="55" cy="43" rx="2" ry="1.4" fill="#FFFFFF" opacity="0.6" />
+        </g>
+    ),
+    party: (c) => (
+        // Star-shaped novelty shades with a party tone.
+        <g>
+            <g fill={c.lens} stroke={c.frame} strokeWidth="1.5">
+                <path d="M30 46 L 33 41 L 39 41 L 42 46 L 39 51 L 33 51 Z" />
+                <path d="M54 46 L 57 41 L 63 41 L 66 46 L 63 51 L 57 51 Z" />
+            </g>
+            <path d="M42 46 L 54 46" stroke={c.frame} strokeWidth="2" />
+            {/* Confetti dots */}
+            <circle cx="36" cy="38" r="1.4" fill={c.accent} />
+            <circle cx="60" cy="38" r="1.4" fill={c.accent} />
+            <circle cx="48" cy="36" r="1.2" fill={c.accent} />
+        </g>
+    ),
 };
 
 // ---- Effects ---------------------------------------------------------------
@@ -502,6 +730,36 @@ const EFFECT_SHAPES = {
                     </rect>
                 </g>
             ))}
+        </g>
+    ),
+    notes: () => (
+        // Floating musical notes (8th-note glyphs) drifting up and away.
+        <g fill="#7A4FD0">
+            {[[16, 0, 3.0], [30, 0.7, 3.6], [66, 1.2, 3.2], [80, 1.9, 3.8]].map((n, i) => (
+                <g key={i}>
+                    <animateTransform attributeName="transform" type="translate" values={`0 0;${i % 2 ? '-4' : '4'} -78`} dur={`${n[2]}s`} begin={`${n[1]}s`} repeatCount="indefinite" />
+                    <g opacity="0">
+                        <animate attributeName="opacity" values="0;1;0" dur={`${n[2]}s`} begin={`${n[1]}s`} repeatCount="indefinite" />
+                        <ellipse cx={n[0]} cy="84" rx="2.6" ry="2" transform={`rotate(-20 ${n[0]} 84)`} />
+                        <rect x={n[0] + 1.4} y="74" width="1.3" height="10" />
+                        <path d={`M ${n[0] + 2.7} 74 q 4 1 4 5`} stroke="#7A4FD0" strokeWidth="1.4" fill="none" />
+                    </g>
+                </g>
+            ))}
+        </g>
+    ),
+    disco: () => (
+        // Rotating colored "spotlight" dots circling the globe.
+        <g>
+            <animateTransform attributeName="transform" type="rotate" from="0 48 48" to="360 48 48" dur="4s" repeatCount="indefinite" />
+            {[['#FF5C6C', 0], ['#FFC247', 60], ['#19C37D', 120], ['#2EC4D3', 180], ['#5B5BF6', 240], ['#FF3FD0', 300]].map(([color, a], i) => {
+                const rad = (a * Math.PI) / 180;
+                return (
+                    <circle key={i} cx={48 + Math.cos(rad) * 42} cy={48 + Math.sin(rad) * 42} r="3.2" fill={color} opacity="0.85">
+                        <animate attributeName="opacity" values="0.4;1;0.4" dur="1.6s" begin={`${i * 0.18}s`} repeatCount="indefinite" />
+                    </circle>
+                );
+            })}
         </g>
     ),
 };

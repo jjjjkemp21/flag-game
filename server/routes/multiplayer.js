@@ -36,10 +36,16 @@ const TARGET_MODES = new Set(['race', 'battle']);
 
 function normalizeConfig(c) {
     c = c || {};
-    const mode = MODES[c.mode] ? c.mode : 'race';
-    const content = c.content === 'languages' ? 'languages' : 'flags';
+    let mode = MODES[c.mode] ? c.mode : 'race';
+    const content = c.content === 'languages' ? 'languages'
+        : c.content === 'globe' ? 'globe'
+        : 'flags';
+    // Globe content is click-on-country only — Atlas Battle would feel awful
+    // with a slow place-the-pin loop, so fall it back to race.
+    if (content === 'globe' && mode === 'battle') mode = 'race';
     const questionType = c.questionType === 'text' ? 'text' : 'mc';
-    const scope = content === 'flags' && typeof c.scope === 'string' && c.scope
+    const scope = (content === 'flags' || content === 'globe')
+        && typeof c.scope === 'string' && c.scope
         ? c.scope.slice(0, 32)
         : 'all';
     let maxPlayers = clampInt(c.maxPlayers, 2, MODES[mode].players, MODES[mode].players);

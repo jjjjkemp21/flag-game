@@ -316,8 +316,14 @@ class Globe {
             const dx = e.clientX - this.lastPointer.x;
             const dy = e.clientY - this.lastPointer.y;
             this.lastPointer = { x: e.clientX, y: e.clientY };
-            this.rotV.y = dx * 0.005;
-            this.rotV.x = dy * 0.005;
+            // Sensitivity scales with current zoom: when zoomed in, a 1-pixel
+            // drag should nudge the globe less so countries don't whip past
+            // the player's finger. Base is tuned down from 0.005 so casual
+            // scrolls don't fling the globe around.
+            const zoomFactor = this.camera.position.z / CAM_Z_DEFAULT;
+            const sens = 0.0032 * zoomFactor;
+            this.rotV.y = dx * sens;
+            this.rotV.x = dy * sens;
             this.rot.y += this.rotV.y;
             this.rot.x += this.rotV.x;
             this.rot.x = Math.max(-1.2, Math.min(1.2, this.rot.x));

@@ -74,12 +74,18 @@ function flagPool(flagsData, scope) {
 }
 
 // Build a question engine for a match. `get(i)` is pure given the seed.
-export function makeEngine({ config, seed, flagsData, languagesData, phrasesData }) {
+// For `content: 'globe'` the caller can pass `globeIso2` (a Set of ISO-A2 codes
+// supported by the loaded 3D globe) so we only ask about countries the globe
+// can actually render. Until that's known the engine still builds — get(i) just
+// skips ineligible items.
+export function makeEngine({ config, seed, flagsData, languagesData, phrasesData, globeIso2 }) {
     const FLAG_BASE = './assets/flags/';
     const isLang = config.content === 'languages';
-    const pool = isLang
-        ? (languagesData || [])
-        : flagPool(flagsData, config.scope);
+    const isGlobe = config.content === 'globe';
+    let pool;
+    if (isLang) pool = languagesData || [];
+    else if (isGlobe) pool = globePool(flagsData, config.scope, globeIso2);
+    else pool = flagPool(flagsData, config.scope);
     const n = pool.length;
     const orders = new Map();
     const orderFor = (round) => {
@@ -106,6 +112,17 @@ export function makeEngine({ config, seed, flagsData, languagesData, phrasesData
             return { kind: 'language', phrase, answer, options };
         }
 
+        if (isGlobe) {
+            // Globe questions: render the flag as the prompt; the answer is an
+            // ISO-A2 code matched by clicking the country on the 3D globe.
+            return {
+                kind: 'globe',
+                image: `${FLAG_BASE}${item.file}`,
+                answer: item.name || item.country,
+                answerIso2: (item.code || '').toUpperCase(),
+            };
+        }
+
         const answer = item.name || item.country;
         let options = null;
         if (config.questionType === 'mc') {
@@ -124,6 +141,19 @@ export function makeEngine({ config, seed, flagsData, languagesData, phrasesData
     };
 
     return { count: n, get };
+}
+
+// Globe pool: same scoping as flags, then filter to entries whose ISO-A2 code
+// is one the loaded 3D globe can actually render (passed in as a Set).
+function globePool(flagsData, scope, globeIso2) {
+    const base = flagPool(flagsData, scope);
+    if (!globeIso2 || globeIso2.size === 0) return base;
+    return base.filter((f) => f && f.code && globeIso2.has(f.code.toUpperCase()));
+}
+
+// Check a globe pick: case-insensitive ISO-A2 compare.
+export function checkGlobePick(iso2, question) {
+    return (iso2 || '').toUpperCase() === (question && question.answerIso2 || '').toUpperCase();
 }
 
 function shuffleArr(arr, rng) {
