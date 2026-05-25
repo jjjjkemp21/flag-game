@@ -23,6 +23,14 @@ function StoreScreen({ setView, flagsData }) {
     const bucks = currency.bucks;
     const claimable = currency.claimableBucks;
 
+    // Custom trade-in amount. Defaults to the full claimable balance so the
+    // common "trade everything" action is still one click — but the player
+    // can edit it to convert just a portion.
+    const [tradeDraft, setTradeDraft] = useState('');
+    useEffect(() => {
+        setTradeDraft(claimable > 0 ? String(claimable) : '');
+    }, [claimable]);
+
     const countries = useMemo(
         () => (flagsData || [])
             .map((f) => ({ code: f.code, name: f.country || f.name }))
@@ -32,6 +40,20 @@ function StoreScreen({ setView, flagsData }) {
 
     // Owned vs. shop (not-yet-bought) cosmetics.
     const [shopTab, setShopTab] = useState('owned');
+
+    // Preview: clicking an unaffordable item slots it onto the big Atlas so
+    // the player can see it before earning the bucks. Doesn't persist.
+    const [previewItem, setPreviewItem] = useState(null);
+    const displayCosmetics = previewItem
+        ? { ...profile.cosmetics, [previewItem.cat]: previewItem.id }
+        : profile.cosmetics;
+    const previewMeta = previewItem
+        ? (() => {
+            const cat = CATEGORIES.find((c) => c.key === previewItem.cat);
+            const item = cat?.items?.[previewItem.id];
+            return item ? { cat, item, cost: priceOf(item) } : null;
+        })()
+        : null;
 
     // Cosmetic placement (drag to move, slider to scale).
     const [adjust, setAdjust] = useState('hat');
@@ -78,33 +100,50 @@ function StoreScreen({ setView, flagsData }) {
         toast.success(`Renamed to ${n}!`);
     };
 
-    // Trading in XP for bucks: server mints (earned - already-minted) ÷ rate
-    // bucks. XP balance is untouched. patchUser updates the topbar chip.
+    // Trading in XP for bucks: server mints up to the requested amount (or
+    // everything if no amount is given) at the current rate. The XP balance
+    // is untouched. patchUser updates the topbar chip.
+    const tradeAmount = (() => {
+        const n = parseInt(tradeDraft, 10);
+        if (!Number.isFinite(n) || n <= 0) return 0;
+        return Math.min(n, claimable);
+    })();
     const onTradeIn = async () => {
         if (claimable <= 0) {
-            toast.info('No new XP to trade in yet.');
+            // useToast() exposes show/success/danger/accent — there is no
+            // toast.info(), so use the neutral show() variant here.
+            toast.show('No new XP to trade in yet.', { icon: 'info' });
+            return;
+        }
+        if (tradeAmount <= 0) {
+            toast.danger('Enter how many Atlas Bucks to trade for.');
             return;
         }
         try {
-            const out = await claimBucks();
+            const out = await claimBucks(tradeAmount);
             patchUser({ bucks: out.bucks });
-            toast.success(`Traded XP for ${out.claimed.toLocaleString()} Atlas Bucks!`);
+            toast.success(`Traded ${(out.claimed * CURRENCY_RATE).toLocaleString()} XP for ${out.claimed.toLocaleString()} Atlas Bucks!`);
         } catch (err) {
             toast.danger(err.message || 'Could not trade XP right now.');
         }
     };
 
     // Try to buy — on success, auto-equip the item so the click feels direct.
+    // If you can't afford it, slot it into the preview instead of erroring so
+    // you can see it on Atlas before deciding whether to grind for it.
     const onBuy = async (categoryKey, id, item) => {
         const cost = priceOf(item);
         if (bucks < cost) {
-            toast.danger(`Need ${cost.toLocaleString()} Atlas Bucks — trade in some XP first.`);
+            setPreviewItem((p) =>
+                p && p.cat === categoryKey && p.id === id ? null : { cat: categoryKey, id }
+            );
             return;
         }
         try {
             const out = await buyCosmetic(categoryKey, id);
             patchUser({ bucks: out.bucks, ownedCosmetics: Array.from(out.ownedCosmetics || []) });
             setCosmetic(categoryKey, id);
+            setPreviewItem(null);
             toast.success(`Bought ${item.name}!`);
         } catch (err) {
             toast.danger(err.message || 'Could not buy that.');
@@ -116,6 +155,7 @@ function StoreScreen({ setView, flagsData }) {
             return onBuy(categoryKey, id, item);
         }
         setCosmetic(categoryKey, id);
+        setPreviewItem(null);
     };
 
     const posOf = (s) => (s === 'hat' ? profile.cosmetics.hatPos : profile.cosmetics.glassesPos) || DEFAULT_POS;
@@ -162,8 +202,28 @@ function StoreScreen({ setView, flagsData }) {
                     onPointerCancel={onPointerUp}
                     style={{ touchAction: 'none', cursor: (hasHat || hasGlasses) ? 'grab' : 'default' }}
                 >
-                    <Mascot size={120} mood={pet.alive ? pet.mood : 'idle'} cosmetics={profile.cosmetics} chubby={pet.obese} bruised={pet.bruised} />
+                    <Mascot size={120} mood={pet.alive ? pet.mood : 'idle'} cosmetics={displayCosmetics} chubby={pet.obese} bruised={pet.bruised} />
                 </div>
+
+                {previewMeta && (
+                    <div className="store-preview-banner" role="status">
+                        <Icon name="visibility" />
+                        <span className="store-preview-banner__text">
+                            Previewing <strong>{previewMeta.item.name}</strong> ·{' '}
+                            <span className="store-preview-banner__cost">
+                                <AtlasBucksIcon size={12} /> {previewMeta.cost.toLocaleString()}
+                            </span>
+                        </span>
+                        <button
+                            type="button"
+                            className="store-preview-banner__clear"
+                            onClick={() => setPreviewItem(null)}
+                            aria-label="Clear preview"
+                        >
+                            <Icon name="close" />
+                        </button>
+                    </div>
+                )}
 
                 {/* Wallet: bucks balance + XP-trade-in. The "trade-in" is the
                     only way to get bucks from your XP — XP itself never drops. */}
@@ -174,16 +234,44 @@ function StoreScreen({ setView, flagsData }) {
                         <span className="ab-wallet__label">Atlas Bucks</span>
                     </div>
                     <div className="ab-wallet__trade">
-                        <span className="ab-wallet__xp">{xp.toLocaleString()} XP</span>
-                        <Button
-                            variant={claimable > 0 ? 'primary' : 'secondary'}
-                            size="sm"
-                            icon="paid"
-                            onClick={onTradeIn}
-                            disabled={claimable <= 0}
-                        >
-                            Trade XP{claimable > 0 ? ` (+${claimable.toLocaleString()})` : ''}
-                        </Button>
+                        <span className="ab-wallet__xp">
+                            {xp.toLocaleString()} XP
+                            {claimable > 0 && (
+                                <span className="ab-wallet__claimable"> · up to {claimable.toLocaleString()}</span>
+                            )}
+                        </span>
+                        <div className="ab-wallet__trade-input">
+                            <input
+                                className="ab-wallet__amount"
+                                type="number"
+                                inputMode="numeric"
+                                min="1"
+                                max={claimable || undefined}
+                                step="1"
+                                value={tradeDraft}
+                                onChange={(e) => setTradeDraft(e.target.value.replace(/[^\d]/g, ''))}
+                                disabled={claimable <= 0}
+                                placeholder="0"
+                                aria-label="Atlas Bucks to trade for"
+                            />
+                            <button
+                                type="button"
+                                className="ab-wallet__max"
+                                onClick={() => setTradeDraft(String(claimable))}
+                                disabled={claimable <= 0}
+                            >
+                                Max
+                            </button>
+                            <Button
+                                variant={tradeAmount > 0 ? 'primary' : 'secondary'}
+                                size="sm"
+                                icon="paid"
+                                onClick={onTradeIn}
+                                disabled={claimable <= 0 || tradeAmount <= 0}
+                            >
+                                Trade{tradeAmount > 0 ? ` (+${tradeAmount.toLocaleString()})` : ''}
+                            </Button>
+                        </div>
                     </div>
                     <p className="ab-wallet__hint">
                         {CURRENCY_RATE} XP = 1 Atlas Buck · your XP stays after trading.
@@ -272,13 +360,13 @@ function StoreScreen({ setView, flagsData }) {
             <div className="lb-filter store-tabs">
                 <button
                     className={`lb-filter__btn ${shopTab === 'owned' ? 'is-active' : ''}`}
-                    onClick={() => setShopTab('owned')}
+                    onClick={() => { setShopTab('owned'); setPreviewItem(null); }}
                 >
                     <Icon name="check_circle" /> Owned
                 </button>
                 <button
                     className={`lb-filter__btn ${shopTab === 'shop' ? 'is-active' : ''}`}
-                    onClick={() => setShopTab('shop')}
+                    onClick={() => { setShopTab('shop'); setPreviewItem(null); }}
                 >
                     <Icon name="shopping_bag" /> Shop
                 </button>
@@ -319,6 +407,7 @@ function StoreScreen({ setView, flagsData }) {
                             const equipped = profile.cosmetics[cat.key] === id;
                             const cost = priceOf(item);
                             const canAfford = bucks >= cost;
+                            const isPreviewing = previewItem && previewItem.cat === cat.key && previewItem.id === id;
                             // Preview the item on Atlas: colors recolor the globe; hats /
                             // glasses sit on the player's current globe color.
                             const previewCos = cat.key === 'color'
@@ -327,7 +416,7 @@ function StoreScreen({ setView, flagsData }) {
                             return (
                                 <button
                                     key={id}
-                                    className={`cosmetic-card ${equipped ? 'is-equipped' : ''} ${owned ? '' : 'is-locked'}`}
+                                    className={`cosmetic-card ${equipped ? 'is-equipped' : ''} ${owned ? '' : 'is-locked'} ${isPreviewing ? 'is-preview' : ''}`}
                                     onClick={() => onEquip(cat.key, id, item)}
                                     aria-label={item.name}
                                 >
@@ -339,6 +428,8 @@ function StoreScreen({ setView, flagsData }) {
                                         <span className="cosmetic-tag cosmetic-tag--on"><Icon name="check" /> Equipped</span>
                                     ) : owned ? (
                                         <span className="cosmetic-tag">Equip</span>
+                                    ) : isPreviewing ? (
+                                        <span className="cosmetic-tag cosmetic-tag--preview"><Icon name="visibility" /> Previewing</span>
                                     ) : (
                                         <span className={`cosmetic-tag cosmetic-tag--buy ${canAfford ? '' : 'cosmetic-tag--cant'}`}>
                                             <AtlasBucksIcon size={12} /> {cost.toLocaleString()}

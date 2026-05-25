@@ -5,12 +5,14 @@ import Icon from './Icon';
 import { Button, ScoreBubble } from './ui';
 import Confetti from '../assets/illustrations/Confetti';
 import Mascot from '../assets/illustrations/Mascot';
+import MasteryMeter from './MasteryMeter';
 import Spinner from '../assets/illustrations/Spinner';
 import { useAudio } from '../audio/AudioProvider';
 import { useProfile, recordBestStreak } from '../lib/profile';
 import { awardForAnswer, penaltyForAnswer, streakMultiplier, MASTERY_STREAK } from '../lib/xp';
 import { addEarnedXp } from '../lib/progress';
 import { bumpMetric } from '../lib/battlepass';
+import { recordCorrect, recordIncorrect } from '../lib/pet';
 import { getStreak, saveStreak, resetStreak } from '../lib/streak';
 import Globe from '../lib/globe/Globe';
 import { springs } from '../motion';
@@ -72,6 +74,7 @@ function GlobeQuiz({
     const [showConfetti, setShowConfetti] = useState(false);
     const [hintUsed, setHintUsed] = useState(false);
     const [hintLabel, setHintLabel] = useState(null);
+    const [masteryStreak, setMasteryStreak] = useState(0); // current flag's progress to geo-mastery
     // Ref mirror so resolveAnswer (memoised before hintUsed is in scope above
     // it) sees the latest value without depending on state in the deps array.
     const hintUsedRef = useRef(false);
@@ -100,6 +103,7 @@ function GlobeQuiz({
         }
         updateQuestionHistory(next.code);
         setCurrentFlag(next);
+        setMasteryStreak(next.geoStreak || 0);
         setSelectedIso2(null);
         setAnswered(false);
         setFeedback({ text: ' ' });
@@ -129,6 +133,7 @@ function GlobeQuiz({
         setFeedback({ text: message.text, answer: message.answer, tone: color });
         const after = updatedFlags.find((f) => f.code === flag.code);
         const afterStreak = after ? (after.geoStreak || 0) : beforeStreak;
+        setMasteryStreak(afterStreak);
 
         if (globeRef.current) {
             globeRef.current.setLocked(wasCorrect ? 'correct' : 'wrong');
@@ -143,6 +148,10 @@ function GlobeQuiz({
                 globeRef.current.flyToIso2(flag.code, { duration: 700, zoom: 4.6 });
             }
         }
+
+        // Globe writes to geoCorrect/geoIncorrect, so App.js's flagsData-totals
+        // feeder never sees these answers. Nudge Atlas directly per answer.
+        if (wasCorrect) recordCorrect(1); else recordIncorrect(1);
 
         if (wasCorrect) {
             audio.play('correct');
@@ -259,10 +268,13 @@ function GlobeQuiz({
         setAnswered(true);
         setFlashColor('incorrect');
         audio.play('incorrect');
+        recordIncorrect(1);
         setStreak(0);
         resetStreak(MODE);
         const { message, color, updatedFlags } = update_geo_stats(allFlagsData, flag, false);
         setFlagsData(updatedFlags);
+        const after = updatedFlags.find((f) => f.code === flag.code);
+        if (after) setMasteryStreak(after.geoStreak || 0);
         setFeedback({ text: 'Skipped. The answer was:', answer: message.answer, tone: color });
         if (globeRef.current) {
             globeRef.current.setLocked('wrong');
@@ -348,6 +360,7 @@ function GlobeQuiz({
                             alt={`Flag of ${currentFlag.name}`}
                             className="globe-quiz__prompt-flag"
                         />
+                        <MasteryMeter streak={masteryStreak} />
                         <div className="globe-quiz__prompt-hint">
                             <Icon name="touch_app" /> Tap a country, then confirm.
                         </div>

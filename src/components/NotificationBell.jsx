@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import Icon from './Icon';
 import { Modal } from './ui';
+import { useToast } from './ui/Toast';
+import { useAuth } from '../auth/AuthProvider';
 import Markdown from './Markdown';
 import { api } from '../api/client';
 
@@ -13,9 +15,13 @@ function formatDate(ms) {
 }
 
 function NotificationBell() {
+    const { user } = useAuth();
+    const toast = useToast();
     const [open, setOpen] = useState(false);
     const [announcements, setAnnouncements] = useState([]);
     const [unread, setUnread] = useState(0);
+    const [removingId, setRemovingId] = useState(null);
+    const isAdmin = !!user?.is_admin;
 
     const load = useCallback(async () => {
         try {
@@ -47,6 +53,23 @@ function NotificationBell() {
         }
     };
 
+    const removeOne = async (id) => {
+        if (!isAdmin) return;
+        setRemovingId(id);
+        try {
+            await api.del(`/announcements/${id}`);
+            // Drop locally so the modal updates without waiting for the refetch.
+            setAnnouncements((list) => list.filter((a) => a.id !== id));
+            // Tell any other listeners (and refresh the unread count from the
+            // server — deleting a previously-unread post should lower the badge).
+            window.dispatchEvent(new CustomEvent('flagGame:announcementsChanged'));
+        } catch (err) {
+            toast.danger(err.message || 'Could not delete.');
+        } finally {
+            setRemovingId(null);
+        }
+    };
+
     return (
         <>
             <button className="bell-button" aria-label="Announcements" onClick={openPanel}>
@@ -64,6 +87,18 @@ function NotificationBell() {
                                 <div className="announcement-head">
                                     <strong>{a.title}</strong>
                                     <span className="announcement-date">{formatDate(a.created_at)}</span>
+                                    {isAdmin && (
+                                        <button
+                                            type="button"
+                                            className="announcement-remove"
+                                            onClick={() => removeOne(a.id)}
+                                            disabled={removingId === a.id}
+                                            aria-label={`Delete announcement: ${a.title}`}
+                                            title="Delete this announcement"
+                                        >
+                                            <Icon name={removingId === a.id ? 'hourglass_empty' : 'delete'} />
+                                        </button>
+                                    )}
                                 </div>
                                 <Markdown className="announcement-body">{a.body}</Markdown>
                             </li>

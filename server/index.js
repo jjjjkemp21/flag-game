@@ -21,6 +21,7 @@ app.use('/api/stats', require('./routes/stats'));
 app.use('/api/pet', require('./routes/pet'));
 app.use('/api/profile', require('./routes/profile'));
 app.use('/api/announcements', require('./routes/announcements'));
+app.use('/api/feedback', require('./routes/feedback'));
 app.use('/api/mp', require('./routes/multiplayer'));
 app.use('/api/currency', require('./routes/currency'));
 app.use('/api/battlepass', require('./routes/battlepass'));

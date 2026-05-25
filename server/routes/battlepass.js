@@ -13,8 +13,10 @@ const {
     TIERS,
     rewardKey,
     tierFromStars,
+    challengeBucks,
 } = require('../battlepassCatalog');
 const { priceOf, isDefault } = require('../cosmeticsCatalog');
+const { MASTERY_STREAK } = require('../xp');
 
 const router = express.Router();
 router.use(requireAuth);
@@ -29,6 +31,7 @@ function emptyState() {
         season: SEASON_ID,
         owned: false,
         claimed: [],
+        claimedChallenges: [],
         counters: {},
     };
 }
@@ -50,6 +53,9 @@ function loadState(userId) {
         season: SEASON_ID,
         owned: !!parsed.owned,
         claimed: Array.isArray(parsed.claimed) ? parsed.claimed.filter((k) => typeof k === 'string') : [],
+        claimedChallenges: Array.isArray(parsed.claimedChallenges)
+            ? parsed.claimedChallenges.filter((id) => typeof id === 'string')
+            : [],
         counters: (parsed.counters && typeof parsed.counters === 'object') ? parsed.counters : {},
     };
 }
@@ -68,8 +74,9 @@ function serverMetrics(userId) {
     const stats = safeParse(row.stats_json, []) || [];
     const bonus = safeParse(row.bonus_scores_json, {}) || {};
     const streaks = safeParse(row.streaks_json, {}) || {};
-    // "Mastered" matches the client definition in achievements: streak > 5.
-    const mastered = stats.filter((f) => (Number(f.streak) || 0) > 5).length;
+    // "Mastered" matches the client definition in achievements: streak strictly
+    // greater than MASTERY_STREAK (kept in lock-step via server/xp.js).
+    const mastered = stats.filter((f) => (Number(f.streak) || 0) > MASTERY_STREAK).length;
     const bestStreakAny = Object.values(streaks).reduce(
         (m, v) => Math.max(m, Number(v) || 0), 0
     );
@@ -97,12 +104,21 @@ function effectiveMetrics(userId, counters) {
 function summary(userId) {
     const state = loadState(userId);
     const metrics = effectiveMetrics(userId, state.counters);
+    const claimedSet = new Set(state.claimedChallenges || []);
     let stars = 0;
     const challenges = CHALLENGES.map((c) => {
         const cur = Math.max(0, Number(metrics[c.metric]) || 0);
         const done = cur >= c.goal;
         if (done) stars += c.stars;
-        return { id: c.id, cur: Math.min(cur, c.goal), goal: c.goal, done, stars: c.stars };
+        return {
+            id: c.id,
+            cur: Math.min(cur, c.goal),
+            goal: c.goal,
+            done,
+            stars: c.stars,
+            bucks: challengeBucks(c),
+            claimed: claimedSet.has(c.id),
+        };
     });
     const tier = tierFromStars(stars);
     return {
@@ -110,6 +126,7 @@ function summary(userId) {
         seasonName: SEASON_NAME,
         owned: state.owned,
         claimed: state.claimed,
+        claimedChallenges: state.claimedChallenges,
         stars,
         totalStars: TOTAL_STARS,
         tier,
@@ -233,6 +250,52 @@ router.post('/claim', (req, res) => {
         reward,
         bucks: Math.max(0, Number(row.bucks) || 0),
         ownedCosmetics: safeParse(row.owned_cosmetics_json, []) || [],
+        ...summary(req.user.id),
+    });
+});
+
+// Claim the one-shot Atlas Bucks payout for a completed challenge. Body: { id }.
+// Server re-derives whether the challenge is done from authoritative metrics,
+// then grants the bucks and marks the id as claimed for this season.
+router.post('/claim-challenge', (req, res) => {
+    const { id } = req.body || {};
+    if (typeof id !== 'string' || !id) {
+        return res.status(400).json({ error: 'challenge id required.' });
+    }
+    const def = CHALLENGES_BY_ID[id];
+    if (!def) return res.status(404).json({ error: 'No such challenge.' });
+
+    const tx = db.transaction(() => {
+        const state = loadState(req.user.id);
+        const already = new Set(state.claimedChallenges || []);
+        if (already.has(id)) return { error: 'already-claimed' };
+
+        // Re-derive done from authoritative metrics so a stale client can't
+        // claim a challenge they haven't actually finished.
+        const metrics = effectiveMetrics(req.user.id, state.counters);
+        const cur = Math.max(0, Number(metrics[def.metric]) || 0);
+        if (cur < def.goal) return { error: 'not-done' };
+
+        const payout = challengeBucks(def);
+        const row = db.prepare('SELECT bucks FROM users WHERE id = ?').get(req.user.id);
+        const bal = Math.max(0, Number(row && row.bucks) || 0);
+        db.prepare('UPDATE users SET bucks = ? WHERE id = ?').run(bal + payout, req.user.id);
+
+        const nextClaimed = [...(state.claimedChallenges || []), id];
+        saveState(req.user.id, { ...state, claimedChallenges: nextClaimed });
+        return { ok: true, payout };
+    });
+
+    const out = tx();
+    if (out.error === 'already-claimed') return res.status(409).json({ error: 'Already claimed.' });
+    if (out.error === 'not-done')        return res.status(403).json({ error: 'Challenge not complete yet.' });
+
+    const row = db.prepare('SELECT bucks FROM users WHERE id = ?').get(req.user.id);
+    res.json({
+        claimed: true,
+        id,
+        payout: out.payout,
+        bucks: Math.max(0, Number(row.bucks) || 0),
         ...summary(req.user.id),
     });
 });

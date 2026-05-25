@@ -7,13 +7,14 @@ import Mascot from '../assets/illustrations/Mascot';
 import AtlasBucksIcon from '../assets/illustrations/AtlasBucks';
 import ChallengeIcon from './ChallengeIcon';
 import { useAuth } from '../auth/AuthProvider';
-import { useCurrency } from '../lib/currency';
+import { useCurrency, setBucksLocal } from '../lib/currency';
+import { useProfile } from '../lib/profile';
 import {
-    useBattlepass, loadBattlepass, buyPremium, claimReward, isClaimed,
+    useBattlepass, loadBattlepass, buyPremium, claimReward, claimChallenge, isClaimed,
     CHALLENGES_BY_ID, TIERS_BY_NUM, progressWithinTier,
 } from '../lib/battlepass';
 import { PREMIUM_PRICE, SEASON_NAME, TIER_COUNT } from '../lib/battlepassCatalog';
-import { COLORS, HATS, GLASSES, EFFECTS } from '../lib/cosmetics';
+import { COLORS, HATS, GLASSES, EFFECTS, DEFAULT_COSMETICS } from '../lib/cosmetics';
 import { springs } from '../motion';
 
 // Look up the display name + category metadata of a reward's cosmetic so the
@@ -50,8 +51,11 @@ const RARITY_HUE = {
 };
 
 // Convert a reward into a stage-friendly preview shape. Bucks become a coin
-// "stack"; cosmetics yield a Mascot with the item equipped. Used by both the
-// premium stage (always shown big) and the free track stage on bucks tiers.
+// "stack"; cosmetic rewards yield a Mascot wearing the player's current skin
+// with the previewed item swapped into its slot — same pattern the shop uses.
+// That way the player sees the item layered onto THEIR Atlas (their color +
+// their hat + their glasses + their effect), and a color reward replaces only
+// the globe colour without stripping the accessories they have equipped.
 function stagePreview(reward, fallbackCos) {
     if (!reward) return null;
     if (reward.type === 'bucks') {
@@ -63,9 +67,7 @@ function stagePreview(reward, fallbackCos) {
         };
     }
     if (reward.type === 'cosmetic') {
-        const cos = reward.cat === 'color'
-            ? { color: reward.id, hat: 'none', glasses: 'none', effect: 'none' }
-            : { ...fallbackCos, [reward.cat]: reward.id };
+        const cos = { ...fallbackCos, [reward.cat]: reward.id };
         return {
             kind: 'cosmetic',
             cos,
@@ -195,16 +197,26 @@ function TierCard({ tier, def, currentTier, ownsPass, onClaim, claimingKey, fall
     );
 }
 
-function ChallengeCard({ challenge, def }) {
+function ChallengeCard({ challenge, def, onClaim, claiming }) {
     const pct = def.goal > 0 ? Math.min(1, challenge.cur / def.goal) : 0;
+    const bucks = Number(challenge.bucks) || 0;
+    const claimed = !!challenge.claimed;
+    const claimable = challenge.done && !claimed && bucks > 0;
     return (
-        <div className={`bp-quest ${challenge.done ? 'is-done' : ''}`}>
+        <div className={`bp-quest ${challenge.done ? 'is-done' : ''} ${claimable ? 'is-claimable' : ''}`}>
             <ChallengeIcon metric={def.metric} size={56} done={challenge.done} />
             <span className="bp-quest__body">
                 <span className="bp-quest__head">
                     <span className="bp-quest__title">{def.title}</span>
-                    <span className="bp-quest__stars" aria-label={`${def.stars} battle stars`}>
-                        <Icon name="star" /> {def.stars.toLocaleString()}
+                    <span className="bp-quest__rewards">
+                        {bucks > 0 && (
+                            <span className="bp-quest__bucks" aria-label={`${bucks} Atlas Bucks reward`}>
+                                <AtlasBucksIcon size={14} /> {bucks.toLocaleString()}
+                            </span>
+                        )}
+                        <span className="bp-quest__stars" aria-label={`${def.stars} battle stars`}>
+                            <Icon name="star" /> {def.stars.toLocaleString()}
+                        </span>
                     </span>
                 </span>
                 <span className="bp-quest__desc">{def.desc}</span>
@@ -217,6 +229,21 @@ function ChallengeCard({ challenge, def }) {
                         : <>{Math.min(challenge.cur, def.goal).toLocaleString()} / {def.goal.toLocaleString()}</>
                     }
                 </span>
+                {challenge.done && bucks > 0 && (
+                    claimed ? (
+                        <span className="bp-quest__claimed"><Icon name="check" /> Reward claimed</span>
+                    ) : (
+                        <Button
+                            variant="success"
+                            size="sm"
+                            icon="redeem"
+                            disabled={claiming}
+                            onClick={() => onClaim(challenge.id)}
+                        >
+                            {claiming ? 'Claiming…' : `Claim ${bucks.toLocaleString()} Bucks`}
+                        </Button>
+                    )
+                )}
             </span>
         </div>
     );
@@ -227,10 +254,12 @@ function BattlepassScreen({ setView }) {
     const currency = useCurrency();
     const toast = useToast();
     const bp = useBattlepass();
+    const profile = useProfile();
     const [tab, setTab] = useState('rewards');
     const [buyOpen, setBuyOpen] = useState(false);
     const [buying, setBuying] = useState(false);
     const [claimingKey, setClaimingKey] = useState(null);
+    const [claimingChallengeId, setClaimingChallengeId] = useState(null);
     const tiersRef = useRef(null);
     const prefersReduced = useReducedMotion();
 
@@ -260,11 +289,20 @@ function BattlepassScreen({ setView }) {
     );
     const completedCount = challengesWithDef.filter(({ challenge }) => challenge.done).length;
 
-    // Used as the "base" cosmetic for hat/glasses/effect previews so the
-    // preview Mascot has a colour set rather than rendering on a default teal.
+    // Preview each reward against the player's currently equipped skin, so
+    // they see exactly how the new item would layer onto THEIR Atlas — same
+    // pattern the cosmetics shop uses. Falls back to the default cosmetics if
+    // the profile hasn't loaded yet (e.g. fresh login race).
     const fallbackCos = useMemo(
-        () => ({ color: 'bp_jade', hat: 'none', glasses: 'none', effect: 'none' }),
-        []
+        () => ({
+            color: profile.cosmetics?.color || DEFAULT_COSMETICS.color,
+            hat: profile.cosmetics?.hat || DEFAULT_COSMETICS.hat,
+            glasses: profile.cosmetics?.glasses || DEFAULT_COSMETICS.glasses,
+            effect: profile.cosmetics?.effect || DEFAULT_COSMETICS.effect,
+            hatPos: profile.cosmetics?.hatPos,
+            glassesPos: profile.cosmetics?.glassesPos,
+        }),
+        [profile.cosmetics]
     );
 
     if (!isAuthed) {
@@ -304,6 +342,21 @@ function BattlepassScreen({ setView }) {
         }
     };
 
+    const onClaimChallenge = async (id) => {
+        if (claimingChallengeId) return;
+        setClaimingChallengeId(id);
+        try {
+            const out = await claimChallenge(id);
+            patchUser({ bucks: out.bucks });
+            setBucksLocal(out.bucks);
+            toast.success(`+${Number(out.payout || 0).toLocaleString()} Atlas Bucks!`);
+        } catch (err) {
+            toast.danger(err.message || 'Could not claim that challenge.');
+        } finally {
+            setClaimingChallengeId(null);
+        }
+    };
+
     const onClaim = async (track, tier) => {
         const key = `${track}:${tier}`;
         if (claimingKey) return;
@@ -311,6 +364,9 @@ function BattlepassScreen({ setView }) {
         try {
             const out = await claimReward(track, tier);
             patchUser({ bucks: out.bucks, ownedCosmetics: out.ownedCosmetics });
+            // Mirror the new balance into the currency store so the topbar
+            // chip updates immediately, matching onClaimChallenge above.
+            if (typeof out.bucks === 'number') setBucksLocal(out.bucks);
             if (out.reward?.type === 'bucks') {
                 toast.success(`+${out.reward.amount.toLocaleString()} Atlas Bucks!`);
             } else if (out.reward?.type === 'cosmetic') {
@@ -442,7 +498,13 @@ function BattlepassScreen({ setView }) {
                         className="bp-quests"
                     >
                         {challengesWithDef.map(({ challenge, def }) => (
-                            <ChallengeCard key={challenge.id} challenge={challenge} def={def} />
+                            <ChallengeCard
+                                key={challenge.id}
+                                challenge={challenge}
+                                def={def}
+                                onClaim={onClaimChallenge}
+                                claiming={claimingChallengeId === challenge.id}
+                            />
                         ))}
                     </motion.div>
                 )}

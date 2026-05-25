@@ -179,86 +179,110 @@ export const COLORS = {
     // claiming a pass tier — once unlocked, they appear in the player's "Owned"
     // tab and equip like any other cosmetic. Prices are kept symbolic so a
     // future migration could move them to the shop without re-pricing work.
-    bp_jade: {
-        name: 'Jade Scales', xp: 999999, bpOnly: true, stroke: '#1F6A3F',
-        stops: ['#A8E0B5', '#3FAA60', '#1F5A3F'],
-        pattern: { kind: 'scales', base: '#3FAA60', accent: '#1F5A3F', accent2: '#7FE0A8' },
-    },
-    bp_python: {
-        name: 'Python Skin', xp: 999999, bpOnly: true, stroke: '#2A4015',
-        stops: ['#D8E5B0', '#5B7F2F', '#2A4015'],
-        pattern: { kind: 'leopard', base: '#5B7F2F', accent: '#2A4015', accent2: '#A8C047' },
+    bp_iguana: {
+        // Tier 3 — entry-tier reptile hide in fresh greens, polished scales.
+        name: 'Iguana Hide', xp: 999999, bpOnly: true, stroke: '#1F5A3F',
+        stops: ['#C8EFD2', '#3FAA60', '#1F5A3F'],
+        pattern: { kind: 'scales', base: '#2F8A5B', accent: '#3FAA60', accent2: '#A8F0C0' },
     },
     bp_gecko: {
-        name: 'Gecko Spots', xp: 999999, bpOnly: true, stroke: '#5A3A18',
+        // Tier 7 — sunbathing gecko: warm amber base with iridescent dotting.
+        name: 'Gecko Spots', xp: 999999, bpOnly: true, stroke: '#7A4A1A',
         stops: ['#FFE5A8', '#FFB23F', '#A0681A'],
-        pattern: { kind: 'cheetah', base: '#FFB23F', accent: '#3A2410' },
+        pattern: { kind: 'gecko', base: '#FFB23F', accent: '#FFD86B', accent2: '#7A4A1A' },
     },
-    bp_iguana: {
-        name: 'Iguana Hide', xp: 999999, bpOnly: true, stroke: '#1F5A3F',
-        stops: ['#B0E0C5', '#3F8A5B', '#1F5A3F'],
-        pattern: { kind: 'scales', base: '#3F8A5B', accent: '#1F5A3F', accent2: '#7FE0A0' },
+    bp_jade: {
+        // Tier 9 — deep jade with golden rim highlights on each scale.
+        name: 'Jade Scales', xp: 999999, bpOnly: true, stroke: '#0F4A2A',
+        stops: ['#B5F0C8', '#19A36B', '#0F4A2A'],
+        pattern: { kind: 'scales', base: '#19805A', accent: '#19A36B', accent2: '#FFD86B' },
+    },
+    bp_python: {
+        // Tier 10 — moss/olive python with diamondback markings.
+        name: 'Python Skin', xp: 999999, bpOnly: true, stroke: '#2A4015',
+        stops: ['#E0EAB5', '#7F9A3F', '#2A4015'],
+        pattern: { kind: 'serpent', base: '#5B7F2F', accent: '#A8C047', accent2: '#2A4015' },
     },
     bp_komodo: {
-        name: 'Komodo Dragon', xp: 999999, bpOnly: true, stroke: '#3A2A18',
+        // Tier 12 — weathered earth tones, leathery scales for a komodo feel.
+        name: 'Komodo Dragon', xp: 999999, bpOnly: true, stroke: '#1F1810',
         stops: ['#C2B098', '#7A6850', '#3A2A18'],
-        pattern: { kind: 'giraffe', base: '#7A6850', accent: '#3A2A18' },
+        pattern: { kind: 'scales', base: '#5A4A38', accent: '#7A6850', accent2: '#C2B098' },
     },
     bp_anaconda: {
+        // Tier 14 — swampy deep greens with crisp diamondback markings.
         name: 'Anaconda', xp: 999999, bpOnly: true, stroke: '#0F2A1A',
-        stops: ['#A8C29A', '#3F5F2A', '#0F2A1A'],
-        pattern: { kind: 'scales', base: '#3F5F2A', accent: '#0F2A1A', accent2: '#7FAE5B' },
+        stops: ['#B5D0A8', '#3F5F2A', '#0F2A1A'],
+        pattern: { kind: 'serpent', base: '#3F5F2A', accent: '#7FAE5B', accent2: '#0F2A1A' },
+    },
+
+    // ---- Showpiece tier (18-25): animated + glowing + premium pattern ----
+    bp_frost_serpent: {
+        // Tier 18 — frost serpent: icy cyan jewel scales that shimmer + glow.
+        name: 'Frost Serpent', xp: 999999, bpOnly: true, stroke: '#1F4A6A',
+        stops: ['#E0F2FF', '#5BAEE0', '#1F4A6A'],
+        pattern: { kind: 'jewelScales', base: '#1F4A6A', accent: '#5BAEE0', accent2: '#D0EAFF' },
+        anim: { dur: '6s', frames: [
+            ['#E0F2FF', '#5BAEE0', '#1F4A6A'],
+            ['#FFFFFF', '#7FC2F5', '#2A5F8A'],
+            ['#D0E5F5', '#3F8AC0', '#0F3A5A'],
+        ] },
+        glow: { color: '#7FD0FF' },
     },
     bp_basilisk: {
-        name: 'King Basilisk', xp: 999999, bpOnly: true, stroke: '#1F5A2A',
-        stops: ['#D5F0A8', '#5BAE3F', '#1F5A2A'],
-        anim: { dur: '6s', frames: [
-            ['#D5F0A8', '#5BAE3F', '#1F5A2A'],
-            ['#A8E0E5', '#3F8AAE', '#1F4A6A'],
-            ['#FFE08A', '#7FAE2A', '#3F6A1A'],
+        // Tier 20 — king basilisk: emerald jewel scales with shifting glow.
+        name: 'King Basilisk', xp: 999999, bpOnly: true, stroke: '#0F4A2A',
+        stops: ['#D5F0A8', '#19C37D', '#0F4A2A'],
+        pattern: { kind: 'jewelScales', base: '#0F4A2A', accent: '#19C37D', accent2: '#FFD86B' },
+        anim: { dur: '5s', frames: [
+            ['#D5F0A8', '#19C37D', '#0F4A2A'],
+            ['#A8E0E5', '#3F8AAE', '#0F3A6A'],
+            ['#FFE08A', '#7FAE2A', '#1F6A1A'],
         ] },
         glow: { color: '#7FE05B' },
-    },
-    bp_chameleon: {
-        name: 'Chameleon', xp: 999999, bpOnly: true, stroke: '#5B3FA0',
-        stops: ['#7FE05B', '#FFC247', '#FF5C6C'],
-        anim: { dur: '4s', frames: [
-            ['#7FE05B', '#FFC247', '#FF5C6C'],
-            ['#FFC247', '#FF5C6C', '#5B5BF6'],
-            ['#FF5C6C', '#5B5BF6', '#19C37D'],
-            ['#5B5BF6', '#19C37D', '#7FE05B'],
-        ] },
-    },
-    bp_dragon_fire: {
-        name: 'Dragon Fire', xp: 999999, bpOnly: true, stroke: '#5A1A0F',
-        stops: ['#FFE08A', '#FF6A2E', '#8A1F0F'],
-        overlay: 'embers',
-        anim: { dur: '5s', frames: [
-            ['#FFE08A', '#FF6A2E', '#8A1F0F'],
-            ['#FFC247', '#E5412E', '#5A0F0F'],
-            ['#FFEFA8', '#FF8A3F', '#A0301A'],
-        ] },
-        glow: { color: '#FF8A3F' },
-    },
-    bp_frost_serpent: {
-        name: 'Frost Serpent', xp: 999999, bpOnly: true, stroke: '#1F4A6A',
-        stops: ['#D0EAFF', '#5BAEE0', '#1F4A6A'],
-        anim: { dur: '6s', frames: [
-            ['#D0EAFF', '#5BAEE0', '#1F4A6A'],
-            ['#E0EFFF', '#7FC2F5', '#2A5F8A'],
-            ['#C0E0F5', '#3F8AC0', '#0F3A5A'],
-        ] },
-        glow: { color: '#5BAEE0' },
+        overlay: 'stars',
     },
     bp_cosmic_drake: {
+        // Tier 23 — cosmic drake: starfield cosmos that cycles through three
+        // wholly different colourways (cosmic violet -> emerald -> rose).
         name: 'Cosmic Drake', xp: 999999, bpOnly: true, stroke: '#241850', overlay: 'stars',
-        stops: ['#C9A8F0', '#7A4FD0', '#241850'],
+        stops: ['#E5C8FF', '#7A4FD0', '#241850'],
+        pattern: { kind: 'jewelScales', base: '#241850', accent: '#7A4FD0', accent2: '#FFD86B' },
         anim: { dur: '7s', frames: [
-            ['#C9A8F0', '#7A4FD0', '#241850'],
-            ['#7FE05B', '#3F8A60', '#1F4A2A'],
-            ['#F0A8E0', '#A04FB0', '#1A1240'],
+            ['#E5C8FF', '#7A4FD0', '#241850'],
+            ['#A8F0C8', '#3FAA60', '#0F4A2A'],
+            ['#FFC8E0', '#C04F90', '#3A1240'],
         ] },
-        glow: { color: '#7A4FD0' },
+        glow: { color: '#B070FF' },
+    },
+    bp_chameleon: {
+        // Tier 24 — chameleon: ultra-fast color shifting (4-frame cycle) so
+        // the globe constantly slides through the spectrum. No pattern; the
+        // pure colour shift IS the showpiece.
+        name: 'Chameleon', xp: 999999, bpOnly: true, stroke: '#5B3FA0',
+        stops: ['#A8F0C2', '#19C37D', '#3F6F30'],
+        anim: { dur: '3.6s', frames: [
+            ['#A8F0C2', '#19C37D', '#3F6F30'],
+            ['#FFE08A', '#FFC247', '#A06A18'],
+            ['#FFB0C0', '#FF5C6C', '#8A1F2A'],
+            ['#B0C8FF', '#5B5BF6', '#2A2A8A'],
+            ['#E0B0FF', '#B05BF6', '#5A1F8A'],
+        ] },
+        glow: { color: '#FFFFFF' },
+    },
+    bp_dragon_fire: {
+        // Tier 25 — capstone. Molten dragon fire: bright fire with ember
+        // overlay AND glow AND jewel scales — pulls every premium effect.
+        name: 'Dragon Fire', xp: 999999, bpOnly: true, stroke: '#5A1A0F',
+        stops: ['#FFEFA8', '#FF6A2E', '#8A1F0F'],
+        overlay: 'embers',
+        pattern: { kind: 'jewelScales', base: '#5A1A0F', accent: '#FF6A2E', accent2: '#FFE08A' },
+        anim: { dur: '4s', frames: [
+            ['#FFEFA8', '#FF6A2E', '#8A1F0F'],
+            ['#FFD86B', '#E5412E', '#5A0F0F'],
+            ['#FFFDF7', '#FF8A3F', '#A0301A'],
+        ] },
+        glow: { color: '#FF8A3F' },
     },
 };
 

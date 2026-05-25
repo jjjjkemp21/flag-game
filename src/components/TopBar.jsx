@@ -8,6 +8,7 @@ import { ACHIEVEMENTS_BY_ID } from '../lib/achievements';
 import AtlasBucksIcon from '../assets/illustrations/AtlasBucks';
 import AchievementBadge from './AchievementBadge';
 import NotificationBell from './NotificationBell';
+import FeedbackButton from './FeedbackButton';
 
 function TopBar({ setView }) {
     const { isAuthed, user, logout } = useAuth();
@@ -37,6 +38,7 @@ function TopBar({ setView }) {
                 )}
 
                 {isAuthed && <NotificationBell />}
+                {isAuthed && <FeedbackButton />}
 
                 <button className="bell-button" aria-label="Settings" onClick={() => setView('settings')}>
                     <Icon name="settings" />

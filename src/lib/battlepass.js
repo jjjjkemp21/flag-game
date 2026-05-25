@@ -18,11 +18,12 @@ const EMPTY = {
     season: SEASON_ID,
     owned: false,
     claimed: [],
+    claimedChallenges: [],
     stars: 0,
     totalStars: TOTAL_STARS,
     tier: 0,
     tierCount: TIER_COUNT,
-    challenges: [],       // [{ id, cur, goal, done, stars }]
+    challenges: [],       // [{ id, cur, goal, done, stars, bucks, claimed }]
     loaded: false,
 };
 
@@ -49,6 +50,7 @@ function applySummary(s) {
         season: s.season || SEASON_ID,
         owned: !!s.owned,
         claimed: Array.isArray(s.claimed) ? s.claimed : [],
+        claimedChallenges: Array.isArray(s.claimedChallenges) ? s.claimedChallenges : [],
         stars: Math.max(0, Number(s.stars) || 0),
         totalStars: Math.max(0, Number(s.totalStars) || TOTAL_STARS),
         tier: Math.max(0, Number(s.tier) || 0),
@@ -137,6 +139,12 @@ export async function buyPremium() {
 
 export async function claimReward(track, tier) {
     const res = await api.post('/battlepass/claim', { track, tier });
+    applySummary(res);
+    return res;
+}
+
+export async function claimChallenge(id) {
+    const res = await api.post('/battlepass/claim-challenge', { id });
     applySummary(res);
     return res;
 }

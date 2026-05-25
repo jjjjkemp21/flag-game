@@ -149,6 +149,15 @@ function starsToNext(stars) {
     return cumulative[t] - stars;
 }
 
+// Atlas Bucks paid out for *completing* a single challenge (in addition to the
+// stars it contributes to the pass track). Derived from the challenge's star
+// value so harder challenges naturally pay more. Rounded to 25 for tidy numbers.
+function challengeBucks(c) {
+    if (!c) return 0;
+    const raw = (Number(c.stars) || 0) / 5;
+    return Math.max(25, Math.round(raw / 25) * 25);
+}
+
 module.exports = {
     SEASON_ID,
     SEASON_NAME,
@@ -163,4 +172,5 @@ module.exports = {
     rewardKey,
     tierFromStars,
     starsToNext,
+    challengeBucks,
 };

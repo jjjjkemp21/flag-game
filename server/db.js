@@ -61,6 +61,17 @@ db.exec(`
         created_at INTEGER NOT NULL,
         created_by INTEGER REFERENCES users(id) ON DELETE SET NULL
     );
+
+    CREATE TABLE IF NOT EXISTS feedback (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+        username TEXT NOT NULL,
+        category TEXT NOT NULL,
+        body TEXT NOT NULL,
+        created_at INTEGER NOT NULL,
+        resolved_at INTEGER
+    );
+    CREATE INDEX IF NOT EXISTS idx_feedback_created ON feedback(created_at DESC);
 `);
 
 // Migration: add commit_sha to announcements so the deploy pipeline can dedupe

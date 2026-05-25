@@ -385,70 +385,148 @@ const HAT_SHAPES = {
     ),
 
     // ---- Reptile/dragon-themed hats (Atlas Pass exclusives) -----------------
-    // dragonHorns: a pair of curved horns that sweep outward + up. More fearsome
-    // than the small `horns` shape, with banding rings for a bone/keratin feel.
+    // dragonHorns: a pair of curved keratin horns sweeping up + out, layered
+    // with a dark base + main body + lighter sheen to fake a gradient, plus
+    // banding rings and a jewel at the tip. A small diadem connects them at
+    // the brow for a regal feel.
     dragonHorns: (c) => (
-        <g fill={c.main} stroke={c.dark} strokeWidth="1.2" strokeLinejoin="round">
-            <path d="M32 18 Q22 8 16 -8 Q26 -4 36 4 Q40 12 38 18 Z" />
-            <path d="M64 18 Q74 8 80 -8 Q70 -4 60 4 Q56 12 58 18 Z" />
+        <g strokeLinejoin="round">
+            {/* --- Left horn ----------------------------------------------- */}
+            {/* Dark backshadow (slightly larger, behind main body) */}
+            <path d="M30 22 Q16 8 8 -14 Q22 -12 36 2 Q42 12 40 22 Z" fill={c.dark} />
+            {/* Main body */}
+            <path d="M32 21 Q19 8 12 -12 Q22 -8 36 4 Q40 12 38 21 Z" fill={c.main} stroke={c.dark} strokeWidth="0.8" />
+            {/* Front-edge sheen (lighter wash) */}
+            <path d="M34 19 Q23 8 18 -8 Q24 -4 34 8 Q36 12 36 19 Z" fill={c.accent} opacity="0.42" />
             {/* Banding rings for keratin/bone detail */}
-            <g stroke={c.dark} strokeWidth="0.9" fill="none">
-                <path d="M22 6 Q26 4 30 8" />
-                <path d="M20 -2 Q24 -4 28 0" />
-                <path d="M74 6 Q70 4 66 8" />
-                <path d="M76 -2 Q72 -4 68 0" />
+            <g stroke={c.dark} strokeWidth="0.8" fill="none" strokeLinecap="round" opacity="0.85">
+                <path d="M24 8 Q28 6 32 10" />
+                <path d="M20 1 Q25 -1 29 3" />
+                <path d="M16 -6 Q21 -8 25 -4" />
+                <path d="M12 -12 Q17 -13 21 -10" />
             </g>
-            {/* Tip highlights */}
-            <circle cx="16" cy="-8" r="1.4" fill={c.accent} />
-            <circle cx="80" cy="-8" r="1.4" fill={c.accent} />
+            {/* Tip jewel */}
+            <circle cx="9" cy="-14" r="1.8" fill={c.accent} stroke={c.dark} strokeWidth="0.5" />
+            <circle cx="8.4" cy="-14.6" r="0.5" fill="#FFFFFF" opacity="0.9" />
+
+            {/* --- Right horn (mirrored) ----------------------------------- */}
+            <path d="M66 22 Q80 8 88 -14 Q74 -12 60 2 Q54 12 56 22 Z" fill={c.dark} />
+            <path d="M64 21 Q77 8 84 -12 Q74 -8 60 4 Q56 12 58 21 Z" fill={c.main} stroke={c.dark} strokeWidth="0.8" />
+            <path d="M62 19 Q73 8 78 -8 Q72 -4 62 8 Q60 12 60 19 Z" fill={c.accent} opacity="0.42" />
+            <g stroke={c.dark} strokeWidth="0.8" fill="none" strokeLinecap="round" opacity="0.85">
+                <path d="M72 8 Q68 6 64 10" />
+                <path d="M76 1 Q71 -1 67 3" />
+                <path d="M80 -6 Q75 -8 71 -4" />
+                <path d="M84 -12 Q79 -13 75 -10" />
+            </g>
+            <circle cx="87" cy="-14" r="1.8" fill={c.accent} stroke={c.dark} strokeWidth="0.5" />
+            <circle cx="87.6" cy="-14.6" r="0.5" fill="#FFFFFF" opacity="0.9" />
+
+            {/* --- Brow diadem connecting both horns ----------------------- */}
+            <path d="M34 20 Q48 16 62 20" stroke={c.dark} strokeWidth="1.4" fill="none" strokeLinecap="round" />
+            <path d="M34 20 Q48 17 62 20" stroke={c.main} strokeWidth="1.0" fill="none" strokeLinecap="round" />
+            <ellipse cx="48" cy="17" rx="2.2" ry="1.5" fill={c.accent} stroke={c.dark} strokeWidth="0.5" />
+            <circle cx="47.4" cy="16.4" r="0.5" fill="#FFFFFF" opacity="0.85" />
+            <circle cx="40" cy="20" r="0.9" fill={c.accent} stroke={c.dark} strokeWidth="0.4" />
+            <circle cx="56" cy="20" r="0.9" fill={c.accent} stroke={c.dark} strokeWidth="0.4" />
         </g>
     ),
 
-    // frill: a Dilophosaurus-style fanning collar opening behind the head, with
-    // tooth-like points along the rim. Two colors blend across the fan.
+    // frill: a Dilophosaurus-style fanning collar with a darker outer rim,
+    // gradient-faked main body, tooth-like spikes along the top, ribbed
+    // spines from the base outward, and varied dappled markings.
     frill: (c) => (
-        <g>
-            {/* Back fan */}
-            <path d="M18 18 Q48 -20 78 18 Q72 22 64 18 Q60 14 48 14 Q36 14 32 18 Q24 22 18 18 Z"
-                fill={c.main} stroke={c.dark} strokeWidth="1.5" strokeLinejoin="round" />
-            {/* Inner ribs */}
-            <g stroke={c.dark} strokeWidth="0.8" fill="none" opacity="0.6">
-                <path d="M30 16 Q34 4 38 14" />
-                <path d="M40 14 Q44 -4 48 14" />
-                <path d="M50 14 Q54 -4 58 14" />
-                <path d="M60 16 Q64 4 68 16" />
+        <g strokeLinejoin="round">
+            {/* Dark rim halo (slightly larger, behind everything) */}
+            <path d="M12 22 Q48 -28 84 22 Q74 26 64 22 Q60 18 48 18 Q36 18 32 22 Q22 26 12 22 Z"
+                fill={c.dark} />
+            {/* Main fan */}
+            <path d="M16 21 Q48 -24 80 21 Q72 24 64 20 Q60 16 48 16 Q36 16 32 20 Q24 24 16 21 Z"
+                fill={c.main} stroke={c.dark} strokeWidth="1.2" />
+            {/* Inner lighter wash for fake gradient depth */}
+            <path d="M22 18 Q48 -14 74 18 Q68 19 62 16 Q60 14 48 14 Q36 14 34 16 Q28 19 22 18 Z"
+                fill={c.accent} opacity="0.35" />
+            {/* Sharp tooth spikes along the upper rim */}
+            <g fill={c.main} stroke={c.dark} strokeWidth="0.7">
+                <path d="M22 6 L 26 -4 L 28 6 Z" />
+                <path d="M32 -2 L 36 -14 L 38 -2 Z" />
+                <path d="M44 -14 L 48 -26 L 52 -14 Z" />
+                <path d="M58 -2 L 62 -14 L 64 -2 Z" />
+                <path d="M68 6 L 72 -4 L 74 6 Z" />
             </g>
-            {/* Spotted markings */}
-            <g fill={c.accent} opacity="0.85">
-                <circle cx="34" cy="8" r="1.6" />
-                <circle cx="48" cy="2" r="1.8" />
-                <circle cx="62" cy="8" r="1.6" />
-                <circle cx="40" cy="-2" r="1.2" />
-                <circle cx="56" cy="-2" r="1.2" />
+            {/* Rib spines fanning out from base */}
+            <g stroke={c.dark} strokeWidth="0.9" fill="none" opacity="0.65" strokeLinecap="round">
+                <path d="M26 18 Q28 6 30 -4" />
+                <path d="M38 16 Q40 4 42 -10" />
+                <path d="M58 16 Q56 4 54 -10" />
+                <path d="M70 18 Q68 6 66 -4" />
+            </g>
+            {/* Highlight sheen along upper edge */}
+            <path d="M22 14 Q48 -8 74 14" stroke={c.accent} strokeWidth="1.0" fill="none" opacity="0.5" />
+            {/* Spotted markings — varied size + opacity, with an inner dot */}
+            <g>
+                <ellipse cx="36" cy="6" rx="1.6" ry="1.1" fill={c.accent} />
+                <ellipse cx="48" cy="0" rx="2.0" ry="1.4" fill={c.accent} />
+                <ellipse cx="60" cy="6" rx="1.6" ry="1.1" fill={c.accent} />
+                <ellipse cx="30" cy="12" rx="1.2" ry="0.9" fill={c.accent} opacity="0.85" />
+                <ellipse cx="66" cy="12" rx="1.2" ry="0.9" fill={c.accent} opacity="0.85" />
+                <ellipse cx="42" cy="-8" rx="1.0" ry="0.7" fill={c.accent} opacity="0.8" />
+                <ellipse cx="54" cy="-8" rx="1.0" ry="0.7" fill={c.accent} opacity="0.8" />
+                <circle cx="48" cy="0" r="0.5" fill={c.dark} opacity="0.7" />
             </g>
         </g>
     ),
 
-    // scaleHelm: a hood of overlapping scales draping over the head. Reads as
-    // chainmail / pangolin armour. `c.main` is the base, `c.dark` for the
-    // outline, `c.accent` for the tooth-like fringe at the brow.
-    scaleHelm: (c) => (
-        <g>
-            <path d="M22 22 Q22 -2 48 -2 Q74 -2 74 22" fill={c.main} stroke={c.dark} strokeWidth="1.5" />
-            {/* Two rows of overlapping diamond scales */}
-            <g fill={c.accent} stroke={c.dark} strokeWidth="0.6">
-                {[24, 32, 40, 48, 56, 64, 72].map((x, i) => (
-                    <path key={`s1-${i}`} d={`M${x} 6 l 4 6 l -4 6 l -4 -6 Z`} />
-                ))}
-                {[28, 36, 44, 52, 60, 68].map((x, i) => (
-                    <path key={`s2-${i}`} d={`M${x} 14 l 4 6 l -4 6 l -4 -6 Z`} opacity="0.9" />
-                ))}
+    // scaleHelm: a hood of overlapping shingle-style scales (curved tops, not
+    // flat diamonds) draping over the head. Three rows of scales, each with a
+    // light highlight crescent, plus a tooth fringe at the brow and a centred
+    // gemstone for a clear focal point.
+    scaleHelm: (c) => {
+        const fringe = c.trim || c.accent;
+        // A single overlapping shingle scale + its inner highlight.
+        const scale = (x, y, op = 1) => (
+            <g key={`${x}-${y}`} opacity={op}>
+                <path
+                    d={`M${x - 4.4} ${y} a 4.4 3.6 0 0 1 8.8 0 L ${x + 4.4} ${y + 1.5} L ${x - 4.4} ${y + 1.5} Z`}
+                    fill={c.accent} stroke={c.dark} strokeWidth="0.55"
+                />
+                <path
+                    d={`M${x - 3} ${y - 0.2} a 3 2.4 0 0 1 6 0`}
+                    fill="none" stroke="#FFFFFF" strokeWidth="0.5" opacity="0.5"
+                />
             </g>
-            {/* Glowing eye-slot accents above the brow */}
-            <circle cx="40" cy="20" r="1.4" fill={c.trim || c.accent} />
-            <circle cx="56" cy="20" r="1.4" fill={c.trim || c.accent} />
-        </g>
-    ),
+        );
+        return (
+            <g strokeLinejoin="round">
+                {/* Dark halo (outline) */}
+                <path d="M20 22 Q20 -4 48 -4 Q76 -4 76 22 L 76 24 L 20 24 Z" fill={c.dark} />
+                {/* Hood body */}
+                <path d="M22 22 Q22 -2 48 -2 Q74 -2 74 22 L 74 24 L 22 24 Z" fill={c.main} />
+                {/* Inner sheen down the centre to fake top-light gradient */}
+                <path d="M30 -1 Q48 -3 66 -1 Q60 8 48 8 Q36 8 30 -1 Z" fill={c.accent} opacity="0.35" />
+
+                {/* Row 1 (top, partial — front of crown only) */}
+                {[34, 42, 50, 56].map((x) => scale(x, 2))}
+                {/* Row 2 */}
+                {[28, 36, 44, 52, 60, 68].map((x) => scale(x, 8, 0.97))}
+                {/* Row 3 */}
+                {[26, 34, 42, 50, 58, 66].map((x) => scale(x, 14, 0.93))}
+                {/* Row 4 (brow line) */}
+                {[28, 36, 44, 52, 60, 68].map((x) => scale(x, 20, 0.9))}
+
+                {/* Tooth fringe along the brow edge */}
+                <g fill={fringe} stroke={c.dark} strokeWidth="0.45" strokeLinejoin="miter">
+                    {[26, 33, 40, 48, 56, 63, 70].map((x, i) => (
+                        <path key={i} d={`M${x - 2} 24 L${x} 30 L${x + 2} 24 Z`} />
+                    ))}
+                </g>
+
+                {/* Centred brow gem */}
+                <ellipse cx="48" cy="20" rx="2.6" ry="1.8" fill={fringe} stroke={c.dark} strokeWidth="0.6" />
+                <ellipse cx="47.4" cy="19.4" rx="0.7" ry="0.5" fill="#FFFFFF" opacity="0.9" />
+            </g>
+        );
+    },
 };
 
 const GLASS_SHAPES = {
@@ -702,35 +780,80 @@ const GLASS_SHAPES = {
     ),
 
     // ---- Reptile / dragon-themed glasses (Atlas Pass exclusives) -----------
-    // snakeEyes: lens covers with vertical slit pupils — the unmistakable
-    // reptile look. Lens is c.lens (the iris colour), the slit and frame use
-    // c.frame, and a faint scale ridge sits along the bridge.
-    snakeEyes: (c) => (
-        <g>
-            {/* Iris circles behind the slit */}
-            <ellipse cx="38" cy="46" rx="6.5" ry="6" fill={c.lens} stroke={c.frame} strokeWidth="1.5" />
-            <ellipse cx="58" cy="46" rx="6.5" ry="6" fill={c.lens} stroke={c.frame} strokeWidth="1.5" />
-            {/* Vertical slit pupils */}
-            <ellipse cx="38" cy="46" rx="0.8" ry="5" fill={c.frame} />
-            <ellipse cx="58" cy="46" rx="0.8" ry="5" fill={c.frame} />
-            {/* Scale ridge over the bridge */}
-            <path d="M44 44 L48 42 L52 44" stroke={c.frame} strokeWidth="1.2" fill="none" />
-            {/* Tiny highlights for liveliness */}
-            <circle cx="40" cy="44" r="0.9" fill="#FFFFFF" opacity="0.85" />
-            <circle cx="60" cy="44" r="0.9" fill="#FFFFFF" opacity="0.85" />
-        </g>
-    ),
+    // snakeEyes: layered iris (frame ring -> lens base -> darker inner ring
+    // -> vertical slit pupil) with a pupil highlight and rim-light sheen so
+    // the eye reads as glossy + 3D. A scaly bridge with stacked V scales
+    // sits between the eyes.
+    snakeEyes: (c) => {
+        const eye = (cx) => (
+            <g>
+                {/* Outer ring (frame) */}
+                <ellipse cx={cx} cy="46" rx="7.2" ry="6.6" fill={c.frame} />
+                {/* Iris (lens colour) */}
+                <ellipse cx={cx} cy="46" rx="6.0" ry="5.4" fill={c.lens} />
+                {/* Inner darker ring around the pupil — fakes a radial gradient */}
+                <ellipse cx={cx} cy="46" rx="3.0" ry="4.6" fill={c.accent || c.frame} opacity="0.55" />
+                {/* Vertical slit pupil */}
+                <ellipse cx={cx} cy="46" rx="0.9" ry="5.2" fill="#0F0A18" />
+                {/* Pupil sparkle */}
+                <ellipse cx={cx} cy="43.8" rx="0.5" ry="1.1" fill="#FFFFFF" opacity="0.9" />
+                {/* Upper rim shine */}
+                <path d={`M${cx - 4.5} 41.6 Q${cx} 39.6 ${cx + 4.5} 41.6`}
+                    stroke="#FFFFFF" strokeWidth="0.8" fill="none" opacity="0.55" />
+                {/* Lower rim shadow */}
+                <path d={`M${cx - 4.5} 50.6 Q${cx} 52.2 ${cx + 4.5} 50.6`}
+                    stroke={c.frame} strokeWidth="0.6" fill="none" opacity="0.7" />
+            </g>
+        );
+        return (
+            <g>
+                {eye(38)}
+                {eye(58)}
+                {/* Scaly bridge — two stacked V scales */}
+                <g fill={c.frame} stroke={c.accent || c.lens} strokeWidth="0.5">
+                    <path d="M45 44 L 48 41 L 51 44 L 48 45 Z" />
+                    <path d="M45.5 47 L 48 45 L 50.5 47 L 48 48 Z" />
+                </g>
+            </g>
+        );
+    },
 
-    // dragonGaze: angular, predatory eye covers (think a stylised "dragon
-    // visor" with notched corners). Uses two lens fills — a base and a fiery
-    // accent crescent — for a glow-from-within effect.
+    // dragonGaze: a sleek predatory visor with notched outer corners, an inner
+    // brow shadow for depth, a softly pulsing fire crescent inside each lens,
+    // and a tactical bridge notch. Reads like a piece of dragon-bone armour.
     dragonGaze: (c) => (
-        <g>
-            <path d="M28 40 L50 44 L50 52 L28 50 Z" fill={c.lens} stroke={c.frame} strokeWidth="1.5" strokeLinejoin="miter" />
-            <path d="M68 40 L46 44 L46 52 L68 50 Z" fill={c.lens} stroke={c.frame} strokeWidth="1.5" strokeLinejoin="miter" />
-            {/* Fiery crescent inside each lens */}
-            <path d="M30 48 Q38 46 48 48" stroke={c.accent} strokeWidth="1.6" fill="none" />
-            <path d="M66 48 Q58 46 48 48" stroke={c.accent} strokeWidth="1.6" fill="none" />
+        <g strokeLinejoin="miter">
+            {/* Outer notch tabs (tactical corners) */}
+            <path d="M28 38 L 22 36 L 22 41 L 28 40 Z" fill={c.frame} />
+            <path d="M68 38 L 74 36 L 74 41 L 68 40 Z" fill={c.frame} />
+
+            {/* Frame outline (slightly larger, behind the lens) */}
+            <path d="M27 38 L 50 42 L 50 54 L 27 52 Z" fill={c.frame} />
+            <path d="M69 38 L 46 42 L 46 54 L 69 52 Z" fill={c.frame} />
+            {/* Lens inset (the glass) */}
+            <path d="M29 40 L 48 43 L 48 51 L 29 49 Z" fill={c.lens} />
+            <path d="M67 40 L 48 43 L 48 51 L 67 49 Z" fill={c.lens} />
+            {/* Inner brow shadow (top half of lens) — fakes top-light */}
+            <path d="M29 40 L 48 43 L 48 45 L 29 43 Z" fill={c.frame} opacity="0.45" />
+            <path d="M67 40 L 48 43 L 48 45 L 67 43 Z" fill={c.frame} opacity="0.45" />
+            {/* Fiery accent crescent inside each lens — pulses */}
+            <path d="M31 49 Q38 47 47 49" stroke={c.accent} strokeWidth="1.6" fill="none" strokeLinecap="round">
+                <animate attributeName="opacity" values="0.55;1;0.55" dur="1.8s" repeatCount="indefinite" />
+            </path>
+            <path d="M65 49 Q58 47 49 49" stroke={c.accent} strokeWidth="1.6" fill="none" strokeLinecap="round">
+                <animate attributeName="opacity" values="0.55;1;0.55" dur="1.8s" repeatCount="indefinite" />
+            </path>
+            {/* Hot spark at the centre of each lens */}
+            <circle cx="38" cy="46" r="0.9" fill={c.accent} opacity="0.85">
+                <animate attributeName="opacity" values="0.4;1;0.4" dur="1.4s" repeatCount="indefinite" />
+            </circle>
+            <circle cx="58" cy="46" r="0.9" fill={c.accent} opacity="0.85">
+                <animate attributeName="opacity" values="0.4;1;0.4" dur="1.4s" repeatCount="indefinite" />
+            </circle>
+            {/* Bridge notch (predatory V) */}
+            <path d="M46 41 L 48 38 L 50 41 L 48 43 Z" fill={c.frame} stroke={c.accent} strokeWidth="0.5" />
+            {/* Top highlight along the brow */}
+            <path d="M29 40 L 48 43 L 67 40" stroke="#FFFFFF" strokeWidth="0.6" fill="none" opacity="0.4" />
         </g>
     ),
 };
@@ -863,66 +986,113 @@ const EFFECT_SHAPES = {
     ),
 
     // ---- Reptile-themed Atlas Pass effects ---------------------------------
-    // scaleFall: glittering diamond scales drifting downward — like emerald
-    // confetti. Mixed greens with a gold accent flake for richness.
+    // scaleFall: glittering diamond scales drifting downward — each with a
+    // glossy highlight crescent and a sparkle dot for a jewel-like feel.
+    // Mixed greens with a gold accent flake for richness.
     scaleFall: () => (
         <g>
             {[
-                ['#19C37D', 16, 0, 3.4, 0],
-                ['#3FAA60', 30, 0.4, 3.8, 12],
-                ['#7FE05B', 44, 1.0, 3.2, -8],
-                ['#19A36B', 58, 1.6, 3.6, 16],
-                ['#FFD86B', 70, 2.0, 3.0, -14],
-                ['#5BAE3F', 82, 0.7, 3.5, 4],
-            ].map(([color, x, begin, dur, rot], i) => (
+                ['#19C37D', '#9DEFC2', 16, 0, 3.4, 0],
+                ['#3FAA60', '#B5F0CC', 30, 0.4, 3.8, 12],
+                ['#7FE05B', '#FFFDF7', 44, 1.0, 3.2, -8],
+                ['#19A36B', '#7FE05B', 58, 1.6, 3.6, 16],
+                ['#FFD86B', '#FFFDF7', 70, 2.0, 3.0, -14],
+                ['#5BAE3F', '#A8E0B5', 82, 0.7, 3.5, 4],
+            ].map(([color, hi, x, begin, dur, rot], i) => (
                 <g key={i}>
-                    <animateTransform attributeName="transform" type="translate" values="0 -8;0 88" dur={`${dur}s`} begin={`${begin}s`} repeatCount="indefinite" />
+                    <animateTransform attributeName="transform" type="translate" values="0 -10;0 92" dur={`${dur}s`} begin={`${begin}s`} repeatCount="indefinite" />
                     <g transform={`rotate(${rot} ${x} 0)`} opacity="0">
                         <animate attributeName="opacity" values="0;0.95;0" dur={`${dur}s`} begin={`${begin}s`} repeatCount="indefinite" />
-                        <path d={`M${x} 0 l 3 4 l -3 4 l -3 -4 Z`} fill={color} stroke="#0F4A2A" strokeWidth="0.4" />
+                        {/* Diamond scale body with dark rim */}
+                        <path d={`M${x} -2 l 3.4 5 l -3.4 5 l -3.4 -5 Z`} fill={color} stroke="#0F4A2A" strokeWidth="0.5" />
+                        {/* Glossy crescent highlight */}
+                        <path d={`M${x - 1.4} 0.3 q 1.5 1.4 2.8 0.6`} stroke={hi} strokeWidth="0.9" fill="none" strokeLinecap="round" />
+                        {/* Sparkle dot */}
+                        <circle cx={x - 0.4} cy="1.6" r="0.55" fill="#FFFFFF" opacity="0.85" />
                     </g>
                 </g>
             ))}
         </g>
     ),
 
-    // dragonBreath: a roiling cone of fire jetting out and up from the lower
-    // edge of the globe (mouth-line). Three flames pulsing out of phase plus
-    // ember sparks for extra drama.
+    // dragonBreath: a roiling 4-layer cone of fire jetting out + up from the
+    // lower edge of the globe. Outer halo -> outer cone -> mid cone -> bright
+    // inner core -> white-hot tongue, each pulsing out of phase. Pairs with
+    // drifting ember sparks (each with a bright pip inside) for drama.
     dragonBreath: () => (
         <g>
+            {/* Soft outer glow halo */}
+            <path d="M28 80 Q4 66 -2 32 Q18 60 28 80 Z" fill="#FF6A2E" opacity="0.32">
+                <animate attributeName="opacity" values="0.15;0.5;0.15" dur="1.7s" repeatCount="indefinite" />
+            </path>
             {/* Outer cone */}
-            <path d="M30 78 Q14 64 8 38 Q22 60 30 78 Z" fill="#FF6A2E" opacity="0.55">
+            <path d="M30 78 Q14 64 8 38 Q22 60 30 78 Z" fill="#FF6A2E" opacity="0.6">
                 <animate attributeName="opacity" values="0.35;0.85;0.35" dur="1.4s" repeatCount="indefinite" />
             </path>
-            {/* Inner brighter cone */}
-            <path d="M32 78 Q22 66 16 46 Q28 64 32 78 Z" fill="#FFD86B" opacity="0.85">
+            {/* Middle warmer band */}
+            <path d="M31 78 Q18 66 12 42 Q24 62 31 78 Z" fill="#FFA34A" opacity="0.78">
+                <animate attributeName="opacity" values="0.45;1;0.45" dur="1.15s" repeatCount="indefinite" />
+            </path>
+            {/* Inner bright core */}
+            <path d="M32 78 Q22 66 16 46 Q28 64 32 78 Z" fill="#FFD86B" opacity="0.9">
                 <animate attributeName="opacity" values="0.5;1;0.5" dur="1s" repeatCount="indefinite" />
             </path>
-            {/* Tongue flicker */}
-            <path d="M30 78 Q26 74 22 60 Q28 72 30 78 Z" fill="#FFFDF7" opacity="0.85">
-                <animate attributeName="opacity" values="0.2;1;0.2" dur="0.7s" repeatCount="indefinite" />
+            {/* White-hot tongue flicker */}
+            <path d="M30 78 Q26 72 22 58 Q28 70 30 78 Z" fill="#FFFDF7" opacity="0.9">
+                <animate attributeName="opacity" values="0.25;1;0.25" dur="0.7s" repeatCount="indefinite" />
             </path>
-            {/* Ember sparks drifting away */}
-            {[[14, 36, 1.8, 0], [10, 28, 1.4, 0.6], [18, 18, 1.6, 1.2]].map(([x, y, r, b], i) => (
-                <circle key={i} cx={x} cy={y} r={r} fill="#FFC247">
-                    <animate attributeName="opacity" values="0;1;0" dur="2s" begin={`${b}s`} repeatCount="indefinite" />
-                    <animate attributeName="cx" values={`${x};${x - 6}`} dur="2s" begin={`${b}s`} repeatCount="indefinite" />
-                    <animate attributeName="cy" values={`${y};${y - 16}`} dur="2s" begin={`${b}s`} repeatCount="indefinite" />
-                </circle>
+            {/* Ember sparks drifting away — each with a bright white pip */}
+            {[[14, 36, 1.8, 0], [10, 28, 1.4, 0.5], [18, 18, 1.6, 1.0], [6, 22, 1.2, 1.5], [22, 12, 1.5, 0.8], [4, 10, 1.1, 1.8]].map(([x, y, r, b], i) => (
+                <g key={i}>
+                    <circle cx={x} cy={y} r={r} fill="#FFC247">
+                        <animate attributeName="opacity" values="0;1;0" dur="2s" begin={`${b}s`} repeatCount="indefinite" />
+                        <animate attributeName="cx" values={`${x};${x - 8}`} dur="2s" begin={`${b}s`} repeatCount="indefinite" />
+                        <animate attributeName="cy" values={`${y};${y - 18}`} dur="2s" begin={`${b}s`} repeatCount="indefinite" />
+                    </circle>
+                    <circle cx={x} cy={y} r={r * 0.45} fill="#FFFDF7">
+                        <animate attributeName="opacity" values="0;0.9;0" dur="2s" begin={`${b}s`} repeatCount="indefinite" />
+                        <animate attributeName="cx" values={`${x};${x - 8}`} dur="2s" begin={`${b}s`} repeatCount="indefinite" />
+                        <animate attributeName="cy" values={`${y};${y - 18}`} dur="2s" begin={`${b}s`} repeatCount="indefinite" />
+                    </circle>
+                </g>
             ))}
         </g>
     ),
 
-    // swampMist: soft green tendrils rising from below the globe. Plays well
-    // with the jungle/anaconda colours.
+    // swampMist: soft green tendrils rising from below the globe. Each tendril
+    // has a thicker, lower-opacity halo layer behind a sharper stroke, plus a
+    // drifting droplet, so the mist reads as volumetric and slowly billowing.
     swampMist: () => (
-        <g fill="none" stroke="#7FE05B" strokeWidth="2" opacity="0.7">
-            {[[20, 0, 3.6], [40, 0.6, 4.2], [56, 1.2, 3.4], [72, 1.8, 4.0]].map(([x, b, d], i) => (
-                <path key={i} d={`M${x} 88 Q${x + 6} 76 ${x - 4} 60 Q${x + 8} 44 ${x} 28`}>
-                    <animate attributeName="opacity" values="0;0.6;0" dur={`${d}s`} begin={`${b}s`} repeatCount="indefinite" />
-                    <animateTransform attributeName="transform" type="translate" values="0 6;0 -12" dur={`${d}s`} begin={`${b}s`} repeatCount="indefinite" />
-                </path>
+        <g>
+            {/* Lower fog band hugging the globe */}
+            <ellipse cx="48" cy="84" rx="44" ry="5" fill="#7FE05B" opacity="0.22">
+                <animate attributeName="opacity" values="0.12;0.32;0.12" dur="3s" repeatCount="indefinite" />
+            </ellipse>
+            {[
+                [20, 0.0, 3.6, '#3FAA60'],
+                [40, 0.6, 4.2, '#7FE05B'],
+                [56, 1.2, 3.4, '#A8E0B5'],
+                [72, 1.8, 4.0, '#5BAE3F'],
+            ].map(([x, b, d, color], i) => (
+                <g key={i}>
+                    {/* Soft halo layer behind */}
+                    <path d={`M${x} 88 Q${x + 6} 76 ${x - 4} 60 Q${x + 8} 44 ${x} 28`}
+                        stroke={color} strokeWidth="5.5" fill="none" opacity="0" strokeLinecap="round">
+                        <animate attributeName="opacity" values="0;0.32;0" dur={`${d}s`} begin={`${b}s`} repeatCount="indefinite" />
+                        <animateTransform attributeName="transform" type="translate" values="0 6;0 -14" dur={`${d}s`} begin={`${b}s`} repeatCount="indefinite" />
+                    </path>
+                    {/* Main tendril */}
+                    <path d={`M${x} 88 Q${x + 6} 76 ${x - 4} 60 Q${x + 8} 44 ${x} 28`}
+                        stroke={color} strokeWidth="2" fill="none" opacity="0" strokeLinecap="round">
+                        <animate attributeName="opacity" values="0;0.75;0" dur={`${d}s`} begin={`${b}s`} repeatCount="indefinite" />
+                        <animateTransform attributeName="transform" type="translate" values="0 6;0 -14" dur={`${d}s`} begin={`${b}s`} repeatCount="indefinite" />
+                    </path>
+                    {/* Droplet trailing up the tendril */}
+                    <circle cx={x + 3} cy="70" r="1" fill={color} opacity="0">
+                        <animate attributeName="opacity" values="0;0.8;0" dur={`${d}s`} begin={`${b + 0.4}s`} repeatCount="indefinite" />
+                        <animate attributeName="cy" values="72;28" dur={`${d}s`} begin={`${b + 0.4}s`} repeatCount="indefinite" />
+                    </circle>
+                </g>
             ))}
         </g>
     ),

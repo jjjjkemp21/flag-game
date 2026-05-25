@@ -908,15 +908,15 @@
     width: 38px;
     height: 38px;
     border: none;
-    border-radius: var(--radius-full);
-    background: var(--color-surface-2, rgba(15, 14, 30, .06));
+    border-radius: var(--radius-pill);
+    background: var(--color-bg-soft);
     color: var(--color-ink-soft);
     cursor: pointer;
     z-index: 2;
     transition: background .15s ease, color .15s ease, transform .1s ease;
 }
 
-.ui-modal-close:hover { background: var(--color-surface-3, rgba(15, 14, 30, .12)); color: var(--color-ink); }
+.ui-modal-close:hover { background: var(--color-border); color: var(--color-ink); }
 .ui-modal-close:active { transform: scale(.92); }
 .ui-modal-close .material-symbols-rounded { font-size: 22px; }
 
@@ -1689,6 +1689,101 @@
 .announcement-head { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-sm); margin-bottom: 4px; }
 .announcement-date { font-size: var(--fs-xs); color: var(--color-ink-muted); white-space: nowrap; }
 .announcement-body { margin: 0; color: var(--color-ink-soft); white-space: pre-wrap; }
+/* Admin-only per-row delete button. Sits next to the date in the announcement
+   head — neutral by default, turns red on hover so it reads as destructive. */
+.announcement-remove {
+    background: transparent;
+    border: none;
+    color: var(--color-ink-muted);
+    cursor: pointer;
+    padding: 2px 4px;
+    border-radius: var(--radius-sm);
+    display: inline-flex;
+    align-items: center;
+    line-height: 0;
+}
+.announcement-remove:hover:not(:disabled) { color: var(--color-danger); background: var(--color-danger-soft, rgba(220, 38, 38, .08)); }
+.announcement-remove:disabled { opacity: .5; cursor: progress; }
+
+/* -------- Feedback (megaphone button + modal form + admin inbox) -------- */
+.feedback-form { display: flex; flex-direction: column; gap: var(--space-md); margin-top: var(--space-md); }
+.feedback-category { display: flex; flex-wrap: wrap; gap: var(--space-xs); }
+.feedback-category__chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 12px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--color-border);
+    background: var(--color-bg-elev-1);
+    color: var(--color-ink-soft);
+    font-size: var(--fs-sm); font-weight: 600;
+    cursor: pointer;
+    transition: background var(--dur-fast) var(--ease-out-quart), color var(--dur-fast) var(--ease-out-quart);
+}
+.feedback-category__chip:hover { background: var(--color-bg-soft); }
+.feedback-category__chip.is-active {
+    background: var(--color-accent-soft, rgba(99, 102, 241, .12));
+    border-color: var(--color-accent, #6366f1);
+    color: var(--color-ink);
+}
+.feedback-textarea {
+    width: 100%;
+    min-height: 120px;
+    padding: var(--space-sm);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+    background: var(--color-bg-elev-1);
+    color: var(--color-ink);
+    font: inherit;
+    line-height: 1.4;
+    resize: vertical;
+}
+.feedback-textarea:focus { outline: 2px solid var(--color-accent, #6366f1); outline-offset: 1px; }
+.feedback-foot { display: flex; justify-content: space-between; align-items: center; gap: var(--space-sm); }
+.feedback-count { font-size: var(--fs-xs); color: var(--color-ink-muted); }
+
+.feedback-admin { margin-top: var(--space-lg); border-top: 1px solid var(--color-border); padding-top: var(--space-md); }
+.feedback-admin__heading { margin: 0 0 var(--space-sm); font-size: var(--fs-md); display: flex; align-items: center; gap: var(--space-xs); }
+.feedback-admin__count {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 22px; height: 20px; padding: 0 6px;
+    border-radius: var(--radius-pill);
+    background: var(--color-bg-elev-2); color: var(--color-ink-soft);
+    font-size: var(--fs-xs); font-weight: 700;
+}
+.feedback-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-sm); }
+.feedback-item {
+    padding: var(--space-sm) var(--space-md);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-bg-elev-2);
+}
+.feedback-item.is-resolved { opacity: .55; }
+.feedback-item__head { display: flex; align-items: center; gap: var(--space-xs); flex-wrap: wrap; margin-bottom: 4px; }
+.feedback-tag {
+    display: inline-flex; align-items: center;
+    padding: 1px 8px;
+    border-radius: var(--radius-pill);
+    font-size: var(--fs-xs); font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.04em;
+    background: var(--color-bg-soft); color: var(--color-ink-soft);
+}
+.feedback-tag--bug        { background: rgba(220, 38, 38, .12); color: var(--color-danger); }
+.feedback-tag--suggestion { background: rgba(34, 197, 94, .14); color: #16a34a; }
+.feedback-tag--other      { background: rgba(99, 102, 241, .14); color: #6366f1; }
+.feedback-date { font-size: var(--fs-xs); color: var(--color-ink-muted); margin-left: auto; white-space: nowrap; }
+.feedback-actions { display: inline-flex; gap: 2px; }
+.feedback-icon-btn {
+    background: transparent; border: none;
+    color: var(--color-ink-muted);
+    cursor: pointer;
+    padding: 2px 4px;
+    border-radius: var(--radius-sm);
+    display: inline-flex; align-items: center; line-height: 0;
+}
+.feedback-icon-btn:hover:not(:disabled) { color: var(--color-ink); background: var(--color-bg-soft); }
+.feedback-icon-btn--danger:hover:not(:disabled) { color: var(--color-danger); background: var(--color-danger-soft, rgba(220, 38, 38, .08)); }
+.feedback-icon-btn:disabled { opacity: .5; cursor: progress; }
+.feedback-body { margin: 0; color: var(--color-ink-soft); white-space: pre-wrap; }
 
 /* -------- Auth screens -------- */
 .auth-box {
@@ -1869,6 +1964,19 @@
     border-radius: var(--radius-md);
     background: var(--color-bg-elev-2);
 }
+/* Neutral admin sub-panel (e.g. "Grant Atlas Bucks") — same shell as the
+   danger zone but with the standard border so it doesn't read as destructive. */
+.admin-section {
+    width: 100%;
+    margin-top: var(--space-md);
+    padding: var(--space-md);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-bg-elev-2);
+    display: flex; flex-direction: column; gap: var(--space-sm);
+}
+.admin-section .settings-section-title { margin: 0; display: inline-flex; align-items: center; gap: 6px; }
+
 /* Destructive bulk action — visually separated from the publish form so it
    reads as a deliberate "danger zone" rather than another publish button. */
 .admin-danger {
@@ -2112,6 +2220,36 @@
 .choice-wrap { position: relative; }
 .cosmetic-card.is-equipped { border-color: var(--color-primary); background: var(--color-primary-soft); }
 .cosmetic-card.is-locked { opacity: 0.6; }
+/* Currently previewed (unaffordable) item — overrides .is-locked dimming so
+   the player can see at a glance which card is mirrored on big Atlas. */
+.cosmetic-card.is-preview {
+    opacity: 1;
+    border-color: var(--color-accent, var(--color-primary));
+    box-shadow: 0 0 0 2px var(--color-accent-soft, var(--color-primary-soft));
+}
+.cosmetic-tag--preview {
+    color: var(--color-accent-deep, var(--color-primary));
+    display: inline-flex; align-items: center; gap: 3px;
+}
+.store-preview-banner {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 6px 4px 10px;
+    background: var(--color-bg-elev-1);
+    border: 1px dashed var(--color-accent, var(--color-primary));
+    border-radius: 999px;
+    color: var(--color-ink);
+    font-size: var(--fs-xs); font-weight: 600;
+    max-width: 100%;
+}
+.store-preview-banner__text { display: inline-flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.store-preview-banner__cost { display: inline-flex; align-items: center; gap: 3px; font-weight: 700; }
+.store-preview-banner__clear {
+    border: none; background: transparent; cursor: pointer;
+    width: 22px; height: 22px; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    color: var(--color-ink-soft);
+}
+.store-preview-banner__clear:hover { background: var(--color-bg-soft); color: var(--color-ink); }
 .cosmetic-swatch { width: 28px; height: 28px; border-radius: 50%; box-shadow: var(--shadow-sm); }
 .cosmetic-swatch--anim { animation: swatchShift 4s ease infinite; }
 @keyframes swatchShift {
@@ -2238,6 +2376,38 @@
     flex-wrap: wrap;
 }
 .ab-wallet__xp { font-weight: 800; color: var(--color-ink-soft); font-size: var(--fs-sm); }
+.ab-wallet__claimable { color: var(--color-ink-muted); font-weight: 600; }
+.ab-wallet__trade-input {
+    display: inline-flex; align-items: center; gap: 6px;
+    flex-wrap: wrap;
+}
+.ab-wallet__amount {
+    width: 92px;
+    padding: 6px 8px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-bg-elev-1);
+    color: var(--color-ink);
+    font-weight: 700;
+    font-size: var(--fs-sm);
+    text-align: right;
+    -moz-appearance: textfield;
+}
+.ab-wallet__amount::-webkit-outer-spin-button,
+.ab-wallet__amount::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.ab-wallet__amount:disabled { opacity: 0.55; cursor: not-allowed; }
+.ab-wallet__max {
+    border: 1px solid var(--color-border);
+    background: var(--color-bg-elev-1);
+    color: var(--color-ink);
+    font-weight: 700;
+    font-size: var(--fs-xs);
+    padding: 5px 10px;
+    border-radius: var(--radius-pill);
+    cursor: pointer;
+}
+.ab-wallet__max:hover:not(:disabled) { background: var(--color-bg-soft); }
+.ab-wallet__max:disabled { opacity: 0.55; cursor: not-allowed; }
 .ab-wallet__hint {
     margin: 0;
     font-size: var(--fs-xs);
@@ -3558,6 +3728,23 @@
     color: var(--color-ink-soft);
 }
 .bp-quest.is-done .bp-quest__progress { color: var(--color-success-deep); }
+.bp-quest.is-claimable {
+    border-color: var(--color-success);
+    box-shadow: 0 0 0 2px var(--color-success-soft), 0 4px 14px rgba(46,196,141,0.18);
+}
+.bp-quest__rewards { display: inline-flex; align-items: center; gap: 8px; }
+.bp-quest__bucks {
+    display: inline-flex; align-items: center; gap: 3px;
+    font-weight: 800; font-size: var(--fs-sm);
+    color: var(--color-warning-deep, var(--color-accent-deep));
+}
+.bp-quest__claimed {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: var(--fs-xs); font-weight: 800;
+    color: var(--color-success-deep);
+    margin-top: 4px;
+}
+.bp-quest .ui-button { align-self: flex-start; margin-top: 4px; }
 
 /* Custom challenge icon — gem-cut badge rendered by ChallengeIcon.jsx. The
    icon brings its own colour; we just give it a drop shadow + a "complete"

@@ -106,32 +106,119 @@ function renderPatternDef(id, p) {
         );
     }
     if (kind === 'scales') {
-        // Overlapping reptile scales: rows of half-circle "shingles" offset
-        // every other row so the joins read as scaly hide rather than a grid.
-        // `base` is the under-skin colour, `accent` is the scale fill, and an
-        // optional `accent2` is used for the rim highlight to catch the eye.
+        // Overlapping reptile scales: dense rows of half-circle shingles offset
+        // every other row so the joins read as hide rather than a grid. Each
+        // scale has a dark rim, a body in `accent`, an upper sheen for the
+        // wet/polished look, and a tiny highlight dot. `base` shows through
+        // between rows; `accent2`, if given, is the rim/highlight colour.
         const rim = accent2 || base;
+        const rows = [0, 10, 20, 30, 40, 50, 60];
         return (
             <pattern id={id} patternUnits="userSpaceOnUse" width="64" height="64">
                 <rect width="64" height="64" fill={base} />
-                <g fill={accent} stroke={rim} strokeWidth="0.6">
-                    {[0, 16, 32, 48].map((y, row) => {
-                        const off = row % 2 === 0 ? 0 : 8;
-                        return [0, 16, 32, 48].map((x, col) => (
-                            <path key={`${row}-${col}`}
-                                d={`M${x + off} ${y + 10} a 8 7 0 0 1 16 0 Z`} />
+                <g>
+                    {rows.map((y, row) => {
+                        const off = row % 2 === 0 ? 0 : 6;
+                        return [-12, 0, 12, 24, 36, 48, 60, 72].map((x, col) => (
+                            <g key={`${row}-${col}`}>
+                                {/* Dark rim (slightly larger shingle, peeks at the bottom) */}
+                                <path d={`M${x + off} ${y + 8} a 6.4 5.6 0 0 1 12.8 0 Z`}
+                                    fill={base} stroke={base} strokeWidth="0.4" opacity="0.85" />
+                                {/* Scale body */}
+                                <path d={`M${x + off} ${y + 7.6} a 6.0 5.4 0 0 1 12 0 Z`}
+                                    fill={accent} stroke={rim} strokeWidth="0.4" />
+                                {/* Upper sheen crescent (wet/polished look) */}
+                                <path d={`M${x + off + 1.6} ${y + 4.8} a 4.4 3.8 0 0 1 8.8 0`}
+                                    fill="none" stroke={rim} strokeWidth="0.55" opacity="0.55" />
+                                {/* Highlight dot */}
+                                <circle cx={x + off + 6} cy={y + 4.4} r="0.55" fill={rim} opacity="0.75" />
+                            </g>
                         ));
                     })}
                 </g>
-                {/* Subtle highlight dots in scale centres for sheen */}
-                <g fill={rim} opacity="0.45">
+            </pattern>
+        );
+    }
+    if (kind === 'serpent') {
+        // Diamond-back serpent pattern — alternating diamond rosettes along a
+        // ridged spine. Reads as python / anaconda hide at small sizes. `base`
+        // is the underbelly tone, `accent` is the diamond fill, `accent2` the
+        // outline + spine.
+        const ridge = accent2 || base;
+        return (
+            <pattern id={id} patternUnits="userSpaceOnUse" width="64" height="64">
+                <rect width="64" height="64" fill={base} />
+                {/* Faint cross-hatch undertone */}
+                <g stroke={ridge} strokeWidth="0.4" opacity="0.2" fill="none">
+                    <path d="M0 8 L 64 8 M0 24 L 64 24 M0 40 L 64 40 M0 56 L 64 56" />
+                </g>
+                {/* Diamonds — two staggered columns */}
+                <g fill={accent} stroke={ridge} strokeWidth="0.7">
                     {[0, 16, 32, 48].map((y, row) => {
-                        const off = row % 2 === 0 ? 0 : 8;
-                        return [0, 16, 32, 48].map((x, col) => (
-                            <circle key={`h-${row}-${col}`} cx={x + off + 8} cy={y + 6} r="0.8" />
+                        const off = row % 2 === 0 ? 0 : 12;
+                        return [0, 24, 48].map((x, col) => (
+                            <g key={`d-${row}-${col}`}>
+                                <path d={`M${x + off} ${y + 4} l 8 6 l -8 6 l -8 -6 Z`} />
+                                {/* Inner darker diamond */}
+                                <path d={`M${x + off} ${y + 6} l 5 4 l -5 4 l -5 -4 Z`} fill={ridge} opacity="0.5" />
+                                {/* Tiny centre highlight */}
+                                <circle cx={x + off} cy={y + 10} r="0.7" fill={base} opacity="0.7" />
+                            </g>
                         ));
                     })}
                 </g>
+            </pattern>
+        );
+    }
+    if (kind === 'gecko') {
+        // Iridescent gecko/spotted pattern — small bright spots over a warm
+        // base with a smaller dark dot inside each (eye-like). Hand-placed so
+        // it never repeats too obviously.
+        const dot = accent2 || base;
+        const spots = [
+            [6, 6, 2.4], [18, 10, 2.8], [30, 4, 2.2], [42, 8, 2.6], [54, 5, 2.4],
+            [12, 18, 2.6], [24, 22, 2.8], [38, 18, 2.4], [50, 22, 2.6], [60, 18, 2.2],
+            [4, 30, 2.4], [16, 34, 2.8], [30, 30, 2.6], [44, 34, 2.4], [58, 30, 2.8],
+            [10, 44, 2.6], [22, 48, 2.4], [36, 44, 2.8], [48, 48, 2.6], [60, 44, 2.4],
+            [4, 58, 2.4], [18, 60, 2.6], [32, 58, 2.4], [46, 60, 2.8], [58, 58, 2.6],
+        ];
+        return (
+            <pattern id={id} patternUnits="userSpaceOnUse" width="64" height="64">
+                <rect width="64" height="64" fill={base} />
+                {spots.map(([x, y, r], i) => (
+                    <g key={i}>
+                        <circle cx={x} cy={y} r={r} fill={accent} />
+                        <circle cx={x - r * 0.4} cy={y - r * 0.4} r={r * 0.35} fill="#FFFFFF" opacity="0.55" />
+                        <circle cx={x + r * 0.2} cy={y + r * 0.2} r={r * 0.25} fill={dot} opacity="0.7" />
+                    </g>
+                ))}
+            </pattern>
+        );
+    }
+    if (kind === 'jewelScales') {
+        // Polished gem scales — like cut emeralds set in metalwork. Each scale
+        // has a flat-cut top facet (lighter), a darker side facet, and a
+        // bright corner highlight. The most expensive-looking pattern in the
+        // game; used for showpiece BP colours.
+        const facet = accent2 || base;
+        const cell = (x, y) => (
+            <g key={`${x}-${y}`}>
+                {/* Outer dark rim */}
+                <path d={`M${x} ${y} l 9 0 l 4.5 7 l -4.5 7 l -9 0 l -4.5 -7 Z`} fill={base} opacity="0.95" />
+                {/* Main gem body */}
+                <path d={`M${x + 0.5} ${y + 0.7} l 8 0 l 4 6.3 l -4 6.3 l -8 0 l -4 -6.3 Z`} fill={accent} />
+                {/* Upper-left bright facet */}
+                <path d={`M${x + 0.5} ${y + 0.7} l 8 0 l -2 4 l -6 0 Z`} fill={facet} opacity="0.85" />
+                {/* Lower-right darker facet */}
+                <path d={`M${x + 8.5} ${y + 0.7} l 4 6.3 l -2 0 l -2 -4 Z`} fill={base} opacity="0.55" />
+                {/* Corner highlight pip */}
+                <circle cx={x + 2.5} cy={y + 2.5} r="0.7" fill="#FFFFFF" opacity="0.85" />
+            </g>
+        );
+        return (
+            <pattern id={id} patternUnits="userSpaceOnUse" width="52" height="56">
+                <rect width="52" height="56" fill={base} />
+                {[[7, 4], [25, 4], [43, 4], [-2, 18], [16, 18], [34, 18], [52, 18], [7, 32], [25, 32], [43, 32], [-2, 46], [16, 46], [34, 46], [52, 46]].map(([x, y]) => cell(x, y))}
             </pattern>
         );
     }

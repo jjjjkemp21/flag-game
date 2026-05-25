@@ -81,8 +81,11 @@ export function resetCurrency() {
     notify();
 }
 
-export async function claimBucks() {
-    const result = await api.post('/currency/claim');
+// Trade in XP for Atlas Bucks. Pass a positive integer to convert only that
+// many bucks' worth of XP; omit to claim everything available.
+export async function claimBucks(amount) {
+    const body = amount != null ? { amount } : {};
+    const result = await api.post('/currency/claim', body);
     applySummary(result);
     return result;
 }
