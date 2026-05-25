@@ -116,9 +116,10 @@ export function scopeRank(scope, entry, total) {
     }
     if (scope === 'mpwins') return tieredTitle(entry.value || 0, MP_WIN_TIERS);
     if (scope === 'globe') {
-        // Use the geography ladder — title tracks countries placed on the globe
-        // so the pill matches the scope being ranked.
-        return geoMasteryRank(entry.geoMasteredCount || entry.value || 0, total);
+        // Geography ladder — pill always tracks mastered count, not the row
+        // metric (which is now "placed"). Without the explicit ?? a player at
+        // 0 mastered would inherit the placed count and over-rank.
+        return geoMasteryRank(entry.geoMasteredCount ?? 0, total);
     }
     if (BONUS_TIERS[scope]) return tieredTitle(entry.value || 0, BONUS_TIERS[scope]);
     return masteryRank(entry.masteredCount || 0, total); // overall / friends

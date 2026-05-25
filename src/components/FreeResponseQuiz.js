@@ -26,7 +26,7 @@ function FreeResponseQuiz({
     setView,
     strictSpelling,
     setQuizCategory,
-    questionHistory,
+    getQuestionHistory,
     updateQuestionHistory,
 }) {
     const [currentFlag, setCurrentFlag] = useState(null);
@@ -58,14 +58,14 @@ function FreeResponseQuiz({
         setAnswered(false);
         setInputValue('');
         setXpGain(null);
-        const questionFlag = selectNextFlag(quizFlags, questionHistory);
+        const questionFlag = selectNextFlag(quizFlags, getQuestionHistory());
         setCurrentFlag(questionFlag);
         setMasteryStreak(questionFlag ? (questionFlag.streak || 0) : 0);
         if (questionFlag) {
             updateQuestionHistory(questionFlag.code);
         }
         setIsLoading(false);
-    }, [quizFlags, selectNextFlag, questionHistory, updateQuestionHistory]);
+    }, [quizFlags, selectNextFlag, getQuestionHistory, updateQuestionHistory]);
 
     useEffect(() => {
         nextQuestion();

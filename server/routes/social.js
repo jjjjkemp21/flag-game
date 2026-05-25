@@ -1,7 +1,7 @@
 const express = require('express');
 const db = require('../db');
 const { requireAuth } = require('../middleware');
-const { masteredCount, geoMasteredCount } = require('../xp');
+const { masteredCount, geoMasteredCount, geoPlacedCount } = require('../xp');
 
 const router = express.Router();
 
@@ -48,7 +48,12 @@ function metricValue(row, scope) {
     if (scope === 'mpwins') return row.mp_wins || 0;
     if (scope === 'globe') {
         try {
-            return row.stats_json ? geoMasteredCount(JSON.parse(row.stats_json)) : 0;
+            // The Globe leaderboard ranks by "placed" (unique countries the
+            // player has ever placed correctly), not by the strict mastery
+            // streak — the strict metric was always 0 for everyone until they
+            // hit a 6-in-a-row on a single country, which made the board read
+            // empty. Mastery still surfaces in the row subtitle.
+            return row.stats_json ? geoPlacedCount(JSON.parse(row.stats_json)) : 0;
         } catch (_) {
             return 0;
         }
@@ -98,11 +103,13 @@ function achievementsOf(row) {
 function buildEntry(row, scope) {
     let mastered = 0;
     let geoMastered = 0;
+    let geoPlaced = 0;
     if (row.stats_json) {
         try {
             const stats = JSON.parse(row.stats_json);
             mastered = masteredCount(stats);
             geoMastered = geoMasteredCount(stats);
+            geoPlaced = geoPlacedCount(stats);
         } catch (_) { /* ignore */ }
     }
     const ach = achievementsOf(row);
@@ -118,6 +125,7 @@ function buildEntry(row, scope) {
         petStage: petStageOf(pet),
         masteredCount: mastered,
         geoMasteredCount: geoMastered,
+        geoPlacedCount: geoPlaced,
         bestStreak: bestStreakOf(row),
         mpWins: row.mp_wins || 0,
         showcase: ach.showcase,

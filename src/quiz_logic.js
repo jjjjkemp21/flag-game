@@ -1,115 +1,184 @@
-function runWeightedSelection(flagsToSelectFrom) {
-    if (!flagsToSelectFrom || flagsToSelectFrom.length === 0) {
-        return null;
-    }
-    const weights = flagsToSelectFrom.map(flag => {
-        const struggleScore = flag.incorrect / (flag.correct + 1);
-        let weight = 1 + struggleScore * 10;
+// Mastery threshold: a flag's `streak` strictly greater than this counts as
+// "mastered". Mirrors MASTERY_STREAK in src/lib/xp.js + server/xp.js.
+const MASTERY_STREAK = 5;
 
-        if (flag.correct === 0 && flag.incorrect === 0) {
-            weight += 2;
-        }
+// Spaced-repetition ladder. Early intervals are intentionally short so a player
+// who wants to grind a region to mastery in one sitting actually can — later
+// intervals stretch out so a well-known flag doesn't pester the player.
+// Index N is the gap after the Nth correct in a row.
+const STREAK_INTERVALS = [
+    null,            // streak 0 — immediate
+    { minutes: 1 },  // streak 1
+    { minutes: 10 }, // streak 2
+    { hours: 1 },    // streak 3
+    { hours: 8 },    // streak 4
+    { days: 1 },     // streak 5
+    { days: 7 },     // streak 6 — first "mastered" rung
+    { days: 30 },    // streak 7
+    { days: 90 },    // streak 8+ cap
+];
+
+// First miss after a flag has been hidden this long is forgiven (no streak
+// drop) — if we kept it out of sight for weeks, the rust isn't on the player.
+const SOFT_MISS_AFTER_MS = 14 * 24 * 60 * 60 * 1000;
+
+const LEECH_THRESHOLD = 6;
+
+// Maps an axis ('flag' or 'geo') onto the per-flag field names. Lets one
+// selection/scheduling engine drive both flag-recognition (regular quizzes)
+// and country-placement (Globe mode) without duplicating logic.
+function axisFields(axis) {
+    if (axis === 'geo') {
+        return {
+            correct: 'geoCorrect',
+            incorrect: 'geoIncorrect',
+            streak: 'geoStreak',
+            lapses: 'geoLapses',
+            isLeech: 'geoIsLeech',
+            nextReview: 'geoNextReview',
+            lastAnswered: 'geoLastAnswered',
+        };
+    }
+    return {
+        correct: 'correct',
+        incorrect: 'incorrect',
+        streak: 'streak',
+        lapses: 'lapses',
+        isLeech: 'isLeech',
+        nextReview: 'nextReview',
+        lastAnswered: 'lastAnswered',
+    };
+}
+
+function runWeightedSelection(flagsToSelectFrom, axis = 'flag') {
+    if (!flagsToSelectFrom || flagsToSelectFrom.length === 0) return null;
+    const f = axisFields(axis);
+    const weights = flagsToSelectFrom.map((flag) => {
+        const correct = Number(flag[f.correct]) || 0;
+        const incorrect = Number(flag[f.incorrect]) || 0;
+        const streak = Number(flag[f.streak]) || 0;
+        const struggleScore = incorrect / (correct + 1);
+        let weight = 1 + struggleScore * 10;
+        if (correct === 0 && incorrect === 0) weight += 2;
+        // Un-mastered boost: a streak-0 flag gets +12, a streak-5 (one away
+        // from mastery) gets +2, mastered flags get no boost.
+        if (streak <= MASTERY_STREAK) weight += (MASTERY_STREAK + 1 - streak) * 2;
         return weight;
     });
-
     const totalWeight = weights.reduce((sum, w) => sum + w, 0);
     let random = Math.random() * totalWeight;
-
     for (let i = 0; i < flagsToSelectFrom.length; i++) {
         random -= weights[i];
-        if (random < 0) {
-            return flagsToSelectFrom[i];
-        }
+        if (random < 0) return flagsToSelectFrom[i];
     }
     return flagsToSelectFrom[flagsToSelectFrom.length - 1];
 }
 
-function select_next_flag(flags, recently_shown_codes = []) {
-    if (!flags || flags.length === 0) {
-        return null;
-    }
-
+function pickFlag(flags, recently_shown_codes, axis) {
+    const f = axisFields(axis);
     const now = Date.now();
-    const availableFlags = flags.filter(f => !f.isLeech);
-    if (availableFlags.length === 0) {
-        return null;
-    }
+    const availableFlags = flags.filter((x) => !x[f.isLeech]);
+    if (availableFlags.length === 0) return null;
 
-    const lastFlagCode = recently_shown_codes.length > 0 ? recently_shown_codes[recently_shown_codes.length - 1] : null;
+    const lastFlagCode = recently_shown_codes.length > 0
+        ? recently_shown_codes[recently_shown_codes.length - 1]
+        : null;
 
     let primaryPool = availableFlags;
     if (lastFlagCode && availableFlags.length > 1) {
-        primaryPool = availableFlags.filter(flag => flag.code !== lastFlagCode);
+        primaryPool = availableFlags.filter((flag) => flag.code !== lastFlagCode);
+    }
+    if (primaryPool.length === 0) primaryPool = availableFlags;
+
+    const notRecent = primaryPool.filter((flag) => !recently_shown_codes.includes(flag.code));
+
+    // Tier 1: due AND not recent (the spaced-repetition happy path).
+    if (notRecent.length > 0) {
+        const dueAndNotRecent = notRecent.filter(
+            (x) => x[f.nextReview] == null || x[f.nextReview] <= now
+        );
+        if (dueAndNotRecent.length > 0) return runWeightedSelection(dueAndNotRecent, axis);
+        // Tier 2: if nothing's due, still prefer un-mastered flags over already-mastered
+        // ones — this is what surfaces the last few flags during a mastery push.
+        const unMasteredNotRecent = notRecent.filter(
+            (x) => (Number(x[f.streak]) || 0) <= MASTERY_STREAK
+        );
+        if (unMasteredNotRecent.length > 0) return runWeightedSelection(unMasteredNotRecent, axis);
+        // Tier 3: everything not-recent (mastered review).
+        return runWeightedSelection(notRecent, axis);
     }
 
-    if (primaryPool.length === 0) {
-        primaryPool = availableFlags;
-    }
+    // Pool exhausted (every available flag is in the recent window). Fall back
+    // into the primary pool with the same preference order.
+    const dueInPrimary = primaryPool.filter(
+        (x) => x[f.nextReview] == null || x[f.nextReview] <= now
+    );
+    if (dueInPrimary.length > 0) return runWeightedSelection(dueInPrimary, axis);
+    const unMasteredInPrimary = primaryPool.filter(
+        (x) => (Number(x[f.streak]) || 0) <= MASTERY_STREAK
+    );
+    if (unMasteredInPrimary.length > 0) return runWeightedSelection(unMasteredInPrimary, axis);
+    return runWeightedSelection(primaryPool, axis);
+}
 
-    const notRecentFlags = primaryPool.filter(flag => !recently_shown_codes.includes(flag.code));
-
-    if (notRecentFlags.length > 0) {
-        const dueAndNotRecent = notRecentFlags.filter(flag => flag.nextReview === null || flag.nextReview <= now);
-        if (dueAndNotRecent.length > 0) {
-            return runWeightedSelection(dueAndNotRecent);
-        }
-        
-        return runWeightedSelection(notRecentFlags);
+// Hard invariant: never the same flag twice in a row when an alternative
+// exists. Wraps the internal picker so every code path respects it, regardless
+// of which fallback tier produced the candidate.
+function select_next_flag(flags, recently_shown_codes = [], axis = 'flag') {
+    if (!flags || flags.length === 0) return null;
+    const pick = pickFlag(flags, recently_shown_codes, axis);
+    const lastFlagCode = recently_shown_codes.length > 0
+        ? recently_shown_codes[recently_shown_codes.length - 1]
+        : null;
+    if (pick && lastFlagCode && pick.code === lastFlagCode) {
+        const f = axisFields(axis);
+        const alternatives = flags.filter((x) => !x[f.isLeech] && x.code !== lastFlagCode);
+        if (alternatives.length > 0) return runWeightedSelection(alternatives, axis);
+        return null; // genuinely a pool of 1 — caller decides what to show.
     }
-    
-    const dueInPrimaryPool = primaryPool.filter(flag => flag.nextReview === null || flag.nextReview <= now);
-    if (dueInPrimaryPool.length > 0) {
-        return runWeightedSelection(dueInPrimaryPool);
-    }
-
-    return runWeightedSelection(primaryPool);
+    return pick;
 }
 
 function get_distractor_options(correct_flag, all_flags, num_options = 3, quiz_category = null, question_history = []) {
     const correctTags = new Set(correct_flag.tags);
     const recentFlagCodes = new Set(question_history);
 
-    let eligibleFlags = all_flags.filter(flag =>
-        flag.name !== correct_flag.name &&
-        !recentFlagCodes.has(flag.code)
+    let eligibleFlags = all_flags.filter((flag) =>
+        flag.name !== correct_flag.name && !recentFlagCodes.has(flag.code)
     );
 
     if (quiz_category && quiz_category.type === 'region') {
         const regionTag = `region:${quiz_category.value}`;
-        eligibleFlags = eligibleFlags.filter(flag => flag.tags.includes(regionTag));
+        eligibleFlags = eligibleFlags.filter((flag) => flag.tags.includes(regionTag));
     }
 
-    const scoredFlags = eligibleFlags.map(flag => {
+    const scoredFlags = eligibleFlags.map((flag) => {
         const otherTags = new Set(flag.tags);
-        const intersection = new Set([...correctTags].filter(tag => otherTags.has(tag)));
-        
+        const intersection = new Set([...correctTags].filter((tag) => otherTags.has(tag)));
         let score = intersection.size;
-
-        intersection.forEach(tag => {
+        intersection.forEach((tag) => {
             if (tag.startsWith('region:')) score += 3;
             if (tag.startsWith('colors:')) score += 2;
             if (tag.startsWith('layout:')) score += 2;
         });
-
         return { name: flag.name, score };
     });
 
     scoredFlags.sort((a, b) => b.score - a.score);
-
     const topCandidates = scoredFlags.slice(0, 30);
-    
+
     for (let i = topCandidates.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [topCandidates[i], topCandidates[j]] = [topCandidates[j], topCandidates[i]];
     }
-    
-    const distractors = topCandidates.slice(0, num_options).map(f => f.name);
+
+    const distractors = topCandidates.slice(0, num_options).map((f) => f.name);
 
     if (distractors.length < num_options) {
         const existingDistractors = new Set(distractors);
         existingDistractors.add(correct_flag.name);
-        const remainingFlags = all_flags.filter(f => !existingDistractors.has(f.name));
-        while(distractors.length < num_options && remainingFlags.length > 0) {
+        const remainingFlags = all_flags.filter((f) => !existingDistractors.has(f.name));
+        while (distractors.length < num_options && remainingFlags.length > 0) {
             const randomIndex = Math.floor(Math.random() * remainingFlags.length);
             const randomFlag = remainingFlags.splice(randomIndex, 1)[0];
             distractors.push(randomFlag.name);
@@ -119,24 +188,15 @@ function get_distractor_options(correct_flag, all_flags, num_options = 3, quiz_c
     return distractors;
 }
 
-
-const STREAK_INTERVALS = [
-    { hours: 4 },
-    { hours: 8 },
-    { days: 1 },
-    { days: 3 },
-    { days: 7 },
-    { days: 14 },
-    { days: 30 },
-    { days: 60 }
-];
-
 function calculateNextReview(streak) {
-    const interval = STREAK_INTERVALS[Math.min(streak, STREAK_INTERVALS.length - 1)];
-    let milliseconds = 0;
-    if (interval.hours) milliseconds = interval.hours * 60 * 60 * 1000;
-    if (interval.days) milliseconds = interval.days * 24 * 60 * 60 * 1000;
-    return Date.now() + milliseconds;
+    const idx = Math.min(Math.max(streak, 0), STREAK_INTERVALS.length - 1);
+    const interval = STREAK_INTERVALS[idx];
+    if (!interval) return Date.now();
+    let ms = 0;
+    if (interval.minutes) ms = interval.minutes * 60 * 1000;
+    if (interval.hours) ms = interval.hours * 60 * 60 * 1000;
+    if (interval.days) ms = interval.days * 24 * 60 * 60 * 1000;
+    return Date.now() + ms;
 }
 
 function update_flag_stats(flags, correct_flag_object, user_was_correct, reason = 'answered') {
@@ -145,17 +205,10 @@ function update_flag_stats(flags, correct_flag_object, user_was_correct, reason 
         ? { name: correct_flag_object }
         : (correct_flag_object || {});
 
-    // Prefer matching by `code` (stable canonical ID) and fall back to `name`.
     let flagIndex = -1;
-    if (target.code) {
-        flagIndex = flags.findIndex(f => f.code === target.code);
-    }
-    if (flagIndex === -1 && target.name) {
-        flagIndex = flags.findIndex(f => f.name === target.name);
-    }
-    if (flagIndex === -1 && target.country) {
-        flagIndex = flags.findIndex(f => f.country === target.country);
-    }
+    if (target.code) flagIndex = flags.findIndex((f) => f.code === target.code);
+    if (flagIndex === -1 && target.name) flagIndex = flags.findIndex((f) => f.name === target.name);
+    if (flagIndex === -1 && target.country) flagIndex = flags.findIndex((f) => f.country === target.country);
 
     if (flagIndex === -1) {
         console.warn('update_flag_stats: flag not found', target);
@@ -169,21 +222,17 @@ function update_flag_stats(flags, correct_flag_object, user_was_correct, reason 
 
     const updatedFlags = JSON.parse(JSON.stringify(flags));
     const flag = updatedFlags[flagIndex];
+    const now = Date.now();
+    const sinceLastShown = flag.lastAnswered ? now - flag.lastAnswered : Infinity;
+    flag.lastAnswered = now;
+
+    const allAnswers = [flag.name || flag.country, ...(flag.aliases || [])].filter(Boolean);
+    const answerString = allAnswers.join(' / ');
     let message, color;
 
-    flag.lastAnswered = Date.now();
-
-    // Build the answer string from the canonical (found) flag so it always
-    // reflects the latest name + aliases, even if the caller passed a string.
-    const allAnswers = [
-        flag.name || flag.country,
-        ...(flag.aliases || []),
-    ].filter(Boolean);
-    const answerString = allAnswers.join(' / ');
-
     if (user_was_correct) {
-        message = { text: "Correct! The answer was:", answer: answerString };
-        color = "green";
+        message = { text: 'Correct! The answer was:', answer: answerString };
+        color = 'green';
         flag.correct += 1;
         flag.streak += 1;
         flag.isLeech = false;
@@ -193,24 +242,24 @@ function update_flag_stats(flags, correct_flag_object, user_was_correct, reason 
         const text = reason === 'skipped'
             ? 'Skipped. The answer was:'
             : 'Incorrect. The answer was:';
-
         message = { text, answer: answerString };
-        color = "red";
+        color = 'red';
         flag.incorrect += 1;
         flag.lapses = (flag.lapses || 0) + 1;
 
-        // Losing mastery is gradual: a miss costs a single streak step instead of
-        // halving the streak, so a well-practiced flag survives the occasional slip
-        // and it takes repeated misses to fall out of mastery.
-        flag.streak = Math.max(0, flag.streak - 1);
+        // Soft-miss: a flag we hid for over two weeks gets a free first miss.
+        // The rust is on us for keeping it out of sight, not the player.
+        const isSoftMiss = sinceLastShown > SOFT_MISS_AFTER_MS;
+        if (!isSoftMiss) {
+            flag.streak = Math.max(0, flag.streak - 1);
+        }
 
-        const LEECH_THRESHOLD = 4;
         if (flag.lapses > LEECH_THRESHOLD) {
             flag.isLeech = true;
-            flag.nextReview = Date.now() + (10 * 365 * 24 * 60 * 60 * 1000);
+            flag.nextReview = now + 10 * 365 * 24 * 60 * 60 * 1000;
             message.text = "This flag seems tricky, so we'll set it aside for now. The answer was:";
         } else {
-            flag.nextReview = Date.now();
+            flag.nextReview = now;
         }
     }
 
@@ -219,17 +268,18 @@ function update_flag_stats(flags, correct_flag_object, user_was_correct, reason 
 
 // Geography stats updater for Globe mode. Lives on the same per-flag record
 // but tracks geo-knowledge independently from flag-recognition (geoCorrect /
-// geoStreak / etc.). Returns { message, color, updatedFlags } in the same
-// shape as update_flag_stats so the GlobeQuiz screen can share feedback UI.
-function update_geo_stats(flags, correct_flag_object, user_was_correct) {
+// geoStreak / etc.). Now uses the same spaced-repetition ladder + soft-miss
+// rules as the flag-recognition axis so a player can master the globe in a
+// sitting and won't lose hard-won placements to a single rusty miss.
+function update_geo_stats(flags, correct_flag_object, user_was_correct, reason = 'answered') {
     const target = typeof correct_flag_object === 'string'
         ? { name: correct_flag_object }
         : (correct_flag_object || {});
 
     let flagIndex = -1;
-    if (target.code) flagIndex = flags.findIndex(f => f.code === target.code);
-    if (flagIndex === -1 && target.name) flagIndex = flags.findIndex(f => f.name === target.name);
-    if (flagIndex === -1 && target.country) flagIndex = flags.findIndex(f => f.country === target.country);
+    if (target.code) flagIndex = flags.findIndex((f) => f.code === target.code);
+    if (flagIndex === -1 && target.name) flagIndex = flags.findIndex((f) => f.name === target.name);
+    if (flagIndex === -1 && target.country) flagIndex = flags.findIndex((f) => f.country === target.country);
 
     if (flagIndex === -1) {
         const fallbackName = target.name || target.country || 'this country';
@@ -242,7 +292,9 @@ function update_geo_stats(flags, correct_flag_object, user_was_correct) {
 
     const updatedFlags = JSON.parse(JSON.stringify(flags));
     const flag = updatedFlags[flagIndex];
-    flag.geoLastAnswered = Date.now();
+    const now = Date.now();
+    const sinceLastShown = flag.geoLastAnswered ? now - flag.geoLastAnswered : Infinity;
+    flag.geoLastAnswered = now;
 
     const answerString = [flag.name || flag.country, ...(flag.aliases || [])].filter(Boolean).join(' / ');
     let message, color;
@@ -253,12 +305,29 @@ function update_geo_stats(flags, correct_flag_object, user_was_correct) {
         flag.geoCorrect = (flag.geoCorrect || 0) + 1;
         flag.geoStreak = (flag.geoStreak || 0) + 1;
         flag.geoLapses = flag.geoLapses ? Math.max(0, flag.geoLapses - 1) : 0;
+        flag.geoIsLeech = false;
+        flag.geoNextReview = calculateNextReview(flag.geoStreak);
     } else {
-        message = { text: 'Incorrect. The answer was:', answer: answerString };
+        const text = reason === 'skipped'
+            ? 'Skipped. The answer was:'
+            : 'Incorrect. The answer was:';
+        message = { text, answer: answerString };
         color = 'red';
         flag.geoIncorrect = (flag.geoIncorrect || 0) + 1;
-        flag.geoStreak = Math.max(0, (flag.geoStreak || 0) - 1);
         flag.geoLapses = (flag.geoLapses || 0) + 1;
+
+        const isSoftMiss = sinceLastShown > SOFT_MISS_AFTER_MS;
+        if (!isSoftMiss) {
+            flag.geoStreak = Math.max(0, (flag.geoStreak || 0) - 1);
+        }
+
+        if (flag.geoLapses > LEECH_THRESHOLD) {
+            flag.geoIsLeech = true;
+            flag.geoNextReview = now + 10 * 365 * 24 * 60 * 60 * 1000;
+            message.text = "This one's tricky on the globe — we'll set it aside for now. The answer was:";
+        } else {
+            flag.geoNextReview = now;
+        }
     }
 
     return { message, color, updatedFlags };

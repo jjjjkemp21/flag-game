@@ -83,13 +83,13 @@ function Achievements({ setView, flagsData }) {
             unlocked: ctx.geoMastered >= r.min,
             requirement: r.min === 0
                 ? 'Default geography title.'
-                : `Place ${r.min} countries on the globe.`,
+                : `Master ${r.min} countries on the globe.`,
         })),
         {
             title: 'Atlas Cartographer',
             tier: 'legend',
             unlocked: ctx.total > 0 && ctx.geoMastered >= ctx.total,
-            requirement: `Place every country on the globe${ctx.total ? ` (${ctx.total})` : ''}.`,
+            requirement: `Master every country on the globe${ctx.total ? ` (${ctx.total})` : ''}.`,
         },
     ];
 
@@ -123,17 +123,13 @@ function Achievements({ setView, flagsData }) {
 
             <h2 className="text-center">Achievements</h2>
 
+            {/* Flag-recognition mastery: rank pill + progress + next rung. */}
             <div className="rank-banner">
                 <span className={`rank-pill rank-pill--${rank.tier}`}>
                     <Icon name="military_tech" /> {rank.title}
                 </span>
-                {' '}
-                <span className={`rank-pill rank-pill--${geoRank.tier}`}>
-                    <Icon name="public" /> {geoRank.title}
-                </span>
                 <p className="rank-summary">
                     <strong>{ctx.mastered}</strong> / {ctx.total} flags mastered ·{' '}
-                    <strong>{ctx.geoMastered}</strong> / {ctx.total} placed on the globe ·{' '}
                     <strong>{unlocked.length}</strong> / {ACHIEVEMENTS.length} achievements
                 </p>
                 {nr && (
@@ -143,10 +139,22 @@ function Achievements({ setView, flagsData }) {
                             : `Next: ${nr.title}.`}
                     </p>
                 )}
+            </div>
+
+            {/* Globe-mode mastery: parallel section so the geo ladder reads
+                as its own achievement track instead of a footnote on the
+                flag-recognition banner. */}
+            <div className="rank-banner">
+                <span className={`rank-pill rank-pill--${geoRank.tier}`}>
+                    <Icon name="public" /> {geoRank.title}
+                </span>
+                <p className="rank-summary">
+                    <strong>{ctx.geoMastered}</strong> / {ctx.total} countries mastered on the globe
+                </p>
                 {geoNr && (
                     <p className="rank-next auth-hint">
                         {geoNr.remaining > 0
-                            ? `Place ${geoNr.remaining} more on the globe to reach ${geoNr.title}.`
+                            ? `Master ${geoNr.remaining} more on the globe to reach ${geoNr.title}.`
                             : `Next geography rank: ${geoNr.title}.`}
                     </p>
                 )}

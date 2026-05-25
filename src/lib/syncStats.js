@@ -9,6 +9,7 @@ const STAT_FIELDS = [
     // vice versa. Rides on the same per-flag record (no DB schema change needed:
     // server stores the whole array as stats_json).
     'geoCorrect', 'geoIncorrect', 'geoStreak', 'geoLapses', 'geoLastAnswered',
+    'geoNextReview', 'geoIsLeech',
 ];
 
 // Pull the minimal per-flag progress records out of the full flagsData array.
@@ -29,6 +30,8 @@ export function extractFlagStats(flagsData) {
             geoStreak: f.geoStreak || 0,
             geoLapses: f.geoLapses || 0,
             geoLastAnswered: f.geoLastAnswered ?? null,
+            geoNextReview: f.geoNextReview ?? null,
+            geoIsLeech: !!f.geoIsLeech,
         }));
 }
 
@@ -45,6 +48,8 @@ const ZERO = {
     geoStreak: 0,
     geoLapses: 0,
     geoLastAnswered: null,
+    geoNextReview: null,
+    geoIsLeech: false,
 };
 
 // Return the flags with all progress fields reset (used for guests / logout).

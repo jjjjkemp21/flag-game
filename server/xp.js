@@ -22,6 +22,15 @@ function geoMasteredCount(flagStats) {
     return flags.filter((f) => (Number(f.geoStreak) || 0) > MASTERY_STREAK).length;
 }
 
+// Unique countries the player has ever placed correctly on the globe, mastered
+// or not. This is the metric the Globe leaderboard ranks on — it grows the
+// moment a player gets a country right, instead of waiting for a 6-in-a-row
+// mastery streak, which is what made the leaderboard read "0" for everyone.
+function geoPlacedCount(flagStats) {
+    const flags = Array.isArray(flagStats) ? flagStats : [];
+    return flags.filter((f) => (Number(f.geoCorrect) || 0) > 0).length;
+}
+
 function bonusTotal(bonusScores) {
     const b = bonusScores || {};
     return BONUS_MODES.reduce((sum, k) => sum + (Number(b[k]) || 0), 0);
@@ -44,4 +53,12 @@ function totalXp(earnedXp, bonusScores) {
     return Math.max(0, Math.round(Number(earnedXp) || 0)) + bonusTotal(bonusScores);
 }
 
-module.exports = { masteredCount, geoMasteredCount, bonusTotal, legacyBaseXp, totalXp, MASTERY_STREAK };
+module.exports = {
+    masteredCount,
+    geoMasteredCount,
+    geoPlacedCount,
+    bonusTotal,
+    legacyBaseXp,
+    totalXp,
+    MASTERY_STREAK,
+};

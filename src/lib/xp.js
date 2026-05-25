@@ -9,6 +9,15 @@ export const MASTERY_STREAK = 5;
 
 const BONUS_MODES = ['frenzy', 'pixelated', 'longestRoute', 'language'];
 
+// Unique countries the player has ever placed correctly on the globe (Globe
+// mode). Mirrors geoPlacedCount in server/xp.js. This is what the Globe
+// leaderboard ranks on so a player's number grows as soon as they get a
+// country right, not only when they reach the mastery streak.
+export function geoPlacedCount(flagStats) {
+    const flags = Array.isArray(flagStats) ? flagStats : [];
+    return flags.filter((f) => (Number(f.geoCorrect) || 0) > 0).length;
+}
+
 export function bonusTotal(bonusScores) {
     const b = bonusScores || {};
     return BONUS_MODES.reduce((sum, k) => sum + (Number(b[k]) || 0), 0);

@@ -66,7 +66,10 @@ function App() {
     const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
     const [strictSpelling, setStrictSpelling] = useState(() => localStorage.getItem('strictSpelling') === 'true');
     const [isLoading, setIsLoading] = useState(true);
-    const [questionHistory, setQuestionHistory] = useState([]);
+    // Question history rides on a ref so back-to-back picks see the freshest
+    // value — relying on useState alone races against React's batched commit
+    // and can let the same flag pop twice in a row.
+    const questionHistoryRef = useRef([]);
     const prefersReduced = useReducedMotion();
     const audio = useAudio();
     const { isAuthed, status, patchUser } = useAuth();
@@ -83,8 +86,10 @@ function App() {
     const answerTotalsRef = useRef({ correct: 0, incorrect: 0 });
 
     const updateQuestionHistory = useCallback((flagCode) => {
-        setQuestionHistory(prev => [...prev.slice(-4), flagCode]);
+        questionHistoryRef.current = [...questionHistoryRef.current.slice(-4), flagCode];
     }, []);
+
+    const getQuestionHistory = useCallback(() => questionHistoryRef.current, []);
 
     useEffect(() => {
         document.documentElement.setAttribute('data-theme', theme);
@@ -124,6 +129,8 @@ function App() {
                 geoStreak: 0,
                 geoLapses: 0,
                 geoLastAnswered: null,
+                geoNextReview: null,
+                geoIsLeech: false,
             }));
             setFlagsData(initializedData);
         } catch (error) {
@@ -323,7 +330,7 @@ function App() {
             setQuizCategory: setQuizCategory,
             quizCategory: quizCategory,
             quizMode: quizMode,
-            questionHistory: questionHistory,
+            getQuestionHistory: getQuestionHistory,
             updateQuestionHistory: updateQuestionHistory,
         };
 

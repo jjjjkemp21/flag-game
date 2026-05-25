@@ -179,7 +179,7 @@ function Leaderboard({ setView, flagsData }) {
                                         <span className={`rank-tag rank-pill--${r.tier}`}>{r.title}</span>
                                         {' · '}{row.petName || 'Atlas'} · {row.petStage || 'Hatchling'} Lv {row.petLevel}
                                         {scope === 'overall' && ` · ${row.masteredCount} mastered`}
-                                        {scope === 'globe' && ` · ${row.geoMasteredCount || 0} placed`}
+                                        {scope === 'globe' && ` · ${row.geoMasteredCount || 0} mastered`}
                                         {row.bestStreak > 0 && (
                                             <span className="leaderboard-streak"><Icon name="local_fire_department" /> {row.bestStreak}</span>
                                         )}

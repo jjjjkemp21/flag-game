@@ -25,7 +25,7 @@ function MultipleChoiceQuiz({
     setView,
     setQuizCategory,
     quizCategory,
-    questionHistory,
+    getQuestionHistory,
     updateQuestionHistory,
 }) {
     const [currentFlag, setCurrentFlag] = useState(null);
@@ -57,18 +57,19 @@ function MultipleChoiceQuiz({
         setXpGain(null);
         setShowConfetti(false);
 
-        const questionFlag = selectNextFlag(quizFlags, questionHistory);
+        const history = getQuestionHistory();
+        const questionFlag = selectNextFlag(quizFlags, history);
         setCurrentFlag(questionFlag);
         setMasteryStreak(questionFlag ? (questionFlag.streak || 0) : 0);
 
         if (questionFlag) {
             updateQuestionHistory(questionFlag.code);
-            const distractors = get_distractor_options(questionFlag, allFlagsData, 3, quizCategory, questionHistory);
+            const distractors = get_distractor_options(questionFlag, allFlagsData, 3, quizCategory, history);
             const shuffledOptions = [...distractors, questionFlag.name].sort(() => Math.random() - 0.5);
             setOptions(shuffledOptions);
         }
         setIsLoading(false);
-    }, [quizFlags, allFlagsData, selectNextFlag, quizCategory, questionHistory, updateQuestionHistory]);
+    }, [quizFlags, allFlagsData, selectNextFlag, quizCategory, getQuestionHistory, updateQuestionHistory]);
 
     useEffect(() => {
         nextQuestion();

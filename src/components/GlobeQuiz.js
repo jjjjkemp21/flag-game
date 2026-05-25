@@ -40,7 +40,7 @@ function GlobeQuiz({
     setFlagsData,
     setView,
     setQuizCategory,
-    questionHistory,
+    getQuestionHistory,
     updateQuestionHistory,
 }) {
     const audio = useAudio();
@@ -92,7 +92,7 @@ function GlobeQuiz({
             setCurrentFlag(null);
             return;
         }
-        const next = select_next_flag(pool, questionHistory);
+        const next = select_next_flag(pool, getQuestionHistory(), 'geo');
         if (!next) {
             setCurrentFlag(null);
             return;
@@ -113,7 +113,7 @@ function GlobeQuiz({
             // Zoom back out so the player has the full globe to search.
             globeRef.current.resetCamera();
         }
-    }, [questionHistory, updateQuestionHistory]);
+    }, [getQuestionHistory, updateQuestionHistory]);
 
     const resolveAnswer = useCallback((guessIso2) => {
         const flag = currentFlagRef.current;
@@ -281,7 +281,10 @@ function GlobeQuiz({
         const center = key ? CONTINENT_CENTERS[key] : null;
         if (!center) return;
         setHintUsed(true);
-        setHintLabel(`Hint: ${center.label}`);
+        // Reveal both the continent and the country's name — placing the
+        // country on the right continent is still on the player, and Hint
+        // already costs half XP so the give-away is paid for.
+        setHintLabel(`Hint: ${flag.name} · ${center.label}`);
         audio.play('click');
         // Pan to the continent at moderate zoom — closer than the default
         // overview but still wide enough that several countries are visible,
