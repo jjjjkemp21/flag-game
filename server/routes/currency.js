@@ -1,7 +1,7 @@
 const express = require('express');
 const db = require('../db');
 const { requireAuth } = require('../middleware');
-const { priceOf, isDefault } = require('../cosmeticsCatalog');
+const { priceOf, isDefault, isBpOnly } = require('../cosmeticsCatalog');
 
 const router = express.Router();
 router.use(requireAuth);
@@ -89,6 +89,11 @@ router.post('/buy', (req, res) => {
     const price = priceOf(category, id);
     if (price === null) {
         return res.status(404).json({ error: 'No such cosmetic.' });
+    }
+    // Atlas Pass cosmetics can never be purchased — they're only unlocked by
+    // claiming a battlepass tier. Refuse even if the client somehow sends one.
+    if (isBpOnly(category, id)) {
+        return res.status(403).json({ error: 'This item is only available through the Atlas Pass.' });
     }
     if (price === 0 || isDefault(category, id)) {
         // Defaults are always free + already owned — nothing to do but report success.

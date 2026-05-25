@@ -172,6 +172,94 @@ export const COLORS = {
         stops: ['#E0CFFF', '#9A3FFF', '#6A19D8'],
         glow: { color: '#B05BFF' },
     },
+
+    // ---- Reptile Kingdom (Atlas Pass exclusives) -----------------------------
+    // bpOnly:true items are gated to the battlepass: the shop hides them and
+    // the currency buy endpoint refuses them. They can only be unlocked by
+    // claiming a pass tier — once unlocked, they appear in the player's "Owned"
+    // tab and equip like any other cosmetic. Prices are kept symbolic so a
+    // future migration could move them to the shop without re-pricing work.
+    bp_jade: {
+        name: 'Jade Scales', xp: 999999, bpOnly: true, stroke: '#1F6A3F',
+        stops: ['#A8E0B5', '#3FAA60', '#1F5A3F'],
+        pattern: { kind: 'scales', base: '#3FAA60', accent: '#1F5A3F', accent2: '#7FE0A8' },
+    },
+    bp_python: {
+        name: 'Python Skin', xp: 999999, bpOnly: true, stroke: '#2A4015',
+        stops: ['#D8E5B0', '#5B7F2F', '#2A4015'],
+        pattern: { kind: 'leopard', base: '#5B7F2F', accent: '#2A4015', accent2: '#A8C047' },
+    },
+    bp_gecko: {
+        name: 'Gecko Spots', xp: 999999, bpOnly: true, stroke: '#5A3A18',
+        stops: ['#FFE5A8', '#FFB23F', '#A0681A'],
+        pattern: { kind: 'cheetah', base: '#FFB23F', accent: '#3A2410' },
+    },
+    bp_iguana: {
+        name: 'Iguana Hide', xp: 999999, bpOnly: true, stroke: '#1F5A3F',
+        stops: ['#B0E0C5', '#3F8A5B', '#1F5A3F'],
+        pattern: { kind: 'scales', base: '#3F8A5B', accent: '#1F5A3F', accent2: '#7FE0A0' },
+    },
+    bp_komodo: {
+        name: 'Komodo Dragon', xp: 999999, bpOnly: true, stroke: '#3A2A18',
+        stops: ['#C2B098', '#7A6850', '#3A2A18'],
+        pattern: { kind: 'giraffe', base: '#7A6850', accent: '#3A2A18' },
+    },
+    bp_anaconda: {
+        name: 'Anaconda', xp: 999999, bpOnly: true, stroke: '#0F2A1A',
+        stops: ['#A8C29A', '#3F5F2A', '#0F2A1A'],
+        pattern: { kind: 'scales', base: '#3F5F2A', accent: '#0F2A1A', accent2: '#7FAE5B' },
+    },
+    bp_basilisk: {
+        name: 'King Basilisk', xp: 999999, bpOnly: true, stroke: '#1F5A2A',
+        stops: ['#D5F0A8', '#5BAE3F', '#1F5A2A'],
+        anim: { dur: '6s', frames: [
+            ['#D5F0A8', '#5BAE3F', '#1F5A2A'],
+            ['#A8E0E5', '#3F8AAE', '#1F4A6A'],
+            ['#FFE08A', '#7FAE2A', '#3F6A1A'],
+        ] },
+        glow: { color: '#7FE05B' },
+    },
+    bp_chameleon: {
+        name: 'Chameleon', xp: 999999, bpOnly: true, stroke: '#5B3FA0',
+        stops: ['#7FE05B', '#FFC247', '#FF5C6C'],
+        anim: { dur: '4s', frames: [
+            ['#7FE05B', '#FFC247', '#FF5C6C'],
+            ['#FFC247', '#FF5C6C', '#5B5BF6'],
+            ['#FF5C6C', '#5B5BF6', '#19C37D'],
+            ['#5B5BF6', '#19C37D', '#7FE05B'],
+        ] },
+    },
+    bp_dragon_fire: {
+        name: 'Dragon Fire', xp: 999999, bpOnly: true, stroke: '#5A1A0F',
+        stops: ['#FFE08A', '#FF6A2E', '#8A1F0F'],
+        overlay: 'embers',
+        anim: { dur: '5s', frames: [
+            ['#FFE08A', '#FF6A2E', '#8A1F0F'],
+            ['#FFC247', '#E5412E', '#5A0F0F'],
+            ['#FFEFA8', '#FF8A3F', '#A0301A'],
+        ] },
+        glow: { color: '#FF8A3F' },
+    },
+    bp_frost_serpent: {
+        name: 'Frost Serpent', xp: 999999, bpOnly: true, stroke: '#1F4A6A',
+        stops: ['#D0EAFF', '#5BAEE0', '#1F4A6A'],
+        anim: { dur: '6s', frames: [
+            ['#D0EAFF', '#5BAEE0', '#1F4A6A'],
+            ['#E0EFFF', '#7FC2F5', '#2A5F8A'],
+            ['#C0E0F5', '#3F8AC0', '#0F3A5A'],
+        ] },
+        glow: { color: '#5BAEE0' },
+    },
+    bp_cosmic_drake: {
+        name: 'Cosmic Drake', xp: 999999, bpOnly: true, stroke: '#241850', overlay: 'stars',
+        stops: ['#C9A8F0', '#7A4FD0', '#241850'],
+        anim: { dur: '7s', frames: [
+            ['#C9A8F0', '#7A4FD0', '#241850'],
+            ['#7FE05B', '#3F8A60', '#1F4A2A'],
+            ['#F0A8E0', '#A04FB0', '#1A1240'],
+        ] },
+        glow: { color: '#7A4FD0' },
+    },
 };
 
 // ---- Hat colorways ---------------------------------------------------------
@@ -269,6 +357,17 @@ export const HATS = {
     traffic_cone:  { name: 'Traffic Cone',      xp: 2500, shape: 'cone',      c: hc('#FF8A4B', '#E5612E', '#FFFFFF') },
     shark_fin:     { name: 'Shark Fin',         xp: 2750, shape: 'sharkFin',  c: hc('#7B8AA0', '#4F5A70', '#F2F4F8') },
     disco_ball:    { name: 'Disco Ball',        xp: 3200, shape: 'disco',     c: hc('#D7DEE8', '#8A95A6', '#FFFFFF') },
+
+    // ---- Reptile Kingdom hats (Atlas Pass exclusives) ----------------------
+    bp_horns_jade:     { name: 'Jade Horns',     xp: 999999, bpOnly: true, shape: 'dragonHorns', c: hc('#3FAA60', '#1F5A3F', '#FFD86B') },
+    bp_horns_obsidian: { name: 'Obsidian Horns', xp: 999999, bpOnly: true, shape: 'dragonHorns', c: hc('#1F1A2A', '#0F0A18', '#FF6A2E') },
+    bp_horns_fire:     { name: 'Fire Horns',     xp: 999999, bpOnly: true, shape: 'dragonHorns', c: hc('#FF6A2E', '#8A1F0F', '#FFD86B') },
+    bp_horns_gold:     { name: 'Golden Horns',   xp: 999999, bpOnly: true, shape: 'dragonHorns', c: hc('#FFD86B', '#A07A1A', '#FFEFC2') },
+    bp_frill_emerald:  { name: 'Emerald Frill',  xp: 999999, bpOnly: true, shape: 'frill',       c: hc('#3FAA60', '#1F5A3F', '#FFD86B') },
+    bp_frill_crimson:  { name: 'Crimson Frill',  xp: 999999, bpOnly: true, shape: 'frill',       c: hc('#E5414C', '#8A1F1F', '#FFC247') },
+    bp_frill_violet:   { name: 'Violet Frill',   xp: 999999, bpOnly: true, shape: 'frill',       c: hc('#7A4FD0', '#3F1F8A', '#FFC247') },
+    bp_scale_helm:     { name: 'Scaled Hood',    xp: 999999, bpOnly: true, shape: 'scaleHelm',   c: hc('#3FAA60', '#1F5A3F', '#7FE0A8', '#FFD86B') },
+    bp_scale_helm_gold:{ name: 'Gilded Hood',    xp: 999999, bpOnly: true, shape: 'scaleHelm',   c: hc('#FFD86B', '#A07A1A', '#FFEFC2', '#FFFFFF') },
 };
 
 // ---- Glasses colorways -----------------------------------------------------
@@ -345,6 +444,13 @@ export const GLASSES = {
     swim_goggles:    { name: 'Swim Goggles',       xp: 1300, shape: 'swim',      c: gc('#19A36B', 'rgba(180,255,210,0.55)') },
     party_shades:    { name: 'Party Shades',       xp: 1900, shape: 'party',     c: gc('#1F1A3B', '#FF5C6C', '#FFC247') },
     monocle_diamond: { name: 'Diamond Monocle',    xp: 4200, shape: 'monocle',   c: gc('#EAF2FF', '#B7C6DA') },
+
+    // ---- Reptile Kingdom glasses (Atlas Pass exclusives) -------------------
+    bp_snake_eyes:    { name: 'Snake Eyes',      xp: 999999, bpOnly: true, shape: 'snakeEyes', c: gc('#1F5A3F', '#FFD86B', '#7FE05B') },
+    bp_serpent_eyes:  { name: 'Serpent Gaze',    xp: 999999, bpOnly: true, shape: 'snakeEyes', c: gc('#3F1F8A', '#A270FF', '#FFC247') },
+    bp_lizard_eyes:   { name: 'Lizard Eyes',     xp: 999999, bpOnly: true, shape: 'snakeEyes', c: gc('#5A3A18', '#FF6A2E', '#FFD86B') },
+    bp_dragon_gaze:   { name: 'Dragon Gaze',     xp: 999999, bpOnly: true, shape: 'dragonGaze', c: gc('#8A1F0F', '#FF6A2E', '#FFD86B') },
+    bp_drake_visor:   { name: 'Drake Visor',     xp: 999999, bpOnly: true, shape: 'dragonGaze', c: gc('#1F5A3F', '#7FE05B', '#FFD86B') },
 };
 
 // ---- Effects ---------------------------------------------------------------
@@ -365,6 +471,11 @@ export const EFFECTS = {
     confetti: { name: 'Party Time',     xp: 6800, kind: 'confetti' },
     notes:    { name: 'Music Notes',    xp: 2700, kind: 'notes' },
     disco:    { name: 'Disco Lights',   xp: 5800, kind: 'disco' },
+
+    // ---- Reptile Kingdom effects (Atlas Pass exclusives) -------------------
+    bp_scales: { name: 'Scale Shower',   xp: 999999, bpOnly: true, kind: 'scaleFall' },
+    bp_breath: { name: "Dragon's Breath", xp: 999999, bpOnly: true, kind: 'dragonBreath' },
+    bp_mist:   { name: 'Swamp Mist',     xp: 999999, bpOnly: true, kind: 'swampMist' },
 };
 
 export const CATEGORIES = [

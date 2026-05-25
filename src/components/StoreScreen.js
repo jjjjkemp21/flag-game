@@ -288,7 +288,22 @@ function StoreScreen({ setView, flagsData }) {
                 .store-section-head divider so each group reads as its own card. */}
             {CATEGORIES.map((cat) => {
                 const entries = Object.entries(cat.items)
-                    .filter(([id, item]) => isItemOwned(cat.key, id) === (shopTab === 'owned'));
+                    // Atlas Pass exclusives never appear in the "Shop" tab — they
+                    // can only be unlocked by claiming a pass tier. Once owned,
+                    // they DO show up in "Owned" so the player can equip them.
+                    .filter(([id, item]) => !(item.bpOnly && shopTab === 'shop'))
+                    .filter(([id, item]) => isItemOwned(cat.key, id) === (shopTab === 'owned'))
+                    // Sort by price ascending — cheapest first in both tabs, so
+                    // the player can see "what's next to grab" without scrolling
+                    // through expensive items they can't afford yet. Within the
+                    // same price (e.g. multiple 0-cost defaults), fall back to
+                    // alphabetical for stable ordering.
+                    .sort((a, b) => {
+                        const pa = priceOf(a[1]);
+                        const pb = priceOf(b[1]);
+                        if (pa !== pb) return pa - pb;
+                        return (a[1].name || a[0]).localeCompare(b[1].name || b[0]);
+                    });
                 if (entries.length === 0) return null;
                 return (
                 <div className="store-section store-section--cards" key={cat.key}>

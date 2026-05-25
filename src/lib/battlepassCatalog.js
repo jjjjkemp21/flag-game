@@ -2,8 +2,8 @@
 // the server validates claims against its copy, the client uses this one to
 // render the pass UI and to know which metric a challenge tracks.
 
-export const SEASON_ID = 'atlas-pass-1';
-export const SEASON_NAME = 'Atlas Pass — Season 1';
+export const SEASON_ID = 'atlas-pass-reptile-1';
+export const SEASON_NAME = 'Reptile Kingdom · Season 1';
 export const PREMIUM_PRICE = 10000;
 
 export const TIER_STAR_COST = [
@@ -52,32 +52,34 @@ export const CHALLENGES = [
 
 export const CHALLENGES_BY_ID = Object.fromEntries(CHALLENGES.map((c) => [c.id, c]));
 
+// Season 1 — Reptile Kingdom. Premium gets the showpiece dragons/animated
+// colours; the free track is mostly bucks plus a few starter reptile pieces.
 export const TIERS = [
-    { tier: 1,  free: { type: 'bucks', amount: 250 },   prem: { type: 'cosmetic', cat: 'hat',    id: 'party_red' } },
-    { tier: 2,  free: { type: 'bucks', amount: 150 },   prem: { type: 'cosmetic', cat: 'hat',    id: 'bow_pink' } },
-    { tier: 3,  free: { type: 'bucks', amount: 300 },   prem: { type: 'cosmetic', cat: 'color',  id: 'emerald' } },
-    { tier: 4,  free: { type: 'bucks', amount: 200 },   prem: { type: 'cosmetic', cat: 'glasses', id: 'round_black' } },
-    { tier: 5,  free: { type: 'bucks', amount: 750 },   prem: { type: 'cosmetic', cat: 'effect', id: 'spin' } },
-    { tier: 6,  free: { type: 'bucks', amount: 300 },   prem: { type: 'cosmetic', cat: 'hat',    id: 'visor' } },
-    { tier: 7,  free: { type: 'bucks', amount: 300 },   prem: { type: 'cosmetic', cat: 'color',  id: 'sunset' } },
-    { tier: 8,  free: { type: 'bucks', amount: 350 },   prem: { type: 'cosmetic', cat: 'glasses', id: 'shades_black' } },
-    { tier: 9,  free: { type: 'bucks', amount: 350 },   prem: { type: 'cosmetic', cat: 'hat',    id: 'cap_blue' } },
-    { tier: 10, free: { type: 'bucks', amount: 1000 },  prem: { type: 'cosmetic', cat: 'color',  id: 'aurora' } },
-    { tier: 11, free: { type: 'bucks', amount: 400 },   prem: { type: 'cosmetic', cat: 'effect', id: 'orbit' } },
-    { tier: 12, free: { type: 'bucks', amount: 450 },   prem: { type: 'cosmetic', cat: 'glasses', id: 'aviator_dark' } },
-    { tier: 13, free: { type: 'bucks', amount: 500 },   prem: { type: 'cosmetic', cat: 'hat',    id: 'pirate' } },
-    { tier: 14, free: { type: 'bucks', amount: 500 },   prem: { type: 'cosmetic', cat: 'color',  id: 'rose' } },
-    { tier: 15, free: { type: 'bucks', amount: 1500 },  prem: { type: 'cosmetic', cat: 'effect', id: 'sparkle' } },
-    { tier: 16, free: { type: 'bucks', amount: 600 },   prem: { type: 'cosmetic', cat: 'hat',    id: 'cowboy_brown' } },
-    { tier: 17, free: { type: 'bucks', amount: 650 },   prem: { type: 'cosmetic', cat: 'color',  id: 'tiger' } },
-    { tier: 18, free: { type: 'bucks', amount: 700 },   prem: { type: 'cosmetic', cat: 'glasses', id: 'heart_pink' } },
-    { tier: 19, free: { type: 'bucks', amount: 750 },   prem: { type: 'cosmetic', cat: 'hat',    id: 'crown' } },
-    { tier: 20, free: { type: 'bucks', amount: 2000 },  prem: { type: 'cosmetic', cat: 'effect', id: 'bubbles' } },
-    { tier: 21, free: { type: 'bucks', amount: 800 },   prem: { type: 'cosmetic', cat: 'color',  id: 'nebula' } },
-    { tier: 22, free: { type: 'bucks', amount: 900 },   prem: { type: 'cosmetic', cat: 'glasses', id: 'pixel_cyan' } },
-    { tier: 23, free: { type: 'bucks', amount: 1000 },  prem: { type: 'cosmetic', cat: 'hat',    id: 'laurel' } },
-    { tier: 24, free: { type: 'bucks', amount: 1200 },  prem: { type: 'cosmetic', cat: 'color',  id: 'lava' } },
-    { tier: 25, free: { type: 'bucks', amount: 3000 },  prem: { type: 'cosmetic', cat: 'color',  id: 'rainbow' } },
+    { tier: 1,  free: { type: 'bucks', amount: 250 },    prem: { type: 'cosmetic', cat: 'glasses', id: 'bp_snake_eyes' } },
+    { tier: 2,  free: { type: 'bucks', amount: 200 },    prem: { type: 'cosmetic', cat: 'hat',     id: 'bp_horns_jade' } },
+    { tier: 3,  free: { type: 'cosmetic', cat: 'glasses', id: 'bp_lizard_eyes' }, prem: { type: 'cosmetic', cat: 'color',   id: 'bp_iguana' } },
+    { tier: 4,  free: { type: 'bucks', amount: 300 },    prem: { type: 'cosmetic', cat: 'glasses', id: 'bp_serpent_eyes' } },
+    { tier: 5,  free: { type: 'bucks', amount: 750 },    prem: { type: 'cosmetic', cat: 'hat',     id: 'bp_frill_emerald' } },
+    { tier: 6,  free: { type: 'bucks', amount: 300 },    prem: { type: 'cosmetic', cat: 'effect',  id: 'bp_mist' } },
+    { tier: 7,  free: { type: 'cosmetic', cat: 'hat',    id: 'bp_horns_obsidian' }, prem: { type: 'cosmetic', cat: 'color',   id: 'bp_gecko' } },
+    { tier: 8,  free: { type: 'bucks', amount: 400 },    prem: { type: 'cosmetic', cat: 'hat',     id: 'bp_scale_helm' } },
+    { tier: 9,  free: { type: 'bucks', amount: 400 },    prem: { type: 'cosmetic', cat: 'color',   id: 'bp_jade' } },
+    { tier: 10, free: { type: 'bucks', amount: 1000 },   prem: { type: 'cosmetic', cat: 'color',   id: 'bp_python' } },
+    { tier: 11, free: { type: 'bucks', amount: 500 },    prem: { type: 'cosmetic', cat: 'glasses', id: 'bp_dragon_gaze' } },
+    { tier: 12, free: { type: 'cosmetic', cat: 'effect', id: 'bp_scales' }, prem: { type: 'cosmetic', cat: 'color',   id: 'bp_komodo' } },
+    { tier: 13, free: { type: 'bucks', amount: 600 },    prem: { type: 'cosmetic', cat: 'hat',     id: 'bp_frill_crimson' } },
+    { tier: 14, free: { type: 'bucks', amount: 600 },    prem: { type: 'cosmetic', cat: 'color',   id: 'bp_anaconda' } },
+    { tier: 15, free: { type: 'bucks', amount: 1500 },   prem: { type: 'cosmetic', cat: 'hat',     id: 'bp_horns_fire' } },
+    { tier: 16, free: { type: 'bucks', amount: 700 },    prem: { type: 'cosmetic', cat: 'glasses', id: 'bp_drake_visor' } },
+    { tier: 17, free: { type: 'bucks', amount: 700 },    prem: { type: 'cosmetic', cat: 'hat',     id: 'bp_frill_violet' } },
+    { tier: 18, free: { type: 'bucks', amount: 800 },    prem: { type: 'cosmetic', cat: 'color',   id: 'bp_frost_serpent' } },
+    { tier: 19, free: { type: 'bucks', amount: 900 },    prem: { type: 'cosmetic', cat: 'effect',  id: 'bp_breath' } },
+    { tier: 20, free: { type: 'bucks', amount: 2000 },   prem: { type: 'cosmetic', cat: 'color',   id: 'bp_basilisk' } },
+    { tier: 21, free: { type: 'bucks', amount: 1000 },   prem: { type: 'cosmetic', cat: 'hat',     id: 'bp_horns_gold' } },
+    { tier: 22, free: { type: 'bucks', amount: 1100 },   prem: { type: 'cosmetic', cat: 'hat',     id: 'bp_scale_helm_gold' } },
+    { tier: 23, free: { type: 'bucks', amount: 1300 },   prem: { type: 'cosmetic', cat: 'color',   id: 'bp_cosmic_drake' } },
+    { tier: 24, free: { type: 'bucks', amount: 1600 },   prem: { type: 'cosmetic', cat: 'color',   id: 'bp_chameleon' } },
+    { tier: 25, free: { type: 'bucks', amount: 3000 },   prem: { type: 'cosmetic', cat: 'color',   id: 'bp_dragon_fire' } },
 ];
 
 export const TIERS_BY_NUM = Object.fromEntries(TIERS.map((t) => [t.tier, t]));

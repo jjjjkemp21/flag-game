@@ -9,6 +9,10 @@ const COLORS = {
     aurora: 3000, ocean: 3500, nebula: 5000, plasma: 6500, lava: 8000, candy: 4600, toxic: 5600, rainbow: 10000,
     tiger: 2700, zebra: 2900, cow: 3100, cheetah: 3300, dalmatian: 3500, leopard: 3900, giraffe: 4050,
     neon_green: 4200, neon_pink: 4500, neon_blue: 4800, neon_violet: 5100,
+    // Atlas Pass exclusives — gated by BP_ONLY below, not purchasable directly.
+    bp_jade: 999999, bp_python: 999999, bp_gecko: 999999, bp_iguana: 999999,
+    bp_komodo: 999999, bp_anaconda: 999999, bp_basilisk: 999999, bp_chameleon: 999999,
+    bp_dragon_fire: 999999, bp_frost_serpent: 999999, bp_cosmic_drake: 999999,
 };
 
 const HATS = {
@@ -27,6 +31,10 @@ const HATS = {
     crown_silver: 1850, tophat_blue: 2100, wizard_green: 2550,
     pirate: 1150, mohawk_pink: 1350, mohawk_neon: 1550, rubber_duck: 1700, pineapple: 1900, mushroom: 2100,
     cupcake: 2300, traffic_cone: 2500, shark_fin: 2750, disco_ball: 3200,
+    // Atlas Pass exclusives.
+    bp_horns_jade: 999999, bp_horns_obsidian: 999999, bp_horns_fire: 999999, bp_horns_gold: 999999,
+    bp_frill_emerald: 999999, bp_frill_crimson: 999999, bp_frill_violet: 999999,
+    bp_scale_helm: 999999, bp_scale_helm_gold: 999999,
 };
 
 const GLASSES = {
@@ -45,11 +53,16 @@ const GLASSES = {
     visorband_purple: 2000, monocle_silver: 2100,
     rave: 3200, nyan: 3500, kaleidoscope: 3800, vr_headset: 2900, swim_goggles: 1300,
     party_shades: 1900, monocle_diamond: 4200,
+    // Atlas Pass exclusives.
+    bp_snake_eyes: 999999, bp_serpent_eyes: 999999, bp_lizard_eyes: 999999,
+    bp_dragon_gaze: 999999, bp_drake_visor: 999999,
 };
 
 const EFFECTS = {
     none: 0, spin: 500, orbit: 900, sparkle: 1200, bubbles: 1800, snow: 2400, hearts: 3000,
     rings: 3600, flames: 4400, electric: 5400, confetti: 6800, notes: 2700, disco: 5800,
+    // Atlas Pass exclusives.
+    bp_scales: 999999, bp_breath: 999999, bp_mist: 999999,
 };
 
 const CATALOG = { color: COLORS, hat: HATS, glasses: GLASSES, effect: EFFECTS };
@@ -57,6 +70,13 @@ const CATALOG = { color: COLORS, hat: HATS, glasses: GLASSES, effect: EFFECTS };
 // Items that are always considered owned (so a fresh account has a working
 // equip in every slot). Mirrors DEFAULT_COSMETICS on the client.
 const DEFAULTS = { color: 'teal', hat: 'none', glasses: 'none', effect: 'none' };
+
+// Atlas Pass exclusives. Equipping these is fine (Mascot renders them like
+// anything else), but they can't be bought with bucks — they're awarded only
+// when a battlepass tier is claimed. Anything with the `bp_` id prefix counts.
+function isBpOnly(category, id) {
+    return typeof id === 'string' && id.startsWith('bp_');
+}
 
 function priceOf(category, id) {
     const cat = CATALOG[category];
@@ -69,4 +89,4 @@ function isDefault(category, id) {
     return DEFAULTS[category] === id;
 }
 
-module.exports = { CATALOG, DEFAULTS, priceOf, isDefault };
+module.exports = { CATALOG, DEFAULTS, priceOf, isDefault, isBpOnly };

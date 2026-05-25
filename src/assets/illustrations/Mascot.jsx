@@ -105,6 +105,36 @@ function renderPatternDef(id, p) {
             </pattern>
         );
     }
+    if (kind === 'scales') {
+        // Overlapping reptile scales: rows of half-circle "shingles" offset
+        // every other row so the joins read as scaly hide rather than a grid.
+        // `base` is the under-skin colour, `accent` is the scale fill, and an
+        // optional `accent2` is used for the rim highlight to catch the eye.
+        const rim = accent2 || base;
+        return (
+            <pattern id={id} patternUnits="userSpaceOnUse" width="64" height="64">
+                <rect width="64" height="64" fill={base} />
+                <g fill={accent} stroke={rim} strokeWidth="0.6">
+                    {[0, 16, 32, 48].map((y, row) => {
+                        const off = row % 2 === 0 ? 0 : 8;
+                        return [0, 16, 32, 48].map((x, col) => (
+                            <path key={`${row}-${col}`}
+                                d={`M${x + off} ${y + 10} a 8 7 0 0 1 16 0 Z`} />
+                        ));
+                    })}
+                </g>
+                {/* Subtle highlight dots in scale centres for sheen */}
+                <g fill={rim} opacity="0.45">
+                    {[0, 16, 32, 48].map((y, row) => {
+                        const off = row % 2 === 0 ? 0 : 8;
+                        return [0, 16, 32, 48].map((x, col) => (
+                            <circle key={`h-${row}-${col}`} cx={x + off + 8} cy={y + 6} r="0.8" />
+                        ));
+                    })}
+                </g>
+            </pattern>
+        );
+    }
     if (kind === 'leopard') {
         // Leopard rosettes: a broken ring of small dark crescents around a
         // lighter golden centre patch. Each rosette is rotated independently so

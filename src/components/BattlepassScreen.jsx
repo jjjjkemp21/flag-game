@@ -5,6 +5,7 @@ import { Button, Modal } from './ui';
 import { useToast } from './ui/Toast';
 import Mascot from '../assets/illustrations/Mascot';
 import AtlasBucksIcon from '../assets/illustrations/AtlasBucks';
+import ChallengeIcon from './ChallengeIcon';
 import { useAuth } from '../auth/AuthProvider';
 import { useCurrency } from '../lib/currency';
 import {
@@ -15,75 +16,150 @@ import { PREMIUM_PRICE, SEASON_NAME, TIER_COUNT } from '../lib/battlepassCatalog
 import { COLORS, HATS, GLASSES, EFFECTS } from '../lib/cosmetics';
 import { springs } from '../motion';
 
-// Lookup the catalog entry behind a tier's cosmetic reward so we can show its
-// display name + preview swatch on the row without duplicating the catalog.
+// Look up the display name + category metadata of a reward's cosmetic so the
+// stage card can label it without re-implementing the catalog.
 const CAT_TABLE = { color: COLORS, hat: HATS, glasses: GLASSES, effect: EFFECTS };
 function cosmeticName(cat, id) {
-    const entry = CAT_TABLE[cat] && CAT_TABLE[cat][id];
-    return entry ? entry.name : id;
+    return (CAT_TABLE[cat] && CAT_TABLE[cat][id] && CAT_TABLE[cat][id].name) || id;
+}
+function categoryLabel(cat) {
+    return ({ color: 'Globe Color', hat: 'Hat', glasses: 'Glasses', effect: 'Effect' })[cat] || cat;
 }
 function categoryIcon(cat) {
     return ({ color: 'palette', hat: 'theater_comedy', glasses: 'eyeglasses', effect: 'auto_awesome' })[cat] || 'redeem';
 }
 
-// Reward chip rendered on a tier card. Bucks → coin + amount; cosmetic → mini
-// Mascot preview with the item equipped so the player can see what they're
-// unlocking before they claim it.
-function RewardChip({ reward, dim }) {
+// Tier-level rarity used to pick the stage's accent colour. Bigger numbered
+// tiers get richer colours (silver → gold → dragon). Capstones (5, 10, 15,
+// 20, 25) get extra-rich treatments.
+function rarityOf(tier) {
+    if (tier === 25)      return 'mythic';
+    if (tier >= 21)       return 'legendary';
+    if (tier >= 16)       return 'epic';
+    if (tier >= 11)       return 'rare';
+    if (tier >= 6)        return 'uncommon';
+    return 'common';
+}
+const RARITY_HUE = {
+    common:    { ring: '#7FE0A8', glow: '#19C37D', soft: '#D4F5E5' },
+    uncommon:  { ring: '#A8E5D8', glow: '#2EC4D3', soft: '#D2F3F6' },
+    rare:      { ring: '#A8B7FF', glow: '#5B5BF6', soft: '#E6E5FF' },
+    epic:      { ring: '#D7A8FF', glow: '#7A4FD0', soft: '#ECDDFF' },
+    legendary: { ring: '#FFD86B', glow: '#E5A018', soft: '#FFF1CA' },
+    mythic:    { ring: '#FF8A3F', glow: '#E5414C', soft: '#FFDDE1' },
+};
+
+// Convert a reward into a stage-friendly preview shape. Bucks become a coin
+// "stack"; cosmetics yield a Mascot with the item equipped. Used by both the
+// premium stage (always shown big) and the free track stage on bucks tiers.
+function stagePreview(reward, fallbackCos) {
     if (!reward) return null;
     if (reward.type === 'bucks') {
-        return (
-            <span className={`bp-reward ${dim ? 'bp-reward--dim' : ''}`}>
-                <AtlasBucksIcon size={18} />
-                <span className="bp-reward__amt">{reward.amount.toLocaleString()}</span>
-            </span>
-        );
+        return {
+            kind: 'bucks',
+            amount: reward.amount,
+            name: `${reward.amount.toLocaleString()} Atlas Bucks`,
+            cat: 'currency',
+        };
     }
     if (reward.type === 'cosmetic') {
-        // Color rewards preview on the globe itself; other slots layer on top of
-        // the player's current globe colour so the hat/glasses are visible.
         const cos = reward.cat === 'color'
             ? { color: reward.id, hat: 'none', glasses: 'none', effect: 'none' }
-            : { color: 'teal', hat: 'none', glasses: 'none', effect: 'none', [reward.cat]: reward.id };
-        return (
-            <span className={`bp-reward bp-reward--cos ${dim ? 'bp-reward--dim' : ''}`}>
-                <span className="bp-reward__avatar"><Mascot size={42} mood="idle" cosmetics={cos} still /></span>
-                <span className="bp-reward__meta">
-                    <span className="bp-reward__cat"><Icon name={categoryIcon(reward.cat)} /> {reward.cat}</span>
-                    <span className="bp-reward__name">{cosmeticName(reward.cat, reward.id)}</span>
-                </span>
-            </span>
-        );
+            : { ...fallbackCos, [reward.cat]: reward.id };
+        return {
+            kind: 'cosmetic',
+            cos,
+            name: cosmeticName(reward.cat, reward.id),
+            cat: reward.cat,
+        };
     }
     return null;
 }
 
-// Single tier row: tier badge in the middle, free reward left, premium right.
-// Each side has its own state — locked / unlocked-claimable / claimed.
-function TierRow({ tier, def, currentTier, ownsPass, onClaim, claimingKey }) {
+// The stage rendering — pedestal + spotlight + animated preview. Reused for
+// both the premium reward (always centre) and a smaller free-track inset.
+function Stage({ preview, rarity, big = true }) {
+    if (!preview) return null;
+    const hue = RARITY_HUE[rarity] || RARITY_HUE.common;
+    return (
+        <div
+            className={`bp-stage ${big ? 'bp-stage--big' : 'bp-stage--mini'}`}
+            style={{ '--stage-glow': hue.glow, '--stage-ring': hue.ring, '--stage-soft': hue.soft }}
+        >
+            <div className="bp-stage__beam" aria-hidden="true" />
+            <div className="bp-stage__halo" aria-hidden="true" />
+            <div className="bp-stage__platform">
+                {preview.kind === 'bucks' ? (
+                    <div className="bp-stage__coins" aria-hidden="true">
+                        <AtlasBucksIcon size={big ? 56 : 30} />
+                        <span className="bp-stage__coinNum">{preview.amount.toLocaleString()}</span>
+                    </div>
+                ) : (
+                    <Mascot size={big ? 96 : 46} mood="cheer" cosmetics={preview.cos} />
+                )}
+            </div>
+            <div className="bp-stage__pedestal" aria-hidden="true" />
+            <div className="bp-stage__floor" aria-hidden="true" />
+        </div>
+    );
+}
+
+// Single tier "column". Vertical card with: ribbon → big stage → cosmetic name
+// → free row → premium row. Horizontal-scroll list of these is the centrepiece.
+function TierCard({ tier, def, currentTier, ownsPass, onClaim, claimingKey, fallbackCos }) {
     const prefersReduced = useReducedMotion();
     const unlocked = tier <= currentTier;
     const freeClaimed = isClaimed('free', tier);
     const premClaimed = isClaimed('prem', tier);
     const claimingFree = claimingKey === `free:${tier}`;
     const claimingPrem = claimingKey === `prem:${tier}`;
+    const rarity = rarityOf(tier);
+    const isCapstone = tier === 5 || tier === 10 || tier === 15 || tier === 20 || tier === 25;
+
+    const premPreview = useMemo(() => stagePreview(def?.prem, fallbackCos), [def, fallbackCos]);
+    const freePreview = useMemo(() => stagePreview(def?.free, fallbackCos), [def, fallbackCos]);
 
     return (
         <motion.div
-            className={`bp-row ${unlocked ? 'is-unlocked' : 'is-locked'}`}
-            initial={prefersReduced ? false : { opacity: 0, x: -16 }}
-            animate={prefersReduced ? false : { opacity: 1, x: 0 }}
+            className={`bp-tier-card bp-tier-card--${rarity} ${unlocked ? 'is-unlocked' : 'is-locked'} ${isCapstone ? 'is-capstone' : ''}`}
+            initial={prefersReduced ? false : { opacity: 0, y: 12 }}
+            animate={prefersReduced ? false : { opacity: 1, y: 0 }}
             transition={{ ...springs.gentle, delay: Math.min(0.02 * tier, 0.4) }}
         >
-            <div className={`bp-row__cell bp-row__cell--free ${freeClaimed ? 'is-claimed' : ''}`}>
-                <span className="bp-row__track-label"><Icon name="check_circle" /> Free</span>
-                <RewardChip reward={def?.free} dim={!unlocked || freeClaimed} />
+            <div className="bp-tier-card__ribbon">
+                <span className="bp-tier-card__tier-num">Tier {tier}</span>
+                <span className="bp-tier-card__rarity">{rarity}</span>
+            </div>
+
+            <Stage preview={premPreview} rarity={rarity} big />
+
+            <div className="bp-tier-card__name">
+                <span className="bp-tier-card__cat">
+                    <Icon name={categoryIcon(premPreview?.cat)} /> {categoryLabel(premPreview?.cat) || 'Reward'}
+                </span>
+                <span className="bp-tier-card__title">{premPreview?.name || '—'}</span>
+            </div>
+
+            <div className="bp-tier-card__divider" aria-hidden="true">
+                <span>Tracks</span>
+            </div>
+
+            <div className={`bp-track bp-track--free ${freeClaimed ? 'is-claimed' : unlocked ? 'is-ready' : 'is-locked'}`}>
+                <div className="bp-track__head">
+                    <span className="bp-track__label"><Icon name="check_circle" /> Free</span>
+                    {freePreview?.kind === 'cosmetic' ? (
+                        <span className="bp-track__chip"><Icon name={categoryIcon(freePreview.cat)} /> {freePreview.name}</span>
+                    ) : (
+                        <span className="bp-track__chip"><AtlasBucksIcon size={14} /> {freePreview?.amount?.toLocaleString() || 0}</span>
+                    )}
+                </div>
                 {freeClaimed ? (
-                    <span className="bp-row__chip is-on"><Icon name="check" /> Claimed</span>
+                    <span className="bp-track__status is-on"><Icon name="check" /> Claimed</span>
                 ) : (
                     <Button
                         variant={unlocked ? 'success' : 'secondary'}
                         size="sm"
+                        fullWidth
                         icon={unlocked ? 'redeem' : 'lock'}
                         disabled={!unlocked || claimingFree}
                         onClick={() => onClaim('free', tier)}
@@ -93,24 +169,20 @@ function TierRow({ tier, def, currentTier, ownsPass, onClaim, claimingKey }) {
                 )}
             </div>
 
-            <div className={`bp-row__tier ${unlocked ? 'is-unlocked' : ''}`}>
-                <span className="bp-row__tier-num">{tier}</span>
-                <span className="bp-row__tier-label">Tier</span>
-            </div>
-
-            <div className={`bp-row__cell bp-row__cell--prem ${premClaimed ? 'is-claimed' : ''} ${ownsPass ? '' : 'is-pass-locked'}`}>
-                <span className="bp-row__track-label bp-row__track-label--prem">
-                    <Icon name="workspace_premium" /> Premium
-                </span>
-                <RewardChip reward={def?.prem} dim={!unlocked || premClaimed || !ownsPass} />
+            <div className={`bp-track bp-track--prem ${premClaimed ? 'is-claimed' : unlocked && ownsPass ? 'is-ready' : 'is-locked'}`}>
+                <div className="bp-track__head">
+                    <span className="bp-track__label bp-track__label--prem"><Icon name="workspace_premium" /> Premium</span>
+                    <span className="bp-track__chip bp-track__chip--prem"><Icon name={categoryIcon(premPreview?.cat)} /> {premPreview?.name || '—'}</span>
+                </div>
                 {premClaimed ? (
-                    <span className="bp-row__chip is-on"><Icon name="check" /> Claimed</span>
+                    <span className="bp-track__status is-on"><Icon name="check" /> Claimed</span>
                 ) : !ownsPass ? (
-                    <span className="bp-row__chip is-prem-locked"><Icon name="lock" /> Pass needed</span>
+                    <span className="bp-track__status is-pass-locked"><Icon name="lock" /> Pass required</span>
                 ) : (
                     <Button
                         variant={unlocked ? 'accent' : 'secondary'}
                         size="sm"
+                        fullWidth
                         icon={unlocked ? 'workspace_premium' : 'lock'}
                         disabled={!unlocked || claimingPrem}
                         onClick={() => onClaim('prem', tier)}
@@ -127,12 +199,12 @@ function ChallengeCard({ challenge, def }) {
     const pct = def.goal > 0 ? Math.min(1, challenge.cur / def.goal) : 0;
     return (
         <div className={`bp-quest ${challenge.done ? 'is-done' : ''}`}>
-            <span className="bp-quest__icon"><Icon name={def.icon} /></span>
+            <ChallengeIcon metric={def.metric} size={56} done={challenge.done} />
             <span className="bp-quest__body">
                 <span className="bp-quest__head">
                     <span className="bp-quest__title">{def.title}</span>
                     <span className="bp-quest__stars" aria-label={`${def.stars} battle stars`}>
-                        <Icon name="star" /> {def.stars}
+                        <Icon name="star" /> {def.stars.toLocaleString()}
                     </span>
                 </span>
                 <span className="bp-quest__desc">{def.desc}</span>
@@ -162,21 +234,20 @@ function BattlepassScreen({ setView }) {
     const tiersRef = useRef(null);
     const prefersReduced = useReducedMotion();
 
-    // Refresh on mount so the latest server-derived metrics (mp wins, high
-    // scores, mastery count) land — Atlas Pass state can change outside the
-    // pass screen, and the store may be stale from the last session.
     useEffect(() => {
         if (isAuthed) loadBattlepass().catch(() => {});
     }, [isAuthed]);
 
-    // Scroll the next-unclaimed tier into view on first paint so a returning
-    // player lands on their action item instead of tier 1.
+    // Auto-scroll the horizontal tier strip so the player lands near the
+    // next-claimable tier on first paint.
     useEffect(() => {
         if (!bp.loaded || !tiersRef.current) return;
-        const target = tiersRef.current.querySelector('.bp-row.is-unlocked .bp-row__chip:not(.is-on)') ||
-            tiersRef.current.querySelector('.bp-row.is-unlocked');
+        const target = tiersRef.current.querySelector('.bp-tier-card.is-unlocked .ui-button:not([disabled])')
+            ?.closest('.bp-tier-card')
+            || tiersRef.current.querySelector('.bp-tier-card.is-unlocked')
+            || tiersRef.current.querySelector('.bp-tier-card');
         if (target && typeof target.scrollIntoView === 'function') {
-            target.scrollIntoView({ behavior: prefersReduced ? 'auto' : 'smooth', block: 'center' });
+            target.scrollIntoView({ behavior: prefersReduced ? 'auto' : 'smooth', inline: 'center', block: 'nearest' });
         }
     }, [bp.loaded, prefersReduced]);
 
@@ -189,6 +260,13 @@ function BattlepassScreen({ setView }) {
     );
     const completedCount = challengesWithDef.filter(({ challenge }) => challenge.done).length;
 
+    // Used as the "base" cosmetic for hat/glasses/effect previews so the
+    // preview Mascot has a colour set rather than rendering on a default teal.
+    const fallbackCos = useMemo(
+        () => ({ color: 'bp_jade', hat: 'none', glasses: 'none', effect: 'none' }),
+        []
+    );
+
     if (!isAuthed) {
         return (
             <div className="quiz-box bp-box">
@@ -200,7 +278,7 @@ function BattlepassScreen({ setView }) {
                 <div className="signin-prompt">
                     <Icon name="workspace_premium" size="xl" />
                     <h2>Atlas Pass</h2>
-                    <p>Log in to grind challenges, unlock cosmetic tiers, and grab exclusive premium rewards.</p>
+                    <p>Log in to grind challenges, unlock reptile cosmetics, and grab exclusive premium rewards.</p>
                     <Button variant="primary" icon="login" onClick={() => setView('login')}>Log in or sign up</Button>
                 </div>
             </div>
@@ -257,13 +335,14 @@ function BattlepassScreen({ setView }) {
 
             <div className="bp-hero">
                 <div className="bp-hero__bg" aria-hidden="true" />
+                <div className="bp-hero__scales" aria-hidden="true" />
                 <div className="bp-hero__inner">
                     <span className="bp-hero__badge">
-                        <Icon name="workspace_premium" /> Season Pass
+                        <Icon name="workspace_premium" /> Reptile Kingdom · Season 1
                     </span>
                     <h2 className="bp-hero__title">{SEASON_NAME}</h2>
                     <p className="bp-hero__sub">
-                        Complete challenges across every mode to climb tiers and unlock cosmetics.
+                        25 tiers of dragon-themed cosmetics. Complete challenges across every mode to climb.
                     </p>
 
                     <div className="bp-stats">
@@ -299,7 +378,7 @@ function BattlepassScreen({ setView }) {
                                 Unlock Premium · {PREMIUM_PRICE.toLocaleString()} Bucks
                             </Button>
                             <span className="bp-buy__hint">
-                                Free tier rewards are always claimable. Premium adds an extra reward at every tier.
+                                Free tier rewards are always claimable. Premium adds a reptile cosmetic at every tier.
                             </span>
                         </div>
                     ) : (
@@ -333,20 +412,25 @@ function BattlepassScreen({ setView }) {
                         animate={prefersReduced ? false : { opacity: 1, y: 0 }}
                         exit={prefersReduced ? false : { opacity: 0, y: -8 }}
                         transition={{ duration: 0.18 }}
-                        className="bp-tiers"
-                        ref={tiersRef}
+                        className="bp-rewards"
                     >
-                        {Array.from({ length: TIER_COUNT }, (_, i) => i + 1).map((tier) => (
-                            <TierRow
-                                key={tier}
-                                tier={tier}
-                                def={TIERS_BY_NUM[tier]}
-                                currentTier={bp.tier}
-                                ownsPass={bp.owned}
-                                onClaim={onClaim}
-                                claimingKey={claimingKey}
-                            />
-                        ))}
+                        <div className="bp-rewards__scroll" ref={tiersRef}>
+                            {Array.from({ length: TIER_COUNT }, (_, i) => i + 1).map((tier) => (
+                                <TierCard
+                                    key={tier}
+                                    tier={tier}
+                                    def={TIERS_BY_NUM[tier]}
+                                    currentTier={bp.tier}
+                                    ownsPass={bp.owned}
+                                    onClaim={onClaim}
+                                    claimingKey={claimingKey}
+                                    fallbackCos={fallbackCos}
+                                />
+                            ))}
+                        </div>
+                        <div className="bp-rewards__hint">
+                            <Icon name="swipe" /> Swipe horizontally — 25 tiers all the way to Dragon Fire.
+                        </div>
                     </motion.div>
                 ) : (
                     <motion.div
@@ -366,11 +450,11 @@ function BattlepassScreen({ setView }) {
 
             <Modal open={buyOpen} onClose={() => setBuyOpen(false)} title="Unlock Atlas Pass Premium">
                 <p className="auth-hint">
-                    Premium adds an exclusive cosmetic reward at every one of {TIER_COUNT} tiers — globe colors,
-                    hats, glasses, and effects. Your free tier rewards stay available either way.
+                    Premium adds an exclusive reptile cosmetic at every one of {TIER_COUNT} tiers — dragon
+                    horns, scaled hoods, animated colour palettes. Your free tier rewards stay available either way.
                 </p>
                 <div className="bp-buy-summary">
-                    <span><Icon name="workspace_premium" /> Premium pass · this season</span>
+                    <span><Icon name="workspace_premium" /> Reptile Kingdom · Season pass</span>
                     <span className="bp-buy-summary__price">
                         <AtlasBucksIcon size={18} /> {PREMIUM_PRICE.toLocaleString()}
                     </span>

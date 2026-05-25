@@ -6,6 +6,7 @@ import Mascot from '../assets/illustrations/Mascot';
 import BackgroundBlobs from '../assets/illustrations/BackgroundBlobs';
 import WorldDots from '../assets/illustrations/WorldDots';
 import PetPanel from './PetPanel';
+import BattlepassCard from './BattlepassCard';
 import { Modal, Button } from './ui';
 import { useToast } from './ui/Toast';
 import { useAudio } from '../audio/AudioProvider';
@@ -28,7 +29,6 @@ const MODES = [
     { key: 'globe',           title: 'Globe',           desc: 'Find the country on a 3D globe', icon: 'public', tone: 'info' },
     { key: 'multiplayer',     title: 'Multiplayer',     desc: 'Host a lobby, race friends live', icon: 'sports_esports', tone: 'versus' },
     { key: 'bonus',           title: 'Bonus Modes',     desc: 'Frenzy, Pixelated, Language…', icon: 'rocket_launch', tone: 'purple' },
-    { key: 'battlepass',      title: 'Atlas Pass',      desc: 'Season challenges → cosmetic tiers', icon: 'workspace_premium', tone: 'accent' },
     { key: 'leaderboard',     title: 'Leaderboard',     desc: 'Compete on the global ranks', icon: 'leaderboard', tone: 'info' },
     { key: 'achievements',    title: 'Achievements',    desc: 'Earn badges and mastery ranks', icon: 'emoji_events', tone: 'accent' },
     { key: 'friends',         title: 'Friends',         desc: 'Add friends, compare progress', icon: 'group', tone: 'danger' },
@@ -126,8 +126,6 @@ function MainMenu({ setView, flagsData, setQuizMode }) {
             setView('multiplayer');
         } else if (modeKey === 'bonus') {
             setView('bonus-menu');
-        } else if (modeKey === 'battlepass') {
-            setView('battlepass');
         } else if (modeKey === 'leaderboard') {
             setView('leaderboard');
         } else if (modeKey === 'achievements') {
@@ -176,11 +174,15 @@ function MainMenu({ setView, flagsData, setQuizMode }) {
             <PetPanel setView={setView} />
 
             <div className="mode-grid">
+                {/* Atlas Pass — hero card that spans 2x2 in the menu grid and
+                    uses a bespoke dragon illustration instead of a Material
+                    icon. Rendered first so it sits at the top of the grid. */}
+                <BattlepassCard onClick={() => setView('battlepass')} index={0} />
                 {MODES.map((mode, i) => (
                     <ModeCard
                         key={mode.key}
                         mode={mode}
-                        index={i}
+                        index={i + 1}
                         onClick={() => onCardClick(mode.key)}
                         masteryHint={mode.key === 'multiple-choice' ? masteryHint : null}
                         streak={(mode.key === 'multiple-choice' || mode.key === 'free-response' || mode.key === 'globe') ? getStreak(mode.key) : 0}
