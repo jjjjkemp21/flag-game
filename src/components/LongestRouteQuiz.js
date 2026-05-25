@@ -8,6 +8,7 @@ import Confetti from '../assets/illustrations/Confetti';
 import Spinner from '../assets/illustrations/Spinner';
 import { useAudio } from '../audio/AudioProvider';
 import { getHighScore, recordHighScore } from '../lib/progress';
+import { refreshBattlepass } from '../lib/battlepass';
 import { recordPlay } from '../lib/pet';
 import { variants } from '../motion';
 
@@ -186,6 +187,7 @@ function LongestRouteQuiz({ allFlagsData, setView }) {
                 if (finalScore > longestRouteHighScore) {
                     recordHighScore('longestRoute', finalScore);
                     setLongestRouteHighScore(finalScore);
+                    refreshBattlepass();
                 }
                 setGameOver(true);
                 setIsWin(true);

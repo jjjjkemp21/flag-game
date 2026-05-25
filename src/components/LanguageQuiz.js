@@ -7,6 +7,7 @@ import Confetti from '../assets/illustrations/Confetti';
 import Spinner from '../assets/illustrations/Spinner';
 import { useAudio } from '../audio/AudioProvider';
 import { getHighScore, recordHighScore } from '../lib/progress';
+import { refreshBattlepass } from '../lib/battlepass';
 import { recordPlay } from '../lib/pet';
 import { springs } from '../motion';
 
@@ -123,6 +124,7 @@ function LanguageQuiz({ setView }) {
                 if (score > highScore) {
                     setHighScore(score);
                     recordHighScore('language', score);
+                    refreshBattlepass();
                 }
                 setTimeout(() => {
                     audio.play('gameOver');

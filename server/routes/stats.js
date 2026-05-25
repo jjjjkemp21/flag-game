@@ -106,7 +106,8 @@ router.post('/reset', (req, res) => {
             achievements_json = NULL,
             region = NULL,
             mp_wins = 0,
-            selected_title = NULL
+            selected_title = NULL,
+            battlepass_json = NULL
         WHERE id = ?`
     ).run(req.user.id);
     res.json({ ok: true });

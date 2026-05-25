@@ -15,6 +15,7 @@ import AdminAnnounce from './components/AdminAnnounce';
 import StoreScreen from './components/StoreScreen';
 import StatsScreen from './components/StatsScreen';
 import MultiplayerScreen from './components/MultiplayerScreen';
+import BattlepassScreen from './components/BattlepassScreen';
 import TopBar from './components/TopBar';
 import Spinner from './assets/illustrations/Spinner';
 import { useAudio } from './audio/AudioProvider';
@@ -26,6 +27,12 @@ import { setAuthed, loadBonus, resetBonus, loadEarnedXp, resetEarnedXp } from '.
 import { loadPet, resetPet, recordCorrect, recordIncorrect, getPet } from './lib/pet';
 import { loadProfile, resetProfile, setAchievementsUnlocked } from './lib/profile';
 import { loadCurrency, resetCurrency } from './lib/currency';
+import {
+    loadBattlepass,
+    resetBattlepass,
+    setAuthed as setBpAuthed,
+    flushBattlepass,
+} from './lib/battlepass';
 import { buildContext, evaluate } from './lib/achievements';
 import { variants } from './motion';
 
@@ -161,6 +168,7 @@ function App() {
     useEffect(() => {
         const flush = () => {
             if (authedRef.current && progressReadyRef.current) flushStats(flagsDataRef.current);
+            if (authedRef.current) flushBattlepass();
         };
         const onVisibility = () => { if (document.visibilityState === 'hidden') flush(); };
         window.addEventListener('pagehide', flush);
@@ -232,6 +240,13 @@ function App() {
                 if (!cancelled) {
                     try { await loadCurrency(); } catch (_) { /* shop will lazy-retry */ }
                 }
+                // Atlas Pass snapshot — challenge progress + claimed rewards.
+                // Loaded after the rest so server-derived metrics (mp_wins,
+                // bonus high scores) reflect everything else we just synced.
+                if (!cancelled) {
+                    setBpAuthed(true);
+                    try { await loadBattlepass(); } catch (_) { /* pass screen will lazy-retry */ }
+                }
                 // Recompute unlocked achievements from the just-loaded progress so the
                 // account's count + showcase are correct. Without this they stay at the
                 // load-time defaults (unlocked=[]) and a later cosmetic-only persist
@@ -242,11 +257,13 @@ function App() {
                 }
             } else {
                 setAuthed(false);
+                setBpAuthed(false);
                 resetBonus();
                 resetEarnedXp();
                 resetPet();
                 resetProfile();
                 resetCurrency();
+                resetBattlepass();
                 answerTotalsRef.current = { correct: 0, incorrect: 0 };
                 setFlagsData(prev => zeroFlagStats(prev));
             }
@@ -395,6 +412,8 @@ function App() {
                 return <StatsScreen setView={setView} flagsData={flagsData} />;
             case 'multiplayer':
                 return <MultiplayerScreen setView={setView} flagsData={flagsData} />;
+            case 'battlepass':
+                return <BattlepassScreen setView={setView} />;
             case 'settings':
                 return (
                     <Settings

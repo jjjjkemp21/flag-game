@@ -11,6 +11,7 @@ import { useAudio } from '../audio/AudioProvider';
 import { useProfile, recordBestStreak } from '../lib/profile';
 import { awardForAnswer, penaltyForAnswer, streakMultiplier, MASTERY_STREAK } from '../lib/xp';
 import { addEarnedXp } from '../lib/progress';
+import { bumpMetric } from '../lib/battlepass';
 import { getStreak, saveStreak, resetStreak } from '../lib/streak';
 import { springs } from '../motion';
 
@@ -105,6 +106,7 @@ function MultipleChoiceQuiz({
             // and a brand-new flag is worth more than an already-mastered one.
             const award = awardForAnswer(currentFlag, 'multiple-choice', next);
             addEarnedXp(award.amount);
+            bumpMetric('mc_correct', 1);
             setXpGain(award);
             setShowConfetti(true);
             // A satisfying flourish the moment a flag crosses into "mastered".

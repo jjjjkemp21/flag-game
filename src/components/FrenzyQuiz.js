@@ -6,6 +6,7 @@ import { ScoreBubble, ProgressRing } from './ui';
 import Mascot from '../assets/illustrations/Mascot';
 import { useAudio } from '../audio/AudioProvider';
 import { getHighScore, recordHighScore } from '../lib/progress';
+import { refreshBattlepass } from '../lib/battlepass';
 import { recordPlay } from '../lib/pet';
 import { variants, springs } from '../motion';
 
@@ -149,6 +150,9 @@ function FrenzyQuiz({ allFlagsData, setView }) {
             if (score > highScore) {
                 setHighScore(score);
                 recordHighScore('frenzy', score);
+                // High-score bumps unlock pass challenges that gate on it
+                // (server reads from bonus_scores_json on each refresh).
+                refreshBattlepass();
             }
         }
     }, [gameOver, score, highScore]);

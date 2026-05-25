@@ -12,6 +12,7 @@ import { useAudio } from '../audio/AudioProvider';
 import { useProfile, recordBestStreak } from '../lib/profile';
 import { awardForAnswer, penaltyForAnswer, streakMultiplier, MASTERY_STREAK } from '../lib/xp';
 import { addEarnedXp } from '../lib/progress';
+import { bumpMetric } from '../lib/battlepass';
 import { getStreak, saveStreak, resetStreak } from '../lib/streak';
 import { springs } from '../motion';
 
@@ -118,6 +119,7 @@ function FreeResponseQuiz({
             recordBestStreak(MODE, next);
             const award = awardForAnswer(currentFlag, 'free-response', next);
             addEarnedXp(award.amount);
+            bumpMetric('fr_correct', 1);
             setXpGain(award);
             setShowConfetti(true);
             if (beforeStreak <= MASTERY_STREAK && afterStreak > MASTERY_STREAK) {

@@ -28,6 +28,7 @@ const MODES = [
     { key: 'globe',           title: 'Globe',           desc: 'Find the country on a 3D globe', icon: 'public', tone: 'info' },
     { key: 'multiplayer',     title: 'Multiplayer',     desc: 'Host a lobby, race friends live', icon: 'sports_esports', tone: 'versus' },
     { key: 'bonus',           title: 'Bonus Modes',     desc: 'Frenzy, Pixelated, Language…', icon: 'rocket_launch', tone: 'purple' },
+    { key: 'battlepass',      title: 'Atlas Pass',      desc: 'Season challenges → cosmetic tiers', icon: 'workspace_premium', tone: 'accent' },
     { key: 'leaderboard',     title: 'Leaderboard',     desc: 'Compete on the global ranks', icon: 'leaderboard', tone: 'info' },
     { key: 'achievements',    title: 'Achievements',    desc: 'Earn badges and mastery ranks', icon: 'emoji_events', tone: 'accent' },
     { key: 'friends',         title: 'Friends',         desc: 'Add friends, compare progress', icon: 'group', tone: 'danger' },
@@ -125,6 +126,8 @@ function MainMenu({ setView, flagsData, setQuizMode }) {
             setView('multiplayer');
         } else if (modeKey === 'bonus') {
             setView('bonus-menu');
+        } else if (modeKey === 'battlepass') {
+            setView('battlepass');
         } else if (modeKey === 'leaderboard') {
             setView('leaderboard');
         } else if (modeKey === 'achievements') {

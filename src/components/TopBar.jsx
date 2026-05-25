@@ -88,6 +88,10 @@ function TopBar({ setView }) {
                         onClick={() => { setMenuOpen(false); setView('store'); }}>
                         Atlas Shop
                     </Button>
+                    <Button variant="accent" fullWidth icon="workspace_premium"
+                        onClick={() => { setMenuOpen(false); setView('battlepass'); }}>
+                        Atlas Pass
+                    </Button>
                     {user?.is_admin && (
                         <Button variant="accent" fullWidth icon="campaign"
                             onClick={() => { setMenuOpen(false); setView('admin'); }}>

@@ -23,6 +23,7 @@ app.use('/api/profile', require('./routes/profile'));
 app.use('/api/announcements', require('./routes/announcements'));
 app.use('/api/mp', require('./routes/multiplayer'));
 app.use('/api/currency', require('./routes/currency'));
+app.use('/api/battlepass', require('./routes/battlepass'));
 app.use('/api', require('./routes/social'));
 
 // Serve the built React app and fall back to index.html for SPA routes.

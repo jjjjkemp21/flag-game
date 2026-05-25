@@ -100,6 +100,13 @@ if (!hasCol('selected_title')) db.exec('ALTER TABLE users ADD COLUMN selected_ti
 if (!hasCol('bucks')) db.exec('ALTER TABLE users ADD COLUMN bucks INTEGER NOT NULL DEFAULT 0');
 if (!hasCol('bucks_minted_xp')) db.exec('ALTER TABLE users ADD COLUMN bucks_minted_xp INTEGER NOT NULL DEFAULT 0');
 if (!hasCol('owned_cosmetics_json')) db.exec('ALTER TABLE users ADD COLUMN owned_cosmetics_json TEXT');
+// ---- Battlepass ----
+// `battlepass_json` holds the per-user season blob: { season, owned (premium
+// pass bought?), claimed[] (reward keys "free:N"/"prem:N"), counters{} }. When
+// the SEASON_ID in server/battlepassCatalog.js changes, the route resets the
+// player to a fresh state on next request — keeping past purchases scoped to
+// the season they were made in.
+if (!hasCol('battlepass_json')) db.exec('ALTER TABLE users ADD COLUMN battlepass_json TEXT');
 
 // No dedicated/seeded admin account anymore — admin is now claimed at runtime
 // by any signed-in user who enters the secret password (see POST

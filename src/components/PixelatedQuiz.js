@@ -8,6 +8,7 @@ import Confetti from '../assets/illustrations/Confetti';
 import Spinner from '../assets/illustrations/Spinner';
 import { useAudio } from '../audio/AudioProvider';
 import { getHighScore, recordHighScore } from '../lib/progress';
+import { refreshBattlepass } from '../lib/battlepass';
 import { recordPlay } from '../lib/pet';
 import { variants, springs } from '../motion';
 
@@ -123,6 +124,7 @@ function PixelatedQuiz({ allFlagsData, setView }) {
             if (score > highScore) {
                 setHighScore(score);
                 recordHighScore('pixelated', score);
+                refreshBattlepass();
             }
         }
     }, [gameOver, gameStarted, score, highScore]);
