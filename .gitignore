@@ -37,3 +37,6 @@ Thumbs.db
 
 # Claude
 .claude/settings.local.json
+
+# Contains private credentials — must not be pushed
+CLAUDE.md

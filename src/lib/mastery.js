@@ -9,7 +9,7 @@ export const MASTERY_RANKS = [
     { min: 60,  title: 'Cartographer', tier: 'silver' },
     { min: 100, title: 'Geographer',   tier: 'gold' },
     { min: 150, title: 'Globetrotter', tier: 'gold' },
-    { min: 200, title: 'Atlas Master', tier: 'platinum' },
+    { min: 185, title: 'Atlas Master', tier: 'platinum' },
 ];
 
 const CHAMPION = { title: 'World Champion', tier: 'legend' };
@@ -26,7 +26,7 @@ export const GEO_MASTERY_RANKS = [
     { min: 60,  title: 'Trailblazer',       tier: 'silver' },
     { min: 100, title: 'Topographer',       tier: 'gold' },
     { min: 150, title: 'Geomancer',         tier: 'gold' },
-    { min: 200, title: 'Continental Master', tier: 'platinum' },
+    { min: 185, title: 'Continental Master', tier: 'platinum' },
 ];
 
 const GEO_CHAMPION = { title: 'Atlas Cartographer', tier: 'legend' };

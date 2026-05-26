@@ -69,6 +69,15 @@ function pushBonus(delay = 1200) {
     }, delay);
 }
 
+// Immediate, non-debounced push of the bonus scores. Returns a promise that
+// resolves once the server has the new value — callers chain refreshBattlepass()
+// onto it so the pass UI sees the new high before re-reading bonus_scores_json.
+export function flushBonus() {
+    if (!authed) return Promise.resolve(null);
+    if (pushTimer) { clearTimeout(pushTimer); pushTimer = null; }
+    return api.put('/stats', { bonusScores: getBonus(), earnedXp }).catch(() => null);
+}
+
 // Record a new score for a bonus mode. Only persisted (to the account) when
 // logged in; guests just keep it in memory until reload/logout.
 export function recordHighScore(name, value) {

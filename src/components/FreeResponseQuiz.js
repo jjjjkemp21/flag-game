@@ -9,11 +9,13 @@ import Confetti from '../assets/illustrations/Confetti';
 import MasteryMeter from './MasteryMeter';
 import Spinner from '../assets/illustrations/Spinner';
 import { useAudio } from '../audio/AudioProvider';
-import { useProfile, recordBestStreak } from '../lib/profile';
+import { useProfile, recordBestStreak, flushProfile } from '../lib/profile';
 import { awardForAnswer, penaltyForAnswer, streakMultiplier, MASTERY_STREAK } from '../lib/xp';
 import { addEarnedXp } from '../lib/progress';
-import { bumpMetric } from '../lib/battlepass';
+import { bumpMetric, refreshBattlepass } from '../lib/battlepass';
 import { getStreak, saveStreak, resetStreak } from '../lib/streak';
+import { useQuizPresence } from '../lib/presence';
+import SpectatorsBadge from './SpectatorsBadge';
 import { springs } from '../motion';
 
 const MODE = 'free-response';
@@ -45,6 +47,13 @@ function FreeResponseQuiz({
     const [masteryStreak, setMasteryStreak] = useState(0);
     const audio = useAudio();
     const profile = useProfile();
+
+    const { watchers, lastReactionId } = useQuizPresence(MODE, {
+        score, streak,
+        promptKind: 'flag',
+        promptFlagCode: currentFlag ? currentFlag.code : undefined,
+        lastAnswerCorrect: flashColor === 'correct',
+    });
 
     const handleBack = () => {
         setView('quiz-menu');
@@ -116,7 +125,7 @@ function FreeResponseQuiz({
             if (next === 3 || next === 5 || next === 10) audio.play('streak');
             setStreak(next);
             saveStreak(MODE, next);
-            recordBestStreak(MODE, next);
+            if (recordBestStreak(MODE, next)) flushProfile().then(() => refreshBattlepass());
             const award = awardForAnswer(currentFlag, 'free-response', next);
             addEarnedXp(award.amount);
             bumpMetric('fr_correct', 1);
@@ -195,6 +204,7 @@ function FreeResponseQuiz({
                     {streak > 0 && <span className="streak-mult">×{streakMultiplier(streak).toFixed(1)}</span>}
                 </span>
                 <ScoreBubble score={score} icon="star" />
+                <SpectatorsBadge watchers={watchers} lastReactionId={lastReactionId} />
             </div>
 
             <MasteryMeter streak={masteryStreak} />

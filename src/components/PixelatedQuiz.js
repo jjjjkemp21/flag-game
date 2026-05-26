@@ -7,9 +7,11 @@ import Mascot from '../assets/illustrations/Mascot';
 import Confetti from '../assets/illustrations/Confetti';
 import Spinner from '../assets/illustrations/Spinner';
 import { useAudio } from '../audio/AudioProvider';
-import { getHighScore, recordHighScore } from '../lib/progress';
+import { getHighScore, recordHighScore, flushBonus } from '../lib/progress';
 import { refreshBattlepass } from '../lib/battlepass';
 import { recordPlay } from '../lib/pet';
+import { useQuizPresence } from '../lib/presence';
+import SpectatorsBadge from './SpectatorsBadge';
 import { variants, springs } from '../motion';
 
 const IMAGE_BASE_URL = './assets/flags/';
@@ -44,6 +46,13 @@ function PixelatedQuiz({ allFlagsData, setView }) {
     const audio = useAudio();
     const inputRef = useRef(null);
     const nextFlagTimeoutRef = useRef(null);
+
+    const isPlaying = gameStarted && !gameOver;
+    const { watchers, lastReactionId } = useQuizPresence(isPlaying ? 'pixelated-quiz' : null, {
+        score, streak: 0,
+        promptKind: 'flag',
+        promptFlagCode: currentFlag ? currentFlag.code : undefined,
+    });
 
     useEffect(() => {
         setHighScore(getHighScore('pixelated'));
@@ -124,7 +133,7 @@ function PixelatedQuiz({ allFlagsData, setView }) {
             if (score > highScore) {
                 setHighScore(score);
                 recordHighScore('pixelated', score);
-                refreshBattlepass();
+                flushBonus().then(() => refreshBattlepass());
             }
         }
     }, [gameOver, gameStarted, score, highScore]);
@@ -305,6 +314,7 @@ function PixelatedQuiz({ allFlagsData, setView }) {
                                 {timerSeconds}s
                             </ProgressRing>
                             <ScoreBubble score={score} icon="star" floatingDelta={scoreDelta} />
+                            <SpectatorsBadge watchers={watchers} lastReactionId={lastReactionId} />
                         </div>
 
                         <div className="pixelated-flag-container" style={{ position: 'relative' }}>

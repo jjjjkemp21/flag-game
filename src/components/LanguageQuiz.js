@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Icon from './Icon';
 import { ChoiceCard, ScoreBubble } from './ui';
@@ -6,14 +6,19 @@ import Mascot from '../assets/illustrations/Mascot';
 import Confetti from '../assets/illustrations/Confetti';
 import Spinner from '../assets/illustrations/Spinner';
 import { useAudio } from '../audio/AudioProvider';
-import { getHighScore, recordHighScore } from '../lib/progress';
+import { getHighScore, recordHighScore, flushBonus } from '../lib/progress';
 import { refreshBattlepass } from '../lib/battlepass';
 import { recordPlay } from '../lib/pet';
+import { useQuizPresence } from '../lib/presence';
+import SpectatorsBadge from './SpectatorsBadge';
 import { springs } from '../motion';
 
 const LANGUAGES_URL = './data/languages.json';
 const PHRASES_URL = './data/phrases.json';
 const TOTAL_LIVES = 3;
+// How long the explainer overlay stays up after a wrong answer before
+// auto-advancing. Long enough to read 2-3 sentences; Continue dismisses sooner.
+const EXPLAINER_DELAY = 4000;
 
 function LanguageQuiz({ setView }) {
     const [languagesData, setLanguagesData] = useState([]);
@@ -31,8 +36,31 @@ function LanguageQuiz({ setView }) {
     const [flashColor, setFlashColor] = useState(null);
     const [lifeLostIndex, setLifeLostIndex] = useState(null);
     const [showConfetti, setShowConfetti] = useState(false);
+    const [hintUsed, setHintUsed] = useState(false);
+    const [explainer, setExplainer] = useState(null);
 
     const audio = useAudio();
+
+    // Language-quiz prompts (the foreign phrase) can fall back to the language
+    // name itself when phrase data is sparse — which IS the answer. To rule out
+    // leaks we don't surface the prompt to spectators for this mode; score +
+    // streak only. (See plan §3 answer-leak audit.)
+    const isPlaying = !isGameOver && !isLoading && currentQuestion;
+    const { watchers, lastReactionId } = useQuizPresence(isPlaying ? 'language-quiz' : null, {
+        score, streak: 0,
+    });
+
+    // Timer + pending action so the Continue button can short-circuit the
+    // post-answer pause without racing the auto-advance.
+    const advanceTimerRef = useRef(null);
+    const pendingAdvanceRef = useRef(null);
+
+    // O(1) language lookup so the explainer can pull metadata for the chosen
+    // distractor (not just the correct answer).
+    const langByName = useMemo(
+        () => new Map(languagesData.map((l) => [l.name, l])),
+        [languagesData]
+    );
 
     useEffect(() => {
         setHighScore(getHighScore('language'));
@@ -59,6 +87,13 @@ function LanguageQuiz({ setView }) {
         setFeedback({ text: ' ' });
         setIsAnswered(false);
         setAnswerStatus({});
+        setHintUsed(false);
+        setExplainer(null);
+        if (advanceTimerRef.current) {
+            clearTimeout(advanceTimerRef.current);
+            advanceTimerRef.current = null;
+        }
+        pendingAdvanceRef.current = null;
 
         if (languagesData.length === 0 || !phrasesData) return;
 
@@ -71,7 +106,12 @@ function LanguageQuiz({ setView }) {
         }
 
         const randomPhrase = phraseList[Math.floor(Math.random() * phraseList.length)];
-        setCurrentQuestion({ phrase: randomPhrase, language: randomLanguage.name });
+        setCurrentQuestion({
+            phrase: randomPhrase,
+            language: randomLanguage.name,
+            family: randomLanguage.family,
+            alphabet: randomLanguage.alphabet,
+        });
 
         const distractors = randomLanguage.distractors;
         const correctOption = randomLanguage.name;
@@ -85,6 +125,12 @@ function LanguageQuiz({ setView }) {
         }
     }, [isLoading, languagesData, phrasesData, nextQuestion]);
 
+    const handleRevealHint = () => {
+        if (isAnswered || isGameOver || hintUsed || !currentQuestion) return;
+        audio.play('click');
+        setHintUsed(true);
+    };
+
     const handleAnswer = (answerName) => {
         if (isAnswered || isGameOver) return;
         setIsAnswered(true);
@@ -92,13 +138,17 @@ function LanguageQuiz({ setView }) {
         if (answerName === currentQuestion.language) {
             audio.play('correct');
             setShowConfetti(true);
-            const newScore = score + 1;
-            setScore(newScore);
-            if (newScore === 3 || newScore === 5 || newScore === 10) {
+            // Hint forfeits the score gain — same idea as GlobeQuiz halving XP,
+            // adapted to LanguageQuiz which scores in integer points.
+            const newScore = hintUsed ? score : score + 1;
+            if (!hintUsed) setScore(newScore);
+            if (!hintUsed && (newScore === 3 || newScore === 5 || newScore === 10)) {
                 audio.play('streak');
             }
             setFeedback({
-                text: 'Correct! The language was:',
+                text: hintUsed
+                    ? 'Correct (hint used — no points):'
+                    : 'Correct! The language was:',
                 answer: currentQuestion.language,
                 tone: 'green',
             });
@@ -119,21 +169,39 @@ function LanguageQuiz({ setView }) {
                 tone: 'red',
             });
 
-            if (newLives <= 0) {
-                recordPlay(1.5);
-                if (score > highScore) {
-                    setHighScore(score);
-                    recordHighScore('language', score);
-                    refreshBattlepass();
-                }
-                setTimeout(() => {
+            // Explainer panel: contrast the correct language's family + script
+            // with whatever the player chose, so they walk away knowing the
+            // tell. `chosen` may be missing if a future distractor isn't in the
+            // catalog; the render guards on it.
+            const correctLang = langByName.get(currentQuestion.language) || null;
+            const chosenLang = langByName.get(answerName) || null;
+            setExplainer({ correct: correctLang, chosen: chosenLang });
+
+            const advance = newLives <= 0
+                ? () => {
+                    recordPlay(1.5);
+                    if (score > highScore) {
+                        setHighScore(score);
+                        recordHighScore('language', score);
+                        flushBonus().then(() => refreshBattlepass());
+                    }
                     audio.play('gameOver');
                     setIsGameOver(true);
-                }, 1500);
-            } else {
-                setTimeout(nextQuestion, 1500);
-            }
+                }
+                : nextQuestion;
+            pendingAdvanceRef.current = advance;
+            advanceTimerRef.current = setTimeout(advance, EXPLAINER_DELAY);
         }
+    };
+
+    const handleContinue = () => {
+        if (advanceTimerRef.current) {
+            clearTimeout(advanceTimerRef.current);
+            advanceTimerRef.current = null;
+        }
+        const advance = pendingAdvanceRef.current;
+        pendingAdvanceRef.current = null;
+        if (advance) advance();
     };
 
     const handlePlayAgain = () => {
@@ -143,6 +211,10 @@ function LanguageQuiz({ setView }) {
         setLives(TOTAL_LIVES);
         nextQuestion();
     };
+
+    useEffect(() => () => {
+        if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current);
+    }, []);
 
     if (isLoading) {
         return (
@@ -206,6 +278,7 @@ function LanguageQuiz({ setView }) {
                     })}
                 </div>
                 <ScoreBubble score={score} icon="star" />
+                <SpectatorsBadge watchers={watchers} lastReactionId={lastReactionId} />
             </div>
 
             <AnimatePresence mode="wait">
@@ -221,6 +294,23 @@ function LanguageQuiz({ setView }) {
                 </motion.div>
             </AnimatePresence>
             <p className="menu-subtitle language-subtitle">Which language is this?</p>
+
+            <div className="lang-hint-row">
+                {hintUsed ? (
+                    <span className="lang-hint-chip">
+                        <Icon name="lightbulb" /> {currentQuestion.family} family · {currentQuestion.alphabet} script
+                    </span>
+                ) : (
+                    <button
+                        type="button"
+                        className="lang-hint-btn"
+                        onClick={handleRevealHint}
+                        disabled={isAnswered}
+                    >
+                        <Icon name="lightbulb" /> Hint (no points)
+                    </button>
+                )}
+            </div>
 
             <AnimatePresence>
                 {showConfetti && <Confetti pieces={20} />}
@@ -247,6 +337,114 @@ function LanguageQuiz({ setView }) {
                     />
                 ))}
             </div>
+
+            <AnimatePresence>
+                {explainer && explainer.correct && (
+                    <motion.div
+                        key="lang-explainer"
+                        className="lang-explainer"
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -4 }}
+                        transition={springs.gentle}
+                        role="status"
+                    >
+                        <h3 className="lang-explainer__title">
+                            <Icon name="psychology" /> Why it was {explainer.correct.name}
+                        </h3>
+                        <p className="lang-explainer__line">
+                            <strong>{explainer.correct.name}</strong> is in the{' '}
+                            <strong>{explainer.correct.family}</strong> family and uses the{' '}
+                            <strong>{explainer.correct.alphabet}</strong> script.
+                        </p>
+                        {explainer.chosen && (() => {
+                            // Six languages list multiple scripts (Japanese, Javanese,
+                            // Punjabi, Hausa, Mongolian, Serbian). Compare as sets so
+                            // Serbian + Croatian register as script-overlapping (both
+                            // use Latin) rather than as fully different scripts.
+                            const parseScripts = (s) => new Set(
+                                String(s).split(',').map((x) => x.trim()).filter(Boolean)
+                            );
+                            const correctScripts = parseScripts(explainer.correct.alphabet);
+                            const chosenScripts = parseScripts(explainer.chosen.alphabet);
+                            const shared = [...correctScripts].filter((s) => chosenScripts.has(s));
+                            const sameAlpha =
+                                correctScripts.size === chosenScripts.size &&
+                                shared.length === correctScripts.size;
+                            const overlap = !sameAlpha && shared.length > 0;
+                            const sameFam = explainer.chosen.family === explainer.correct.family;
+                            let body;
+                            if (sameAlpha && sameFam) {
+                                // Sibling languages — script and family both match;
+                                // vocabulary / grammar are the only real tells.
+                                body = (
+                                    <>
+                                        same <strong>{explainer.correct.family}</strong> family,
+                                        same <strong>{explainer.correct.alphabet}</strong> script. These are close cousins —
+                                        vocabulary and small grammar quirks are the tells, not the writing system.
+                                    </>
+                                );
+                            } else if (sameAlpha) {
+                                // Same script, different family — script can't help;
+                                // listen for the family signature instead.
+                                body = (
+                                    <>
+                                        same <strong>{explainer.correct.alphabet}</strong> script, but{' '}
+                                        <strong>{explainer.correct.name}</strong> is{' '}
+                                        <strong>{explainer.correct.family}</strong> while{' '}
+                                        <strong>{explainer.chosen.name}</strong> is{' '}
+                                        <strong>{explainer.chosen.family}</strong>. The script doesn't help here.
+                                    </>
+                                );
+                            } else if (overlap) {
+                                // Partial script overlap (e.g. Serbian+Croatian both
+                                // use Latin; Hausa+Yoruba both use Latin). The phrase
+                                // they saw may have been in the shared script, so
+                                // pointing at the alphabet would mislead.
+                                const sharedLabel = shared.join(' & ');
+                                body = sameFam ? (
+                                    <>
+                                        both use the <strong>{sharedLabel}</strong> script and are both{' '}
+                                        <strong>{explainer.correct.family}</strong> — close cousins. Vocabulary and small
+                                        grammar quirks are the tells.
+                                    </>
+                                ) : (
+                                    <>
+                                        <strong>{explainer.chosen.name}</strong> uses <strong>{sharedLabel}</strong> too,
+                                        so the script isn't conclusive. The family is the tell:{' '}
+                                        <strong>{explainer.correct.name}</strong> is{' '}
+                                        <strong>{explainer.correct.family}</strong>,{' '}
+                                        <strong>{explainer.chosen.name}</strong> is{' '}
+                                        <strong>{explainer.chosen.family}</strong>.
+                                    </>
+                                );
+                            } else {
+                                // Different script entirely — the shape of the
+                                // characters is the dominant signal.
+                                body = (
+                                    <>
+                                        that's the <strong>{explainer.chosen.alphabet}</strong> script.
+                                        The shape of the characters is the giveaway.
+                                    </>
+                                );
+                            }
+                            return (
+                                <p className="lang-explainer__line lang-explainer__line--contrast">
+                                    You picked <strong>{explainer.chosen.name}</strong> — {body}
+                                </p>
+                            );
+                        })()}
+                        <button
+                            type="button"
+                            className="lang-explainer__continue"
+                            onClick={handleContinue}
+                            autoFocus
+                        >
+                            Continue <Icon name="arrow_forward" />
+                        </button>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }

@@ -72,6 +72,17 @@ db.exec(`
         resolved_at INTEGER
     );
     CREATE INDEX IF NOT EXISTS idx_feedback_created ON feedback(created_at DESC);
+
+    CREATE TABLE IF NOT EXISTS messages (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        sender_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        recipient_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        body TEXT NOT NULL,
+        created_at INTEGER NOT NULL,
+        read_at INTEGER
+    );
+    CREATE INDEX IF NOT EXISTS idx_messages_recipient ON messages(recipient_id, read_at, created_at DESC);
+    CREATE INDEX IF NOT EXISTS idx_messages_sender ON messages(sender_id, created_at DESC);
 `);
 
 // Migration: add commit_sha to announcements so the deploy pipeline can dedupe
@@ -118,6 +129,13 @@ if (!hasCol('owned_cosmetics_json')) db.exec('ALTER TABLE users ADD COLUMN owned
 // player to a fresh state on next request — keeping past purchases scoped to
 // the season they were made in.
 if (!hasCol('battlepass_json')) db.exec('ALTER TABLE users ADD COLUMN battlepass_json TEXT');
+// ---- Spectator privacy ----
+// When set to 0, friends can still see the player as "Playing X" on the Friends
+// tab (presence heartbeat is unaffected), but the spectator endpoints refuse to
+// /start a session — and the Eye icon is hidden client-side so a private setting
+// isn't surfaced. Defaults to 1 (allow) so existing accounts opt-in to privacy
+// rather than being silently locked out of the feature.
+if (!hasCol('allow_spectate')) db.exec('ALTER TABLE users ADD COLUMN allow_spectate INTEGER NOT NULL DEFAULT 1');
 
 // No dedicated/seeded admin account anymore — admin is now claimed at runtime
 // by any signed-in user who enters the secret password (see POST

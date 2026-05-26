@@ -1,17 +1,36 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import Icon from './Icon';
 import { Button, Pill } from './ui';
 import { useToast } from './ui/Toast';
 import { useAuth } from '../auth/AuthProvider';
 import { api } from '../api/client';
+import { fetchFriendsPresence } from '../lib/presence';
 
-function Friends({ setView }) {
+const MODE_LABELS = {
+    'multiple-choice':    'Multiple Choice',
+    'free-response':      'Free Response',
+    'mirror':             'Mirror',
+    'flash':              'Flash',
+    'reverse-mc':         'Reverse MC',
+    'globe':              'Globe',
+    'pixelated-quiz':     'Pixelated',
+    'frenzy-quiz':        'Frenzy',
+    'longest-route-quiz': 'Longest Route',
+    'language-quiz':      'Language',
+    'multiplayer':        'Multiplayer',
+};
+
+const PRESENCE_REFRESH_MS = 5000;
+
+function Friends({ setView, setSpectateTarget }) {
     const { isAuthed } = useAuth();
     const toast = useToast();
     const [data, setData] = useState({ friends: [], incoming: [], outgoing: [] });
+    const [presence, setPresence] = useState({});
     const [loading, setLoading] = useState(false);
     const [addName, setAddName] = useState('');
     const [busy, setBusy] = useState(false);
+    const presenceTimerRef = useRef(null);
 
     const load = useCallback(async () => {
         if (!isAuthed) return;
@@ -26,6 +45,29 @@ function Friends({ setView }) {
     }, [isAuthed, toast]);
 
     useEffect(() => { load(); }, [load]);
+
+    // Friend presence — fetched once on mount, then polled every 5s while the
+    // screen is open so the Eye icon lights up shortly after a friend starts
+    // playing. No active fetch when logged out.
+    useEffect(() => {
+        if (!isAuthed) return undefined;
+        let cancelled = false;
+        const refresh = async () => {
+            const res = await fetchFriendsPresence();
+            if (!cancelled) setPresence(res.presence || {});
+            if (!cancelled) presenceTimerRef.current = setTimeout(refresh, PRESENCE_REFRESH_MS);
+        };
+        refresh();
+        return () => {
+            cancelled = true;
+            if (presenceTimerRef.current) clearTimeout(presenceTimerRef.current);
+        };
+    }, [isAuthed]);
+
+    const watch = (friendId) => {
+        if (typeof setSpectateTarget === 'function') setSpectateTarget(friendId);
+        setView('spectator');
+    };
 
     const sendRequest = async (e) => {
         e.preventDefault();
@@ -120,16 +162,37 @@ function Friends({ setView }) {
             <section className="friend-section">
                 <h3 className="stats-subtitle">Your friends</h3>
                 {data.friends.length === 0 && <p className="auth-hint">No friends yet — add someone above.</p>}
-                {data.friends.map((f) => (
-                    <div key={f.id} className="friend-row">
-                        <span className="friend-name">{f.username}</span>
-                        <Pill tone="primary">{f.xp} XP</Pill>
-                        <span className="friend-mastered">{f.masteredCount} mastered</span>
-                        <button className="icon-button" aria-label={`Remove ${f.username}`} onClick={() => remove(f.id)}>
-                            <Icon name="person_remove" />
-                        </button>
-                    </div>
-                ))}
+                {data.friends.map((f) => {
+                    const p = presence[f.id];
+                    const playing = !!(p && p.mode);
+                    return (
+                        <div key={f.id} className={`friend-row ${playing ? 'friend-row--playing' : ''}`}>
+                            <span className="friend-name">
+                                {f.username}
+                                {playing && (
+                                    <span className="friend-presence-tag">
+                                        <Icon name="circle" /> Playing {MODE_LABELS[p.mode] || p.mode}
+                                    </span>
+                                )}
+                            </span>
+                            <Pill tone="primary">{f.xp} XP</Pill>
+                            <span className="friend-mastered">{f.masteredCount} mastered</span>
+                            {playing && (
+                                <button
+                                    className="icon-button friend-watch-btn"
+                                    aria-label={`Spectate ${f.username}`}
+                                    title={`Spectate ${f.username}`}
+                                    onClick={() => watch(f.id)}
+                                >
+                                    <Icon name="visibility" />
+                                </button>
+                            )}
+                            <button className="icon-button" aria-label={`Remove ${f.username}`} onClick={() => remove(f.id)}>
+                                <Icon name="person_remove" />
+                            </button>
+                        </div>
+                    );
+                })}
             </section>
 
             {data.outgoing.length > 0 && (

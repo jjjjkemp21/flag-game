@@ -3,6 +3,7 @@ import Icon from './Icon';
 import { Button, Pill } from './ui';
 import Mascot from '../assets/illustrations/Mascot';
 import AchievementBadge from './AchievementBadge';
+import TitleBadge from './TitleBadge';
 import ProfileCard from './ProfileCard';
 import { useAuth } from '../auth/AuthProvider';
 import { api } from '../api/client';
@@ -42,6 +43,15 @@ function Leaderboard({ setView, flagsData }) {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [selected, setSelected] = useState(null);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [searchResults, setSearchResults] = useState([]);
+    const [searchLoading, setSearchLoading] = useState(false);
+    const [showAll, setShowAll] = useState(false);
+
+    // Collapse the "Show more" panel whenever the user switches scope or filter
+    // so the new board's top 10 is what they see first, not the leftover tail
+    // of the previous one.
+    useEffect(() => { setShowAll(false); }, [scope, filter]);
 
     // `silent` refreshes (the live poll) update in place without flashing the
     // loading state or clearing the current rows.
@@ -67,6 +77,32 @@ function Leaderboard({ setView, flagsData }) {
         const id = setInterval(() => load(true), POLL_MS);
         return () => clearInterval(id);
     }, [load, isAuthed]);
+
+    // Debounced player search. Server already requires ≥ 2 chars; we mirror that
+    // here so we don't fire on a single keystroke.
+    useEffect(() => {
+        if (!isAuthed) return undefined;
+        const q = searchQuery.trim();
+        if (q.length < 2) {
+            setSearchResults([]);
+            setSearchLoading(false);
+            return undefined;
+        }
+        let cancelled = false;
+        setSearchLoading(true);
+        const timer = setTimeout(async () => {
+            try {
+                const next = await api.get(`/users/search?q=${encodeURIComponent(q)}`);
+                if (cancelled) return;
+                setSearchResults(next.users || []);
+            } catch (_) {
+                if (!cancelled) setSearchResults([]);
+            } finally {
+                if (!cancelled) setSearchLoading(false);
+            }
+        }, 200);
+        return () => { cancelled = true; clearTimeout(timer); };
+    }, [searchQuery, isAuthed]);
 
     if (!isAuthed) {
         return (
@@ -94,6 +130,64 @@ function Leaderboard({ setView, flagsData }) {
                 </button>
             </div>
             <h2 className="text-center">Leaderboard</h2>
+
+            <div className="player-search">
+                <span className="player-search__icon" aria-hidden="true"><Icon name="search" /></span>
+                <input
+                    type="text"
+                    className="player-search__input"
+                    placeholder="Find a player…"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    aria-label="Search players"
+                />
+                {searchQuery && (
+                    <button
+                        type="button"
+                        className="player-search__clear"
+                        onClick={() => setSearchQuery('')}
+                        aria-label="Clear search"
+                    >
+                        <Icon name="close" />
+                    </button>
+                )}
+                {searchQuery.trim().length >= 2 && (
+                    <ul className="player-search__results">
+                        {searchLoading && (
+                            <li className="player-search__hint">Searching…</li>
+                        )}
+                        {!searchLoading && searchResults.length === 0 && (
+                            <li className="player-search__hint">No players match.</li>
+                        )}
+                        {!searchLoading && searchResults.map((u) => (
+                            <li
+                                key={u.id}
+                                className="player-search__result"
+                                onClick={() => { setSelected(u); setSearchQuery(''); }}
+                                role="button"
+                                tabIndex={0}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter' || e.key === ' ') {
+                                        e.preventDefault();
+                                        setSelected(u);
+                                        setSearchQuery('');
+                                    }
+                                }}
+                            >
+                                <span className="player-search__avatar">
+                                    <Mascot size={32} mood="idle" cosmetics={u.cosmetics} still />
+                                </span>
+                                <span className="player-search__name">
+                                    {u.region && (
+                                        <img className="leaderboard-flag" src={`${FLAG_BASE}${u.region.toLowerCase()}.svg`} alt="" />
+                                    )}
+                                    <span>{u.username}</span>
+                                </span>
+                            </li>
+                        ))}
+                    </ul>
+                )}
+            </div>
 
             <div className="scope-tabs">
                 {SCOPES.map((s) => (
@@ -132,65 +226,106 @@ function Leaderboard({ setView, flagsData }) {
             {loading && <p className="text-center">Loading…</p>}
             {error && <p className="text-center" style={{ color: 'var(--color-danger)' }}>{error}</p>}
 
-            {data && !loading && (
-                <ol className="leaderboard-list">
-                    {data.entries.length === 0 && (
+            {data && !loading && (() => {
+                const entries = data.entries || [];
+                const top10 = entries.slice(0, 10);
+                const rest = entries.slice(10);
+                const MEDAL = { 1: 'gold', 2: 'silver', 3: 'bronze' };
+                const renderRow = (row) => {
+                    const auto = scopeRank(scope, row, total);
+                    // Player-chosen title overrides the scope's auto-rank label,
+                    // but the tier (colour) still tracks their mastery so the
+                    // pill colour can't lie about ranking.
+                    const r = row.selectedTitle
+                        ? { title: row.selectedTitle, tier: auto.tier }
+                        : auto;
+                    const badges = (row.showcase || []).map((id) => ACHIEVEMENTS_BY_ID[id]).filter(Boolean);
+                    const medal = MEDAL[row.rank];
+                    return (
+                        <li
+                            key={row.id}
+                            className={`leaderboard-row is-clickable ${user && row.id === user.id ? 'is-me' : ''} ${medal ? `is-medal is-medal--${medal}` : ''}`}
+                            onClick={() => setSelected(row)}
+                            role="button"
+                            tabIndex={0}
+                            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelected(row); } }}
+                        >
+                            <span className="leaderboard-rank">
+                                {medal ? (
+                                    <span className={`leaderboard-medal leaderboard-medal--${medal}`} aria-hidden="true">
+                                        <Icon name="emoji_events" />
+                                    </span>
+                                ) : null}
+                                #{row.rank}
+                            </span>
+                            <span className="leaderboard-avatar">
+                                <Mascot size={40} mood="idle" cosmetics={row.cosmetics} still />
+                            </span>
+                            <span className="leaderboard-id">
+                                <span className="leaderboard-name">
+                                    {row.region && (
+                                        <img className="leaderboard-flag" src={`${FLAG_BASE}${row.region.toLowerCase()}.svg`} alt="" />
+                                    )}
+                                    <span className="leaderboard-username">{row.username}</span>
+                                    {badges.length > 0 && (
+                                        <span className="leaderboard-badges">
+                                            {badges.map((a) => (
+                                                <AchievementBadge key={a.id} ach={a} />
+                                            ))}
+                                        </span>
+                                    )}
+                                </span>
+                                <span className="leaderboard-sub">
+                                    <span className={`rank-tag rank-pill--${r.tier}`}>
+                                        <TitleBadge scope={scope} tier={r.tier} size={20} /> {r.title}
+                                    </span>
+                                    {' · '}{row.petName || 'Atlas'} · {row.petStage || 'Hatchling'} Lv {row.petLevel}
+                                    {scope === 'overall' && ` · ${row.masteredCount} mastered`}
+                                    {scope === 'globe' && ` · ${row.geoMasteredCount || 0} mastered`}
+                                    {row.bestStreak > 0 && (
+                                        <span className="leaderboard-streak"><Icon name="local_fire_department" /> {row.bestStreak}</span>
+                                    )}
+                                </span>
+                            </span>
+                            <span className="leaderboard-xp">{formatValue(scope, row.value)}</span>
+                        </li>
+                    );
+                };
+                if (entries.length === 0) {
+                    return (
                         <p className="text-center auth-hint">
                             {filter === 'friends' ? 'Add friends to see them ranked here.' : 'No players yet.'}
                         </p>
-                    )}
-                    {data.entries.map((row) => {
-                        const auto = scopeRank(scope, row, total);
-                        // Player-chosen title overrides the scope's auto-rank label,
-                        // but the tier (colour) still tracks their mastery so the
-                        // pill colour can't lie about ranking.
-                        const r = row.selectedTitle
-                            ? { title: row.selectedTitle, tier: auto.tier }
-                            : auto;
-                        const badges = (row.showcase || []).map((id) => ACHIEVEMENTS_BY_ID[id]).filter(Boolean);
-                        return (
-                            <li
-                                key={row.id}
-                                className={`leaderboard-row is-clickable ${user && row.id === user.id ? 'is-me' : ''}`}
-                                onClick={() => setSelected(row)}
-                                role="button"
-                                tabIndex={0}
-                                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelected(row); } }}
-                            >
-                                <span className="leaderboard-rank">#{row.rank}</span>
-                                <span className="leaderboard-avatar">
-                                    <Mascot size={40} mood="idle" cosmetics={row.cosmetics} still />
-                                </span>
-                                <span className="leaderboard-id">
-                                    <span className="leaderboard-name">
-                                        {row.region && (
-                                            <img className="leaderboard-flag" src={`${FLAG_BASE}${row.region.toLowerCase()}.svg`} alt="" />
-                                        )}
-                                        <span className="leaderboard-username">{row.username}</span>
-                                        {badges.length > 0 && (
-                                            <span className="leaderboard-badges">
-                                                {badges.map((a) => (
-                                                    <AchievementBadge key={a.id} ach={a} />
-                                                ))}
-                                            </span>
-                                        )}
-                                    </span>
-                                    <span className="leaderboard-sub">
-                                        <span className={`rank-tag rank-pill--${r.tier}`}>{r.title}</span>
-                                        {' · '}{row.petName || 'Atlas'} · {row.petStage || 'Hatchling'} Lv {row.petLevel}
-                                        {scope === 'overall' && ` · ${row.masteredCount} mastered`}
-                                        {scope === 'globe' && ` · ${row.geoMasteredCount || 0} mastered`}
-                                        {row.bestStreak > 0 && (
-                                            <span className="leaderboard-streak"><Icon name="local_fire_department" /> {row.bestStreak}</span>
-                                        )}
-                                    </span>
-                                </span>
-                                <span className="leaderboard-xp">{formatValue(scope, row.value)}</span>
-                            </li>
-                        );
-                    })}
-                </ol>
-            )}
+                    );
+                }
+                return (
+                    <div className="leaderboard-stack">
+                        <h3 className="leaderboard-top10-title">
+                            <Icon name="emoji_events" /> Top 10
+                        </h3>
+                        <ol className="leaderboard-list leaderboard-top10">
+                            {top10.map(renderRow)}
+                        </ol>
+                        {rest.length > 0 && (
+                            <>
+                                {showAll && (
+                                    <ol className="leaderboard-list leaderboard-rest">
+                                        {rest.map(renderRow)}
+                                    </ol>
+                                )}
+                                <button
+                                    type="button"
+                                    className="leaderboard-toggle"
+                                    onClick={() => setShowAll((v) => !v)}
+                                >
+                                    <Icon name={showAll ? 'expand_less' : 'expand_more'} />
+                                    {showAll ? 'Show top 10 only' : `Show ${rest.length} more`}
+                                </button>
+                            </>
+                        )}
+                    </div>
+                );
+            })()}
 
             {selected && (
                 <ProfileCard row={selected} flagsData={flagsData} onClose={() => setSelected(null)} />

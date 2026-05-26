@@ -5,9 +5,11 @@ import Icon from './Icon';
 import { ScoreBubble, ProgressRing } from './ui';
 import Mascot from '../assets/illustrations/Mascot';
 import { useAudio } from '../audio/AudioProvider';
-import { getHighScore, recordHighScore } from '../lib/progress';
+import { getHighScore, recordHighScore, flushBonus } from '../lib/progress';
 import { refreshBattlepass } from '../lib/battlepass';
 import { recordPlay } from '../lib/pet';
+import { useQuizPresence } from '../lib/presence';
+import SpectatorsBadge from './SpectatorsBadge';
 import { variants, springs } from '../motion';
 
 const IMAGE_BASE_URL = './assets/flags/';
@@ -42,6 +44,11 @@ function FrenzyQuiz({ allFlagsData, setView }) {
     const gameTimerRef = useRef(null);
     const lastTickRef = useRef(null);
     const tickedRef = useRef(false);
+
+    const isPlaying = gameStarted && !gameOver;
+    const { watchers, lastReactionId } = useQuizPresence(isPlaying ? 'frenzy-quiz' : null, {
+        score, streak: 0,
+    });
     // Authoritative copy of the slots so the animation frame can read + write them
     // synchronously without depending on React's async state. Every writer goes
     // through commitSlots so the ref and state never diverge.
@@ -150,9 +157,9 @@ function FrenzyQuiz({ allFlagsData, setView }) {
             if (score > highScore) {
                 setHighScore(score);
                 recordHighScore('frenzy', score);
-                // High-score bumps unlock pass challenges that gate on it
-                // (server reads from bonus_scores_json on each refresh).
-                refreshBattlepass();
+                // Push the new high synchronously so the battlepass refresh
+                // reads it instead of the previous (stale) bonus_scores_json.
+                flushBonus().then(() => refreshBattlepass());
             }
         }
     }, [gameOver, score, highScore]);
@@ -359,6 +366,7 @@ function FrenzyQuiz({ allFlagsData, setView }) {
                     {formatTime(gameTimer)}
                 </ProgressRing>
                 <ScoreBubble score={score} icon="star" floatingDelta={scoreDelta} />
+                <SpectatorsBadge watchers={watchers} lastReactionId={lastReactionId} />
             </div>
             <div className="frenzy-grid">
                 {slots.map((slot, index) => {

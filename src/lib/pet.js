@@ -3,7 +3,8 @@ import { api } from '../api/client';
 
 // "Atlas" — a Tamagotchi-style globe pet. Three needs decay in real time and are
 // refilled only by playing. Wellbeing drives mood; sustained neglect drains
-// Health, and at zero Health the pet passes away (revivable by hatching a new one).
+// Health, and at zero Health Atlas is knocked out (same recoverable state as
+// losing an Atlas Battle — play to nurse it back up). Atlas never dies.
 //
 // State is account-tied: it persists and keeps decaying while you're away. Guests
 // get a fresh, in-memory session pet that is never saved (matches the progress rule).
@@ -34,14 +35,13 @@ const FULL_THRESHOLD = 85;    // "full" cutoff that triggers chub gain
 const OBESE_THRESHOLD = 70;   // chub at/above this => chubby cheeks
 
 // Care XP -> level. Care XP grows by playing and drives the "Atlas Level"
-// leaderboard. It is wiped if Atlas passes away and you hatch a new egg — a
-// fresh companion starts back at Level 1.
+// leaderboard. Atlas never dies, so care XP only ever goes up.
 const LEVEL_XP = 120;
 const CARE = { correct: 6, incorrect: 2, play: 5 };
 
-// Atlas Battle (multiplayer) outcomes act on a SEPARATE battle-HP track so a lost
-// duel can knock Atlas out without ever triggering the neglect death. A KO is
-// purely a battle state and heals back as you play other modes.
+// Atlas Battle (multiplayer) outcomes act on a SEPARATE battle-HP track. A KO
+// from a duel — or from severe neglect — is fully recoverable by playing other
+// modes; Atlas can never actually die.
 const BATTLE_WIN_HEAL = 15;        // small reward for winning
 const BATTLE_HEAL_PER_PLAY = 6;    // battle-HP recovered per answer/play
 const KO_RECOVER_AT = 50;          // battle-HP needed to get back up after a KO
@@ -62,8 +62,6 @@ function freshPet() {
         joy: 75,
         energy: 75,
         health: 100,
-        alive: true,
-        deadAt: null,
         careXp: 0,
         chub: 0,
         battleHp: 100,
@@ -77,8 +75,7 @@ let pushTimer = null;
 const listeners = new Set();
 
 function deriveMood(s) {
-    if (!s.alive) return 'dead';
-    if (s.ko) return 'sick';            // knocked out in a battle — looks unwell
+    if (s.ko) return 'sick';            // knocked out (battle loss or severe neglect)
     if (s.health < 25) return 'sick';
     if (s.energy < 20) return 'sleepy';
     if (s.fed < 20) return 'hungry';
@@ -89,7 +86,6 @@ function deriveMood(s) {
 }
 
 function deriveStage(s) {
-    if (!s.alive) return { key: 'spirit', label: 'Resting' };
     const days = (now() - s.bornAt) / 86400000;
     if (days < 0.04) return { key: 'egg', label: 'Hatchling' };
     if (days < 1) return { key: 'sprout', label: 'Sprout' };
@@ -131,14 +127,18 @@ function applyDecay(s, elapsedMs) {
     let health = s.health;
     if (wellbeing < LOW_WELLBEING) health = clamp(health - HEALTH_DRAIN * h);
     else if (wellbeing > HIGH_WELLBEING) health = clamp(health + HEALTH_REGEN * h);
-    let alive = s.alive;
-    let deadAt = s.deadAt;
-    if (alive && health <= 0) {
-        alive = false;
-        deadAt = now();
+    let ko = s.ko;
+    let battleHp = s.battleHp == null ? 100 : s.battleHp;
+    if (health <= 0) {
+        // Severe neglect knocks Atlas out — same recoverable state as losing an
+        // Atlas Battle. Health is floored above zero and battle-HP zeroed; playing
+        // refills both, and the KO clears once battle-HP climbs back to KO_RECOVER_AT.
+        health = KO_HEALTH_FLOOR;
+        ko = true;
+        battleHp = 0;
     }
     const chub = clamp((s.chub || 0) - CHUB_DECAY * h);
-    return { ...s, fed, joy, energy, health, chub, alive, deadAt, lastTick: now() };
+    return { ...s, fed, joy, energy, health, chub, ko, battleHp, lastTick: now() };
 }
 
 function persist() {
@@ -146,14 +146,13 @@ function persist() {
     if (pushTimer) clearTimeout(pushTimer);
     pushTimer = setTimeout(() => {
         pushTimer = null;
-        const { name, bornAt, lastTick, fed, joy, energy, health, alive, deadAt, careXp, level, chub, battleHp, ko } = state;
-        api.put('/pet', { pet: { name, bornAt, lastTick, fed, joy, energy, health, alive, deadAt, careXp, level, chub, battleHp, ko } })
+        const { name, bornAt, lastTick, fed, joy, energy, health, careXp, level, chub, battleHp, ko } = state;
+        api.put('/pet', { pet: { name, bornAt, lastTick, fed, joy, energy, health, careXp, level, chub, battleHp, ko } })
             .catch(() => {});
     }, 1500);
 }
 
 function feed(kind, times = 1) {
-    if (!state.alive) return;
     const r = REFILL[kind] || REFILL.play;
     const next = applyDecay(state, now() - state.lastTick);
     const wasFull = next.fed >= FULL_THRESHOLD;
@@ -179,8 +178,8 @@ export function recordIncorrect(times = 1) { feed('incorrect', times); }
 export function recordPlay(times = 1) { feed('play', times); }
 
 // Apply an Atlas Battle (multiplayer 1v1) result. A loss damages battle-HP and
-// can knock Atlas out (revivable by playing); a win heals a little. Never touches
-// the neglect health/alive state, so a battle can't actually kill Atlas.
+// can knock Atlas out (recoverable by playing); a win heals a little. Health is
+// floored well above zero on a KO so neither battles nor neglect are ever fatal.
 export function recordBattleResult(won) {
     const next = applyDecay(state, now() - state.lastTick);
     const cur = next.battleHp == null ? 100 : next.battleHp;
@@ -197,13 +196,6 @@ export function recordBattleResult(won) {
         next.health = Math.max(KO_HEALTH_FLOOR, next.health - KO_HEALTH_HIT);
     }
     commit(next);
-    persist();
-}
-
-// Hatch a brand-new egg after Atlas has passed away. All progress — care XP,
-// level, age — is wiped; the new companion starts fresh at Level 1.
-export function revivePet() {
-    commit(freshPet());
     persist();
 }
 

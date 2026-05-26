@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import Icon from './Icon';
 import { Button, Pill } from './ui';
-import { usePet, revivePet } from '../lib/pet';
+import { usePet } from '../lib/pet';
 
 const STATUS = {
     cheer: 'is thriving! Keep those flags coming.',
@@ -41,20 +41,6 @@ function NeedBar({ label, icon, tone, value }) {
 
 function PetPanel({ setView }) {
     const pet = usePet();
-
-    if (!pet.alive) {
-        return (
-            <div className="pet-panel pet-panel--gone">
-                <h3 className="pet-name">{pet.name} has drifted off…</h3>
-                <p className="pet-status">
-                    {pet.name} wasn't cared for and faded away. Hatch a new companion and keep it happy by playing.
-                </p>
-                <Button variant="primary" icon="egg" onClick={() => revivePet()}>
-                    Hatch a new egg
-                </Button>
-            </div>
-        );
-    }
 
     return (
         <div className="pet-panel">

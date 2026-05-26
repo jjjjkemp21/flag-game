@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import Icon from './Icon';
 import { Modal, Button, Pill } from './ui';
 import { useToast } from './ui/Toast';
 import Mascot from '../assets/illustrations/Mascot';
 import AchievementBadge from './AchievementBadge';
+import TitleBadge from './TitleBadge';
 import { useAuth } from '../auth/AuthProvider';
 import { api } from '../api/client';
-import { masteryRank } from '../lib/mastery';
+import { masteryRank, geoMasteryRank } from '../lib/mastery';
 import { ACHIEVEMENTS, ACHIEVEMENTS_BY_ID } from '../lib/achievements';
 
 const FLAG_BASE = './assets/flags/';
@@ -25,6 +25,7 @@ function ProfileCard({ row, flagsData, onClose }) {
 
     const total = (flagsData && flagsData.length) || 0;
     const rank = masteryRank(row.masteredCount || 0, total);
+    const geoRank = geoMasteryRank(row.geoMasteredCount || 0, total);
     const badges = (row.showcase || []).map((id) => ACHIEVEMENTS_BY_ID[id]).filter(Boolean);
     const petName = row.petName || 'Atlas';
 
@@ -97,13 +98,17 @@ function ProfileCard({ row, flagsData, onClose }) {
                         </span>
                     )}
                     <span className={`rank-pill rank-pill--${rank.tier}`}>
-                        <Icon name="military_tech" /> {rank.title}
+                        <TitleBadge scope="mastery" tier={rank.tier} size={24} /> {rank.title}
+                    </span>
+                    <span className={`rank-pill rank-pill--${geoRank.tier}`}>
+                        <TitleBadge scope="geo" tier={geoRank.tier} size={24} /> {geoRank.title}
                     </span>
                 </div>
 
                 <div className="profile-card__stats">
                     <Pill tone="primary" icon="star">{row.xp || 0} XP</Pill>
-                    <Pill tone="info" icon="public">{row.masteredCount || 0} / {total} mastered</Pill>
+                    <Pill tone="info" icon="flag">{row.masteredCount || 0} / {total} flags</Pill>
+                    <Pill tone="info" icon="public">{row.geoMasteredCount || 0} / {total} placed</Pill>
                     <Pill tone="accent" icon="emoji_events">
                         {row.achievementCount || 0} / {ACHIEVEMENTS.length} achievements
                     </Pill>

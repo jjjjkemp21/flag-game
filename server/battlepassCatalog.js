@@ -48,14 +48,19 @@ const CHALLENGES = [
     { id: 'fr_100',    metric: 'fr_correct',       goal: 100,    stars: 1400, mode: 'free-response',   title: 'Wordsmith',        desc: 'Type 100 country names correctly', icon: 'edit_note' },
     { id: 'fr_300',    metric: 'fr_correct',       goal: 300,    stars: 2500, mode: 'free-response',   title: 'Atlas Author',     desc: 'Type 300 country names correctly', icon: 'edit_note' },
 
-    // Globe
+    // Globe — placement
     { id: 'globe_15',  metric: 'globe_correct',    goal: 15,     stars: 700,  mode: 'globe',           title: 'Pin Drop',         desc: 'Place 15 countries on the globe', icon: 'public' },
     { id: 'globe_75',  metric: 'globe_correct',    goal: 75,     stars: 1600, mode: 'globe',           title: 'Cartographer',     desc: 'Place 75 countries on the globe', icon: 'public' },
     { id: 'globe_200', metric: 'globe_correct',    goal: 200,    stars: 2800, mode: 'globe',           title: 'World Walker',     desc: 'Place 200 countries on the globe', icon: 'public' },
 
+    // Globe — name the highlighted country (no flag shown)
+    { id: 'globename_15',  metric: 'globe_name_correct', goal: 15,  stars: 800,  mode: 'globe',        title: 'Outline Reader',   desc: 'Name 15 countries from the globe', icon: 'edit_location_alt' },
+    { id: 'globename_75',  metric: 'globe_name_correct', goal: 75,  stars: 1800, mode: 'globe',        title: 'Shape Whisperer',  desc: 'Name 75 countries from the globe', icon: 'edit_location_alt' },
+    { id: 'globename_200', metric: 'globe_name_correct', goal: 200, stars: 3000, mode: 'globe',        title: 'Atlas Mind',       desc: 'Name 200 countries from the globe', icon: 'edit_location_alt' },
+
     // Frenzy
     { id: 'frenzy_50',  metric: 'high_frenzy',     goal: 50,     stars: 700,  mode: 'frenzy',          title: 'Frenzy Rookie',    desc: 'Reach 50 score in Frenzy', icon: 'bolt' },
-    { id: 'frenzy_120', metric: 'high_frenzy',     goal: 120,    stars: 1600, mode: 'frenzy',          title: 'Frenzy Pro',       desc: 'Reach 120 score in Frenzy', icon: 'bolt' },
+    { id: 'frenzy_300', metric: 'high_frenzy',     goal: 300,    stars: 1600, mode: 'frenzy',          title: 'Frenzy Pro',       desc: 'Reach 300 score in Frenzy', icon: 'bolt' },
 
     // Pixelated
     { id: 'pix_30',    metric: 'high_pixelated',   goal: 30,     stars: 700,  mode: 'pixelated',       title: 'Pixel Eye',        desc: 'Reach 30 score in Pixelated', icon: 'grid_view' },
@@ -101,28 +106,38 @@ const TIERS = [
     { tier: 1,  free: { type: 'bucks', amount: 250 },    prem: { type: 'cosmetic', cat: 'glasses', id: 'bp_snake_eyes' } },
     { tier: 2,  free: { type: 'bucks', amount: 200 },    prem: { type: 'cosmetic', cat: 'hat',     id: 'bp_horns_jade' } },
     { tier: 3,  free: { type: 'cosmetic', cat: 'glasses', id: 'bp_lizard_eyes' }, prem: { type: 'cosmetic', cat: 'color',   id: 'bp_iguana' } },
-    { tier: 4,  free: { type: 'bucks', amount: 300 },    prem: { type: 'cosmetic', cat: 'glasses', id: 'bp_serpent_eyes' } },
+    // Tier 4 free: a starter emote on the free track so every player gets a
+    // taste of the new system without needing to grind the prem-only ones.
+    { tier: 4,  free: { type: 'cosmetic', cat: 'emote',   id: 'cheer' },  prem: { type: 'cosmetic', cat: 'glasses', id: 'bp_serpent_eyes' } },
     { tier: 5,  free: { type: 'bucks', amount: 750 },    prem: { type: 'cosmetic', cat: 'hat',     id: 'bp_frill_emerald' } },
-    { tier: 6,  free: { type: 'bucks', amount: 300 },    prem: { type: 'cosmetic', cat: 'effect',  id: 'bp_mist' } },
+    // Tier 6 prem: the first BP-exclusive emote — Serpent Coil — matches the
+    // atmospheric reptile theme that previously belonged to the Swamp Mist
+    // effect this slot used to grant.
+    { tier: 6,  free: { type: 'bucks', amount: 300 },    prem: { type: 'cosmetic', cat: 'emote',   id: 'bp_serpent_coil' } },
     { tier: 7,  free: { type: 'cosmetic', cat: 'hat',    id: 'bp_horns_obsidian' }, prem: { type: 'cosmetic', cat: 'color',   id: 'bp_gecko' } },
     { tier: 8,  free: { type: 'bucks', amount: 400 },    prem: { type: 'cosmetic', cat: 'hat',     id: 'bp_scale_helm' } },
     { tier: 9,  free: { type: 'bucks', amount: 400 },    prem: { type: 'cosmetic', cat: 'color',   id: 'bp_jade' } },
     { tier: 10, free: { type: 'bucks', amount: 1000 },   prem: { type: 'cosmetic', cat: 'color',   id: 'bp_python' } },
-    { tier: 11, free: { type: 'bucks', amount: 500 },    prem: { type: 'cosmetic', cat: 'glasses', id: 'bp_dragon_gaze' } },
+    // Tier 11 free: a mid-tier emote on the free track.
+    { tier: 11, free: { type: 'cosmetic', cat: 'emote',  id: 'laugh' },   prem: { type: 'cosmetic', cat: 'glasses', id: 'bp_dragon_gaze' } },
     { tier: 12, free: { type: 'cosmetic', cat: 'effect', id: 'bp_scales' }, prem: { type: 'cosmetic', cat: 'color',   id: 'bp_komodo' } },
     { tier: 13, free: { type: 'bucks', amount: 600 },    prem: { type: 'cosmetic', cat: 'hat',     id: 'bp_frill_crimson' } },
     { tier: 14, free: { type: 'bucks', amount: 600 },    prem: { type: 'cosmetic', cat: 'color',   id: 'bp_anaconda' } },
     { tier: 15, free: { type: 'bucks', amount: 1500 },   prem: { type: 'cosmetic', cat: 'hat',     id: 'bp_horns_fire' } },
-    { tier: 16, free: { type: 'bucks', amount: 700 },    prem: { type: 'cosmetic', cat: 'glasses', id: 'bp_drake_visor' } },
-    { tier: 17, free: { type: 'bucks', amount: 700 },    prem: { type: 'cosmetic', cat: 'hat',     id: 'bp_frill_violet' } },
+    // Tier 16 prem: BP-exclusive Scale Flex (mid-high tier showpiece emote).
+    { tier: 16, free: { type: 'bucks', amount: 700 },    prem: { type: 'cosmetic', cat: 'emote',   id: 'bp_scale_flex' } },
+    // Tier 17 free: an upper-mid emote on the free track.
+    { tier: 17, free: { type: 'cosmetic', cat: 'emote',  id: 'heart' },   prem: { type: 'cosmetic', cat: 'hat',     id: 'bp_frill_violet' } },
     { tier: 18, free: { type: 'bucks', amount: 800 },    prem: { type: 'cosmetic', cat: 'color',   id: 'bp_frost_serpent' } },
     { tier: 19, free: { type: 'bucks', amount: 900 },    prem: { type: 'cosmetic', cat: 'effect',  id: 'bp_breath' } },
     { tier: 20, free: { type: 'bucks', amount: 2000 },   prem: { type: 'cosmetic', cat: 'color',   id: 'bp_basilisk' } },
     { tier: 21, free: { type: 'bucks', amount: 1000 },   prem: { type: 'cosmetic', cat: 'hat',     id: 'bp_horns_gold' } },
-    { tier: 22, free: { type: 'bucks', amount: 1100 },   prem: { type: 'cosmetic', cat: 'hat',     id: 'bp_scale_helm_gold' } },
+    // Tier 22 prem: the marquee BP-exclusive Dragon's Roar — a high-tier
+    // capstone emote ahead of the season finale.
+    { tier: 22, free: { type: 'bucks', amount: 1100 },   prem: { type: 'cosmetic', cat: 'emote',   id: 'bp_dragon_roar' } },
     { tier: 23, free: { type: 'bucks', amount: 1300 },   prem: { type: 'cosmetic', cat: 'color',   id: 'bp_cosmic_drake' } },
     { tier: 24, free: { type: 'bucks', amount: 1600 },   prem: { type: 'cosmetic', cat: 'color',   id: 'bp_chameleon' } },
-    { tier: 25, free: { type: 'bucks', amount: 3000 },   prem: { type: 'cosmetic', cat: 'color',   id: 'bp_dragon_fire' } },
+    { tier: 25, free: { type: 'cosmetic', cat: 'scene', id: 'bp_reptile' }, prem: { type: 'cosmetic', cat: 'color',   id: 'bp_dragon_fire' } },
 ];
 
 // Convert a (track, tier) into the canonical claim key stored in claimed[].

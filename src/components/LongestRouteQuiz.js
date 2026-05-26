@@ -7,9 +7,11 @@ import Mascot from '../assets/illustrations/Mascot';
 import Confetti from '../assets/illustrations/Confetti';
 import Spinner from '../assets/illustrations/Spinner';
 import { useAudio } from '../audio/AudioProvider';
-import { getHighScore, recordHighScore } from '../lib/progress';
+import { getHighScore, recordHighScore, flushBonus } from '../lib/progress';
 import { refreshBattlepass } from '../lib/battlepass';
 import { recordPlay } from '../lib/pet';
+import { useQuizPresence } from '../lib/presence';
+import SpectatorsBadge from './SpectatorsBadge';
 import { variants } from '../motion';
 
 function deg2rad(deg) { return deg * (Math.PI / 180); }
@@ -29,6 +31,18 @@ const IMAGE_BASE_URL = './assets/flags/';
 const ROUTES_DATA_URL = './data/longest_routes.json';
 const GAME_OVER_DELAY = 2000;
 
+// Length buckets the player picks from on the start screen. The data file has
+// 131 chains clustered around 10-24, plus a sparse 35-38 tier (Afghanistan +
+// the four neighbours that sit at the centre of the Asia/Europe/Africa
+// landmass). Random preserves the pre-feature behaviour. min/max are inclusive.
+const BUCKETS = [
+    { key: 'short',    label: 'Short',    icon: 'speed',         min: 10, max: 14 },
+    { key: 'medium',   label: 'Medium',   icon: 'route',         min: 15, max: 19 },
+    { key: 'long',     label: 'Long',     icon: 'hiking',        min: 20, max: 24 },
+    { key: 'marathon', label: 'Marathon', icon: 'emoji_events',  min: 35, max: 99 },
+    { key: 'random',   label: 'Random',   icon: 'shuffle',       min: 0,  max: 999 },
+];
+
 function LongestRouteQuiz({ allFlagsData, setView }) {
     const [allRoutes, setAllRoutes] = useState(null);
     const [routeKeys, setRouteKeys] = useState([]);
@@ -46,6 +60,7 @@ function LongestRouteQuiz({ allFlagsData, setView }) {
 
     const [score, setScore] = useState(0);
     const [longestRouteHighScore, setLongestRouteHighScore] = useState(() => getHighScore('longestRoute'));
+    const [selectedBucket, setSelectedBucket] = useState('random');
 
     const [quizStats, setQuizStats] = useState(null);
     const [flashColor, setFlashColor] = useState(null);
@@ -53,6 +68,13 @@ function LongestRouteQuiz({ allFlagsData, setView }) {
     const [showConfetti, setShowConfetti] = useState(false);
 
     const audio = useAudio();
+
+    const isPlaying = gameStarted && !gameOver;
+    const { watchers, lastReactionId } = useQuizPresence(isPlaying ? 'longest-route-quiz' : null, {
+        score, streak: 0,
+        promptKind: 'flag',
+        promptFlagCode: currentFlag ? currentFlag.code : undefined,
+    });
     const inputRef = useRef(null);
     const flagMapByName = useRef(new Map());
     const gameOverTimeoutRef = useRef(null);
@@ -107,7 +129,16 @@ function LongestRouteQuiz({ allFlagsData, setView }) {
         setShowConfetti(false);
         if (gameOverTimeoutRef.current) clearTimeout(gameOverTimeoutRef.current);
 
-        const randomKey = routeKeys[Math.floor(Math.random() * routeKeys.length)];
+        // Narrow to chains that fit the chosen length bucket. If for any reason
+        // no routes match (data drift), fall back to the full pool so the mode
+        // is never bricked.
+        const bucket = BUCKETS.find((b) => b.key === selectedBucket) || BUCKETS[BUCKETS.length - 1];
+        const eligible = routeKeys.filter((k) => {
+            const len = allRoutes[k].length;
+            return len >= bucket.min && len <= bucket.max;
+        });
+        const pool = eligible.length > 0 ? eligible : routeKeys;
+        const randomKey = pool[Math.floor(Math.random() * pool.length)];
         const randomPathArray = allRoutes[randomKey];
         setQuizPath(randomPathArray);
 
@@ -187,7 +218,7 @@ function LongestRouteQuiz({ allFlagsData, setView }) {
                 if (finalScore > longestRouteHighScore) {
                     recordHighScore('longestRoute', finalScore);
                     setLongestRouteHighScore(finalScore);
-                    refreshBattlepass();
+                    flushBonus().then(() => refreshBattlepass());
                 }
                 setGameOver(true);
                 setIsWin(true);
@@ -276,7 +307,32 @@ function LongestRouteQuiz({ allFlagsData, setView }) {
                                     <Mascot size={88} mood="wave" />
                                     <h2>Longest Route</h2>
                                     <p className="pixel-high-score">High Score: {longestRouteHighScore}</p>
-                                    <p>We've loaded <strong style={{ color: 'var(--color-primary-deep)' }}>{routeKeys.length}</strong> pre-calculated routes. You'll be quizzed on one!</p>
+                                    <p>Pick a chain length:</p>
+                                    <div className="bucket-picker">
+                                        {BUCKETS.map((b) => {
+                                            const count = routeKeys.filter((k) => {
+                                                const len = allRoutes[k].length;
+                                                return len >= b.min && len <= b.max;
+                                            }).length;
+                                            const disabled = count === 0 && b.key !== 'random';
+                                            return (
+                                                <button
+                                                    key={b.key}
+                                                    type="button"
+                                                    className={`bucket-chip ${selectedBucket === b.key ? 'is-active' : ''}`}
+                                                    onClick={() => setSelectedBucket(b.key)}
+                                                    disabled={disabled}
+                                                >
+                                                    <Icon name={b.icon} /> {b.label}
+                                                    <span className="bucket-chip__count">
+                                                        {b.key === 'random'
+                                                            ? `${routeKeys.length}`
+                                                            : `${b.min}${b.max < 99 ? `-${b.max}` : '+'} · ${count}`}
+                                                    </span>
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
                                     <ul className="pixel-rules-list">
                                         <li>Guess every flag in a randomly chosen chain, in order.</li>
                                         <li>One incorrect answer or skip ends the game.</li>
@@ -349,6 +405,7 @@ function LongestRouteQuiz({ allFlagsData, setView }) {
                         <Icon name="route" /> Chain {score}/{quizPath.length}
                     </span>
                     <ScoreBubble score={score} icon="trending_up" floatingDelta={scoreDelta} />
+                    <SpectatorsBadge watchers={watchers} lastReactionId={lastReactionId} />
                 </div>
 
                 <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', width: '100%' }}>

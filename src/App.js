@@ -16,6 +16,7 @@ import StoreScreen from './components/StoreScreen';
 import StatsScreen from './components/StatsScreen';
 import MultiplayerScreen from './components/MultiplayerScreen';
 import BattlepassScreen from './components/BattlepassScreen';
+import SpectatorScreen from './components/SpectatorScreen';
 import TopBar from './components/TopBar';
 import Spinner from './assets/illustrations/Spinner';
 import { useAudio } from './audio/AudioProvider';
@@ -70,7 +71,10 @@ function App() {
     const [view, setView] = useState('menu');
     const [quizMode, setQuizMode] = useState(null);
     const [quizCategory, setQuizCategory] = useState({ type: 'all', value: null });
-    const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
+    // Which friend the user is currently spectating. Set when an Eye icon is
+    // clicked in the Friends list; consumed by the 'spectator' view case.
+    const [spectateTarget, setSpectateTarget] = useState(null);
+    const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'dark');
     const [strictSpelling, setStrictSpelling] = useState(() => localStorage.getItem('strictSpelling') === 'true');
     const [isLoading, setIsLoading] = useState(true);
     // Question history rides on a ref so back-to-back picks see the freshest
@@ -362,11 +366,33 @@ function App() {
                 }
                 return <FreeResponseQuiz {...quizProps} quizFlags={quizFlags} strictSpelling={strictSpelling} />;
             }
+            case 'mirror':
+            case 'flash':
+                // Bonus-menu variants of MC: full flag pool, no category picker.
+                // `variant` switches the visual transform inside MultipleChoiceQuiz.
+                return (
+                    <MultipleChoiceQuiz
+                        {...quizProps}
+                        quizFlags={flagsData}
+                        quizCategory={{ type: 'all', value: null }}
+                        variant={view}
+                    />
+                );
+            case 'reverse-mc':
+                // Country-name prompt, flag thumbnails as the answers.
+                return (
+                    <MultipleChoiceQuiz
+                        {...quizProps}
+                        quizFlags={flagsData}
+                        quizCategory={{ type: 'all', value: null }}
+                        variant="reverse"
+                    />
+                );
             case 'globe': {
                 const quizFlags = getFilteredFlags();
                 return (
                     <Suspense fallback={<LazyFallback label="Loading Globe…" />}>
-                        <GlobeQuiz {...quizProps} quizFlags={quizFlags} />
+                        <GlobeQuiz {...quizProps} quizFlags={quizFlags} strictSpelling={strictSpelling} />
                     </Suspense>
                 );
             }
@@ -401,7 +427,9 @@ function App() {
             case 'leaderboard':
                 return <Leaderboard setView={setView} flagsData={flagsData} />;
             case 'friends':
-                return <Friends setView={setView} />;
+                return <Friends setView={setView} setSpectateTarget={setSpectateTarget} />;
+            case 'spectator':
+                return <SpectatorScreen targetId={spectateTarget} setView={setView} />;
             case 'achievements':
                 return <Achievements setView={setView} flagsData={flagsData} />;
             case 'admin':

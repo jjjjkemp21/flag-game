@@ -477,6 +477,73 @@ export const GLASSES = {
     bp_drake_visor:   { name: 'Drake Visor',     xp: 999999, bpOnly: true, shape: 'dragonGaze', c: gc('#1F5A3F', '#7FE05B', '#FFD86B') },
 };
 
+// ---- Mouth colorways -------------------------------------------------------
+// Reuses the `hc(main, dark, accent, trim)` helper used by hats. Beard tones,
+// lip colours, etc. live here so MOUTHS entries stay readable.
+const BEARD_BLACK  = hc('#3A2E26', '#1F1A14', '#7A6A55');
+const BEARD_BROWN  = hc('#7A4F2E', '#4F3520', '#C29A6A');
+const BEARD_GRAY   = hc('#B7BCC4', '#7A8090', '#E6ECF2');
+const BEARD_RED    = hc('#C56A2E', '#7A3F1A', '#FFD8A8');
+const BEARD_BLONDE = hc('#E0B66E', '#A07A1A', '#FFEFC2');
+const LIP_RED      = hc('#E5414C', '#8A1F26', '#FFC0C6');
+const LIP_PINK     = hc('#FF7BA0', '#C84F7A', '#FFE0EC');
+const LIP_PLUM     = hc('#7A2A5B', '#3F1430', '#C870A8');
+const LIP_GLOSS    = hc('#FFC0C6', '#C8868D', '#FFFFFF');
+const PACI_BLUE    = hc('#7FC2F5', '#3F8AC8', '#FFD86B');
+const MASK_BLUE    = hc('#7FAAD8', '#3F5F8A', '#FFFFFF');
+const MASK_GREEN   = hc('#5BAE6A', '#2F7D3F', '#FFC247');
+const MASK_BLACK   = hc('#2A2440', '#16122A', '#C56F2E');
+
+// ---- Mouth catalog ---------------------------------------------------------
+// Items that visually replace the mood mouth (lipstick, masks, fangs) set
+// `hideMouth: true` so the default mood mouth doesn't bleed through. Accessory
+// items (beards, lollipops, straws, cigars) leave it visible so the mascot
+// keeps its expression.
+export const MOUTHS = {
+    none:            { name: 'None',               xp: 0 },
+
+    // Beards & moustaches — sit around the lower face
+    soul_patch:      { name: 'Soul Patch',         xp: 200,  shape: 'soulPatch',   c: BEARD_BROWN },
+    stache_brown:    { name: 'Moustache',          xp: 240,  shape: 'mustache',    c: BEARD_BROWN },
+    stache_black:    { name: 'Black Moustache',    xp: 260,  shape: 'mustache',    c: BEARD_BLACK },
+    goatee:          { name: 'Goatee',             xp: 320,  shape: 'goatee',      c: BEARD_BROWN },
+    goatee_black:    { name: 'Black Goatee',       xp: 340,  shape: 'goatee',      c: BEARD_BLACK },
+    handlebar:       { name: 'Handlebar Stache',   xp: 420,  shape: 'handlebar',   c: BEARD_BROWN },
+    handlebar_red:   { name: 'Red Handlebar',      xp: 460,  shape: 'handlebar',   c: BEARD_RED },
+    full_beard:      { name: 'Full Beard',         xp: 580,  shape: 'fullBeard',   c: BEARD_BROWN },
+    full_beard_red:  { name: 'Ginger Beard',       xp: 640,  shape: 'fullBeard',   c: BEARD_RED },
+    full_beard_gray: { name: 'Wise Beard',         xp: 720,  shape: 'fullBeard',   c: BEARD_GRAY },
+    viking_beard:    { name: 'Viking Braids',      xp: 1080, shape: 'vikingBeard', c: BEARD_BLONDE },
+
+    // Lip cosmetics — fully replace the mood mouth
+    lip_gloss:       { name: 'Lip Gloss',          xp: 320,  shape: 'lipGloss',  hideMouth: true, c: LIP_GLOSS },
+    lipstick_red:    { name: 'Red Lipstick',       xp: 420,  shape: 'lipstick',  hideMouth: true, c: LIP_RED },
+    lipstick_pink:   { name: 'Pink Lipstick',      xp: 460,  shape: 'lipstick',  hideMouth: true, c: LIP_PINK },
+    lipstick_plum:   { name: 'Plum Lipstick',      xp: 540,  shape: 'lipstick',  hideMouth: true, c: LIP_PLUM },
+    lipstick_gold:   { name: 'Gold Lipstick',      xp: 1280, shape: 'lipstick',  hideMouth: true, c: hc('#FFD86B', '#A07A1A', '#FFEFC2') },
+
+    // Silly / accessory items
+    tongue_out:      { name: 'Tongue Out',         xp: 280,  shape: 'tongueOut',  hideMouth: true, c: hc('#FF7BA0', '#C84F7A', '#FFFFFF') },
+    bubblegum:       { name: 'Bubblegum',          xp: 380,  shape: 'bubblegum',  c: hc('#FFB0D8', '#E5417A', '#FFFFFF') },
+    bubblegum_blue:  { name: 'Blueberry Gum',      xp: 440,  shape: 'bubblegum',  c: hc('#B0CFFF', '#3F6FF6', '#FFFFFF') },
+    toothpick:       { name: 'Toothpick',          xp: 340,  shape: 'toothpick',  c: hc('#E5C68A', '#9A6F2A', '#FFFDF7') },
+    pacifier:        { name: 'Pacifier',           xp: 480,  shape: 'pacifier',   c: PACI_BLUE },
+    pacifier_pink:   { name: 'Pink Pacifier',      xp: 500,  shape: 'pacifier',   c: hc('#FF7BA0', '#C84F7A', '#FFD86B') },
+    straw_red:       { name: 'Drinking Straw',     xp: 560,  shape: 'straw',      c: hc('#FFFFFF', '#1F1A3B', '#E5414C') },
+    straw_rainbow:   { name: 'Rainbow Straw',      xp: 760,  shape: 'straw',      c: hc('#FFFFFF', '#1F1A3B', '#5B5BF6') },
+    lollipop_red:    { name: 'Lollipop',           xp: 660,  shape: 'lollipop',   c: hc('#E5414C', '#8A1F26', '#FFFFFF') },
+    lollipop_swirl:  { name: 'Rainbow Lollipop',   xp: 940,  shape: 'lollipopSwirl', c: hc('#FF5C6C', '#1F1A3B', '#FFC247') },
+    whistle:         { name: 'Whistle',            xp: 760,  shape: 'whistle',    c: hc('#D7DEE8', '#566173', '#E5414C') },
+    cigar:           { name: 'Cigar',              xp: 820,  shape: 'cigar',      c: hc('#6F4A26', '#3A2410', '#FFD86B') },
+    pipe:            { name: 'Smoking Pipe',       xp: 1080, shape: 'pipe',       c: hc('#6F4A26', '#2A1810', '#C29A6A') },
+    vampire_fangs:   { name: 'Vampire Fangs',      xp: 1280, shape: 'vampireFangs', hideMouth: true, c: hc('#FFFDF7', '#7A1F2A', '#E5414C') },
+    grillz:          { name: 'Gold Grillz',        xp: 1450, shape: 'grillz',     hideMouth: true, c: hc('#FFD86B', '#A07A1A', '#FFFDF7') },
+    surgeon_mask:    { name: 'Surgeon Mask',       xp: 920,  shape: 'surgeonMask', hideMouth: true, c: MASK_BLUE },
+    surgeon_mask_blk:{ name: 'Black Mask',         xp: 1100, shape: 'surgeonMask', hideMouth: true, c: MASK_BLACK },
+    pilot_mask:      { name: 'Pilot Oxygen Mask',  xp: 1700, shape: 'pilotMask',  hideMouth: true, c: hc('#1F2A40', '#0F1428', '#FFC247') },
+    gas_mask:        { name: 'Gas Mask',           xp: 2300, shape: 'gasMask',    hideMouth: true, c: MASK_GREEN },
+};
+
 // ---- Effects ---------------------------------------------------------------
 // Animated flourishes layered onto Atlas. `kind` selects an SVG renderer in
 // assets/illustrations/Cosmetics.jsx ('spin' rotates the globe's continents and
@@ -484,37 +551,116 @@ export const GLASSES = {
 export const EFFECTS = {
     none:     { name: 'None',           xp: 0 },
     spin:     { name: 'Spinning Globe', xp: 500,  kind: 'spin' },
-    orbit:    { name: 'Orbiting Moon',  xp: 900,  kind: 'orbit' },
+    orbit:    { name: 'Orbiting Moon',  xp: 900,  kind: 'orbit',    sizable: true },
     sparkle:  { name: 'Sparkles',       xp: 1200, kind: 'sparkle' },
     bubbles:  { name: 'Bubbles',        xp: 1800, kind: 'bubbles' },
     snow:     { name: 'Snowfall',       xp: 2400, kind: 'snow' },
     hearts:   { name: 'Lovestruck',     xp: 3000, kind: 'hearts' },
-    rings:    { name: 'Planet Rings',   xp: 3600, kind: 'rings' },
-    flames:   { name: 'Blazing',        xp: 4400, kind: 'flames' },
-    electric: { name: 'Electric',       xp: 5400, kind: 'electric' },
+    rings:    { name: 'Planet Rings',   xp: 3600, kind: 'rings',    sizable: true },
+    flames:   { name: 'Blazing',        xp: 4400, kind: 'flames',   sizable: true },
+    electric: { name: 'Electric',       xp: 5400, kind: 'electric', sizable: true },
     confetti: { name: 'Party Time',     xp: 6800, kind: 'confetti' },
     notes:    { name: 'Music Notes',    xp: 2700, kind: 'notes' },
     disco:    { name: 'Disco Lights',   xp: 5800, kind: 'disco' },
 
     // ---- Reptile Kingdom effects (Atlas Pass exclusives) -------------------
     bp_scales: { name: 'Scale Shower',   xp: 999999, bpOnly: true, kind: 'scaleFall' },
-    bp_breath: { name: "Dragon's Breath", xp: 999999, bpOnly: true, kind: 'dragonBreath' },
+    bp_breath: { name: "Dragon's Breath", xp: 999999, bpOnly: true, kind: 'dragonBreath', sizable: true },
     bp_mist:   { name: 'Swamp Mist',     xp: 999999, bpOnly: true, kind: 'swampMist' },
+};
+
+// Which effects support the player-controlled position/size transform.
+// Fill-the-canvas effects (snow, sparkles, etc.) ignore it — scaling them
+// clips off-canvas or clusters particles, so they stay as-authored.
+export function isEffectSizable(id) {
+    return !!(EFFECTS[id] && EFFECTS[id].sizable);
+}
+
+// ---- Emotes ---------------------------------------------------------------
+// Short, one-shot animations a spectator can fire on their own Atlas while
+// watching a friend. Each entry's `kind` maps to an EMOTE_SHAPES renderer in
+// assets/illustrations/Cosmetics.jsx. The player equips up to 4 emotes into
+// `emoteLoadout` — the SpectatorScreen surfaces those 4 as quick-react buttons.
+//
+// `wave` is the free starter (every account owns it from day one). `none` is
+// the empty-slot marker used by emoteLoadout — not a cosmetic you equip
+// directly. BP-exclusive emotes land in Phase 3.
+export const EMOTES = {
+    none:      { name: 'None',         xp: 0 },
+    wave:      { name: 'Wave',         xp: 0,    kind: 'wave' },
+    cheer:     { name: 'Cheer',        xp: 300,  kind: 'cheer' },
+    laugh:     { name: 'Laugh',        xp: 400,  kind: 'laugh' },
+    cry:       { name: 'Crying',       xp: 400,  kind: 'cry' },
+    shocked:   { name: 'Shocked',      xp: 500,  kind: 'shocked' },
+    spin:      { name: 'Spin Around',  xp: 800,  kind: 'spinAround' },
+    heart:     { name: 'Heart Burst',  xp: 1100, kind: 'heartBurst' },
+    bounce:    { name: 'Big Bounce',   xp: 1300, kind: 'bounce' },
+    sleep:     { name: 'Snooze',       xp: 1500, kind: 'sleep' },
+    fireworks: { name: 'Fireworks',    xp: 2200, kind: 'fireworks' },
+
+    // ---- Reptile Kingdom emotes (Atlas Pass exclusives) ----------------------
+    // bpOnly:true items are gated to the battlepass: the shop hides them and
+    // the currency buy endpoint refuses them. They can only be unlocked by
+    // claiming a pass tier — once unlocked, they appear in the player's "Owned"
+    // tab + can be slotted into the loadout like any other emote.
+    bp_dragon_roar:  { name: "Dragon's Roar",   xp: 999999, bpOnly: true, kind: 'dragonRoar' },
+    bp_scale_flex:   { name: 'Scale Flex',      xp: 999999, bpOnly: true, kind: 'scaleFlex' },
+    bp_serpent_coil: { name: 'Serpent Coil',    xp: 999999, bpOnly: true, kind: 'serpentCoil' },
+};
+
+// Items that ship as free starters — owned without showing up in
+// owned_cosmetics_json. Mirrors `FREE_STARTERS` in server/cosmeticsCatalog.js.
+export const FREE_STARTER_ITEMS = {
+    emote: new Set(['wave']),
+};
+
+export function isFreeStarter(category, id) {
+    return !!(FREE_STARTER_ITEMS[category] && FREE_STARTER_ITEMS[category].has(id));
+}
+
+export const EMOTE_LOADOUT_SIZE = 4;
+
+// ---- Scenes ----------------------------------------------------------------
+// Scenes change the *background* behind Atlas on the homepage hero band —
+// the only cosmetic category that doesn't render onto the mascot itself.
+// `default` keeps the original animated blobs + world-dots backdrop; the
+// continent scenes each illustrate the player's chosen region of the world,
+// and bp_reptile is the Atlas Pass capstone tied to Season 1.
+export const SCENES = {
+    default:       { name: 'Default',             xp: 0 },
+    africa:        { name: 'African Savanna',     xp: 2000 },
+    asia:          { name: 'Asian Peaks',         xp: 2000 },
+    europe:        { name: 'European Castle',     xp: 2000 },
+    north_america: { name: 'North American Wilds', xp: 2000 },
+    south_america: { name: 'Amazon Rainforest',   xp: 2000 },
+    oceania:       { name: 'Pacific Shores',      xp: 2000 },
+    antarctica:    { name: 'Antarctic Aurora',    xp: 2000 },
+    bp_reptile:    { name: 'Reptile Kingdom',     xp: 999999, bpOnly: true },
 };
 
 export const CATEGORIES = [
     { key: 'color',   label: 'Globe Color', icon: 'palette',        items: COLORS },
     { key: 'hat',     label: 'Hats',        icon: 'theater_comedy', items: HATS },
     { key: 'glasses', label: 'Glasses',     icon: 'eyeglasses',     items: GLASSES },
+    { key: 'mouth',   label: 'Mouth',       icon: 'sentiment_satisfied', items: MOUTHS },
     { key: 'effect',  label: 'Effects',     icon: 'auto_awesome',   items: EFFECTS },
+    { key: 'emote',   label: 'Emotes',      icon: 'sentiment_very_satisfied', items: EMOTES },
+    { key: 'scene',   label: 'Scenes',      icon: 'landscape',      items: SCENES },
 ];
 
 // Per-slot placement: x/y offset (in the 96-unit viewBox) and a scale `s`,
 // applied as a transform in Mascot. Lets players nudge hats/glasses anywhere.
 export const DEFAULT_POS = { x: 0, y: 0, s: 1 };
 export const DEFAULT_COSMETICS = {
-    color: 'teal', hat: 'none', glasses: 'none', effect: 'none',
+    color: 'teal', hat: 'none', glasses: 'none', mouth: 'none', effect: 'none',
+    scene: 'default',
+    // `emote` is the "currently equipped" single emote — kept for the cosmetic
+    // shape to match other slots even though spectator reactions read from
+    // `emoteLoadout` instead. Default loadout: wave in slot 0, rest empty.
+    emote: 'none',
+    emoteLoadout: ['wave', 'none', 'none', 'none'],
     hatPos: { ...DEFAULT_POS }, glassesPos: { ...DEFAULT_POS },
+    mouthPos: { ...DEFAULT_POS }, effectPos: { ...DEFAULT_POS },
 };
 
 const clampNum = (v, min, max, d) => (Number.isFinite(+v) ? Math.min(max, Math.max(min, +v)) : d);
@@ -540,7 +686,8 @@ export function priceOf(item) {
 // Defaults are free + always owned. Items with price 0 are also "free" — a
 // player gets them implicitly without needing to buy.
 const FREE_BY_DEFAULT = {
-    color: 'teal', hat: 'none', glasses: 'none', effect: 'none',
+    color: 'teal', hat: 'none', glasses: 'none', mouth: 'none', effect: 'none',
+    scene: 'default', emote: 'none',
 };
 export function isDefaultItem(category, id) {
     return FREE_BY_DEFAULT[category] === id;
@@ -566,12 +713,24 @@ export function normalizeCosmetics(c, ownedKey) {
         if (!table[id]) return FREE_BY_DEFAULT[cat];
         return ok(cat, id) ? id : FREE_BY_DEFAULT[cat];
     };
+    const rawLoadout = c && Array.isArray(c.emoteLoadout) ? c.emoteLoadout : [];
+    const loadout = Array(EMOTE_LOADOUT_SIZE).fill('none').map((_, i) => {
+        const id = rawLoadout[i];
+        if (typeof id !== 'string' || !EMOTES[id]) return 'none';
+        return ok('emote', id) ? id : 'none';
+    });
     return {
         color: pick('color', c && c.color, COLORS),
         hat: pick('hat', c && c.hat, HATS),
         glasses: pick('glasses', c && c.glasses, GLASSES),
+        mouth: pick('mouth', c && c.mouth, MOUTHS),
         effect: pick('effect', c && c.effect, EFFECTS),
+        scene: pick('scene', c && c.scene, SCENES),
+        emote: pick('emote', c && c.emote, EMOTES),
+        emoteLoadout: loadout,
         hatPos: clampPos(c && c.hatPos),
         glassesPos: clampPos(c && c.glassesPos),
+        mouthPos: clampPos(c && c.mouthPos),
+        effectPos: clampPos(c && c.effectPos),
     };
 }

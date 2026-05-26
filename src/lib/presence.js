@@ -1,0 +1,91 @@
+import { useEffect, useRef, useState, useCallback } from 'react';
+import { api } from '../api/client';
+import { useAuth } from '../auth/AuthProvider';
+
+// Activity heartbeat. Each quiz / multiplayer screen calls `usePresence(mode, opts)`
+// while it's mounted; the hook fires an immediate heartbeat, then ticks every
+// HEARTBEAT_MS until unmount. On unmount it fires one final heartbeat with
+// `mode: null` to clear the server-side entry promptly (so friends' Eye icons
+// don't linger for the 8s TTL after the player navigates away).
+//
+// The server's response carries `watchers` + `lastReactionId`, which we expose
+// so the quiz screen knows when to mount its SpectatorsBadge and where to
+// resume its own /api/spectate/:me?since=... poll from.
+
+const HEARTBEAT_MS = 5000;
+
+const presenceApi = {
+    heartbeat: (body) => api.post('/presence/heartbeat', body),
+    friends: () => api.get('/presence/friends'),
+};
+
+export { presenceApi };
+
+// `gameStateRef` is an *optional* ref containing a serializable snapshot the
+// heartbeat should post. Using a ref (vs. a state value) lets the quiz update
+// its score/streak/qIndex on every answer without re-firing the heartbeat —
+// the next 5s tick reads the latest ref value. mpCode is similar for MP.
+export function usePresence(mode, { gameStateRef, mpCode } = {}) {
+    const { isAuthed } = useAuth();
+    const [watchers, setWatchers] = useState(0);
+    const [lastReactionId, setLastReactionId] = useState(0);
+    const timerRef = useRef(null);
+    const modeRef = useRef(mode);
+    modeRef.current = mode;
+    const mpCodeRef = useRef(mpCode);
+    mpCodeRef.current = mpCode;
+
+    const beat = useCallback(async (override) => {
+        if (!isAuthed) return;
+        const m = override !== undefined ? override : modeRef.current;
+        const body = { mode: m || null };
+        if (m === 'multiplayer' && mpCodeRef.current) body.mpCode = mpCodeRef.current;
+        if (m && gameStateRef && gameStateRef.current) body.gameState = gameStateRef.current;
+        try {
+            const res = await presenceApi.heartbeat(body);
+            if (res && typeof res.watchers === 'number') setWatchers(res.watchers);
+            if (res && typeof res.lastReactionId === 'number') setLastReactionId(res.lastReactionId);
+        } catch (_) {
+            // a missed heartbeat is fine — next tick will retry. The server
+            // TTL of 8s tolerates one dropped beat at the 5s cadence.
+        }
+    }, [isAuthed, gameStateRef]);
+
+    useEffect(() => {
+        if (!isAuthed || !mode) return undefined;
+        let cancelled = false;
+        const tick = async () => {
+            await beat();
+            if (!cancelled) timerRef.current = setTimeout(tick, HEARTBEAT_MS);
+        };
+        tick();
+        return () => {
+            cancelled = true;
+            if (timerRef.current) clearTimeout(timerRef.current);
+            // Fire-and-forget clear so the friend's eye-icon goes dark within
+            // ~one round-trip rather than waiting out the server TTL.
+            beat(null);
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isAuthed, mode]);
+
+    return { watchers, lastReactionId };
+}
+
+// Convenience wrapper for quiz components: pass the latest game-state snapshot
+// each render and the hook keeps the heartbeat ref in sync, so the 5s tick
+// always posts the freshest score/streak/qIndex/prompt without re-arming.
+export function useQuizPresence(mode, gameState, mpCode) {
+    const ref = useRef(gameState);
+    ref.current = gameState;
+    return usePresence(mode, { gameStateRef: ref, mpCode });
+}
+
+// Standalone fetch for the Friends list. Returns `{ presence: { [friendId]: { mode, mpCode, startedAt } } }`.
+export async function fetchFriendsPresence() {
+    try {
+        return await presenceApi.friends();
+    } catch (_) {
+        return { presence: {} };
+    }
+}

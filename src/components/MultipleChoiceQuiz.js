@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { get_distractor_options, update_flag_stats } from '../quiz_logic';
 import Icon from './Icon';
@@ -8,14 +8,24 @@ import Mascot from '../assets/illustrations/Mascot';
 import MasteryMeter from './MasteryMeter';
 import Spinner from '../assets/illustrations/Spinner';
 import { useAudio } from '../audio/AudioProvider';
-import { useProfile, recordBestStreak } from '../lib/profile';
+import { useProfile, recordBestStreak, flushProfile } from '../lib/profile';
 import { awardForAnswer, penaltyForAnswer, streakMultiplier, MASTERY_STREAK } from '../lib/xp';
 import { addEarnedXp } from '../lib/progress';
-import { bumpMetric } from '../lib/battlepass';
+import { bumpMetric, refreshBattlepass } from '../lib/battlepass';
 import { getStreak, saveStreak, resetStreak } from '../lib/streak';
+import { useQuizPresence } from '../lib/presence';
+import SpectatorsBadge from './SpectatorsBadge';
 import { springs } from '../motion';
 
-const MODE = 'multiple-choice';
+// Per-variant streak keys so Mirror / Flash best-streaks track independently
+// of plain Multiple Choice on the leaderboard + BonusMenu high-score badge.
+const MODE_BY_VARIANT = {
+    standard: 'multiple-choice',
+    mirror:   'mirror',
+    flash:    'flash',
+    reverse:  'reverse-mc',
+};
+const FLASH_REVEAL_MS = 1000;
 const IMAGE_BASE_URL = './assets/flags/';
 
 function MultipleChoiceQuiz({
@@ -28,7 +38,9 @@ function MultipleChoiceQuiz({
     quizCategory,
     getQuestionHistory,
     updateQuestionHistory,
+    variant = 'standard',
 }) {
+    const MODE = MODE_BY_VARIANT[variant] || MODE_BY_VARIANT.standard;
     const [currentFlag, setCurrentFlag] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [options, setOptions] = useState([]);
@@ -41,10 +53,29 @@ function MultipleChoiceQuiz({
     const [xpGain, setXpGain] = useState(null); // { amount, multiplier } floating reward
     const [showConfetti, setShowConfetti] = useState(false);
     const [masteryStreak, setMasteryStreak] = useState(0); // current flag's progress to mastery
+    const [flashHidden, setFlashHidden] = useState(false);
+    const flashTimerRef = useRef(null);
     const audio = useAudio();
     const profile = useProfile();
 
+    // Presence heartbeat so friends see "playing" on the Friends tab; returns
+    // a watchers count + last reaction id we feed into the SpectatorsBadge.
+    const isReverse = variant === 'reverse';
+    const { watchers, lastReactionId } = useQuizPresence(MODE, {
+        score, streak,
+        promptKind: isReverse ? 'country' : 'flag',
+        promptFlagCode: !isReverse && currentFlag ? currentFlag.code : undefined,
+        promptCountry: isReverse && currentFlag ? currentFlag.name : undefined,
+        lastAnswerCorrect: flashColor === 'correct',
+    });
+
+    // Mirror / Flash / Reverse come in from BonusMenu, not QuizMenu — bounce
+    // them back there instead of the quiz category picker they never visited.
     const handleBack = () => {
+        if (variant === 'mirror' || variant === 'flash' || variant === 'reverse') {
+            setView('bonus-menu');
+            return;
+        }
         setView('quiz-menu');
         setQuizCategory({ type: 'all', value: null });
     };
@@ -77,8 +108,27 @@ function MultipleChoiceQuiz({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
+    // Flash variant: show the flag, then hide behind a "?" placeholder after
+    // FLASH_REVEAL_MS unless the player has already answered. The flag re-
+    // appears on answer so they can see what it was alongside the feedback.
+    useEffect(() => {
+        if (variant !== 'flash') return undefined;
+        setFlashHidden(false);
+        if (flashTimerRef.current) clearTimeout(flashTimerRef.current);
+        if (!currentFlag) return undefined;
+        flashTimerRef.current = setTimeout(() => setFlashHidden(true), FLASH_REVEAL_MS);
+        return () => { if (flashTimerRef.current) clearTimeout(flashTimerRef.current); };
+    }, [currentFlag, variant]);
+
     const handleAnswer = (answer) => {
         if (!currentFlag || answered) return;
+
+        // Flash variant: re-show the flag with the feedback so the player can
+        // see what it actually was. Also cancel the pending hide-timer.
+        if (variant === 'flash') {
+            if (flashTimerRef.current) clearTimeout(flashTimerRef.current);
+            setFlashHidden(false);
+        }
 
         setAnswered(true);
         setChosenAnswer(answer);
@@ -101,7 +151,9 @@ function MultipleChoiceQuiz({
             if (next === 3 || next === 5 || next === 10) audio.play('streak');
             setStreak(next);
             saveStreak(MODE, next);
-            recordBestStreak(MODE, next);
+            // Genuine new bests need to reach the pass via streaks_json before
+            // the streak_* challenges can flip — flush profile then refresh.
+            if (recordBestStreak(MODE, next)) flushProfile().then(() => refreshBattlepass());
             // Scaled XP: harder modes pay more, hot streak multiplies up to 2x,
             // and a brand-new flag is worth more than an already-mastered one.
             const award = awardForAnswer(currentFlag, 'multiple-choice', next);
@@ -130,6 +182,10 @@ function MultipleChoiceQuiz({
 
     const handleSkip = () => {
         if (!currentFlag || answered) return;
+        if (variant === 'flash') {
+            if (flashTimerRef.current) clearTimeout(flashTimerRef.current);
+            setFlashHidden(false);
+        }
         setAnswered(true);
         setFlashColor('incorrect');
         audio.play('incorrect');
@@ -195,20 +251,45 @@ function MultipleChoiceQuiz({
                     {streak > 0 && <span className="streak-mult">×{streakMultiplier(streak).toFixed(1)}</span>}
                 </span>
                 <ScoreBubble score={score} icon="star" />
+                <SpectatorsBadge watchers={watchers} lastReactionId={lastReactionId} />
             </div>
 
             <MasteryMeter streak={masteryStreak} />
 
             <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', width: '100%' }}>
-                <motion.img
-                    key={currentFlag.file}
-                    src={`${IMAGE_BASE_URL}${currentFlag.file}`}
-                    alt="Flag"
-                    className="flag-image"
-                    initial={{ opacity: 0, scale: 0.94 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.28, ease: [0.25, 0.46, 0.45, 0.94] }}
-                />
+                {variant === 'reverse' ? (
+                    <motion.div
+                        key={`reverse-${currentFlag.code}`}
+                        className="reverse-prompt"
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.22 }}
+                    >
+                        <span className="reverse-prompt__label">Pick the flag of</span>
+                        <span className="reverse-prompt__name">{currentFlag.name}</span>
+                    </motion.div>
+                ) : variant === 'flash' && flashHidden && !answered ? (
+                    <motion.div
+                        key={`${currentFlag.file}-hidden`}
+                        className="flag-image flag-flash-placeholder"
+                        initial={{ opacity: 0, scale: 0.94 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.18 }}
+                        aria-label="Flag hidden"
+                    >
+                        ?
+                    </motion.div>
+                ) : (
+                    <motion.img
+                        key={currentFlag.file}
+                        src={`${IMAGE_BASE_URL}${currentFlag.file}`}
+                        alt="Flag"
+                        className={`flag-image ${variant === 'mirror' ? 'flag-mirror' : ''}`}
+                        initial={{ opacity: 0, scale: 0.94 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.28, ease: [0.25, 0.46, 0.45, 0.94] }}
+                    />
+                )}
                 <AnimatePresence>
                     {answered && flashColor === 'correct' && (
                         <motion.div
@@ -261,24 +342,62 @@ function MultipleChoiceQuiz({
                 {feedback.answer && <span className="feedback-answer">{feedback.answer}</span>}
             </div>
 
-            <div className="options-box">
-                {options.map((option, i) => (
-                    <div className="choice-wrap" key={`${currentFlag.code}-${option}`}>
-                        <ChoiceCard
-                            label={option}
-                            index={i}
-                            state={getChoiceState(option)}
-                            disabled={answered}
-                            onSelect={handleAnswer}
-                        />
-                        <AnimatePresence>
-                            {showConfetti && option === currentFlag.name && (
-                                <Confetti pieces={16} radius={110} />
-                            )}
-                        </AnimatePresence>
-                    </div>
-                ))}
-            </div>
+            {variant === 'reverse' ? (
+                <div className="flag-choice-grid">
+                    {options.map((option, i) => {
+                        const optFlag = allFlagsData.find((f) => f.name === option);
+                        const state = getChoiceState(option);
+                        const isCorrect = state === 'correct';
+                        const isIncorrect = state === 'incorrect';
+                        return (
+                            <div className="choice-wrap" key={`${currentFlag.code}-${option}`}>
+                                <button
+                                    type="button"
+                                    className={`flag-choice ${isCorrect ? 'is-correct' : ''} ${isIncorrect ? 'is-incorrect' : ''}`}
+                                    disabled={answered}
+                                    onClick={() => handleAnswer(option)}
+                                    aria-label={option}
+                                >
+                                    <span className="flag-choice__index">{String.fromCharCode(65 + i)}</span>
+                                    {optFlag && (
+                                        <img
+                                            src={`${IMAGE_BASE_URL}${optFlag.file}`}
+                                            alt=""
+                                            className="flag-choice__img"
+                                        />
+                                    )}
+                                    {isCorrect && <Icon name="check_circle" variant="correct" className="flag-choice__mark" />}
+                                    {isIncorrect && <Icon name="cancel" variant="incorrect" className="flag-choice__mark" />}
+                                </button>
+                                <AnimatePresence>
+                                    {showConfetti && option === currentFlag.name && (
+                                        <Confetti pieces={16} radius={110} />
+                                    )}
+                                </AnimatePresence>
+                            </div>
+                        );
+                    })}
+                </div>
+            ) : (
+                <div className="options-box">
+                    {options.map((option, i) => (
+                        <div className="choice-wrap" key={`${currentFlag.code}-${option}`}>
+                            <ChoiceCard
+                                label={option}
+                                index={i}
+                                state={getChoiceState(option)}
+                                disabled={answered}
+                                onSelect={handleAnswer}
+                            />
+                            <AnimatePresence>
+                                {showConfetti && option === currentFlag.name && (
+                                    <Confetti pieces={16} radius={110} />
+                                )}
+                            </AnimatePresence>
+                        </div>
+                    ))}
+                </div>
+            )}
 
             <div className="quiz-actions">
                 <button type="button" onClick={handleSkip} disabled={answered} className="skip-button">

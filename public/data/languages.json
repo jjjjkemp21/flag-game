@@ -277,7 +277,7 @@
     "family": "Germanic",
     "alphabet": "Latin",
     "regions": ["Africa"],
-    "distractors": ["Dutch", "German", "English"]
+    "distractors": ["Dutch", "German", "Swedish"]
   },
   {
     "name": "Zulu",

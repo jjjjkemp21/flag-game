@@ -7,8 +7,7 @@ import { useCurrency } from '../lib/currency';
 import { ACHIEVEMENTS_BY_ID } from '../lib/achievements';
 import AtlasBucksIcon from '../assets/illustrations/AtlasBucks';
 import AchievementBadge from './AchievementBadge';
-import NotificationBell from './NotificationBell';
-import FeedbackButton from './FeedbackButton';
+import InboxButton from './InboxButton';
 
 function TopBar({ setView }) {
     const { isAuthed, user, logout } = useAuth();
@@ -37,12 +36,7 @@ function TopBar({ setView }) {
                     </button>
                 )}
 
-                {isAuthed && <NotificationBell />}
-                {isAuthed && <FeedbackButton />}
-
-                <button className="bell-button" aria-label="Settings" onClick={() => setView('settings')}>
-                    <Icon name="settings" />
-                </button>
+                {isAuthed && <InboxButton />}
 
                 {isAuthed ? (
                     <button className="account-chip" onClick={() => setMenuOpen(true)} aria-label="Account">
@@ -74,25 +68,9 @@ function TopBar({ setView }) {
                     </div>
                 )}
                 <div className="account-menu">
-                    <Button variant="secondary" fullWidth icon="leaderboard"
-                        onClick={() => { setMenuOpen(false); setView('leaderboard'); }}>
-                        Leaderboard
-                    </Button>
-                    <Button variant="secondary" fullWidth icon="emoji_events"
-                        onClick={() => { setMenuOpen(false); setView('achievements'); }}>
-                        Achievements
-                    </Button>
-                    <Button variant="secondary" fullWidth icon="group"
-                        onClick={() => { setMenuOpen(false); setView('friends'); }}>
-                        Friends
-                    </Button>
-                    <Button variant="secondary" fullWidth icon="storefront"
-                        onClick={() => { setMenuOpen(false); setView('store'); }}>
-                        Atlas Shop
-                    </Button>
-                    <Button variant="accent" fullWidth icon="workspace_premium"
-                        onClick={() => { setMenuOpen(false); setView('battlepass'); }}>
-                        Atlas Pass
+                    <Button variant="secondary" fullWidth icon="settings"
+                        onClick={() => { setMenuOpen(false); setView('settings'); }}>
+                        Settings
                     </Button>
                     {user?.is_admin && (
                         <Button variant="accent" fullWidth icon="campaign"

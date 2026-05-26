@@ -1,4 +1,5 @@
 const express = require('express');
+const rateLimit = require('express-rate-limit');
 const db = require('../db');
 const { requireAuth } = require('../middleware');
 const { masteredCount, geoMasteredCount, geoPlacedCount } = require('../xp');
@@ -6,6 +7,16 @@ const { masteredCount, geoMasteredCount, geoPlacedCount } = require('../xp');
 const router = express.Router();
 
 router.use(requireAuth);
+
+// Player-search rate limit. Autocomplete fires several requests per query so
+// give a generous per-minute ceiling; well above normal typing, low enough to
+// blunt scrapers walking the user table.
+const searchLimiter = rateLimit({
+    windowMs: 60 * 1000,
+    max: 120,
+    standardHeaders: true,
+    legacyHeaders: false,
+});
 
 function withMastered(row) {
     let mastered = 0;
@@ -81,7 +92,7 @@ function petOf(row) {
 // Mirror of deriveStage() in src/lib/pet.js so the leaderboard shows the SAME
 // life-stage label players see on their own pet panel (keep the two in sync).
 function petStageOf(pet) {
-    if (!pet || pet.alive === false) return 'Resting';
+    if (!pet) return 'Hatchling';
     const days = (Date.now() - (pet.bornAt || Date.now())) / 86400000;
     if (days < 0.04) return 'Hatchling';
     if (days < 1) return 'Sprout';
@@ -172,6 +183,23 @@ router.get('/leaderboard', (req, res) => {
         myRank: myIndex >= 0 ? myIndex + 1 : null,
         myValue: myEntry ? myEntry.value : 0,
     });
+});
+
+// Prefix search across usernames. Used by the leaderboard's player-find input.
+// Returns the same row shape as the leaderboard so a click can open ProfileCard
+// without a second fetch. `q` is constrained to the username charset to neuter
+// LIKE wildcard injection; `_` is also legitimate in usernames so we escape it.
+router.get('/users/search', searchLimiter, (req, res) => {
+    const raw = typeof req.query.q === 'string' ? req.query.q.trim() : '';
+    const safe = raw.replace(/[^a-zA-Z0-9_]/g, '');
+    if (safe.length < 2) return res.json({ users: [] });
+    const escaped = safe.replace(/_/g, '\\_');
+    const cols = 'id, username, xp, region, cosmetics_json, pet_level, pet_json, achievements_json, bonus_scores_json, stats_json, streaks_json, mp_wins, selected_title';
+    const rows = db
+        .prepare(`SELECT ${cols} FROM users WHERE username LIKE ? ESCAPE '\\' COLLATE NOCASE ORDER BY username COLLATE NOCASE LIMIT 20`)
+        .all(escaped + '%');
+    const users = rows.map((r) => buildEntry(r, 'overall'));
+    res.json({ users });
 });
 
 router.get('/friends', (req, res) => {

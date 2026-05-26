@@ -1,7 +1,9 @@
 const express = require('express');
 const db = require('../db');
 const { requireAuth } = require('../middleware');
-const { DEFAULTS } = require('../cosmeticsCatalog');
+const { DEFAULTS, CATALOG, isFreeStarter } = require('../cosmeticsCatalog');
+
+const EMOTE_LOADOUT_SIZE = 4;
 
 const router = express.Router();
 
@@ -22,22 +24,35 @@ function ownedSetOf(userId) {
 function gateCosmetics(userId, c) {
     if (!c || typeof c !== 'object') return c;
     const owned = ownedSetOf(userId);
-    const gate = (cat, id) => {
-        if (DEFAULTS[cat] === id) return id;
-        if (owned.has(`${cat}:${id}`)) return id;
-        return DEFAULTS[cat];
+    const isOwned = (cat, id) => {
+        if (DEFAULTS[cat] === id) return true;
+        if (isFreeStarter(cat, id)) return true;
+        return owned.has(`${cat}:${id}`);
     };
+    const gate = (cat, id) => (isOwned(cat, id) ? id : DEFAULTS[cat]);
+    // Emote loadout: array of EMOTE_LOADOUT_SIZE ids; unknown / unowned slots
+    // collapse to 'none'. Padded so a short payload doesn't shrink the loadout.
+    const rawLoadout = Array.isArray(c.emoteLoadout) ? c.emoteLoadout : [];
+    const loadout = Array(EMOTE_LOADOUT_SIZE).fill('none').map((_, i) => {
+        const id = rawLoadout[i];
+        if (typeof id !== 'string' || !CATALOG.emote || !(id in CATALOG.emote)) return 'none';
+        return isOwned('emote', id) ? id : 'none';
+    });
     return {
         ...c,
         color: gate('color', c.color),
         hat: gate('hat', c.hat),
         glasses: gate('glasses', c.glasses),
+        mouth: gate('mouth', c.mouth),
         effect: gate('effect', c.effect),
+        scene: gate('scene', c.scene),
+        emote: gate('emote', c.emote),
+        emoteLoadout: loadout,
     };
 }
 
 router.get('/', (req, res) => {
-    const row = db.prepare('SELECT region, cosmetics_json, achievements_json, streaks_json, selected_title FROM users WHERE id = ?').get(req.user.id);
+    const row = db.prepare('SELECT region, cosmetics_json, achievements_json, streaks_json, selected_title, allow_spectate FROM users WHERE id = ?').get(req.user.id);
     let achievements = null;
     if (row.achievements_json) {
         try { achievements = JSON.parse(row.achievements_json); } catch (_) { /* ignore malformed */ }
@@ -52,13 +67,16 @@ router.get('/', (req, res) => {
         achievements,
         streaks,
         selectedTitle: row.selected_title || null,
+        // Column is INTEGER (0/1), default 1. Surface as a real boolean so the
+        // client never has to remember the encoding.
+        allowSpectate: row.allow_spectate !== 0,
     });
 });
 
 // Partial update of region, equipped cosmetics, achievements, streaks, and/or
 // the player's chosen display title.
 router.put('/', (req, res) => {
-    const { region, cosmetics, achievements, streaks, selectedTitle } = req.body || {};
+    const { region, cosmetics, achievements, streaks, selectedTitle, allowSpectate } = req.body || {};
     if (region !== undefined) {
         const code = region === null ? null : String(region).slice(0, 8);
         db.prepare('UPDATE users SET region = ? WHERE id = ?').run(code, req.user.id);
@@ -99,6 +117,11 @@ router.put('/', (req, res) => {
             ? null
             : String(selectedTitle).slice(0, 40);
         db.prepare('UPDATE users SET selected_title = ? WHERE id = ?').run(t, req.user.id);
+    }
+    if (allowSpectate !== undefined) {
+        // Boolean -> SQLite INTEGER. Anything truthy = allow.
+        const v = allowSpectate ? 1 : 0;
+        db.prepare('UPDATE users SET allow_spectate = ? WHERE id = ?').run(v, req.user.id);
     }
     res.json({ ok: true });
 });

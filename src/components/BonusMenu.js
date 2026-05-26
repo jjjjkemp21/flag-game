@@ -5,13 +5,20 @@ import Mascot from '../assets/illustrations/Mascot';
 import ScoringInfo from './ScoringInfo';
 import { useAudio } from '../audio/AudioProvider';
 import { getBonus } from '../lib/progress';
+import { getBestStreak } from '../lib/streak';
 import { springs } from '../motion';
 
+// `scoreKey` reads getBonus() (modes with a fixed-length / time-boxed score).
+// `streakKey` reads getBestStreak() — for the MC variants which are infinite
+// runs and have no "high score" beyond best streak.
 const MODES = [
     { key: 'pixelated-quiz',     title: 'Pixelated Guess', desc: 'Reveal flags in stages',     icon: 'blur_on',       tone: 'success',  scoreKey: 'pixelated',     mood: 'think' },
     { key: 'frenzy-quiz',        title: 'Frenzy Mode',     desc: 'Race the clock on 4 flags',  icon: 'bolt',          tone: 'accent',   scoreKey: 'frenzy',        mood: 'cheer' },
     { key: 'longest-route-quiz', title: 'Longest Chain',   desc: 'Travel from country to country', icon: 'route',     tone: 'primary',  scoreKey: 'longestRoute',  mood: 'wave'  },
     { key: 'language-quiz',      title: 'Language Quiz',   desc: 'Match phrase to language',   icon: 'translate',     tone: 'purple',   scoreKey: 'language',      mood: 'idle'  },
+    { key: 'mirror',             title: 'Mirror Flags',    desc: 'Same MC, flag flipped',      icon: 'flip',          tone: 'info',     streakKey: 'mirror',       mood: 'think' },
+    { key: 'flash',              title: 'Flash Mode',      desc: 'See it for a second, then guess', icon: 'visibility_off', tone: 'danger', streakKey: 'flash',  mood: 'wave'  },
+    { key: 'reverse-mc',         title: 'Country → Flag',  desc: 'Pick the flag for the country', icon: 'swap_horiz',  tone: 'versus',   streakKey: 'reverse-mc',   mood: 'idle'  },
 ];
 
 function BonusMenu({ setView }) {
@@ -22,6 +29,13 @@ function BonusMenu({ setView }) {
     useEffect(() => {
         setScores(getBonus());
     }, []);
+
+    const badgeValue = (mode) => {
+        if (mode.scoreKey) return scores[mode.scoreKey] || 0;
+        if (mode.streakKey) return getBestStreak(mode.streakKey);
+        return 0;
+    };
+    const badgeLabel = (mode) => (mode.streakKey ? 'Best Streak' : 'High Score');
 
     return (
         <div className="bonus-menu-box">
@@ -53,14 +67,14 @@ function BonusMenu({ setView }) {
                             transition={{ ...springs.gentle, delay: 0.08 * i }}
                             whileHover={prefersReduced ? undefined : { y: -3 }}
                             whileTap={prefersReduced ? undefined : { scale: 0.97 }}
-                            aria-label={`${mode.title} — High score ${scores[mode.scoreKey] || 0}`}
+                            aria-label={`${mode.title} — ${badgeLabel(mode)} ${badgeValue(mode)}`}
                         >
-                            <div className="mode-card__badge">High Score: {scores[mode.scoreKey] || 0}</div>
+                            <div className="mode-card__badge">{badgeLabel(mode)}: {badgeValue(mode)}</div>
                             <div className="mode-card__title">{mode.title}</div>
                             <div className="mode-card__desc">{mode.desc}</div>
                             <Icon name={mode.icon} className="mode-card__icon" />
                         </motion.button>
-                        <ScoringInfo mode={mode.scoreKey} className="mode-card__info" />
+                        {mode.scoreKey && <ScoringInfo mode={mode.scoreKey} className="mode-card__info" />}
                     </div>
                 ))}
             </div>

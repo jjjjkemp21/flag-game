@@ -17,6 +17,8 @@ import {
     mp, useLobbyPoll, makeEngine, checkText, checkGlobePick,
     MP_MODES, DEFAULT_MP_CONFIG, ANTE_PRESETS, modeMeta,
 } from '../lib/multiplayer';
+import { useQuizPresence } from '../lib/presence';
+import SpectatorsBadge from './SpectatorsBadge';
 
 const titleCase = (s) => s.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 
@@ -422,7 +424,7 @@ function ConfigSummary({ config }) {
 // ---------------------------------------------------------------------------
 // Game — local question loop + live scoreboard. Posts progress to the server.
 // ---------------------------------------------------------------------------
-function Game({ lobby, code, flagsData, meId }) {
+function Game({ lobby, code, flagsData, meId, watchers, lastReactionId }) {
     const audio = useAudio();
     const config = lobby.config;
     const isGlobe = config.content === 'globe';
@@ -680,6 +682,7 @@ function Game({ lobby, code, flagsData, meId }) {
                         <AtlasBucksIcon size={14} /> Pot {lobby.pot.toLocaleString()}
                     </Pill>
                 )}
+                <SpectatorsBadge watchers={watchers} lastReactionId={lastReactionId} />
             </div>
 
             <Scoreboard members={lobby.members} meId={meId} mode={config.mode} target={config.target} />
@@ -928,6 +931,11 @@ function MultiplayerScreen({ setView, flagsData }) {
     const [code, setCode] = useState(null);
     const { state: lobby, error, refresh, setState } = useLobbyPoll(code, !!code);
 
+    // Heartbeat while we're in any lobby phase so friends see "in multiplayer"
+    // on the Friends tab — the spectator endpoint reads live match state from
+    // the lobby map directly, so no gameState payload is needed here.
+    const { watchers, lastReactionId } = useQuizPresence(code ? 'multiplayer' : null, {}, code);
+
     // Track the live code so the unmount cleanup can leave without re-subscribing.
     const codeRef = useRef(null);
     codeRef.current = code;
@@ -979,7 +987,7 @@ function MultiplayerScreen({ setView, flagsData }) {
         return <Results lobby={lobby} meId={user.id} code={code} onLeave={leave} setState={setState} />;
     }
     if (lobby.state === 'playing') {
-        return <Game lobby={lobby} code={code} flagsData={flagsData} meId={user.id} />;
+        return <Game lobby={lobby} code={code} flagsData={flagsData} meId={user.id} watchers={watchers} lastReactionId={lastReactionId} />;
     }
     return <LobbyRoom lobby={lobby} code={code} flagsData={flagsData} onLeave={leave} refresh={refresh} setState={setState} />;
 }

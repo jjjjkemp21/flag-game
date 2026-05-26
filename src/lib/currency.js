@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from 'react';
 import { api } from '../api/client';
+import { FREE_STARTER_ITEMS } from './cosmetics';
 
 // Atlas Bucks (currency) + cosmetic ownership store.
 //
@@ -17,7 +18,10 @@ const DEFAULT_OWNED = {
     color: 'teal',
     hat: 'none',
     glasses: 'none',
+    mouth: 'none',
     effect: 'none',
+    scene: 'default',
+    emote: 'none',
 };
 
 let state = {
@@ -97,10 +101,12 @@ export async function buyCosmetic(category, id) {
 }
 
 // Default catalog items (color:teal, hat:none, glasses:none, effect:none) are
-// always owned without needing to be tracked server-side.
+// always owned without needing to be tracked server-side. Free starters
+// (emote:wave) work the same way — owned implicitly.
 export function isOwnedKey(category, id) {
     if (!category || !id) return false;
     if (DEFAULT_OWNED[category] === id) return true;
+    if (FREE_STARTER_ITEMS[category] && FREE_STARTER_ITEMS[category].has(id)) return true;
     return state.owned.has(`${category}:${id}`);
 }
 

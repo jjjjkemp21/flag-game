@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { select_next_flag, update_geo_stats } from '../quiz_logic';
+import { checkAnswer } from '../answer_check';
 import Icon from './Icon';
 import { Button, ScoreBubble } from './ui';
 import Confetti from '../assets/illustrations/Confetti';
@@ -8,19 +9,26 @@ import Mascot from '../assets/illustrations/Mascot';
 import MasteryMeter from './MasteryMeter';
 import Spinner from '../assets/illustrations/Spinner';
 import { useAudio } from '../audio/AudioProvider';
-import { useProfile, recordBestStreak } from '../lib/profile';
+import { useProfile, recordBestStreak, flushProfile } from '../lib/profile';
 import { awardForAnswer, penaltyForAnswer, streakMultiplier, MASTERY_STREAK } from '../lib/xp';
 import { addEarnedXp } from '../lib/progress';
-import { bumpMetric } from '../lib/battlepass';
+import { bumpMetric, refreshBattlepass } from '../lib/battlepass';
 import { recordCorrect, recordIncorrect } from '../lib/pet';
 import { getStreak, saveStreak, resetStreak } from '../lib/streak';
+import { useQuizPresence } from '../lib/presence';
+import SpectatorsBadge from './SpectatorsBadge';
 import Globe from '../lib/globe/Globe';
 import { springs } from '../motion';
 
-const MODE = 'globe';
+const MODE_FIND = 'globe';
+const MODE_NAME = 'globe-name';
 const IMAGE_BASE_URL = './assets/flags/';
 const NEXT_DELAY_MS = 2400;
 const HINT_XP_MULTIPLIER = 0.5;
+// Zoom level used when revealing the answer country or highlighting the
+// question country in Name mode. Same value either way so reveals don't snap.
+const REVEAL_ZOOM = 4.6;
+const NAME_QUESTION_ZOOM = 4.2;
 
 // Rough geographic centers per continent. Used by the Hint button — rotating
 // to the continent centroid steers the player toward the right region without
@@ -37,6 +45,14 @@ const CONTINENT_CENTERS = {
 
 // Single-question Globe-mode quiz screen. The Three.js scene lives in a ref —
 // React just owns the surrounding HUD, the question state, and the timing.
+//
+// Two sub-modes share this screen, toggleable via the in-screen segmented
+// control:
+//   - find: a flag is shown; the player taps the country on the globe.
+//   - name: a country is highlighted on the globe; the player types its name.
+// Both contribute to the same per-flag geo* stat axis (so geography mastery
+// and the Globe leaderboard see them as one) but keep separate per-mode run
+// streaks and pay different XP rates (see MODE_XP).
 function GlobeQuiz({
     allFlagsData,
     quizFlags,
@@ -45,6 +61,7 @@ function GlobeQuiz({
     setQuizCategory,
     getQuestionHistory,
     updateQuestionHistory,
+    strictSpelling,
 }) {
     const audio = useAudio();
     const profile = useProfile();
@@ -60,6 +77,11 @@ function GlobeQuiz({
     // current `streak`, `allFlagsData`, etc.). Bounce through a ref so each tap
     // calls the freshest version.
     const resolveAnswerRef = useRef(null);
+    const nameInputRef = useRef(null);
+
+    const [subMode, setSubMode] = useState('find'); // 'find' | 'name'
+    const subModeRef = useRef('find');
+    subModeRef.current = subMode;
 
     const [globeReady, setGlobeReady] = useState(false);
     const [globeError, setGlobeError] = useState(null);
@@ -69,16 +91,29 @@ function GlobeQuiz({
     const [feedback, setFeedback] = useState({ text: ' ' });
     const [flashColor, setFlashColor] = useState(null);
     const [score, setScore] = useState(0);
-    const [streak, setStreak] = useState(() => getStreak(MODE));
+    const [streak, setStreak] = useState(() => getStreak(MODE_FIND));
     const [xpGain, setXpGain] = useState(null);
     const [showConfetti, setShowConfetti] = useState(false);
     const [hintUsed, setHintUsed] = useState(false);
     const [hintLabel, setHintLabel] = useState(null);
     const [masteryStreak, setMasteryStreak] = useState(0); // current flag's progress to geo-mastery
+    const [nameInput, setNameInput] = useState('');
+    const [isWiggling, setIsWiggling] = useState(false);
     // Ref mirror so resolveAnswer (memoised before hintUsed is in scope above
     // it) sees the latest value without depending on state in the deps array.
     const hintUsedRef = useRef(false);
     hintUsedRef.current = hintUsed;
+
+    // Find sub-mode: a flag is shown; the answer is the country location, so
+    // a spectator seeing the flag code is safe. Name sub-mode: the country is
+    // highlighted on the globe and the player TYPES the name — so the country
+    // code IS the answer. Withhold the prompt to spectators in name mode.
+    const { watchers, lastReactionId } = useQuizPresence('globe', {
+        score, streak,
+        promptKind: subMode === 'find' ? 'flag' : null,
+        promptFlagCode: subMode === 'find' && currentFlag ? currentFlag.code : undefined,
+        lastAnswerCorrect: flashColor === 'correct',
+    });
 
     currentFlagRef.current = currentFlag;
     answeredRef.current = answered;
@@ -112,40 +147,59 @@ function GlobeQuiz({
         setShowConfetti(false);
         setHintUsed(false);
         setHintLabel(null);
+        setNameInput('');
+        setIsWiggling(false);
         if (globeRef.current) {
             globeRef.current.clearAllPaints();
-            globeRef.current.setLocked(null);
-            // Zoom back out so the player has the full globe to search.
-            globeRef.current.resetCamera();
+            if (subModeRef.current === 'name') {
+                // Highlight the question country with the neutral 'other' tint
+                // (the same blue used for multiplayer opponent picks — reads as
+                // "this is the one to identify"). Lock so the player can't
+                // accidentally tap-select while they type.
+                globeRef.current.paintCountry(next.code, 'other');
+                globeRef.current.setLocked('quiz-name');
+                globeRef.current.flyToIso2(next.code, { duration: 700, zoom: NAME_QUESTION_ZOOM });
+            } else {
+                globeRef.current.setLocked(null);
+                // Zoom back out so the player has the full globe to search.
+                globeRef.current.resetCamera();
+            }
         }
     }, [getQuestionHistory, updateQuestionHistory]);
 
-    const resolveAnswer = useCallback((guessIso2) => {
-        const flag = currentFlagRef.current;
-        if (!flag || answeredRef.current) return;
-        const wasCorrect = (guessIso2 || '').toUpperCase() === (flag.code || '').toUpperCase();
+    // Shared post-answer pipeline. `target` is the flag being asked about;
+    // `wasCorrect` is the verdict. Updates geo* stats, paints the globe, awards
+    // XP/streak (per active sub-mode), and queues the next question.
+    const finalizeAnswer = useCallback((target, wasCorrect, opts = {}) => {
+        const mode = subModeRef.current === 'name' ? MODE_NAME : MODE_FIND;
+        const { wrongIso2 = null, skipped = false } = opts;
+
         setAnswered(true);
         setFlashColor(wasCorrect ? 'correct' : 'incorrect');
 
-        const beforeStreak = flag.geoStreak || 0;
-        const { message, color, updatedFlags } = update_geo_stats(allFlagsData, flag, wasCorrect);
+        const beforeStreak = target.geoStreak || 0;
+        const { message, color, updatedFlags } = update_geo_stats(
+            allFlagsData, target, wasCorrect, skipped ? 'skipped' : 'answered'
+        );
         setFlagsData(updatedFlags);
         setFeedback({ text: message.text, answer: message.answer, tone: color });
-        const after = updatedFlags.find((f) => f.code === flag.code);
+        const after = updatedFlags.find((f) => f.code === target.code);
         const afterStreak = after ? (after.geoStreak || 0) : beforeStreak;
         setMasteryStreak(afterStreak);
 
         if (globeRef.current) {
             globeRef.current.setLocked(wasCorrect ? 'correct' : 'wrong');
             if (wasCorrect) {
-                globeRef.current.paintCountry(flag.code, 'correct');
+                globeRef.current.paintCountry(target.code, 'correct');
             } else {
-                if (guessIso2) globeRef.current.paintCountry(guessIso2, 'wrong');
-                globeRef.current.paintCountry(flag.code, 'correct');
-                // Slide the correct country into view so the player can SEE
-                // where they were supposed to click. Keep the focus zoom so
-                // the reveal lands prominently.
-                globeRef.current.flyToIso2(flag.code, { duration: 700, zoom: 4.6 });
+                if (wrongIso2 && wrongIso2 !== target.code) {
+                    globeRef.current.paintCountry(wrongIso2, 'wrong');
+                }
+                globeRef.current.paintCountry(target.code, 'correct');
+                // Slide the answer country into view so the reveal lands
+                // prominently. In Name mode the country is already centered;
+                // the no-op is cheap.
+                globeRef.current.flyToIso2(target.code, { duration: 700, zoom: REVEAL_ZOOM });
             }
         }
 
@@ -159,28 +213,30 @@ function GlobeQuiz({
             const next = streak + 1;
             if (next === 3 || next === 5 || next === 10) audio.play('streak');
             setStreak(next);
-            saveStreak(MODE, next);
-            recordBestStreak(MODE, next);
+            saveStreak(mode, next);
+            if (recordBestStreak(mode, next)) flushProfile().then(() => refreshBattlepass());
             // Pretend flag's `correct` field is the geoCorrect for the XP scaler
             // so brand-new geography wins land the biggest reward.
             const xpFlag = { correct: beforeStreak === 0 ? 0 : 1, streak: beforeStreak };
-            const base = awardForAnswer(xpFlag, MODE, next);
-            // Half XP if the hint was used on this question — keeps Hint a
-            // helpful escape hatch without negating the achievement.
+            const base = awardForAnswer(xpFlag, mode, next);
+            // Half XP if the Find-mode hint was used — Name mode has no hint
+            // so hintUsedRef stays false there.
             const amount = hintUsedRef.current
                 ? Math.max(1, Math.round(base.amount * HINT_XP_MULTIPLIER))
                 : base.amount;
             const award = { ...base, amount, hinted: hintUsedRef.current };
             addEarnedXp(award.amount);
-            bumpMetric('globe_correct', 1);
+            // Separate battlepass counters per sub-mode so the pass can offer
+            // distinct challenges for each play style.
+            bumpMetric(mode === MODE_NAME ? 'globe_name_correct' : 'globe_correct', 1);
             setXpGain(award);
             setShowConfetti(true);
             if (beforeStreak <= MASTERY_STREAK && afterStreak > MASTERY_STREAK) audio.play('levelUp');
         } else {
-            audio.play('incorrect');
+            if (!skipped) audio.play('incorrect');
             setStreak(0);
-            resetStreak(MODE);
-            const penalty = penaltyForAnswer(MODE);
+            resetStreak(mode);
+            const penalty = penaltyForAnswer(mode);
             addEarnedXp(-penalty);
             setXpGain({ amount: -penalty });
         }
@@ -191,7 +247,27 @@ function GlobeQuiz({
         }, NEXT_DELAY_MS);
     }, [allFlagsData, setFlagsData, audio, streak, pickNextQuestion]);
 
+    // Find-mode tap-confirm: guessIso2 is what the player clicked.
+    const resolveAnswer = useCallback((guessIso2) => {
+        const flag = currentFlagRef.current;
+        if (!flag || answeredRef.current) return;
+        if (subModeRef.current !== 'find') return; // Name mode handles its own submit
+        const wasCorrect = (guessIso2 || '').toUpperCase() === (flag.code || '').toUpperCase();
+        finalizeAnswer(flag, wasCorrect, { wrongIso2: wasCorrect ? null : guessIso2 });
+    }, [finalizeAnswer]);
+
     resolveAnswerRef.current = resolveAnswer;
+
+    // Name-mode submit: text is the player's typed guess. Reuses the same
+    // fuzzy/strict country-name matcher as Free Response so spelling tolerance
+    // is consistent across the app.
+    const resolveNameAnswer = useCallback((text) => {
+        const flag = currentFlagRef.current;
+        if (!flag || answeredRef.current) return;
+        if (subModeRef.current !== 'name') return;
+        const wasCorrect = checkAnswer(text, flag, strictSpelling);
+        finalizeAnswer(flag, wasCorrect);
+    }, [finalizeAnswer, strictSpelling]);
 
     // Mount the globe once.
     useEffect(() => {
@@ -199,6 +275,7 @@ function GlobeQuiz({
         const globe = new Globe(containerRef.current, {
             onSelect: (iso2) => {
                 if (answeredRef.current) return;
+                if (subModeRef.current !== 'find') return;
                 setSelectedIso2(iso2 || null);
                 audio.play('click');
                 // Semi-zoom + rotate so the selected country lands in the
@@ -206,11 +283,12 @@ function GlobeQuiz({
                 // their guess before they confirm.
                 if (iso2 && globeRef.current) {
                     // Don't eject the player further out than they pinched in.
-                    globeRef.current.flyToIso2(iso2, { zoom: 4.6, noZoomOut: true });
+                    globeRef.current.flyToIso2(iso2, { zoom: REVEAL_ZOOM, noZoomOut: true });
                 }
             },
             onConfirm: (iso2) => {
                 if (answeredRef.current) return;
+                if (subModeRef.current !== 'find') return;
                 if (!iso2) return;
                 resolveAnswerRef.current?.(iso2);
             },
@@ -257,37 +335,42 @@ function GlobeQuiz({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [globeReady]);
 
+    // Auto-focus the name input when entering / advancing within Name mode.
+    useEffect(() => {
+        if (subMode === 'name' && !answered && currentFlag && nameInputRef.current) {
+            nameInputRef.current.focus();
+        }
+    }, [subMode, answered, currentFlag]);
+
     const handleConfirmButton = () => {
+        if (subMode !== 'find') return;
         if (!selectedIso2 || answered) return;
         resolveAnswer(selectedIso2);
+    };
+
+    const handleNameSubmit = (e) => {
+        if (e) e.preventDefault();
+        if (subMode !== 'name' || answered) return;
+        if (!nameInput.trim()) {
+            setIsWiggling(true);
+            audio.play('incorrect', { volume: 0.5 });
+            setTimeout(() => setIsWiggling(false), 500);
+            return;
+        }
+        resolveNameAnswer(nameInput);
     };
 
     const handleSkip = () => {
         const flag = currentFlagRef.current;
         if (!flag || answeredRef.current) return;
-        setAnswered(true);
-        setFlashColor('incorrect');
         audio.play('incorrect');
-        recordIncorrect(1);
-        setStreak(0);
-        resetStreak(MODE);
-        const { message, color, updatedFlags } = update_geo_stats(allFlagsData, flag, false);
-        setFlagsData(updatedFlags);
-        const after = updatedFlags.find((f) => f.code === flag.code);
-        if (after) setMasteryStreak(after.geoStreak || 0);
-        setFeedback({ text: 'Skipped. The answer was:', answer: message.answer, tone: color });
-        if (globeRef.current) {
-            globeRef.current.setLocked('wrong');
-            globeRef.current.paintCountry(flag.code, 'correct');
-            globeRef.current.flyToIso2(flag.code, { duration: 700, zoom: 4.6 });
-        }
-        if (nextTimerRef.current) clearTimeout(nextTimerRef.current);
-        nextTimerRef.current = setTimeout(() => pickNextQuestion(), NEXT_DELAY_MS);
+        finalizeAnswer(flag, false, { skipped: true });
     };
 
     const handleRevealHint = () => {
         const flag = currentFlagRef.current;
         if (!flag || answered || hintUsed || !globeRef.current) return;
+        if (subMode !== 'find') return; // Name mode already shows the country
         // Read the region tag from the flag's metadata to figure out which
         // continent to swing toward. Falls back gracefully if none is set.
         const regionTag = (flag.tags || []).find((t) => t.startsWith('region:'));
@@ -306,6 +389,24 @@ function GlobeQuiz({
         globeRef.current.flyToLatLon(center.lat, center.lon, { duration: 700, zoom: 5.6 });
     };
 
+    // Toggle Find ↔ Name. Cancels any pending next-question timer, swaps the
+    // active streak read, and re-picks so the player sees a fresh question in
+    // the new style immediately.
+    const handleToggleSubMode = (nextMode) => {
+        if (nextMode === subMode) return;
+        if (nextTimerRef.current) clearTimeout(nextTimerRef.current);
+        audio.play('click');
+        subModeRef.current = nextMode;
+        setSubMode(nextMode);
+        // Each sub-mode keeps its own run streak so a hot Find run isn't
+        // diluted by a fresh-start Name session (and vice versa).
+        setStreak(getStreak(nextMode === 'name' ? MODE_NAME : MODE_FIND));
+        // The score counter is a per-session display, not persisted — reset
+        // so the player sees how they're doing in the freshly chosen mode.
+        setScore(0);
+        if (globeReady) pickNextQuestion();
+    };
+
     const feedbackColor = feedback.tone === 'green'
         ? 'var(--color-success-deep)'
         : feedback.tone === 'red'
@@ -320,11 +421,32 @@ function GlobeQuiz({
                 <button className="back-button" onClick={handleBack} aria-label="Back">
                     <Icon name="arrow_back" />
                 </button>
+                <div className="globe-quiz__mode-toggle" role="tablist" aria-label="Globe mode">
+                    <button
+                        type="button"
+                        role="tab"
+                        aria-selected={subMode === 'find'}
+                        className={`globe-quiz__mode-tab ${subMode === 'find' ? 'is-active' : ''}`}
+                        onClick={() => handleToggleSubMode('find')}
+                    >
+                        <Icon name="ads_click" /> Find
+                    </button>
+                    <button
+                        type="button"
+                        role="tab"
+                        aria-selected={subMode === 'name'}
+                        className={`globe-quiz__mode-tab ${subMode === 'name' ? 'is-active' : ''}`}
+                        onClick={() => handleToggleSubMode('name')}
+                    >
+                        <Icon name="edit_location_alt" /> Name
+                    </button>
+                </div>
                 <span className="ui-pill ui-pill--primary">
                     <Icon name="local_fire_department" /> Streak {streak}
                     {streak > 0 && <span className="streak-mult">×{streakMultiplier(streak).toFixed(1)}</span>}
                 </span>
                 <ScoreBubble score={score} icon="star" />
+                <SpectatorsBadge watchers={watchers} lastReactionId={lastReactionId} />
             </div>
 
             <div className="globe-quiz__stage" aria-label="World globe">
@@ -343,12 +465,11 @@ function GlobeQuiz({
                     </div>
                 )}
 
-                {/* Floating flag-prompt card — pinned bottom-right on desktop,
-                    bottom-centered on mobile. */}
-                {currentFlag && (
+                {/* Find mode: floating flag-prompt card with the flag to locate. */}
+                {currentFlag && subMode === 'find' && (
                     <motion.div
                         className="globe-quiz__prompt"
-                        key={currentFlag.code}
+                        key={`find-${currentFlag.code}`}
                         initial={{ opacity: 0, y: 20, scale: 0.94 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0 }}
@@ -363,6 +484,39 @@ function GlobeQuiz({
                         <MasteryMeter streak={masteryStreak} />
                         <div className="globe-quiz__prompt-hint">
                             <Icon name="touch_app" /> Tap a country, then confirm.
+                        </div>
+                    </motion.div>
+                )}
+
+                {/* Name mode: prompt card asking the player to type the highlighted country. */}
+                {currentFlag && subMode === 'name' && (
+                    <motion.div
+                        className="globe-quiz__prompt globe-quiz__prompt--name"
+                        key={`name-${currentFlag.code}`}
+                        initial={{ opacity: 0, y: 20, scale: 0.94 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={springs.bouncy}
+                    >
+                        <div className="globe-quiz__prompt-tag">Name this country</div>
+                        <MasteryMeter streak={masteryStreak} />
+                        <form onSubmit={handleNameSubmit} className="globe-quiz__name-form">
+                            <input
+                                ref={nameInputRef}
+                                type="text"
+                                value={nameInput}
+                                onChange={(e) => setNameInput(e.target.value)}
+                                disabled={answered}
+                                className={`globe-quiz__name-input ${isWiggling ? 'wiggle' : ''}`}
+                                placeholder="Country name…"
+                                autoComplete="off"
+                                autoCorrect="off"
+                                spellCheck="false"
+                                aria-label="Country name"
+                            />
+                        </form>
+                        <div className="globe-quiz__prompt-hint">
+                            <Icon name="travel_explore" /> Highlighted in blue.
                         </div>
                     </motion.div>
                 )}
@@ -435,22 +589,35 @@ function GlobeQuiz({
             )}
 
             <div className="globe-quiz__actions">
-                <Button
-                    variant="secondary"
-                    onClick={handleRevealHint}
-                    disabled={answered || !currentFlag || hintUsed}
-                    icon="explore"
-                >
-                    {hintUsed && hintLabel ? hintLabel : 'Hint (½ XP)'}
-                </Button>
-                <Button
-                    variant="primary"
-                    onClick={handleConfirmButton}
-                    disabled={answered || !selectedIso2}
-                    icon="check"
-                >
-                    Confirm
-                </Button>
+                {subMode === 'find' ? (
+                    <>
+                        <Button
+                            variant="secondary"
+                            onClick={handleRevealHint}
+                            disabled={answered || !currentFlag || hintUsed}
+                            icon="explore"
+                        >
+                            {hintUsed && hintLabel ? hintLabel : 'Hint (½ XP)'}
+                        </Button>
+                        <Button
+                            variant="primary"
+                            onClick={handleConfirmButton}
+                            disabled={answered || !selectedIso2}
+                            icon="check"
+                        >
+                            Confirm
+                        </Button>
+                    </>
+                ) : (
+                    <Button
+                        variant="primary"
+                        onClick={handleNameSubmit}
+                        disabled={answered || !nameInput.trim()}
+                        icon="check"
+                    >
+                        Submit
+                    </Button>
+                )}
                 <button type="button" onClick={handleSkip} disabled={answered} className="skip-button">
                     Skip
                 </button>

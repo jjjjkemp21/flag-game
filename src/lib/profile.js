@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from 'react';
 import { api } from '../api/client';
-import { DEFAULT_COSMETICS, normalizeCosmetics, clampPos, isDefaultItem } from './cosmetics';
+import { DEFAULT_COSMETICS, EMOTE_LOADOUT_SIZE, EMOTES, normalizeCosmetics, clampPos, isDefaultItem } from './cosmetics';
 import { isOwnedKey } from './currency';
 import { topAchievements } from './achievements';
 
@@ -10,7 +10,7 @@ import { topAchievements } from './achievements';
 
 const freshAchievements = () => ({ showcase: [], unlocked: [] });
 
-let state = { region: null, cosmetics: { ...DEFAULT_COSMETICS }, achievements: freshAchievements(), streaks: {}, selectedTitle: null };
+let state = { region: null, cosmetics: { ...DEFAULT_COSMETICS }, achievements: freshAchievements(), streaks: {}, selectedTitle: null, allowSpectate: true };
 let authed = false;
 let pushTimer = null;
 const listeners = new Set();
@@ -19,25 +19,39 @@ function notify() {
     listeners.forEach((l) => l());
 }
 
+function profilePayload() {
+    // If the player hasn't curated a showcase, feature their best unlocked
+    // achievements so something always shows on the leaderboard / profile.
+    const explicit = state.achievements.showcase;
+    const showcase = explicit.length > 0
+        ? explicit
+        : topAchievements(state.achievements.unlocked, 3);
+    return {
+        region: state.region,
+        cosmetics: state.cosmetics,
+        achievements: { showcase, count: state.achievements.unlocked.length },
+        streaks: state.streaks,
+        selectedTitle: state.selectedTitle,
+        allowSpectate: state.allowSpectate,
+    };
+}
+
 function persist() {
     if (!authed) return;
     if (pushTimer) clearTimeout(pushTimer);
     pushTimer = setTimeout(() => {
         pushTimer = null;
-        // If the player hasn't curated a showcase, feature their best unlocked
-        // achievements so something always shows on the leaderboard / profile.
-        const explicit = state.achievements.showcase;
-        const showcase = explicit.length > 0
-            ? explicit
-            : topAchievements(state.achievements.unlocked, 3);
-        api.put('/profile', {
-            region: state.region,
-            cosmetics: state.cosmetics,
-            achievements: { showcase, count: state.achievements.unlocked.length },
-            streaks: state.streaks,
-            selectedTitle: state.selectedTitle,
-        }).catch(() => {});
+        api.put('/profile', profilePayload()).catch(() => {});
     }, 1000);
+}
+
+// Immediate, non-debounced profile push. Resolves once the server has the new
+// state — callers chain refreshBattlepass() onto it so the pass UI sees fresh
+// streaks_json before re-reading. Cancels any pending debounced push.
+export function flushProfile() {
+    if (!authed) return Promise.resolve(null);
+    if (pushTimer) { clearTimeout(pushTimer); pushTimer = null; }
+    return api.put('/profile', profilePayload()).catch(() => null);
 }
 
 export function setProfileAuthed(value) {
@@ -56,24 +70,30 @@ export function loadProfile(serverProfile) {
         achievements: { showcase: Array.isArray(ach.showcase) ? ach.showcase.slice(0, 3) : [], unlocked: [] },
         streaks: (serverProfile && serverProfile.streaks && typeof serverProfile.streaks === 'object') ? serverProfile.streaks : {},
         selectedTitle: (serverProfile && serverProfile.selectedTitle) || null,
+        // Defaults to true on a fresh account; only an explicit `false` opts
+        // the player out of being spectated.
+        allowSpectate: serverProfile && serverProfile.allowSpectate === false ? false : true,
     };
     notify();
 }
 
 export function resetProfile() {
     authed = false;
-    state = { region: null, cosmetics: { ...DEFAULT_COSMETICS }, achievements: freshAchievements(), streaks: {}, selectedTitle: null };
+    state = { region: null, cosmetics: { ...DEFAULT_COSMETICS }, achievements: freshAchievements(), streaks: {}, selectedTitle: null, allowSpectate: true };
     notify();
 }
 
 // Record a per-mode best run streak. No-ops unless it beats the stored best, so
 // it's cheap to call after every correct answer. Persisted to the account.
+// Returns `true` when a new best was set, so callers can chain an immediate
+// flush + battlepass refresh only on real changes.
 export function recordBestStreak(mode, value) {
     const v = Math.max(0, Math.floor(Number(value) || 0));
-    if (v <= (state.streaks[mode] || 0)) return;
+    if (v <= (state.streaks[mode] || 0)) return false;
     state = { ...state, streaks: { ...state.streaks, [mode]: v } };
     notify();
     persist();
+    return true;
 }
 
 export function setRegion(code) {
@@ -93,9 +113,54 @@ export function setCosmetic(category, id) {
     persist();
 }
 
-// Move/scale a cosmetic slot ('hat' | 'glasses'). Clamped to canvas bounds.
+// Replace a single emote-loadout slot. Used by the SpectatorScreen + StoreScreen
+// emote tab when the player picks which emotes are in their quick-react bar.
+// Validates ownership; assigning an unowned id is a no-op (matches setCosmetic).
+export function setEmoteLoadout(slotIndex, id) {
+    const i = Math.max(0, Math.min(EMOTE_LOADOUT_SIZE - 1, Math.floor(Number(slotIndex) || 0)));
+    const next = id || 'none';
+    if (next !== 'none' && !EMOTES[next]) return;
+    if (next !== 'none' && !isOwnedKey('emote', next)) return;
+    const current = Array.isArray(state.cosmetics.emoteLoadout)
+        ? [...state.cosmetics.emoteLoadout]
+        : ['wave', 'none', 'none', 'none'];
+    while (current.length < EMOTE_LOADOUT_SIZE) current.push('none');
+    if (current[i] === next) return;
+    current[i] = next;
+    state = { ...state, cosmetics: { ...state.cosmetics, emoteLoadout: current.slice(0, EMOTE_LOADOUT_SIZE) } };
+    notify();
+    persist();
+}
+
+// Toggle an emote in the loadout: if already equipped, remove it; otherwise
+// drop it into the first empty slot. When all slots are full it replaces the
+// first slot (oldest), which matches the "newest emote, easiest to grab"
+// intuition for the reaction tray.
+export function toggleEmoteInLoadout(id) {
+    if (!id || !EMOTES[id] || !isOwnedKey('emote', id)) return;
+    const current = Array.isArray(state.cosmetics.emoteLoadout)
+        ? [...state.cosmetics.emoteLoadout]
+        : ['wave', 'none', 'none', 'none'];
+    while (current.length < EMOTE_LOADOUT_SIZE) current.push('none');
+    const existing = current.indexOf(id);
+    if (existing >= 0) {
+        current[existing] = 'none';
+    } else {
+        const empty = current.indexOf('none');
+        if (empty >= 0) current[empty] = id;
+        else current[0] = id;
+    }
+    state = { ...state, cosmetics: { ...state.cosmetics, emoteLoadout: current.slice(0, EMOTE_LOADOUT_SIZE) } };
+    notify();
+    persist();
+}
+
+// Move/scale a cosmetic slot ('hat' | 'glasses' | 'mouth' | 'effect'). Clamped to canvas bounds.
 export function setCosmeticPos(slot, pos) {
-    const key = slot === 'hat' ? 'hatPos' : 'glassesPos';
+    const key = slot === 'hat' ? 'hatPos'
+        : slot === 'glasses' ? 'glassesPos'
+        : slot === 'mouth' ? 'mouthPos'
+        : 'effectPos';
     state = { ...state, cosmetics: { ...state.cosmetics, [key]: clampPos(pos) } };
     notify();
     persist();
@@ -112,6 +177,17 @@ export function setAchievementsUnlocked(ids) {
     const showcaseSame = showcase.length === state.achievements.showcase.length;
     if (same && showcaseSame) return;
     state = { ...state, achievements: { showcase, unlocked } };
+    notify();
+    persist();
+}
+
+// Privacy: allow / disallow friends from spectating my live matches. When
+// `false`, friends can still see me as "Playing X" on the Friends tab but the
+// Eye icon is hidden and the spectator endpoint refuses to start a session.
+export function setAllowSpectate(value) {
+    const v = !!value;
+    if (v === state.allowSpectate) return;
+    state = { ...state, allowSpectate: v };
     notify();
     persist();
 }

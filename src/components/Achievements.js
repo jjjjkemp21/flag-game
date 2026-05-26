@@ -1,5 +1,7 @@
 import React, { useEffect, useMemo } from 'react';
 import Icon from './Icon';
+import AchievementIcon from './AchievementIcon';
+import TitleBadge from './TitleBadge';
 import { Button } from './ui';
 import { useToast } from './ui/Toast';
 import { useAuth } from '../auth/AuthProvider';
@@ -126,7 +128,7 @@ function Achievements({ setView, flagsData }) {
             {/* Flag-recognition mastery: rank pill + progress + next rung. */}
             <div className="rank-banner">
                 <span className={`rank-pill rank-pill--${rank.tier}`}>
-                    <Icon name="military_tech" /> {rank.title}
+                    <TitleBadge scope="mastery" tier={rank.tier} size={28} /> {rank.title}
                 </span>
                 <p className="rank-summary">
                     <strong>{ctx.mastered}</strong> / {ctx.total} flags mastered ·{' '}
@@ -146,7 +148,7 @@ function Achievements({ setView, flagsData }) {
                 flag-recognition banner. */}
             <div className="rank-banner">
                 <span className={`rank-pill rank-pill--${geoRank.tier}`}>
-                    <Icon name="public" /> {geoRank.title}
+                    <TitleBadge scope="geo" tier={geoRank.tier} size={28} /> {geoRank.title}
                 </span>
                 <p className="rank-summary">
                     <strong>{ctx.geoMastered}</strong> / {ctx.total} countries mastered on the globe
@@ -184,7 +186,7 @@ function Achievements({ setView, flagsData }) {
                                 aria-pressed={isSelected}
                             >
                                 <span className="title-card__icon">
-                                    <Icon name={t.unlocked ? 'military_tech' : 'lock'} />
+                                    <TitleBadge scope="mastery" tier={t.tier} unlocked={t.unlocked} size={44} />
                                 </span>
                                 <span className="title-card__body">
                                     <span className={`rank-tag rank-pill--${t.tier}`}>{t.title}</span>
@@ -225,7 +227,7 @@ function Achievements({ setView, flagsData }) {
                                 aria-pressed={isSelected}
                             >
                                 <span className="title-card__icon">
-                                    <Icon name={t.unlocked ? 'public' : 'lock'} />
+                                    <TitleBadge scope="geo" tier={t.tier} unlocked={t.unlocked} size={44} />
                                 </span>
                                 <span className="title-card__body">
                                     <span className={`rank-tag rank-pill--${t.tier}`}>{t.title}</span>
@@ -269,7 +271,7 @@ function Achievements({ setView, flagsData }) {
                                         className={`ach-card ach-card--${a.tier} ${isUnlocked ? 'is-unlocked' : 'is-locked'} ${featured ? 'is-featured' : ''}`}
                                     >
                                         <span className="ach-icon">
-                                            <Icon name={isUnlocked ? a.icon : 'lock'} />
+                                            <AchievementIcon icon={a.icon} tier={a.tier} unlocked={isUnlocked} size={56} />
                                         </span>
                                         <span className="ach-info">
                                             <span className="ach-name">{a.name}</span>

@@ -5,6 +5,7 @@ import Logo from '../assets/illustrations/Logo';
 import Mascot from '../assets/illustrations/Mascot';
 import BackgroundBlobs from '../assets/illustrations/BackgroundBlobs';
 import WorldDots from '../assets/illustrations/WorldDots';
+import Scene, { isCustomScene } from '../assets/illustrations/Scene';
 import PetPanel from './PetPanel';
 import BattlepassCard from './BattlepassCard';
 import { Modal, Button } from './ui';
@@ -23,16 +24,34 @@ import { springs } from '../motion';
 const ADMIN_TAPS_REQUIRED = 5;
 const ADMIN_TAP_WINDOW_MS = 3000;
 
-const MODES = [
-    { key: 'multiple-choice', title: 'Multiple Choice', desc: 'Pick from four options', icon: 'quiz', tone: 'primary' },
-    { key: 'free-response',   title: 'Free Response',   desc: 'Type the country name', icon: 'edit_note',  tone: 'success' },
-    { key: 'globe',           title: 'Globe',           desc: 'Find the country on a 3D globe', icon: 'public', tone: 'info' },
-    { key: 'multiplayer',     title: 'Multiplayer',     desc: 'Host a lobby, race friends live', icon: 'sports_esports', tone: 'versus' },
-    { key: 'bonus',           title: 'Bonus Modes',     desc: 'Frenzy, Pixelated, Language…', icon: 'rocket_launch', tone: 'purple' },
-    { key: 'leaderboard',     title: 'Leaderboard',     desc: 'Compete on the global ranks', icon: 'leaderboard', tone: 'info' },
-    { key: 'achievements',    title: 'Achievements',    desc: 'Earn badges and mastery ranks', icon: 'emoji_events', tone: 'accent' },
-    { key: 'friends',         title: 'Friends',         desc: 'Add friends, compare progress', icon: 'group', tone: 'danger' },
-    { key: 'statistics',      title: 'Statistics',      desc: 'Your progress and high scores', icon: 'insights', tone: 'neutral' },
+const SECTIONS = [
+    {
+        key: 'play',
+        label: 'Play',
+        modes: [
+            { key: 'multiple-choice', title: 'Multiple Choice', desc: 'Pick from four options',         icon: 'quiz',          tone: 'primary' },
+            { key: 'free-response',   title: 'Free Response',   desc: 'Type the country name',          icon: 'edit_note',     tone: 'success' },
+            { key: 'globe',           title: 'Globe',           desc: 'Find the country on a 3D globe', icon: 'public',        tone: 'info'    },
+            { key: 'bonus',           title: 'Bonus Modes',     desc: 'Frenzy, Pixelated, Language…',   icon: 'rocket_launch', tone: 'purple'  },
+        ],
+    },
+    {
+        key: 'compete',
+        label: 'Compete',
+        modes: [
+            { key: 'multiplayer', title: 'Multiplayer', desc: 'Host a lobby, race friends live', icon: 'sports_esports', tone: 'versus' },
+            { key: 'leaderboard', title: 'Leaderboard', desc: 'Compete on the global ranks',     icon: 'leaderboard',    tone: 'info'   },
+            { key: 'friends',     title: 'Friends',     desc: 'Add friends, compare progress',   icon: 'group',          tone: 'danger' },
+        ],
+    },
+    {
+        key: 'you',
+        label: 'You',
+        modes: [
+            { key: 'achievements', title: 'Achievements', desc: 'Earn badges and mastery ranks', icon: 'emoji_events', tone: 'accent'  },
+            { key: 'statistics',   title: 'Statistics',   desc: 'Your progress and high scores', icon: 'insights',     tone: 'neutral' },
+        ],
+    },
 ];
 
 function ModeCard({ mode, onClick, index, masteryHint, streak }) {
@@ -137,13 +156,26 @@ function MainMenu({ setView, flagsData, setQuizMode }) {
         }
     };
 
+    const sceneId = profile.cosmetics?.scene || 'default';
+    const hasScene = isCustomScene(sceneId);
+
     return (
         <div className="main-menu-box">
-            <section className="hero-band" aria-labelledby="main-menu-title">
-                <BackgroundBlobs density="normal" />
-                <div style={{ color: 'var(--color-primary-deep)', position: 'absolute', inset: 0, zIndex: 1 }}>
-                    <WorldDots opacity={0.18} />
-                </div>
+            <section
+                className={`hero-band ${hasScene ? 'hero-band--scene' : ''}`}
+                data-scene={sceneId}
+                aria-labelledby="main-menu-title"
+            >
+                {hasScene ? (
+                    <Scene id={sceneId} />
+                ) : (
+                    <>
+                        <BackgroundBlobs density="normal" />
+                        <div style={{ color: 'var(--color-primary-deep)', position: 'absolute', inset: 0, zIndex: 1 }}>
+                            <WorldDots opacity={0.18} />
+                        </div>
+                    </>
+                )}
                 <div className="hero-band__logo-row">
                     <Logo size={56} />
                     {/* Tapping the title is the only entry point to the hidden admin
@@ -173,22 +205,30 @@ function MainMenu({ setView, flagsData, setQuizMode }) {
 
             <PetPanel setView={setView} />
 
+            {/* Atlas Pass — hero card that spans the menu width via its own
+                .mode-card--xl rules. Lives in its own .mode-grid so it isn't
+                forced into a section column. */}
             <div className="mode-grid">
-                {/* Atlas Pass — hero card that spans 2x2 in the menu grid and
-                    uses a bespoke dragon illustration instead of a Material
-                    icon. Rendered first so it sits at the top of the grid. */}
                 <BattlepassCard onClick={() => setView('battlepass')} index={0} />
-                {MODES.map((mode, i) => (
-                    <ModeCard
-                        key={mode.key}
-                        mode={mode}
-                        index={i + 1}
-                        onClick={() => onCardClick(mode.key)}
-                        masteryHint={mode.key === 'multiple-choice' ? masteryHint : null}
-                        streak={(mode.key === 'multiple-choice' || mode.key === 'free-response' || mode.key === 'globe') ? getStreak(mode.key) : 0}
-                    />
-                ))}
             </div>
+
+            {SECTIONS.map((section, sIdx) => (
+                <section key={section.key} className="menu-section">
+                    <h2 className="section-heading">{section.label}</h2>
+                    <div className="mode-grid">
+                        {section.modes.map((mode, i) => (
+                            <ModeCard
+                                key={mode.key}
+                                mode={mode}
+                                index={sIdx * 10 + i + 1}
+                                onClick={() => onCardClick(mode.key)}
+                                masteryHint={mode.key === 'multiple-choice' ? masteryHint : null}
+                                streak={(mode.key === 'multiple-choice' || mode.key === 'free-response' || mode.key === 'globe') ? getStreak(mode.key) : 0}
+                            />
+                        ))}
+                    </div>
+                </section>
+            ))}
 
             <Modal open={adminOpen} onClose={closeAdmin} title="Enter Admin Password">
                 <p className="auth-hint">Grant this account admin access.</p>

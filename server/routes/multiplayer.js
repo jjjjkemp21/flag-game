@@ -1,15 +1,16 @@
 const express = require('express');
 const db = require('../db');
 const { requireAuth } = require('../middleware');
+const { lobbies } = require('../lobbies');
 
 const router = express.Router();
 router.use(requireAuth);
 
-// In-memory lobby store. Matches are short-lived, so lobbies live only in memory
-// (a redeploy clears them, which is fine for transient games). No WebSockets:
-// clients play locally and poll for the shared scoreboard, which is robust behind
-// the reverse proxy and plenty responsive for a score race.
-const lobbies = new Map(); // code -> lobby
+// In-memory lobby store lives in ../lobbies so the spectator router can read it.
+// Matches are short-lived (a redeploy clears them, which is fine for transient
+// games). No WebSockets: clients play locally and poll for the shared
+// scoreboard, which is robust behind the reverse proxy and plenty responsive
+// for a score race.
 
 const CODE_CHARS = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'; // no ambiguous 0/O/1/I/L
 const LOBBY_TTL_MS = 2 * 60 * 60 * 1000;   // hard cap on lobby age

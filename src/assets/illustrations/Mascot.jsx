@@ -1,7 +1,7 @@
 import React, { useId } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
-import { paletteFor } from '../../lib/cosmetics';
-import { renderHat, renderGlasses, renderEffect } from './Cosmetics';
+import { paletteFor, isEffectSizable } from '../../lib/cosmetics';
+import { renderHat, renderGlasses, renderEffect, renderMouth, mouthHidesMood, renderEmote } from './Cosmetics';
 
 // Build an SVG <pattern> for an animal-skin palette. The pattern tiles across
 // the globe-disc bounding box; the disc itself clips it to a circle. Hand-
@@ -262,7 +262,7 @@ function renderPatternDef(id, p) {
  *      | 'hungry' | 'sleepy' | 'sick' | 'dead'
  * cosmetics: { color, hat, glasses } equips skins/hats/glasses.
  */
-export default function Mascot({ size = 96, mood = 'idle', cosmetics, still = false, chubby = false, bruised = false }) {
+export default function Mascot({ size = 96, mood = 'idle', cosmetics, still = false, chubby = false, bruised = false, emotePlay = null }) {
     const prefersReduced = useReducedMotion();
     const calm = prefersReduced || still;
     const uid = useId();
@@ -281,6 +281,7 @@ export default function Mascot({ size = 96, mood = 'idle', cosmetics, still = fa
     // idle bob (framer) respects `calm`/reduced-motion.
     const animate = !!anim;
     const effectEl = renderEffect(cos.effect);
+    const effectIsSizable = isEffectSizable(cos.effect);
     const spinning = cos.effect === 'spin';
     const stopVals = (i) => (anim ? [...anim.frames.map((f) => f[i]), anim.frames[0][i]].join(';') : '');
 
@@ -293,6 +294,8 @@ export default function Mascot({ size = 96, mood = 'idle', cosmetics, still = fa
     };
     const hatEl = renderHat(cos.hat);
     const glassesEl = renderGlasses(cos.glasses);
+    const mouthEl = renderMouth(cos.mouth);
+    const hideMoodMouth = mouthHidesMood(cos.mouth);
 
     const bobVariants = {
         idle:   { y: [0, -3, 0], transition: { duration: 3.2, repeat: Infinity, ease: 'easeInOut' } },
@@ -539,8 +542,14 @@ export default function Mascot({ size = 96, mood = 'idle', cosmetics, still = fa
                     </g>
                 )}
 
-                {/* Mouth */}
-                {mouth}
+                {/* Mouth — mood expression is hidden when a covering mouth cosmetic
+                    (lipstick, mask, fangs) is equipped, so it doesn't bleed through. */}
+                {!hideMoodMouth && mouth}
+
+                {/* Mouth cosmetic (beard / lipstick / mask / lollipop) */}
+                {mouthEl && mood !== 'dead' && (
+                    <g transform={placement(cos.mouthPos, 48, 60)}>{mouthEl}</g>
+                )}
 
                 {/* Sweat drop when hungry or sick */}
                 {(mood === 'hungry' || mood === 'sick') && !calm && (
@@ -597,7 +606,22 @@ export default function Mascot({ size = 96, mood = 'idle', cosmetics, still = fa
                 )}
 
                 {/* Cosmetic effect overlay (animated flourish) */}
-                {effectEl}
+                {effectEl && (effectIsSizable
+                    ? <g transform={placement(cos.effectPos, 48, 48)}>{effectEl}</g>
+                    : effectEl)}
+
+                {/* One-shot emote overlay (spectator reactions). The whole
+                    group is keyed on `playId` so each new reaction remounts
+                    and the SMIL animation replays from begin="0s". When the
+                    user prefers reduced motion we skip rendering the overlay
+                    entirely — the burst animations are vestibular triggers,
+                    and the spectator's name + bubble text already convey
+                    "X reacted" without the animation. */}
+                {emotePlay && emotePlay.id && !prefersReduced && (
+                    <g key={emotePlay.playId || emotePlay.id}>
+                        {renderEmote(emotePlay.id)}
+                    </g>
+                )}
             </svg>
         </motion.div>
     );

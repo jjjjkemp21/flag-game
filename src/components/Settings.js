@@ -4,12 +4,14 @@ import { Toggle, Modal, Button } from './ui';
 import { useToast } from './ui/Toast';
 import { useAudio } from '../audio/AudioProvider';
 import { useAuth } from '../auth/AuthProvider';
+import { useProfile, setAllowSpectate } from '../lib/profile';
 import { api } from '../api/client';
 
 function Settings({ theme, setTheme, strictSpelling, setStrictSpelling, onResetStats, setView }) {
     const audio = useAudio();
     const toast = useToast();
     const { isAuthed, user, patchUser } = useAuth();
+    const profile = useProfile();
     const [resetOpen, setResetOpen] = useState(false);
     const [nameDraft, setNameDraft] = useState(user?.username || '');
     const [savingName, setSavingName] = useState(false);
@@ -143,6 +145,26 @@ function Settings({ theme, setTheme, strictSpelling, setStrictSpelling, onResetS
                     />
                 </div>
             </section>
+
+            {isAuthed && (
+                <section className="settings-section">
+                    <h3 className="settings-section-title">Privacy</h3>
+                    <div className="setting-row">
+                        <div className="setting-row__label">
+                            <span className="setting-row__title">Allow friends to spectate me</span>
+                            <span className="setting-row__desc">
+                                Friends can still see when you're playing, but the Eye button
+                                disappears from their Friends list.
+                            </span>
+                        </div>
+                        <Toggle
+                            checked={profile.allowSpectate !== false}
+                            onChange={(on) => setAllowSpectate(on)}
+                            ariaLabel="Allow friends to spectate me"
+                        />
+                    </div>
+                </section>
+            )}
 
             <section className="settings-section">
                 <h3 className="settings-section-title">Data</h3>

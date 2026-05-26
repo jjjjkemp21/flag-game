@@ -65,11 +65,50 @@ const EFFECTS = {
     bp_scales: 999999, bp_breath: 999999, bp_mist: 999999,
 };
 
-const CATALOG = { color: COLORS, hat: HATS, glasses: GLASSES, effect: EFFECTS };
+// Emotes. Same shape as everywhere else — id -> price. `wave` ships free
+// (see FREE_STARTERS). BP-exclusive emotes use the bp_ prefix; their prices
+// are symbolic since they can only be obtained via battlepass tier claims.
+const EMOTES = {
+    none: 0,
+    wave: 0,
+    cheer: 300, laugh: 400, cry: 400, shocked: 500,
+    spin: 800, heart: 1100, bounce: 1300, sleep: 1500, fireworks: 2200,
+    // Atlas Pass exclusives — gated by isBpOnly() below, not purchasable directly.
+    bp_dragon_roar: 999999, bp_scale_flex: 999999, bp_serpent_coil: 999999,
+};
+
+const MOUTHS = {
+    none: 0,
+    soul_patch: 200, stache_brown: 240, stache_black: 260, goatee: 320, goatee_black: 340,
+    handlebar: 420, handlebar_red: 460, full_beard: 580, full_beard_red: 640, full_beard_gray: 720,
+    viking_beard: 1080,
+    lip_gloss: 320, lipstick_red: 420, lipstick_pink: 460, lipstick_plum: 540, lipstick_gold: 1280,
+    tongue_out: 280, bubblegum: 380, bubblegum_blue: 440, toothpick: 340,
+    pacifier: 480, pacifier_pink: 500, straw_red: 560, straw_rainbow: 760,
+    lollipop_red: 660, lollipop_swirl: 940, whistle: 760, cigar: 820, pipe: 1080,
+    vampire_fangs: 1280, grillz: 1450, surgeon_mask: 920, surgeon_mask_blk: 1100,
+    pilot_mask: 1700, gas_mask: 2300,
+};
+
+// Scenes — backgrounds for Atlas on the homepage hero. One per continent
+// plus an Atlas Pass exclusive (Reptile Kingdom). `default` is free and keeps
+// the original animated-blobs backdrop.
+const SCENES = {
+    default: 0,
+    africa: 2000, asia: 2000, europe: 2000, north_america: 2000,
+    south_america: 2000, oceania: 2000, antarctica: 2000,
+    bp_reptile: 999999,
+};
+
+const CATALOG = { color: COLORS, hat: HATS, glasses: GLASSES, mouth: MOUTHS, effect: EFFECTS, scene: SCENES, emote: EMOTES };
 
 // Items that are always considered owned (so a fresh account has a working
 // equip in every slot). Mirrors DEFAULT_COSMETICS on the client.
-const DEFAULTS = { color: 'teal', hat: 'none', glasses: 'none', effect: 'none' };
+const DEFAULTS = { color: 'teal', hat: 'none', glasses: 'none', mouth: 'none', effect: 'none', scene: 'default', emote: 'none' };
+
+// Free starter items — owned without writing to owned_cosmetics_json. The
+// client mirrors this list in src/lib/cosmetics.js + src/lib/currency.js.
+const FREE_STARTERS = { emote: new Set(['wave']) };
 
 // Atlas Pass exclusives. Equipping these is fine (Mascot renders them like
 // anything else), but they can't be bought with bucks — they're awarded only
@@ -89,4 +128,8 @@ function isDefault(category, id) {
     return DEFAULTS[category] === id;
 }
 
-module.exports = { CATALOG, DEFAULTS, priceOf, isDefault, isBpOnly };
+function isFreeStarter(category, id) {
+    return !!(FREE_STARTERS[category] && FREE_STARTERS[category].has(id));
+}
+
+module.exports = { CATALOG, DEFAULTS, FREE_STARTERS, priceOf, isDefault, isFreeStarter, isBpOnly };
