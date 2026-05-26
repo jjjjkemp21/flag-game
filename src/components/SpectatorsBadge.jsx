@@ -95,23 +95,25 @@ function SpectatorsBadge({ watchers, lastReactionId }) {
                     {visibleReactions.map((r) => (
                         <motion.div
                             key={r.id}
-                            className="spectators-badge-reaction"
-                            initial={{ opacity: 0, y: 8, scale: 0.9 }}
-                            animate={{ opacity: 1, y: -6, scale: 1 }}
-                            exit={{ opacity: 0, y: -18, scale: 0.95 }}
-                            transition={{ duration: 0.35 }}
+                            className={`spectators-badge-reaction ${r.kind === 'message' ? 'is-message' : 'is-emote'}`}
+                            initial={{ opacity: 0, x: 10, scale: 0.92 }}
+                            animate={{ opacity: 1, x: 0, scale: 1 }}
+                            exit={{ opacity: 0, x: 16, scale: 0.95 }}
+                            transition={{ duration: 0.3 }}
                         >
                             <Mascot
-                                size={40}
+                                size={36}
                                 mood="cheer"
                                 cosmetics={r.fromCosmetics}
                                 still
                                 emotePlay={r.kind === 'emote' ? { id: r.payload && r.payload.emoteId, playId: r.id } : null}
                             />
-                            {r.kind === 'message' && r.payload && (
-                                <span className="spectators-badge-bubble">{r.payload.text}</span>
-                            )}
-                            <span className="spectators-badge-from">{r.fromUsername}</span>
+                            <span className="spectators-badge-reaction__body">
+                                <span className="spectators-badge-from">{r.fromUsername}</span>
+                                {r.kind === 'message' && r.payload && (
+                                    <span className="spectators-badge-bubble">{r.payload.text}</span>
+                                )}
+                            </span>
                         </motion.div>
                     ))}
                 </AnimatePresence>

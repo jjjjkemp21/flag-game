@@ -52,7 +52,9 @@ function FreeResponseQuiz({
         score, streak,
         promptKind: 'flag',
         promptFlagCode: currentFlag ? currentFlag.code : undefined,
-        lastAnswerCorrect: flashColor === 'correct',
+        // tri-state for the spectator mascot's mood (cheer / sad / neutral).
+        lastAnswerCorrect:
+            flashColor === 'correct' ? true : flashColor === 'wrong' ? false : null,
     });
 
     const handleBack = () => {

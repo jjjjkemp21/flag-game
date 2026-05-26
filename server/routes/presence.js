@@ -58,6 +58,14 @@ function sanitizeGameState(raw) {
     if (raw.promptCountry && typeof raw.promptCountry === 'string') {
         gs.promptCountry = raw.promptCountry.slice(0, 80);
     }
+    // Multiple-choice options surfaced to spectators so they can follow along
+    // and see which choice the player is weighing. Capped to 4 short strings.
+    if (Array.isArray(raw.options)) {
+        gs.options = raw.options
+            .slice(0, 4)
+            .filter((s) => typeof s === 'string')
+            .map((s) => s.slice(0, 80));
+    }
     return gs;
 }
 

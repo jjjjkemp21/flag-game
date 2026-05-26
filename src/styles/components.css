@@ -4910,9 +4910,9 @@
     min-width: 180px;
     padding: 10px 12px;
     border-radius: 12px;
-    background: var(--color-surface, #fff);
-    box-shadow: 0 14px 38px rgba(31, 26, 59, 0.2);
-    border: 1px solid color-mix(in srgb, var(--color-ink-soft, #56627A) 14%, transparent);
+    background: var(--color-bg-elev-1);
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--color-border);
     display: flex;
     flex-direction: column;
     gap: 6px;
@@ -4947,46 +4947,64 @@
     background: color-mix(in srgb, var(--color-danger, #E5414C) 14%, transparent);
 }
 .spectators-badge-reactions {
+    /* Float the messages slightly to the LEFT of the badge so they don't
+       sit directly above quiz answer choices that share the topbar's right
+       edge. Capped width so longer messages wrap instead of bleeding into
+       the score/streak pills. */
     position: absolute;
-    top: calc(100% + 6px);
-    right: 50%;
+    top: calc(100% + 8px);
+    right: 0;
     pointer-events: none;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    gap: 4px;
-    z-index: 5;
+    align-items: flex-end;
+    gap: 6px;
+    z-index: 15;
+    max-width: min(260px, 80vw);
 }
 .spectators-badge-reaction {
     display: inline-flex;
-    flex-direction: column;
     align-items: center;
-    gap: 2px;
-    background: rgba(255, 255, 255, 0.92);
+    gap: 8px;
+    background: var(--color-bg-elev-1);
+    border: 1px solid var(--color-border);
     backdrop-filter: blur(6px);
-    border-radius: 12px;
-    padding: 4px 8px;
-    box-shadow: 0 8px 22px rgba(31, 26, 59, 0.18);
+    border-radius: 14px;
+    padding: 6px 10px 6px 6px;
+    box-shadow: var(--shadow-lg);
+    max-width: 100%;
+}
+.spectators-badge-reaction__body {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    min-width: 0;
 }
 .spectators-badge-bubble {
-    font-size: 0.78rem;
-    font-weight: 600;
-    color: var(--color-ink, #1F1A3B);
-    max-width: 160px;
-    text-align: center;
-    line-height: 1.2;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--color-ink);
+    line-height: 1.25;
+    word-wrap: break-word;
+    max-width: 180px;
+}
+.spectators-badge-reaction.is-emote .spectators-badge-reaction__body {
+    align-items: center;
 }
 .spectators-badge-from {
-    font-size: 0.65rem;
-    color: var(--color-ink-soft, #56627A);
-    font-weight: 600;
+    font-size: 0.62rem;
+    color: var(--color-ink-soft);
+    font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 0.04em;
+    white-space: nowrap;
 }
 
 /* ==== Spectator screen (full-screen view of a friend's match) ==== */
 .spectator-screen {
     gap: var(--space-md);
+    position: relative;
 }
 .spectator-watching-pill {
     display: inline-flex;
@@ -4994,9 +5012,16 @@
     gap: 6px;
     padding: 4px 12px;
     border-radius: 999px;
-    background: color-mix(in srgb, var(--color-info, #3F6FF6) 14%, transparent);
-    color: var(--color-info-deep, #2C4FD0);
+    background: color-mix(in srgb, var(--color-info) 14%, transparent);
+    color: var(--color-info-deep);
     font-weight: 600;
+    max-width: 60vw;
+    overflow: hidden;
+}
+.spectator-watching-pill__text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 .spectator-main {
     display: flex;
@@ -5017,10 +5042,11 @@
     gap: 4px;
     padding: 3px 10px;
     border-radius: 999px;
-    background: var(--color-surface-2, #F4F4F8);
-    color: var(--color-ink-soft, #56627A);
+    background: var(--color-bg-soft);
+    color: var(--color-ink-soft);
     font-weight: 600;
     font-size: 0.85rem;
+    border: 1px solid var(--color-border);
 }
 .spectator-stats {
     display: inline-flex;
@@ -5038,20 +5064,131 @@
 .spectator-prompt-label {
     font-size: 0.78rem;
     text-transform: uppercase;
-    color: var(--color-ink-soft, #56627A);
+    color: var(--color-ink-soft);
     letter-spacing: 0.04em;
     font-weight: 600;
 }
 .spectator-prompt-flag {
-    width: 160px;
+    width: clamp(120px, 36vw, 160px);
     height: auto;
     border-radius: 8px;
-    box-shadow: 0 6px 16px rgba(31, 26, 59, 0.14);
+    box-shadow: var(--shadow-md);
 }
 .spectator-prompt-country {
-    font-size: 1.4rem;
+    font-size: clamp(1.1rem, 3.6vw, 1.4rem);
     font-weight: 700;
-    color: var(--color-ink, #1F1A3B);
+    color: var(--color-ink);
+    text-align: center;
+    max-width: 90vw;
+}
+
+/* Outcome banner — shown when a multiplayer match finishes (win/loss) or
+   when a solo bonus mode ends. Uses success/danger glow tokens so it pops in
+   both light and dark themes. */
+.spectator-outcome-banner {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 14px;
+    font-weight: 700;
+    border: 1.5px solid transparent;
+    box-shadow: var(--shadow-md);
+}
+.spectator-outcome-banner .material-symbols-rounded {
+    font-size: 22px;
+}
+.spectator-outcome-banner__title {
+    font-size: 1rem;
+}
+.spectator-outcome-banner__sub {
+    font-size: 0.82rem;
+    font-weight: 600;
+    opacity: 0.8;
+    border-left: 1px solid currentColor;
+    padding-left: 8px;
+    margin-left: 4px;
+}
+.spectator-outcome-banner.is-won {
+    background: color-mix(in srgb, var(--color-success) 18%, var(--color-bg-elev-1));
+    color: var(--color-success-deep);
+    border-color: color-mix(in srgb, var(--color-success) 45%, transparent);
+}
+.spectator-outcome-banner.is-lost {
+    background: color-mix(in srgb, var(--color-danger) 16%, var(--color-bg-elev-1));
+    color: var(--color-danger-deep);
+    border-color: color-mix(in srgb, var(--color-danger) 45%, transparent);
+}
+.spectator-outcome-banner.is-done {
+    background: color-mix(in srgb, var(--color-primary) 14%, var(--color-bg-elev-1));
+    color: var(--color-primary-deep);
+    border-color: color-mix(in srgb, var(--color-primary) 40%, transparent);
+}
+[data-theme='dark'] .spectator-outcome-banner.is-won { color: var(--color-success); }
+[data-theme='dark'] .spectator-outcome-banner.is-lost { color: var(--color-danger); }
+[data-theme='dark'] .spectator-outcome-banner.is-done { color: var(--color-primary); }
+
+/* Choices the player is picking between — surfaced so the spectator can
+   follow along instead of staring at a blank flag. Defaults to a 2-up grid
+   that wraps to 1-col on the narrowest phones. */
+.spectator-options {
+    width: 100%;
+    max-width: 420px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    margin-top: 4px;
+}
+.spectator-options__label {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-weight: 700;
+    color: var(--color-ink-soft);
+}
+.spectator-options__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+    width: 100%;
+}
+.spectator-option-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    border-radius: 10px;
+    background: var(--color-bg-elev-2);
+    border: 1px solid var(--color-border);
+    color: var(--color-ink);
+    font-size: 0.85rem;
+    font-weight: 600;
+    min-width: 0;
+}
+.spectator-option-chip__letter {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    background: color-mix(in srgb, var(--color-primary) 18%, transparent);
+    color: var(--color-primary-deep);
+    font-size: 0.72rem;
+    font-weight: 800;
+    flex-shrink: 0;
+}
+[data-theme='dark'] .spectator-option-chip__letter { color: var(--color-primary); }
+.spectator-option-chip__text {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .spectator-watchers-row {
@@ -5065,21 +5202,35 @@
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    padding: 2px 6px 2px 2px;
-    background: var(--color-surface-2, #F4F4F8);
+    padding: 2px 8px 2px 2px;
+    background: var(--color-bg-soft);
+    border: 1px solid var(--color-border);
     border-radius: 999px;
 }
 .spectator-mini-name {
     font-size: 0.78rem;
     font-weight: 600;
-    color: var(--color-ink, #1F1A3B);
+    color: var(--color-ink);
 }
 
+/* Wrap the reaction tray + phrase grid in a single padded block so the
+   layout below the live area never overlaps the mascot/options. */
+.spectator-tray-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding-top: 4px;
+    border-top: 1px dashed var(--color-border);
+    margin-top: auto;
+}
 .spectator-reaction-tray {
     display: flex;
     gap: 8px;
     flex-wrap: wrap;
     justify-content: center;
+    width: 100%;
 }
 .spectator-react-btn {
     display: inline-flex;
@@ -5087,38 +5238,40 @@
     gap: 6px;
     padding: 8px 16px;
     border-radius: 999px;
-    background: var(--color-surface, #fff);
-    border: 1.5px solid var(--color-primary, #3F6FF6);
-    color: var(--color-primary, #3F6FF6);
+    background: var(--color-bg-elev-1);
+    border: 1.5px solid var(--color-primary);
+    color: var(--color-primary);
     font-weight: 600;
     cursor: pointer;
     transition: transform 120ms ease, background 120ms ease;
 }
 .spectator-react-btn:hover:not(:disabled) {
     transform: translateY(-1px);
-    background: color-mix(in srgb, var(--color-primary, #3F6FF6) 10%, transparent);
+    background: color-mix(in srgb, var(--color-primary) 10%, transparent);
+}
+.spectator-react-btn.is-open {
+    background: color-mix(in srgb, var(--color-primary) 16%, transparent);
 }
 .spectator-react-btn:disabled {
     opacity: 0.55;
     cursor: wait;
 }
-.spectator-react-emoji {
-    font-size: 1.1rem;
-    line-height: 1;
+.spectator-react-btn__text {
+    font-size: 0.9rem;
 }
 .spectator-phrases-grid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 6px;
     width: 100%;
-    max-width: 360px;
+    max-width: 420px;
 }
 .spectator-phrase-chip {
     padding: 6px 10px;
     border-radius: 12px;
-    border: 1px solid color-mix(in srgb, var(--color-ink-soft, #56627A) 22%, transparent);
-    background: var(--color-surface, #fff);
-    color: var(--color-ink, #1F1A3B);
+    border: 1px solid var(--color-border);
+    background: var(--color-bg-elev-1);
+    color: var(--color-ink);
     font-size: 0.85rem;
     font-weight: 600;
     cursor: pointer;
@@ -5126,45 +5279,65 @@
 }
 .spectator-phrase-chip:hover:not(:disabled) {
     transform: translateY(-1px);
-    background: var(--color-surface-2, #F4F4F8);
+    background: var(--color-bg-soft);
 }
 .spectator-phrase-chip:disabled {
     opacity: 0.5;
     cursor: wait;
 }
 
+/* Reactions float as an OVERLAY anchored to the upper-centre of the screen
+   so messages from the player being watched (and other spectators) stay
+   readable and never get clipped by the emote tray or phrase grid. */
 .spectator-reactions-stage {
-    position: relative;
-    min-height: 80px;
-    width: 100%;
+    position: absolute;
+    top: 56px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(92%, 420px);
+    pointer-events: none;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
+    z-index: 6;
 }
 .spectator-reaction-float {
     display: inline-flex;
-    flex-direction: column;
     align-items: center;
+    gap: 8px;
+    background: var(--color-bg-elev-1);
+    border: 1px solid var(--color-border);
+    border-radius: 14px;
+    padding: 6px 12px 6px 8px;
+    box-shadow: var(--shadow-lg);
+    max-width: 100%;
+    pointer-events: auto;
+}
+.spectator-reaction-float.is-message {
+    border-color: color-mix(in srgb, var(--color-primary) 35%, var(--color-border));
+}
+.spectator-reaction-body {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
     gap: 2px;
-    background: var(--color-surface, #fff);
-    border-radius: 16px;
-    padding: 6px 12px;
-    box-shadow: 0 10px 28px rgba(31, 26, 59, 0.18);
+    min-width: 0;
 }
 .spectator-reaction-name {
-    font-size: 0.7rem;
+    font-size: 0.66rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    font-weight: 700;
-    color: var(--color-ink-soft, #56627A);
+    font-weight: 800;
+    color: var(--color-ink-soft);
 }
 .spectator-reaction-bubble {
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: var(--color-ink, #1F1A3B);
-    max-width: 200px;
-    text-align: center;
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: var(--color-ink);
+    line-height: 1.25;
+    word-wrap: break-word;
+    max-width: 100%;
 }
 
 /* ==== Spectator emote loadout (4-slot quick-react tray) ==== */
@@ -5173,19 +5346,19 @@
     flex-direction: column;
     align-items: center;
     gap: 2px;
-    padding: 6px 10px;
+    padding: 6px 8px;
     border-radius: 12px;
-    border: 1.5px solid color-mix(in srgb, var(--color-primary, #3F6FF6) 30%, transparent);
-    background: var(--color-surface, #fff);
-    color: var(--color-ink, #1F1A3B);
+    border: 1.5px solid color-mix(in srgb, var(--color-primary) 35%, var(--color-border));
+    background: var(--color-bg-elev-1);
+    color: var(--color-ink);
     cursor: pointer;
-    min-width: 72px;
+    min-width: 64px;
     transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease;
 }
 .spectator-emote-slot:hover:not(:disabled) {
     transform: translateY(-1px);
-    background: color-mix(in srgb, var(--color-primary, #3F6FF6) 8%, transparent);
-    box-shadow: 0 6px 16px rgba(31, 26, 59, 0.12);
+    background: color-mix(in srgb, var(--color-primary) 8%, var(--color-bg-elev-1));
+    box-shadow: var(--shadow-md);
 }
 .spectator-emote-slot:disabled {
     cursor: not-allowed;
@@ -5193,23 +5366,49 @@
 }
 .spectator-emote-slot.is-empty {
     border-style: dashed;
-    background: var(--color-surface-2, #F4F4F8);
+    background: var(--color-bg-soft);
     opacity: 0.55;
 }
 .spectator-emote-slot__empty {
-    width: 48px;
-    height: 48px;
+    width: 40px;
+    height: 40px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    color: var(--color-ink-soft, #56627A);
+    color: var(--color-ink-soft);
 }
 .spectator-emote-slot__name {
-    font-size: 0.7rem;
+    font-size: 0.65rem;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.03em;
-    color: var(--color-ink-soft, #56627A);
+    color: var(--color-ink-soft);
+    max-width: 60px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Mobile: tighten everything so it fits a phone viewport without crowding
+   the prompt flag or hiding the answer choices. Phrases drop to 2 columns
+   and the emote-slot text label hides so the slots only show the mini
+   mascot icons. */
+@media (max-width: 540px) {
+    .spectator-screen { gap: var(--space-sm); }
+    .spectator-watching-pill { padding: 3px 10px; font-size: 0.85rem; max-width: 50vw; }
+    .spectator-mode-pill { font-size: 0.78rem; padding: 2px 8px; }
+    .spectator-prompt-flag { width: clamp(110px, 32vw, 140px); }
+    .spectator-options__grid { grid-template-columns: 1fr; }
+    .spectator-options__grid .spectator-option-chip { padding: 5px 8px; font-size: 0.82rem; }
+    .spectator-reaction-tray { gap: 6px; }
+    .spectator-emote-slot { min-width: 54px; padding: 4px 6px; }
+    .spectator-emote-slot__name { display: none; }
+    .spectator-react-btn { padding: 6px 12px; }
+    .spectator-phrases-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .spectator-reactions-stage { top: 48px; width: 94%; }
+    .spectator-reaction-float { padding: 4px 10px 4px 6px; }
+    .spectator-outcome-banner { padding: 6px 12px; flex-wrap: wrap; justify-content: center; text-align: center; }
+    .spectator-outcome-banner__sub { border-left: 0; padding-left: 0; margin-left: 0; }
 }
 
 /* ==== Store emote loadout strip (top of the Emotes section) ==== */
@@ -5245,18 +5444,18 @@
     width: 56px;
     height: 56px;
     border-radius: 12px;
-    border: 1.5px solid color-mix(in srgb, var(--color-primary, #3F6FF6) 30%, transparent);
-    background: var(--color-surface, #fff);
+    border: 1.5px solid color-mix(in srgb, var(--color-primary) 30%, transparent);
+    background: var(--color-bg-elev-1);
     cursor: pointer;
-    color: var(--color-ink-soft, #56627A);
+    color: var(--color-ink-soft);
     transition: transform 120ms ease, box-shadow 120ms ease;
 }
 .emote-loadout-slot:hover:not(:disabled) {
     transform: translateY(-1px);
-    box-shadow: 0 6px 14px rgba(31, 26, 59, 0.14);
+    box-shadow: var(--shadow-md);
 }
 .emote-loadout-slot.is-empty {
     border-style: dashed;
-    background: var(--color-surface-2, #F4F4F8);
+    background: var(--color-bg-soft);
     cursor: not-allowed;
 }

@@ -169,6 +169,7 @@ function buildState(targetId, callerId, since) {
                         mpCode: lobby.code,
                         target: lobby.config.target,
                         state: lobby.state,
+                        winnerId: lobby.winnerId || null,
                     };
                 }
             } else if (presenceEntry.gameState) {

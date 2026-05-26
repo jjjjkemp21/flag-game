@@ -7,6 +7,7 @@ import Mascot from '../assets/illustrations/Mascot';
 import { spectate, useSpectatePoll } from '../lib/spectate';
 import { SPECTATOR_PHRASES } from '../lib/spectatorPhrases';
 import { useProfile } from '../lib/profile';
+import { useAuth } from '../auth/AuthProvider';
 import { EMOTES } from '../lib/cosmetics';
 
 const MODE_LABELS = {
@@ -26,33 +27,37 @@ const MODE_LABELS = {
 const IMAGE_BASE_URL = './assets/flags/';
 const FLAG_FILE = (code) => (code ? `${IMAGE_BASE_URL}${code.toLowerCase()}.svg` : null);
 
-// A reaction (emote / message) is a brief animated overlay near the corner
-// where the spectator's mini-Mascot appears. We track which ones we've
-// already shown so a polled item doesn't double-mount.
+// A reaction (emote / message) is a brief animated overlay near the centre
+// of the spectator screen. We track which ones we've already shown so a
+// polled item doesn't double-mount. Messages get a wider bubble so the
+// text is always readable, regardless of which device size renders them.
 function ReactionFloat({ reaction, onDone }) {
     useEffect(() => {
-        const t = setTimeout(onDone, 3000);
+        const t = setTimeout(onDone, 3200);
         return () => clearTimeout(t);
     }, [onDone]);
+    const isMessage = reaction.kind === 'message' && reaction.payload;
     return (
         <motion.div
-            className="spectator-reaction-float"
-            initial={{ opacity: 0, y: 12, scale: 0.9 }}
-            animate={{ opacity: 1, y: -10, scale: 1 }}
-            exit={{ opacity: 0, y: -28 }}
-            transition={{ duration: 0.35 }}
+            className={`spectator-reaction-float ${isMessage ? 'is-message' : 'is-emote'}`}
+            initial={{ opacity: 0, y: 16, scale: 0.92 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -24, scale: 0.95 }}
+            transition={{ duration: 0.3 }}
         >
             <Mascot
-                size={56}
+                size={48}
                 mood="cheer"
                 cosmetics={reaction.fromCosmetics}
                 still
                 emotePlay={reaction.kind === 'emote' ? { id: reaction.payload && reaction.payload.emoteId, playId: reaction.id } : null}
             />
-            <span className="spectator-reaction-name">{reaction.fromUsername}</span>
-            {reaction.kind === 'message' && reaction.payload && (
-                <span className="spectator-reaction-bubble">{reaction.payload.text}</span>
-            )}
+            <div className="spectator-reaction-body">
+                <span className="spectator-reaction-name">{reaction.fromUsername}</span>
+                {isMessage && (
+                    <span className="spectator-reaction-bubble">{reaction.payload.text}</span>
+                )}
+            </div>
         </motion.div>
     );
 }
@@ -60,6 +65,7 @@ function ReactionFloat({ reaction, onDone }) {
 function SpectatorScreen({ targetId, setView }) {
     const toast = useToast();
     const profile = useProfile();
+    const { user } = useAuth();
     const [showPhrases, setShowPhrases] = useState(false);
     const [reactCooldownUntil, setReactCooldownUntil] = useState(0);
     const [visibleReactions, setVisibleReactions] = useState([]);
@@ -134,16 +140,37 @@ function SpectatorScreen({ targetId, setView }) {
     const otherSpectators = useMemo(() => {
         if (!state || !state.spectators) return [];
         // The poll returns ALL spectators including the caller — filter to the others.
-        return state.spectators;
-    }, [state]);
+        const myId = user && user.id;
+        return state.spectators.filter((s) => s.id !== myId);
+    }, [state, user]);
 
     const gameState = target && target.gameState;
     const promptFlag = gameState && gameState.promptFlagCode ? FLAG_FILE(gameState.promptFlagCode) : null;
     const promptCountry = gameState && gameState.promptCountry;
+    const promptOptions = gameState && Array.isArray(gameState.options) ? gameState.options : null;
     const modeLabel = (target && target.activeMode && MODE_LABELS[target.activeMode]) || 'Playing';
-    const mascotMood = gameState && gameState.lastAnswerCorrect ? 'cheer' : 'think';
-    const finished = gameState && gameState.finished;
     const cooldownActive = Date.now() < reactCooldownUntil;
+
+    // Multiplayer matches carry an explicit win/loss outcome once the lobby
+    // resolves; solo modes just have a `finished` flag (no opponent to lose
+    // to, so "finished" = "completed").
+    const mpFinished =
+        gameState && gameState.mode === 'multiplayer' && gameState.state === 'finished';
+    const mpWon =
+        mpFinished && target && gameState.winnerId && gameState.winnerId === target.id;
+    const mpLost = mpFinished && !mpWon;
+    const soloFinished =
+        gameState && gameState.mode !== 'multiplayer' && gameState.finished;
+    const showFinishBanner = mpFinished || soloFinished;
+
+    // Mascot mood. Win/loss outcomes pin the expression; otherwise we react
+    // to the player's most recent answer (correct → cheer, wrong → sad,
+    // unanswered → think).
+    let mascotMood = 'think';
+    if (mpWon || soloFinished) mascotMood = 'cheer';
+    else if (mpLost) mascotMood = 'sad';
+    else if (gameState && gameState.lastAnswerCorrect === true) mascotMood = 'cheer';
+    else if (gameState && gameState.lastAnswerCorrect === false) mascotMood = 'sad';
 
     if (error && !target) {
         return (
@@ -167,17 +194,20 @@ function SpectatorScreen({ targetId, setView }) {
         <div className="quiz-box spectator-screen">
             <div className="quiz-topbar">
                 <button className="back-button" onClick={() => setView('friends')} aria-label="Back to friends">
-                    <Icon name="arrow_back" /> Back
+                    <Icon name="arrow_back" />
                 </button>
                 <span className="spectator-watching-pill">
-                    <Icon name="visibility" /> Watching {target ? target.username : '…'}
+                    <Icon name="visibility" />
+                    <span className="spectator-watching-pill__text">
+                        Watching {target ? target.username : '…'}
+                    </span>
                 </span>
             </div>
 
             <div className="spectator-main">
                 <div className="spectator-mascot-wrap">
                     <Mascot
-                        size={144}
+                        size={132}
                         mood={mascotMood}
                         cosmetics={target && target.cosmetics}
                     />
@@ -186,14 +216,37 @@ function SpectatorScreen({ targetId, setView }) {
                     </span>
                 </div>
 
+                {showFinishBanner && (
+                    <div
+                        className={`spectator-outcome-banner ${
+                            mpWon ? 'is-won' : mpLost ? 'is-lost' : 'is-done'
+                        }`}
+                    >
+                        <Icon
+                            name={mpWon ? 'emoji_events' : mpLost ? 'sentiment_dissatisfied' : 'flag'}
+                        />
+                        <span className="spectator-outcome-banner__title">
+                            {mpWon
+                                ? `${target ? target.username : 'They'} won!`
+                                : mpLost
+                                ? `${target ? target.username : 'They'} lost`
+                                : `${target ? target.username : 'They'} finished`}
+                        </span>
+                        {gameState && (
+                            <span className="spectator-outcome-banner__sub">
+                                Final score {gameState.score ?? 0}
+                            </span>
+                        )}
+                    </div>
+                )}
+
                 {gameState && (
                     <div className="spectator-stats">
                         <Pill tone="primary"><Icon name="star" /> {gameState.score ?? 0}</Pill>
                         <Pill tone="info"><Icon name="local_fire_department" /> {gameState.streak ?? 0}</Pill>
                         {gameState.bestStreak ? (
-                            <Pill tone="ghost">Best {gameState.bestStreak}</Pill>
+                            <Pill tone="neutral">Best {gameState.bestStreak}</Pill>
                         ) : null}
-                        {finished ? <Pill tone="success">Finished</Pill> : null}
                     </div>
                 )}
 
@@ -213,6 +266,24 @@ function SpectatorScreen({ targetId, setView }) {
                         <span className="spectator-prompt-country">{promptCountry}</span>
                     </div>
                 )}
+
+                {promptOptions && promptOptions.length > 0 && (
+                    <div className="spectator-options" aria-label="Their answer choices">
+                        <span className="spectator-options__label">
+                            <Icon name="list_alt" /> Their choices
+                        </span>
+                        <div className="spectator-options__grid">
+                            {promptOptions.map((opt, i) => (
+                                <span key={`${opt}-${i}`} className="spectator-option-chip">
+                                    <span className="spectator-option-chip__letter">
+                                        {String.fromCharCode(65 + i)}
+                                    </span>
+                                    <span className="spectator-option-chip__text">{opt}</span>
+                                </span>
+                            ))}
+                        </div>
+                    </div>
+                )}
             </div>
 
             {otherSpectators.length > 0 && (
@@ -220,79 +291,85 @@ function SpectatorScreen({ targetId, setView }) {
                     <span className="auth-hint">Also watching:</span>
                     {otherSpectators.map((s) => (
                         <span key={s.id} className="spectator-mini-watcher" title={s.username}>
-                            <Mascot size={32} cosmetics={s.cosmetics} still />
+                            <Mascot size={28} cosmetics={s.cosmetics} still />
                             <span className="spectator-mini-name">{s.username}</span>
                         </span>
                     ))}
                 </div>
             )}
 
-            <div className="spectator-reaction-tray">
-                {loadout.map((emoteId, slotIndex) => {
-                    const meta = EMOTES[emoteId];
-                    const isEmpty = !emoteId || emoteId === 'none' || !meta;
-                    return (
-                        <button
-                            key={slotIndex}
-                            type="button"
-                            className={`spectator-emote-slot ${isEmpty ? 'is-empty' : ''}`}
-                            onClick={() => !isEmpty && sendReaction({ kind: 'emote', emoteId })}
-                            disabled={isEmpty || cooldownActive}
-                            aria-label={isEmpty ? `Empty emote slot ${slotIndex + 1}` : `Send ${meta.name}`}
-                            title={isEmpty ? 'Equip an emote from the Atlas Shop' : meta.name}
-                        >
-                            {isEmpty ? (
-                                <span className="spectator-emote-slot__empty">
-                                    <Icon name="add" />
-                                </span>
-                            ) : (
-                                <Mascot
-                                    size={48}
-                                    cosmetics={profile.cosmetics}
-                                    still
-                                    emotePlay={{ id: emoteId, playId: `${slotIndex}-${previewPlayId}` }}
-                                />
-                            )}
-                            {!isEmpty && <span className="spectator-emote-slot__name">{meta.name}</span>}
-                        </button>
-                    );
-                })}
-                <button
-                    type="button"
-                    className="spectator-react-btn"
-                    onClick={() => setShowPhrases((v) => !v)}
-                    aria-expanded={showPhrases}
-                    aria-label="Send a message"
-                >
-                    <Icon name="chat_bubble" /> Message
-                </button>
-            </div>
-
-            {showPhrases && (
-                <div className="spectator-phrases-grid">
-                    {SPECTATOR_PHRASES.map((text, i) => (
-                        <button
-                            key={i}
-                            type="button"
-                            className="spectator-phrase-chip"
-                            disabled={cooldownActive}
-                            onClick={() => {
-                                sendReaction({ kind: 'message', messageId: i });
-                                setShowPhrases(false);
-                            }}
-                        >
-                            {text}
-                        </button>
-                    ))}
-                </div>
-            )}
-
+            {/* Reactions overlay — absolutely positioned above the mascot/stats
+                so incoming messages from other spectators never get clipped by
+                the emote tray or phrase grid below. */}
             <div className="spectator-reactions-stage" aria-live="polite">
                 <AnimatePresence>
                     {visibleReactions.map((r) => (
                         <ReactionFloat key={r.id} reaction={r} onDone={() => dismissReaction(r.id)} />
                     ))}
                 </AnimatePresence>
+            </div>
+
+            <div className="spectator-tray-wrap">
+                <div className="spectator-reaction-tray" role="group" aria-label="Send a reaction">
+                    {loadout.map((emoteId, slotIndex) => {
+                        const meta = EMOTES[emoteId];
+                        const isEmpty = !emoteId || emoteId === 'none' || !meta;
+                        return (
+                            <button
+                                key={slotIndex}
+                                type="button"
+                                className={`spectator-emote-slot ${isEmpty ? 'is-empty' : ''}`}
+                                onClick={() => !isEmpty && sendReaction({ kind: 'emote', emoteId })}
+                                disabled={isEmpty || cooldownActive}
+                                aria-label={isEmpty ? `Empty emote slot ${slotIndex + 1}` : `Send ${meta.name}`}
+                                title={isEmpty ? 'Equip an emote from the Atlas Shop' : meta.name}
+                            >
+                                {isEmpty ? (
+                                    <span className="spectator-emote-slot__empty">
+                                        <Icon name="add" />
+                                    </span>
+                                ) : (
+                                    <Mascot
+                                        size={40}
+                                        cosmetics={profile.cosmetics}
+                                        still
+                                        emotePlay={{ id: emoteId, playId: `${slotIndex}-${previewPlayId}` }}
+                                    />
+                                )}
+                                {!isEmpty && <span className="spectator-emote-slot__name">{meta.name}</span>}
+                            </button>
+                        );
+                    })}
+                    <button
+                        type="button"
+                        className={`spectator-react-btn ${showPhrases ? 'is-open' : ''}`}
+                        onClick={() => setShowPhrases((v) => !v)}
+                        aria-expanded={showPhrases}
+                        aria-label="Send a message"
+                    >
+                        <Icon name="chat_bubble" />
+                        <span className="spectator-react-btn__text">Message</span>
+                    </button>
+                </div>
+
+                {showPhrases && (
+                    <div className="spectator-phrases-grid" role="group" aria-label="Quick messages">
+                        {SPECTATOR_PHRASES.map((text, i) => (
+                            <button
+                                key={i}
+                                type="button"
+                                className="spectator-phrase-chip"
+                                disabled={cooldownActive}
+                                onClick={() => {
+                                    sendReaction({ kind: 'message', messageId: i });
+                                    setShowPhrases(false);
+                                }}
+                            >
+                                {text}
+                            </button>
+                        ))}
+                    </div>
+                )}
             </div>
         </div>
     );
