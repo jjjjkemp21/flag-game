@@ -5515,3 +5515,959 @@
     background: var(--color-bg-soft);
     cursor: not-allowed;
 }
+
+/* ==== XP Road — beanstalk-themed climbing progression screen ====
+   Layers:
+     1. .xpr-card (.mode-card--xl variant) — hero card on the main menu, sits
+        directly below the Atlas Pass card. Inherits the .bp-card layout for
+        copy + progress bar; only the vine-themed art swaps out.
+     2. .xpr-screen — full-screen view with a scrollable canvas.
+     3. .xpr-canvas — absolute-positioning surface; bottom = 0 XP, top = max.
+     4. .xpr-vine — stacked VineSegment tiles forming the background stalk.
+     5. .xpr-milestone — leaf + reward chip placed at each milestone's slot.
+     6. .xpr-climber — player / friend mascots anchored to a vine Y position. */
+
+/* The XP Road card is the sky-themed sibling of the Reptile Kingdom card.
+   Inherits .bp-card's layout but swaps the dark gem-tone gradient for a soft
+   blue→cream sky and re-tones all the copy/pills/CTA for legibility on light.
+   The drifting clouds + beanstalk live inside <VineEmblem> as SVG, not here. */
+.xpr-card {
+    --bp-accent: #3FAA4F;
+    --mc-bg: linear-gradient(180deg, #9BD0EE 0%, #C8E4F2 55%, #EAF4FA 100%);
+    --mc-shadow: #2A6890;
+    --mc-fg: #1A3A52;
+}
+/* Replace the Reptile Kingdom warm-radial overlay with a gentler sun-glow
+   in the top-right + a faint meadow tint near the base of the stalk. */
+.xpr-card::before {
+    background:
+        radial-gradient(circle at 88% 18%, rgba(255,228,150,0.45), transparent 45%),
+        radial-gradient(circle at 12% 88%, rgba(200,232,176,0.45), transparent 55%);
+}
+/* Dark copy on light bg — flip the text-shadow to a light glow instead of
+   the dark drop used on the Reptile card. */
+.xpr-card .bp-card__copy {
+    color: #1A3A52;
+    text-shadow: 0 1px 0 rgba(255,255,255,0.55);
+}
+.xpr-card .bp-card__title {
+    /* Darker overall — deep forest → leaf-green mid → vivid leaf, so the
+       gradient stays visible on top of the light sky background without
+       washing out into pale tints. */
+    background: linear-gradient(120deg, #0A2A14 0%, #1F5A2A 45%, #3FAA4F 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    filter: drop-shadow(0 1px 2px rgba(255,255,255,0.7));
+}
+.xpr-card .bp-card__sub {
+    color: #244A60;
+    opacity: 1;
+}
+.xpr-card .bp-card__eyebrow {
+    color: #1F5A2A;
+    background: rgba(255,255,255,0.6);
+    border-color: rgba(31,90,42,0.25);
+}
+.xpr-card .bp-card__dot,
+.xpr-card .bp-card__pill-dot,
+.xpr-card .bp-card__bar-fill {
+    background: linear-gradient(90deg, #7FE05B 0%, #3FAA4F 60%, #1F5A2A 100%);
+    box-shadow: 0 0 8px rgba(63,170,79,0.55);
+}
+.xpr-card .bp-card__pill {
+    background: rgba(255,255,255,0.7);
+    border-color: rgba(31,90,42,0.3);
+    color: #1F5A2A;
+}
+.xpr-card .bp-card__pill--prem {
+    background: linear-gradient(90deg, #FFD86B, #FF9F47);
+    color: #4A2A0A;
+    border-color: rgba(74,42,10,0.25);
+}
+.xpr-card .bp-card__bar {
+    background: rgba(31,90,42,0.18);
+}
+/* CTA — sunny gold instead of the Reptile-card dark orange, with a deep
+   leaf-green drop-shadow to anchor it to the rest of the sky/beanstalk
+   palette. Reads clearly on the light background and harmonises with the
+   sun in the corner of the artwork. */
+.xpr-card .bp-card__cta {
+    background: linear-gradient(90deg, #FFE08A 0%, #FFC03E 55%, #FFAE2B 100%);
+    color: #2A1A0A;
+    box-shadow: 0 4px 0 #1F5A2A;
+}
+.xpr-card:hover .bp-card__cta {
+    box-shadow: 0 5px 0 #1F5A2A;
+}
+
+/* Screen container — full-width quiz box, but with no max-height so the
+   internal scroller controls the layout. */
+.xpr-screen {
+    width: 100%;
+    padding-bottom: var(--space-md);
+}
+
+/* ---- Hero summary banner ------------------------------------------------
+   Polished header that replaces the old pill row. Three stat tiles sit in a
+   row across the top, followed by a "Next milestone" strip with a segment
+   progress bar.
+
+   NOTE on colour tokens: The hero card + milestone plaques have always-light
+   cream/white backgrounds (they're sky-themed). They therefore CANNOT use
+   `var(--color-ink)` for text — that token flips to a pale ink in dark mode
+   and disappears against the light surface. All text in this section uses
+   the hard-coded `#1F1A3B` (deep navy ink) and `#5B5677` (muted) so it
+   reads regardless of the theme the user has chosen. */
+.xpr-hero {
+    margin: var(--space-sm) auto var(--space-md);
+    max-width: 720px;
+    padding: var(--space-md);
+    border-radius: var(--radius-lg);
+    background:
+        radial-gradient(circle at 12% 0%, rgba(255,232,154,0.45), transparent 55%),
+        radial-gradient(circle at 100% 100%, rgba(168,224,128,0.45), transparent 55%),
+        linear-gradient(160deg, #FBFDF7 0%, #EEF7E4 60%, #DBEFCA 100%);
+    border: 1px solid rgba(31,90,42,0.22);
+    box-shadow:
+        0 1px 0 rgba(255,255,255,0.7) inset,
+        0 6px 18px rgba(31,90,42,0.16);
+    display: flex; flex-direction: column; gap: var(--space-sm);
+}
+.xpr-hero__stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-sm);
+}
+.xpr-hero__stat {
+    position: relative;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 2px;
+    padding: 10px 8px 8px;
+    border-radius: var(--radius-md);
+    background: linear-gradient(180deg, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.55) 100%);
+    border: 1px solid rgba(31,90,42,0.18);
+    box-shadow: 0 1px 0 rgba(255,255,255,0.9) inset, 0 2px 6px rgba(31,90,42,0.1);
+}
+.xpr-hero__stat-icon {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    background: linear-gradient(145deg, #FFFCEB, #FFE89A);
+    color: #8A5A1A;
+    margin-bottom: 2px;
+    box-shadow: inset 0 0 0 1px rgba(168,110,24,0.25);
+}
+.xpr-hero__stat-icon .material-symbols-rounded { font-size: 18px; }
+.xpr-hero__stat--milestones .xpr-hero__stat-icon {
+    background: linear-gradient(145deg, #E8F8DC, #A8E080);
+    color: #1F5A2A;
+    box-shadow: inset 0 0 0 1px rgba(31,90,42,0.25);
+}
+.xpr-hero__stat--chest .xpr-hero__stat-icon {
+    background: linear-gradient(145deg, #FFE8C8, #FFB45F);
+    color: #6B3A0A;
+    box-shadow: inset 0 0 0 1px rgba(107,58,10,0.25);
+}
+.xpr-hero__stat--xp .xpr-hero__stat-icon {
+    background: linear-gradient(145deg, #E8F0FF, #B9D4FF);
+    color: #1F4A8A;
+    box-shadow: inset 0 0 0 1px rgba(31,74,138,0.25);
+}
+.xpr-hero__stat-num {
+    font-size: 1.2rem; font-weight: 800;
+    color: #1F1A3B;
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+}
+.xpr-hero__stat-frac {
+    font-size: 0.85rem; font-weight: 700;
+    color: #5B5677;
+    margin-left: 1px;
+}
+.xpr-hero__stat-lbl {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #5B5677;
+    font-weight: 800;
+}
+.xpr-hero__stat.is-dim {
+    opacity: 0.55;
+    filter: saturate(0.6);
+}
+
+/* Next milestone strip — eyebrow + name + segment progress bar. */
+.xpr-hero__next {
+    padding: var(--space-sm) var(--space-md);
+    border-radius: var(--radius-md);
+    background: linear-gradient(180deg, rgba(255,255,255,0.7), rgba(255,255,255,0.4));
+    border: 1px dashed rgba(31,90,42,0.32);
+    display: flex; flex-direction: column; gap: 6px;
+}
+.xpr-hero__next-row {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: var(--space-sm);
+}
+.xpr-hero__next-eyebrow {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 0.72rem; font-weight: 800;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    color: #1F5A2A;
+}
+.xpr-hero__next-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: linear-gradient(90deg, #7FE05B, #3FAA4F);
+    box-shadow: 0 0 8px rgba(63,170,79,0.6);
+}
+.xpr-hero__next-togo {
+    font-size: 0.78rem; font-weight: 700; color: #5B5677;
+}
+.xpr-hero__next-name {
+    font-size: 1.1rem; font-weight: 800;
+    color: #1F1A3B;
+    letter-spacing: -0.01em;
+}
+.xpr-hero__progress {
+    position: relative;
+    width: 100%;
+    height: 8px;
+    border-radius: var(--radius-pill);
+    background: rgba(31,90,42,0.18);
+    overflow: hidden;
+    box-shadow: inset 0 1px 2px rgba(31,90,42,0.18);
+}
+.xpr-hero__progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #7FE05B 0%, #3FAA4F 55%, #1F5A2A 100%);
+    box-shadow: 0 0 8px rgba(63,170,79,0.55);
+    border-radius: inherit;
+    transition: width 0.45s cubic-bezier(0.25, 0.7, 0.35, 1);
+}
+.xpr-hero__next--done {
+    flex-direction: row; align-items: center; gap: var(--space-sm);
+    background: linear-gradient(180deg, rgba(255,247,214,0.85), rgba(255,232,154,0.6));
+    border: 1px solid rgba(168,110,24,0.4);
+    color: #6B3A0A;
+}
+.xpr-hero__next--done .material-symbols-rounded { font-size: 24px; color: #B07514; }
+.xpr-hero__next--done strong { font-size: 1rem; }
+.xpr-hero__next--done span { font-size: 0.85rem; color: #8A5A1A; }
+
+/* Scroll container — fills the rest of the viewport. The visible "window"
+   onto the climb. The xpr-canvas inside is the absolute-positioning surface
+   that everything climbs along. */
+.xpr-scroll {
+    position: relative;
+    width: 100%;
+    height: min(70vh, 720px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    border-radius: var(--radius-lg);
+    border: 1px solid color-mix(in srgb, #3FAA4F 30%, transparent);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.4);
+    scroll-behavior: smooth;
+    /* Contain the rounded corner clipping + the SVG backdrop layering. */
+    isolation: isolate;
+}
+
+/* Canvas inside the scroller — height set inline by the screen. All
+   absolutely-positioned children use `bottom` so the bottom of the canvas
+   is "0 XP" and they climb upward as XP increases. */
+.xpr-canvas {
+    position: relative;
+    width: 100%;
+    min-height: 100%;
+    /* Failsafe sky/meadow wash in case the SVG backdrop fails to render;
+       the SVG paints over this when present. */
+    background: linear-gradient(180deg, #9FD2EE 0%, #E8F2EC 60%, #9BC78A 100%);
+}
+
+/* ---- Long ambient backdrop --------------------------------------------
+   Painted once per screen and stretched to fill the canvas. xMidYMid slice
+   keeps the cloud + sun composition centred horizontally while letting
+   wider/narrower canvases crop at the edges — so it reads as one bespoke
+   piece of art across mobile and desktop. */
+.xpr-backdrop {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;
+    display: block;
+}
+
+/* Meadow grass strip — pinned to the bottom of the canvas with a fixed
+   pixel height so the tufts render at their natural size instead of being
+   vertically stretched by the backdrop's xMidYMid slice scaling. Sits
+   above the backdrop (z:0) but below the vine (z:1). */
+.xpr-meadow-grass {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 36px;
+    z-index: 0;
+    pointer-events: none;
+    display: block;
+    overflow: visible;
+}
+
+/* Vine tiles — sit on top of the sky backdrop. */
+.xpr-vine {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column-reverse; /* fill from bottom up */
+    align-items: center;
+    pointer-events: none;
+    z-index: 1;
+}
+.xpr-vine-seg {
+    width: 200px;
+    height: 300px;
+    flex: 0 0 300px;
+}
+.xpr-vine-seg.is-flipped {
+    transform: scaleX(-1);
+}
+
+/* Thick fog bands — sandwiched between the vine (z:1) and milestones (z:3).
+   Plain alpha compositing (no blend mode) so leaves rendered on top stay
+   fully opaque. The fog SVG's own per-band alpha gradient feathers the
+   bands smoothly. */
+.xpr-fog {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+    pointer-events: none;
+}
+
+/* Milestone rows — placed absolutely at the slot's vertical centre. */
+.xpr-milestone {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 0; /* zero-height anchor; children float around it */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 3;
+}
+
+/* ---- Dashed level line -------------------------------------------------
+   The visible "rung" of the road. A faint dashed horizontal line spans the
+   full canvas at the milestone Y, anchored at the vine by leaves on either
+   side. Together with the leaves + side reward tile this reads as a single
+   level marker rather than UI dropped onto a vine. */
+.xpr-level-line {
+    position: absolute;
+    top: 0;
+    left: 14px;
+    right: 14px;
+    height: 0;
+    border-top: 1.5px dashed rgba(31, 90, 42, 0.32);
+    pointer-events: none;
+    z-index: 1;
+}
+.xpr-level-line.is-reached {
+    border-top-color: rgba(63, 170, 79, 0.55);
+    border-top-style: dashed;
+}
+.xpr-level-line.is-major {
+    border-top-width: 2px;
+    border-top-color: rgba(168, 110, 24, 0.45);
+}
+.xpr-level-line.is-major.is-reached {
+    border-top-color: rgba(224, 176, 64, 0.75);
+}
+
+/* Floating XP pill — sits ON the dashed line on the opposite side from the
+   plaque, so the line is visually weighted at both ends without anything
+   intruding into the central climbing aisle. */
+.xpr-level-xp {
+    position: absolute;
+    top: -10px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.78);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    color: #1F2A1A;
+    font-family: var(--font-display, inherit);
+    font-size: 0.66rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    line-height: 1;
+    box-shadow:
+        inset 0 0 0 1px rgba(31, 90, 42, 0.28),
+        0 1px 3px rgba(15, 42, 26, 0.2);
+    pointer-events: none;
+    z-index: 4;
+    white-space: nowrap;
+}
+.xpr-level-xp--left  { left:  18px; }
+.xpr-level-xp--right { right: 18px; }
+.xpr-level-xp.is-reached {
+    background: rgba(232, 250, 220, 0.88);
+    color: #1F5A2A;
+    box-shadow:
+        inset 0 0 0 1px rgba(63, 170, 79, 0.5),
+        0 1px 3px rgba(31, 90, 42, 0.25);
+}
+.xpr-level-xp.is-major {
+    background: rgba(255, 247, 214, 0.92);
+    color: #6B3A0A;
+    box-shadow:
+        inset 0 0 0 1px rgba(168, 110, 24, 0.55),
+        0 1px 3px rgba(168, 110, 24, 0.28);
+}
+.xpr-level-xp.is-major.is-reached {
+    background: rgba(255, 232, 154, 0.95);
+}
+
+.xpr-leaf-slot {
+    position: absolute;
+    pointer-events: none;
+    /* Subtle drop shadow so leaves separate from the foggy sky behind. */
+    filter: drop-shadow(0 2px 3px rgba(15,42,26,0.28));
+    z-index: 3;
+}
+.xpr-leaf-slot--left {
+    /* Anchor the leaf so its stem base sits at the vine centre, with the leaf
+       horizontally centred ON the dashed level line (top: -h/2). */
+    right: calc(50% - 4px);
+    top: -15px;
+}
+.xpr-leaf-slot--right {
+    left: calc(50% - 4px);
+    top: -15px;
+}
+.xpr-milestone.is-major .xpr-leaf-slot {
+    top: -17px;
+}
+
+/* Locked leaves get a desaturation hint via filter (not opacity — opacity
+   would make them translucent, so the fog band + sky behind would visibly
+   bleed THROUGH the leaf, reading as a rendering bug). The leaf SVG itself
+   also swaps to a muted gradient via the `is-locked` class. */
+.xpr-leaf.is-locked {
+    filter: saturate(0.5) brightness(0.92);
+}
+
+/* ---- Milestone plaque -------------------------------------------------
+   Compact translucent reward tile. Anchored to alternating sides of the
+   canvas so the central climbing aisle stays clear. The vein pseudo-bar
+   visually anchors the plaque to the vine at the level line; the crown
+   ornament sits in the top corner of majors for hierarchy without adding
+   vertical bulk. */
+.xpr-plaque {
+    position: absolute;
+    top: 8px; /* hangs just below the dashed level line */
+    padding: 6px 9px;
+    display: flex; flex-direction: column; gap: 5px;
+    background:
+        linear-gradient(180deg, rgba(255,255,255,0.62) 0%, rgba(245,252,238,0.55) 100%);
+    border: 1px solid rgba(31,90,42,0.28);
+    border-radius: 12px;
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.8),
+        0 2px 8px rgba(15,42,26,0.18);
+    backdrop-filter: blur(8px) saturate(1.1);
+    -webkit-backdrop-filter: blur(8px) saturate(1.1);
+    z-index: 4;
+    transition: border-color 0.25s, box-shadow 0.25s, background 0.25s;
+    box-sizing: border-box;
+    /* Flex items default to `min-width: auto`, which lets content-wide
+       children (long ribbons / preview rows) push the plaque wider than
+       its declared width. Reset it here so the plaque honours its width. */
+    min-width: 0;
+    overflow: hidden;
+}
+/* Force flex children to also respect parent width. Without this, a single
+   nowrap inner element can blow the plaque out horizontally. */
+.xpr-plaque > * { min-width: 0; max-width: 100%; box-sizing: border-box; }
+
+/* Side anchoring: plaque sits OUTSIDE a wide central aisle so the player
+   mascot is never covered. The anchor distance (calc(50% + 64px)) keeps the
+   inner edge of the plaque clear of an 80-90px-wide aisle, leaving room for
+   the player's 72px mascot and a friend or two stacked alongside. */
+.xpr-plaque--left  {
+    right: calc(50% + 64px);
+    left: 10px;
+    max-width: 168px;
+    text-align: left;
+}
+.xpr-plaque--right {
+    left:  calc(50% + 64px);
+    right: 10px;
+    max-width: 168px;
+    text-align: left;
+}
+
+/* Major plaques use the SAME side anchoring as minors — just dressed in
+   gold so they read as bigger milestones without re-centering. The crown
+   ornament moves to the top corner closest to the vine. */
+.xpr-plaque--major {
+    padding: 7px 10px;
+    gap: 6px;
+    background:
+        linear-gradient(180deg, rgba(255,251,236,0.78) 0%, rgba(255,241,194,0.7) 100%);
+    border: 1.5px solid rgba(224, 176, 64, 0.7);
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.85),
+        0 2px 10px rgba(168,110,24,0.32);
+}
+
+/* Vein connector — short stem bridging the plaque to the vine. Shorter than
+   before (42px) since the plaque now sits closer to the vine. The end
+   nearest the vine has a small bulb (::before pseudo) so it reads as a stem
+   joint rather than a cut-off bar. */
+.xpr-plaque__vein {
+    position: absolute;
+    top: 14px;
+    width: 42px; height: 5px;
+    border-radius: 6px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.4), 0 1px 2px rgba(15,42,26,0.25);
+}
+.xpr-plaque__vein::before {
+    content: '';
+    position: absolute;
+    top: -3.5px;
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #A8E060 0%, #3FAA4F 55%, #1F5A2A 100%);
+    box-shadow: 0 1px 2px rgba(15,42,26,0.3);
+}
+.xpr-plaque__vein--left  {
+    right: -42px;
+    background: linear-gradient(90deg, #7FE05B 0%, #3FAA4F 60%, #1F5A2A 100%);
+}
+.xpr-plaque__vein--left::before { right: -3px; }
+.xpr-plaque__vein--right {
+    left: -42px;
+    background: linear-gradient(90deg, #1F5A2A 0%, #3FAA4F 60%, #7FE05B 100%);
+}
+.xpr-plaque__vein--right::before { left: -3px; }
+.xpr-plaque.is-locked .xpr-plaque__vein {
+    background: linear-gradient(90deg, #4A5A4A 0%, #6F8A6A 60%, #95A695 100%);
+}
+.xpr-plaque.is-locked .xpr-plaque__vein::before {
+    background: radial-gradient(circle at 35% 30%, #95A695 0%, #6F8A6A 55%, #4A5A4A 100%);
+}
+
+/* Crown ornament — small sparkle medallion on the top corner of major
+   plaques (vine-side corner, so it sits over the vein joint). Compact so
+   it doesn't add vertical bulk. */
+.xpr-plaque__crown {
+    position: absolute;
+    top: -10px;
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: linear-gradient(145deg, #FFE89A 0%, #FFB845 100%);
+    color: #6B3A0A;
+    box-shadow:
+        inset 0 0 0 1.2px rgba(107,58,10,0.4),
+        0 3px 6px rgba(168,110,24,0.4);
+    z-index: 5;
+}
+.xpr-plaque__crown--left  { right: -8px; }
+.xpr-plaque__crown--right { left:  -8px; }
+.xpr-plaque__crown .material-symbols-rounded { font-size: 14px; }
+.xpr-plaque.is-locked .xpr-plaque__crown {
+    background: linear-gradient(145deg, #E0E0E0 0%, #B8B8B8 100%);
+    color: #555;
+    box-shadow: inset 0 0 0 1.2px rgba(0,0,0,0.2), 0 2px 4px rgba(0,0,0,0.15);
+}
+
+/* Header row inside the plaque — just the milestone name now. The XP value
+   floats on the dashed level line outside the plaque so the plaque can stay
+   compact. Colours are hard-coded dark/muted to stay readable on the
+   translucent plaque surface (theme tokens would invert in dark mode). */
+.xpr-plaque__head {
+    display: flex; flex-direction: column; gap: 1px;
+}
+.xpr-plaque__name {
+    font-weight: 800;
+    font-size: 0.82rem;
+    color: #1F2A1A;
+    letter-spacing: -0.005em;
+    line-height: 1.15;
+    text-shadow: 0 1px 0 rgba(255,255,255,0.5);
+}
+.xpr-plaque--major .xpr-plaque__name {
+    font-size: 0.9rem;
+    color: #5A3A0A;
+}
+
+/* Reached state — green border + soft glow, gold accent for majors. */
+.xpr-plaque.is-reached {
+    border-color: rgba(63,170,79,0.55);
+    background:
+        linear-gradient(180deg, rgba(232,250,220,0.68) 0%, rgba(210,243,168,0.55) 100%);
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.7),
+        0 2px 10px rgba(63,170,79,0.28);
+}
+.xpr-plaque--major.is-reached {
+    border-color: #D49E2C;
+    background:
+        linear-gradient(180deg, rgba(255,247,214,0.85) 0%, rgba(255,224,140,0.7) 100%);
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.85),
+        0 2px 12px rgba(232,181,71,0.4),
+        0 0 0 1.5px rgba(255,216,107,0.3);
+}
+.xpr-plaque.is-locked {
+    background:
+        linear-gradient(180deg, rgba(248,248,246,0.55) 0%, rgba(232,236,230,0.48) 100%);
+    border-color: rgba(80,90,80,0.28);
+}
+.xpr-plaque.is-locked .xpr-plaque__name { color: #4A554A; }
+
+/* Tiny check medallion in the top-corner of reached plaques (opposite the
+   vein/crown so they don't overlap). */
+.xpr-plaque__check {
+    position: absolute;
+    top: -7px;
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: linear-gradient(145deg, #BDF0B0, #3FAA4F);
+    color: #FFFFFF;
+    box-shadow: 0 2px 5px rgba(31,90,42,0.4), inset 0 0 0 1.2px rgba(255,255,255,0.55);
+    z-index: 5;
+}
+.xpr-plaque--left  .xpr-plaque__check { left:  -7px; }
+.xpr-plaque--right .xpr-plaque__check { right: -7px; }
+.xpr-plaque__check .material-symbols-rounded { font-size: 14px; }
+
+/* Slow shine across reached majors — ambient sparkle, not a UI tick. */
+.xpr-plaque__shine {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 0;
+}
+.xpr-plaque__shine::before {
+    content: '';
+    position: absolute;
+    top: -50%; left: -60%;
+    width: 60%; height: 200%;
+    background: linear-gradient(115deg,
+        transparent 35%,
+        rgba(255,255,255,0.55) 50%,
+        transparent 65%);
+    transform: rotate(8deg);
+    animation: xprShine 5.5s ease-in-out infinite;
+}
+@keyframes xprShine {
+    0%   { transform: translateX(0)    rotate(8deg); opacity: 0; }
+    25%  { opacity: 1; }
+    60%  { transform: translateX(280%) rotate(8deg); opacity: 0; }
+    100% { transform: translateX(280%) rotate(8deg); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .xpr-plaque__shine::before { animation: none; }
+}
+
+/* ---- Reward previews --------------------------------------------------
+   Each preview is a self-contained visual: cosmetic = mini-Mascot frame,
+   title = ribbon, chest = badge, bucks = coin row. They stack vertically
+   inside the plaque; all stretch to plaque width regardless of major/minor. */
+.xpr-plaque__rewards {
+    display: flex; flex-direction: column; gap: 4px;
+    align-items: stretch;
+}
+
+.xpr-preview {
+    display: flex; align-items: center; gap: 6px;
+    padding: 4px 6px;
+    background: rgba(255,255,255,0.45);
+    border: 1px solid rgba(31,90,42,0.16);
+    border-radius: 8px;
+    width: 100%;
+    box-sizing: border-box;
+}
+.xpr-preview.is-locked {
+    background: rgba(248,248,246,0.4);
+    border-color: rgba(80,90,80,0.2);
+}
+
+/* Cosmetic preview — circular mascot frame + caption. */
+.xpr-preview--cosmetic .xpr-preview__mascot {
+    position: relative;
+    width: 38px; height: 38px;
+    flex: 0 0 38px;
+    border-radius: 50%;
+    background:
+        radial-gradient(circle at 35% 30%, #FFFFFF 0%, #EAF4FA 60%, #B8D8EE 100%);
+    display: flex; align-items: center; justify-content: center;
+    box-shadow:
+        inset 0 0 0 1.5px rgba(31,90,42,0.25),
+        inset 0 -2px 4px rgba(31,90,42,0.12),
+        0 2px 4px rgba(15,42,26,0.15);
+    overflow: hidden;
+}
+.xpr-preview--cosmetic .xpr-preview__mascot svg {
+    width: 40px; height: 40px;
+    margin-bottom: -3px;
+}
+.xpr-preview--cosmetic.is-locked .xpr-preview__mascot {
+    filter: grayscale(0.85) brightness(0.92);
+}
+.xpr-preview--cosmetic.is-locked .xpr-preview__mascot::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: rgba(40,50,40,0.25);
+}
+.xpr-preview__lock {
+    position: absolute;
+    inset: 0;
+    display: inline-flex; align-items: center; justify-content: center;
+    color: rgba(255,255,255,0.95);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+    z-index: 1;
+}
+.xpr-preview__lock .material-symbols-rounded { font-size: 16px; }
+
+.xpr-preview__caption {
+    display: flex; flex-direction: column; gap: 1px;
+    min-width: 0; flex: 1 1 auto;
+    text-align: left;
+}
+.xpr-preview__eyebrow {
+    font-size: 0.58rem;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    color: #1F5A2A;
+    font-weight: 800;
+    display: inline-flex; align-items: center; gap: 3px;
+}
+.xpr-preview__eyebrow .material-symbols-rounded { font-size: 11px; }
+.xpr-preview__name {
+    font-size: 0.78rem;
+    font-weight: 800;
+    color: #1F2A1A;
+    line-height: 1.15;
+    overflow: hidden; text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.xpr-preview--cosmetic.is-locked .xpr-preview__eyebrow,
+.xpr-preview--cosmetic.is-locked .xpr-preview__name {
+    color: #4A554A;
+}
+
+/* Title ribbon preview — purple/gold ribbon with the title text. */
+.xpr-preview--title {
+    flex-direction: column; align-items: stretch; gap: 2px;
+    background: linear-gradient(135deg, rgba(236,224,255,0.55) 0%, rgba(255,247,214,0.55) 100%);
+    border-color: rgba(91,63,160,0.3);
+    padding: 5px 6px;
+}
+.xpr-preview__ribbon {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 8px;
+    border-radius: var(--radius-pill);
+    background: linear-gradient(120deg, #5B3FA0 0%, #8A5BC4 50%, #B79CF0 100%);
+    color: #FFFFFF;
+    font-weight: 800;
+    font-size: 0.74rem;
+    align-self: center;
+    box-shadow:
+        inset 0 -1px 0 rgba(0,0,0,0.18),
+        inset 0 1px 0 rgba(255,255,255,0.35),
+        0 1px 4px rgba(91,63,160,0.35);
+    letter-spacing: 0.02em;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.xpr-preview__ribbon .material-symbols-rounded { font-size: 13px; }
+.xpr-preview__title-text {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.xpr-preview__eyebrow--title {
+    align-self: center; color: #5B3FA0;
+}
+.xpr-preview--title.is-locked {
+    background: linear-gradient(135deg, rgba(240,240,240,0.7), rgba(225,225,225,0.7));
+    border-color: rgba(80,80,90,0.28);
+}
+.xpr-preview--title.is-locked .xpr-preview__ribbon {
+    background: linear-gradient(120deg, #888 0%, #B8B8B8 50%, #D8D8D8 100%);
+    box-shadow:
+        inset 0 -1px 0 rgba(0,0,0,0.18),
+        inset 0 1px 0 rgba(255,255,255,0.25),
+        0 2px 4px rgba(0,0,0,0.15);
+}
+.xpr-preview--title.is-locked .xpr-preview__eyebrow--title { color: #6A6A6A; }
+
+/* Chest yield badge — gold tile highlighting the +X% chest bonus. */
+.xpr-preview--chest {
+    background: linear-gradient(135deg, rgba(255,232,154,0.55) 0%, rgba(255,180,95,0.4) 100%);
+    border-color: rgba(168,110,24,0.35);
+    gap: 7px;
+}
+.xpr-preview__chest-icon {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 26px; height: 26px;
+    border-radius: 7px;
+    background: linear-gradient(145deg, #FFC971 0%, #C8801C 100%);
+    color: #FFFFFF;
+    box-shadow:
+        inset 0 -1px 0 rgba(0,0,0,0.2),
+        inset 0 1px 0 rgba(255,255,255,0.35),
+        0 1px 3px rgba(168,110,24,0.35);
+    flex: 0 0 26px;
+}
+.xpr-preview__chest-icon .material-symbols-rounded { font-size: 16px; }
+.xpr-preview__chest-text {
+    display: flex; flex-direction: column; gap: 0;
+    text-align: left;
+}
+.xpr-preview__chest-pct {
+    font-size: 0.92rem; font-weight: 800;
+    color: #6B3A0A;
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+}
+.xpr-preview__chest-lbl {
+    font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.05em;
+    font-weight: 700; color: #8A5A1A;
+}
+.xpr-preview--chest.is-locked {
+    background: linear-gradient(135deg, rgba(232,232,228,0.7), rgba(208,208,202,0.6));
+    border-color: rgba(80,80,70,0.3);
+}
+.xpr-preview--chest.is-locked .xpr-preview__chest-icon {
+    background: linear-gradient(145deg, #C0C0BC, #888880);
+}
+.xpr-preview--chest.is-locked .xpr-preview__chest-pct { color: #555; }
+.xpr-preview--chest.is-locked .xpr-preview__chest-lbl { color: #777; }
+
+/* Bucks coin row — compact gold-tinted row for bucks-only minor milestones
+   and as the bonus line under the champion plaque. */
+.xpr-preview--bucks {
+    background: linear-gradient(135deg, rgba(255,232,154,0.45) 0%, rgba(255,213,108,0.35) 100%);
+    border-color: rgba(168,110,24,0.28);
+    gap: 5px;
+    justify-content: center;
+    padding: 5px 8px;
+}
+.xpr-preview--bucks svg { width: 18px; height: 18px; flex: 0 0 18px; }
+.xpr-preview__bucks-amount {
+    font-size: 0.88rem; font-weight: 800;
+    color: #6B3A0A; letter-spacing: -0.01em;
+}
+.xpr-preview__bucks-lbl {
+    font-size: 0.65rem; font-weight: 700; color: #8A5A1A;
+    text-transform: uppercase; letter-spacing: 0.05em;
+}
+.xpr-preview--bucks.is-locked {
+    background: linear-gradient(135deg, rgba(232,232,228,0.6), rgba(208,208,202,0.5));
+    border-color: rgba(80,80,70,0.28);
+    filter: grayscale(0.5);
+}
+
+/* ---- Responsive plaque tweaks ----------------------------------------
+   The dual-edge anchoring on .xpr-plaque--left/--right already keeps side
+   plaques inside the scroll container at any width. Below 600px we tighten
+   the central aisle and shrink typography/previews so even narrow phones
+   still leave the climbing aisle clearly visible. */
+@media (max-width: 600px) {
+    .xpr-plaque--left  { right: calc(50% + 56px); max-width: 148px; }
+    .xpr-plaque--right { left:  calc(50% + 56px); max-width: 148px; }
+    .xpr-plaque__name { font-size: 0.78rem; }
+    .xpr-preview__name { font-size: 0.74rem; }
+    .xpr-hero__stat-num { font-size: 1rem; }
+    .xpr-hero__stat-lbl { font-size: 0.65rem; }
+}
+@media (max-width: 420px) {
+    .xpr-plaque--left  { right: calc(50% + 50px); left: 6px; max-width: 132px; }
+    .xpr-plaque--right { left:  calc(50% + 50px); right: 6px; max-width: 132px; }
+    .xpr-preview--cosmetic .xpr-preview__mascot {
+        width: 32px; height: 32px; flex-basis: 32px;
+    }
+    .xpr-preview--cosmetic .xpr-preview__mascot svg {
+        width: 34px; height: 34px;
+    }
+    .xpr-hero { padding: var(--space-sm); }
+}
+
+/* The player's climber — full-size mascot tethered to the central stem.
+   Animated via framer-motion's `bottom` so it slides up as XP grows. */
+.xpr-climber {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex; flex-direction: column; align-items: center;
+    z-index: 5;
+    pointer-events: auto;
+}
+.xpr-climber--me {
+    z-index: 6;
+}
+.xpr-climber__tag {
+    margin-top: 4px;
+    padding: 2px 8px;
+    background: var(--color-primary);
+    color: var(--color-on-primary, #fff);
+    border-radius: var(--radius-pill);
+    font-size: 0.78rem; font-weight: 700;
+    white-space: nowrap;
+    box-shadow: var(--shadow-sm);
+}
+.xpr-climber--friend {
+    /* Stagger friends horizontally a bit so multiple at the same XP don't
+       perfectly overlap. */
+    cursor: pointer;
+}
+.xpr-climber--friend:nth-child(odd)  { transform: translateX(calc(-50% - 22px)); }
+.xpr-climber--friend:nth-child(even) { transform: translateX(calc(-50% + 22px)); }
+.xpr-climber--friend.is-open {
+    z-index: 7;
+}
+.xpr-climber__popover {
+    position: absolute;
+    bottom: calc(100% + 4px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--color-bg-elev-1);
+    border: 1px solid color-mix(in srgb, var(--color-primary) 30%, transparent);
+    border-radius: var(--radius-md);
+    padding: 6px 10px;
+    box-shadow: var(--shadow-md);
+    display: flex; flex-direction: column; gap: 2px;
+    white-space: nowrap;
+    z-index: 10;
+}
+.xpr-climber__title { color: var(--color-ink-soft); font-size: 0.78rem; }
+.xpr-climber__xp    { color: var(--color-primary-deep); font-size: 0.85rem; font-weight: 700; }
+.xpr-popover-shade {
+    position: absolute; inset: 0; z-index: 6;
+}
+
+/* Footer ribbon listing unlocked XP-Road titles */
+.xpr-titles {
+    margin-top: var(--space-md);
+    padding: var(--space-sm) var(--space-md);
+    background: var(--color-bg-soft);
+    border-radius: var(--radius-md);
+    color: var(--color-ink-soft);
+    font-size: 0.88rem;
+    display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
+}
+.xpr-title-chip {
+    color: #5B3FA0;
+    font-weight: 700;
+}
