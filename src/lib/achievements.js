@@ -11,7 +11,30 @@ export const CONTINENTS = [
     { key: 'north_america', label: 'North America', tag: 'region:north_america' },
     { key: 'south_america', label: 'South America', tag: 'region:south_america' },
     { key: 'oceania',       label: 'Oceania',       tag: 'region:oceania' },
+    { key: 'territory',     label: 'Territories',   tag: 'region:territory' },
 ];
+
+// ISO-A2 codes of catalog flags whose country actually has a polygon in
+// Natural Earth's ne_110m_admin_0_countries.geojson (what Globe mode loads).
+// A 2-letter code in the catalog doesn't automatically mean the globe can
+// render it — micro-states (SG, MT, VA, BM, etc.) are dropped from the 110m
+// dataset for legibility at world scale. Used to compute the geo-eligible
+// total without waiting for the 3D globe to load.
+export const GLOBE_RENDERABLE_ISO2 = new Set([
+    'AE','AF','AL','AM','AO','AQ','AR','AT','AU','AZ','BA','BD','BE','BF','BG','BI','BJ','BN','BO','BR',
+    'BS','BT','BW','BY','BZ','CA','CD','CF','CG','CH','CI','CL','CM','CN','CO','CR','CU','CY','CZ','DE',
+    'DJ','DK','DO','DZ','EC','EE','EG','EH','ER','ES','ET','FI','FJ','FK','FR','GA','GB','GE','GH','GL',
+    'GM','GN','GQ','GR','GT','GW','GY','HN','HR','HT','HU','ID','IE','IL','IN','IQ','IR','IS','IT','JM',
+    'JO','JP','KE','KG','KH','KP','KR','KW','KZ','LA','LB','LK','LR','LS','LT','LU','LV','LY','MA','MD',
+    'ME','MG','MK','ML','MM','MN','MR','MW','MX','MY','MZ','NA','NC','NE','NG','NI','NL','NO','NP','NZ',
+    'OM','PA','PE','PG','PH','PK','PL','PR','PS','PT','PY','QA','RO','RS','RU','RW','SA','SB','SD','SE',
+    'SI','SK','SL','SN','SO','SR','SS','SV','SY','SZ','TD','TF','TG','TH','TJ','TL','TM','TN','TR','TT',
+    'TW','TZ','UA','UG','US','UY','UZ','VE','VN','VU','XK','YE','ZA','ZM','ZW',
+]);
+
+// Convenience: how many countries Globe mode can render (size of the set
+// above). Surfaced as a constant so callers don't have to know it's a Set.
+export const GLOBE_RENDERABLE_COUNT = GLOBE_RENDERABLE_ISO2.size;
 
 // Build the evaluation context from the full flagsData + bonus high scores + pet level.
 // Geography stats (Globe mode) live on the same per-flag record so we walk the
@@ -29,6 +52,12 @@ export function buildContext(flagsData, bonus, petLevel) {
     let mastered = 0;
     let geoTotalCorrect = 0;
     let geoMastered = 0;
+    // Globe mode can only see flags whose ISO-A2 has a polygon in Natural
+    // Earth's 110m dataset (see GLOBE_RENDERABLE_ISO2). Sub-national codes
+    // (GB-WLS, ES-CT, SH-AC), supranationals (EU, UN), and a handful of
+    // micro-states the 110m dataset drops (SG, MT, VA, etc.) all fall out,
+    // so the "place every country" goal has to count them separately.
+    let geoEligibleTotal = 0;
     for (const f of flags) {
         totalCorrect += Number(f.correct) || 0;
         const isMastered = (Number(f.streak) || 0) > MASTERY_STREAK;
@@ -36,13 +65,22 @@ export function buildContext(flagsData, bonus, petLevel) {
         geoTotalCorrect += Number(f.geoCorrect) || 0;
         const isGeoMastered = (Number(f.geoStreak) || 0) > MASTERY_STREAK;
         if (isGeoMastered) geoMastered += 1;
+        const code = (f.code || '').toUpperCase();
+        const isGeoEligible = GLOBE_RENDERABLE_ISO2.has(code);
+        if (isGeoEligible) geoEligibleTotal += 1;
         const tags = f.tags || [];
         for (const c of CONTINENTS) {
             if (tags.includes(c.tag)) {
                 continents[c.key].total += 1;
                 if (isMastered) continents[c.key].mastered += 1;
-                geoContinents[c.key].total += 1;
-                if (isGeoMastered) geoContinents[c.key].mastered += 1;
+                // Per-continent geo totals: only count flags the globe can
+                // actually render so the "Place every country in X" goal
+                // stays reachable for continents that mix sovereign
+                // countries with territories / supranationals.
+                if (isGeoEligible) {
+                    geoContinents[c.key].total += 1;
+                    if (isGeoMastered) geoContinents[c.key].mastered += 1;
+                }
             }
         }
     }
@@ -56,6 +94,7 @@ export function buildContext(flagsData, bonus, petLevel) {
         petLevel: Number(petLevel) || 1,
         geoTotalCorrect,
         geoMastered,
+        geoEligibleTotal,
         geoContinents,
     };
 }
@@ -162,7 +201,7 @@ export const ACHIEVEMENTS = [
     masteryMilestone(10, 'Getting Started', 'bronze'),
     masteryMilestone(50, 'Flag Fan', 'silver'),
     masteryMilestone(100, 'Flag Scholar', 'gold'),
-    masteryMilestone(196, 'Flag Sage', 'platinum'),
+    masteryMilestone(250, 'Flag Sage', 'platinum'),
 
     ...continentAchievements,
     { id: 'all_flags', group: 'Continents', name: 'Cartographer Supreme', desc: 'Master every flag in the world', icon: 'travel_explore', tier: 'legend',
@@ -195,13 +234,13 @@ export const ACHIEVEMENTS = [
     geoMasteryMilestone(10,  'Map Reader',       'bronze'),
     geoMasteryMilestone(50,  'World Wanderer',   'silver'),
     geoMasteryMilestone(100, 'Globe Trotter',    'gold'),
-    geoMasteryMilestone(196, 'Earth Scholar',    'platinum'),
+    geoMasteryMilestone(160, 'Earth Scholar',    'platinum'),
     geoCorrectMilestone(100,  'Sure Hand',       'bronze'),
     geoCorrectMilestone(1000, 'Steady Compass',  'silver'),
     geoCorrectMilestone(5000, 'True North',      'gold'),
     ...geoContinentAchievements,
-    { id: 'geo_all_flags', group: 'Globe', name: 'Atlas Cartographer', desc: 'Place every country on the globe', icon: 'public', tier: 'legend',
-        check: (x) => x.total > 0 && x.geoMastered >= x.total, progress: (x) => ({ cur: x.geoMastered, goal: x.total }) },
+    { id: 'geo_all_flags', group: 'Globe', name: 'Atlas Cartographer', desc: 'Place every country the globe can render', icon: 'public', tier: 'legend',
+        check: (x) => x.geoEligibleTotal > 0 && x.geoMastered >= x.geoEligibleTotal, progress: (x) => ({ cur: x.geoMastered, goal: x.geoEligibleTotal }) },
 ];
 
 export const ACHIEVEMENTS_BY_ID = Object.fromEntries(ACHIEVEMENTS.map((a) => [a.id, a]));

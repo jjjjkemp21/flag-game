@@ -4,6 +4,7 @@ import { ProgressRing, Pill } from './ui';
 import BadgeRing from '../assets/illustrations/BadgeRing';
 import Icon from './Icon';
 import { computeXp, readBonusScores } from '../lib/xp';
+import { GLOBE_RENDERABLE_ISO2 } from '../lib/achievements';
 
 function CountUp({ to = 0, duration = 0.9 }) {
     const count = useMotionValue(0);
@@ -32,7 +33,12 @@ function Stats({ flagsData }) {
         const total = flagsData.length;
 
         // Geography mastery is a separate axis (Globe mode). A flag's
-        // geo-mastery threshold mirrors the flag-recognition one.
+        // geo-mastery threshold mirrors the flag-recognition one. Globe can
+        // only render flags whose code is a real 2-letter ISO country —
+        // territories / supranationals (GB-WLS, EU, etc.) aren't geo-eligible
+        // and so don't count toward the geo total or the geo progress ring.
+        const isGeoEligible = (f) => GLOBE_RENDERABLE_ISO2.has((f.code || '').toUpperCase());
+        const geoEligibleTotal = flagsData.filter(isGeoEligible).length;
         const geoMastered = flagsData.filter(f => (f.geoStreak || 0) > masteredThreshold).length;
         const geoAnswered = flagsData.filter(f => (f.geoCorrect || 0) + (f.geoIncorrect || 0) > 0).length;
         const geoCorrectTotal = flagsData.reduce((s, f) => s + (f.geoCorrect || 0), 0);
@@ -84,8 +90,9 @@ function Stats({ flagsData }) {
             dueForReview,
             regions,
             geoMastered,
+            geoEligibleTotal,
             geoAnswered,
-            geoMastery: total > 0 ? geoMastered / total : 0,
+            geoMastery: geoEligibleTotal > 0 ? geoMastered / geoEligibleTotal : 0,
             geoAnswers,
             geoCorrectTotal,
             geoAccuracy,
@@ -132,7 +139,7 @@ function Stats({ flagsData }) {
 
             <h3 className="stats-subtitle text-center">Geography Mastery</h3>
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'var(--space-md)' }}>
-                <ProgressRing value={stats.geoMastery} size={100} stroke={10} tone="info" label={`${stats.geoMastered} of ${stats.total} placed on the globe`}>
+                <ProgressRing value={stats.geoMastery} size={100} stroke={10} tone="info" label={`${stats.geoMastered} of ${stats.geoEligibleTotal} placed on the globe`}>
                     <div style={{ fontSize: 'var(--fs-lg)' }}>
                         <CountUp to={Math.round(stats.geoMastery * 100)} />%
                     </div>

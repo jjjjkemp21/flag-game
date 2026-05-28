@@ -1,3 +1,5 @@
+import { GLOBE_RENDERABLE_COUNT } from './achievements';
+
 // Mastery rank — a title earned by how many flags you've mastered (streak > 5).
 // Thresholds are absolute counts; the very top tier requires every flag.
 
@@ -5,11 +7,11 @@ export const MASTERY_RANKS = [
     { min: 0,   title: 'Novice',       tier: 'stone' },
     { min: 5,   title: 'Wanderer',     tier: 'bronze' },
     { min: 15,  title: 'Explorer',     tier: 'bronze' },
-    { min: 30,  title: 'Navigator',    tier: 'silver' },
-    { min: 60,  title: 'Cartographer', tier: 'silver' },
-    { min: 100, title: 'Geographer',   tier: 'gold' },
-    { min: 150, title: 'Globetrotter', tier: 'gold' },
-    { min: 185, title: 'Atlas Master', tier: 'platinum' },
+    { min: 40,  title: 'Navigator',    tier: 'silver' },
+    { min: 80,  title: 'Cartographer', tier: 'silver' },
+    { min: 130, title: 'Geographer',   tier: 'gold' },
+    { min: 200, title: 'Globetrotter', tier: 'gold' },
+    { min: 260, title: 'Atlas Master', tier: 'platinum' },
 ];
 
 const CHAMPION = { title: 'World Champion', tier: 'legend' };
@@ -18,6 +20,9 @@ const CHAMPION = { title: 'World Champion', tier: 'legend' };
 // countries the player has correctly placed on the globe (Globe mode). Names
 // are intentionally distinct from the flag-mastery titles so a player can hold
 // both axes' ranks side-by-side without confusion.
+// Geo ranks are capped by the number of countries Globe mode can actually
+// render (currently ~175); top tier sits just below that cap so it stays
+// reachable for dedicated players without requiring 100% completion.
 export const GEO_MASTERY_RANKS = [
     { min: 0,   title: 'Pin Dropper',       tier: 'stone' },
     { min: 5,   title: 'Roamer',            tier: 'bronze' },
@@ -25,15 +30,18 @@ export const GEO_MASTERY_RANKS = [
     { min: 30,  title: 'Pathfinder',        tier: 'silver' },
     { min: 60,  title: 'Trailblazer',       tier: 'silver' },
     { min: 100, title: 'Topographer',       tier: 'gold' },
-    { min: 150, title: 'Geomancer',         tier: 'gold' },
-    { min: 185, title: 'Continental Master', tier: 'platinum' },
+    { min: 140, title: 'Geomancer',         tier: 'gold' },
+    { min: 165, title: 'Continental Master', tier: 'platinum' },
 ];
 
 const GEO_CHAMPION = { title: 'Atlas Cartographer', tier: 'legend' };
 
-export function geoMasteryRank(geoMastered, total) {
+// Geo legend caps at the number of countries Globe mode can actually render —
+// passing `total` (the catalog size) here would make it unreachable since
+// territories / supranationals / micro-states never get a globe mesh.
+export function geoMasteryRank(geoMastered, _total) {
     const m = Number(geoMastered) || 0;
-    if (total && m >= total) {
+    if (GLOBE_RENDERABLE_COUNT && m >= GLOBE_RENDERABLE_COUNT) {
         return { ...GEO_CHAMPION, index: GEO_MASTERY_RANKS.length };
     }
     let rank = GEO_MASTERY_RANKS[0];
@@ -44,14 +52,14 @@ export function geoMasteryRank(geoMastered, total) {
     return { ...rank, index };
 }
 
-export function nextGeoRank(geoMastered, total) {
+export function nextGeoRank(geoMastered, _total) {
     const m = Number(geoMastered) || 0;
-    const current = geoMasteryRank(m, total);
+    const current = geoMasteryRank(m, _total);
     if (current.tier === 'legend') return null;
     const next = GEO_MASTERY_RANKS[current.index + 1];
     if (!next) {
-        if (!total) return null;
-        return { title: GEO_CHAMPION.title, goal: total, remaining: Math.max(0, total - m) };
+        if (!GLOBE_RENDERABLE_COUNT) return null;
+        return { title: GEO_CHAMPION.title, goal: GLOBE_RENDERABLE_COUNT, remaining: Math.max(0, GLOBE_RENDERABLE_COUNT - m) };
     }
     return { title: next.title, goal: next.min, remaining: Math.max(0, next.min - m) };
 }
