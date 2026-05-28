@@ -16,9 +16,6 @@ import { springs } from '../motion';
 const LANGUAGES_URL = './data/languages.json';
 const PHRASES_URL = './data/phrases.json';
 const TOTAL_LIVES = 3;
-// How long the explainer overlay stays up after a wrong answer before
-// auto-advancing. Long enough to read 2-3 sentences; Continue dismisses sooner.
-const EXPLAINER_DELAY = 4000;
 
 function LanguageQuiz({ setView }) {
     const [languagesData, setLanguagesData] = useState([]);
@@ -38,6 +35,7 @@ function LanguageQuiz({ setView }) {
     const [showConfetti, setShowConfetti] = useState(false);
     const [hintUsed, setHintUsed] = useState(false);
     const [explainer, setExplainer] = useState(null);
+    const [scoreDelta, setScoreDelta] = useState(null);
 
     const audio = useAudio();
 
@@ -50,9 +48,8 @@ function LanguageQuiz({ setView }) {
         score, streak: 0,
     });
 
-    // Timer + pending action so the Continue button can short-circuit the
-    // post-answer pause without racing the auto-advance.
-    const advanceTimerRef = useRef(null);
+    // Pending advance for the wrong-answer explainer; runs only when the
+    // player clicks Continue so they can read at their own pace.
     const pendingAdvanceRef = useRef(null);
 
     // O(1) language lookup so the explainer can pull metadata for the chosen
@@ -89,10 +86,7 @@ function LanguageQuiz({ setView }) {
         setAnswerStatus({});
         setHintUsed(false);
         setExplainer(null);
-        if (advanceTimerRef.current) {
-            clearTimeout(advanceTimerRef.current);
-            advanceTimerRef.current = null;
-        }
+        setScoreDelta(null);
         pendingAdvanceRef.current = null;
 
         if (languagesData.length === 0 || !phrasesData) return;
@@ -141,7 +135,10 @@ function LanguageQuiz({ setView }) {
             // Hint forfeits the score gain — same idea as GlobeQuiz halving XP,
             // adapted to LanguageQuiz which scores in integer points.
             const newScore = hintUsed ? score : score + 1;
-            if (!hintUsed) setScore(newScore);
+            if (!hintUsed) {
+                setScore(newScore);
+                setScoreDelta(1);
+            }
             if (!hintUsed && (newScore === 3 || newScore === 5 || newScore === 10)) {
                 audio.play('streak');
             }
@@ -190,15 +187,10 @@ function LanguageQuiz({ setView }) {
                 }
                 : nextQuestion;
             pendingAdvanceRef.current = advance;
-            advanceTimerRef.current = setTimeout(advance, EXPLAINER_DELAY);
         }
     };
 
     const handleContinue = () => {
-        if (advanceTimerRef.current) {
-            clearTimeout(advanceTimerRef.current);
-            advanceTimerRef.current = null;
-        }
         const advance = pendingAdvanceRef.current;
         pendingAdvanceRef.current = null;
         if (advance) advance();
@@ -212,9 +204,6 @@ function LanguageQuiz({ setView }) {
         nextQuestion();
     };
 
-    useEffect(() => () => {
-        if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current);
-    }, []);
 
     if (isLoading) {
         return (
@@ -277,7 +266,7 @@ function LanguageQuiz({ setView }) {
                         );
                     })}
                 </div>
-                <ScoreBubble score={score} icon="star" />
+                <ScoreBubble score={score} icon="star" floatingDelta={scoreDelta} />
                 <SpectatorsBadge watchers={watchers} lastReactionId={lastReactionId} />
             </div>
 

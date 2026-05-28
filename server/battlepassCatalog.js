@@ -72,7 +72,7 @@ const CHALLENGES = [
 
     // Language
     { id: 'lang_30',   metric: 'high_language',    goal: 30,     stars: 700,  mode: 'language',        title: 'Polyglot',         desc: 'Reach 30 score in Language Quiz', icon: 'translate' },
-    { id: 'lang_75',   metric: 'high_language',    goal: 75,     stars: 1600, mode: 'language',        title: 'Linguist',         desc: 'Reach 75 score in Language Quiz', icon: 'translate' },
+    { id: 'lang_75',   metric: 'high_language',    goal: 25,     stars: 1600, mode: 'language',        title: 'Linguist',         desc: 'Reach 25 score in Language Quiz', icon: 'translate' },
 
     // Streaks (cross-mode)
     { id: 'streak_10', metric: 'best_streak_any',  goal: 10,     stars: 500,  mode: 'any',             title: 'Heating Up',       desc: 'Hit a 10-answer streak in any mode', icon: 'local_fire_department' },

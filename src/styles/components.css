@@ -1669,12 +1669,13 @@
     width: 100%;
 }
 .phrase-text {
-    font-family: var(--font-display);
-    font-weight: 700;
+    font-family: var(--font-body);
+    font-weight: 400;
     color: var(--color-primary-deep);
     font-size: var(--fs-lg);
     margin: 0;
     line-height: 1.4;
+    letter-spacing: 0.01em;
 }
 .language-subtitle { margin: 0; }
 .language-options {
@@ -1733,8 +1734,9 @@
 .lang-hint-chip .icon,
 .lang-hint-btn .icon { color: var(--color-accent-deep); }
 
-/* Explainer panel shown after a wrong answer (T8b). Auto-advances after
-   EXPLAINER_DELAY; Continue dismisses sooner. */
+/* Explainer panel shown after a wrong answer (T8b). The player must click
+   Continue to advance — there's no auto-dismiss, so they can read at their
+   own pace. */
 .lang-explainer {
     width: 100%;
     margin-top: var(--space-sm);
