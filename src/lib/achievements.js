@@ -28,7 +28,7 @@ export const GLOBE_RENDERABLE_ISO2 = new Set([
     'JO','JP','KE','KG','KH','KP','KR','KW','KZ','LA','LB','LK','LR','LS','LT','LU','LV','LY','MA','MD',
     'ME','MG','MK','ML','MM','MN','MR','MW','MX','MY','MZ','NA','NC','NE','NG','NI','NL','NO','NP','NZ',
     'OM','PA','PE','PG','PH','PK','PL','PR','PS','PT','PY','QA','RO','RS','RU','RW','SA','SB','SD','SE',
-    'SI','SK','SL','SN','SO','SR','SS','SV','SY','SZ','TD','TF','TG','TH','TJ','TL','TM','TN','TR','TT',
+    'SI','SK','SL','SN','SO','SR','SS','SV','SY','SZ','TD','TG','TH','TJ','TL','TM','TN','TR','TT',
     'TW','TZ','UA','UG','US','UY','UZ','VE','VN','VU','XK','YE','ZA','ZM','ZW',
 ]);
 
@@ -201,7 +201,7 @@ export const ACHIEVEMENTS = [
     masteryMilestone(10, 'Getting Started', 'bronze'),
     masteryMilestone(50, 'Flag Fan', 'silver'),
     masteryMilestone(100, 'Flag Scholar', 'gold'),
-    masteryMilestone(250, 'Flag Sage', 'platinum'),
+    masteryMilestone(230, 'Flag Sage', 'platinum'),
 
     ...continentAchievements,
     { id: 'all_flags', group: 'Continents', name: 'Cartographer Supreme', desc: 'Master every flag in the world', icon: 'travel_explore', tier: 'legend',

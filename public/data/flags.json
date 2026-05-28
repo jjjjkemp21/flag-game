@@ -127,15 +127,6 @@
     ]
   },
   {
-    "country": "Arab League",
-    "aliases": [],
-    "code": "ARAB",
-    "flag": "🏳️",
-    "tags": [
-      "region:territory"
-    ]
-  },
-  {
     "country": "Argentina",
     "aliases": [],
     "code": "AR",
@@ -176,15 +167,6 @@
     "country": "Ascension Island",
     "aliases": [],
     "code": "SH-AC",
-    "flag": "🏳️",
-    "tags": [
-      "region:territory"
-    ]
-  },
-  {
-    "country": "ASEAN",
-    "aliases": [],
-    "code": "ASEAN",
     "flag": "🏳️",
     "tags": [
       "region:territory"
@@ -418,15 +400,6 @@
     ]
   },
   {
-    "country": "Bouvet Island",
-    "aliases": [],
-    "code": "BV",
-    "flag": "🇧🇻",
-    "tags": [
-      "region:territory"
-    ]
-  },
-  {
     "country": "Brazil",
     "aliases": [],
     "code": "BR",
@@ -440,15 +413,6 @@
       "feature:text_inscription",
       "colors:green_yellow_blue_white",
       "region:south_america"
-    ]
-  },
-  {
-    "country": "British Indian Ocean Territory",
-    "aliases": [],
-    "code": "IO",
-    "flag": "🇮🇴",
-    "tags": [
-      "region:territory"
     ]
   },
   {
@@ -610,15 +574,6 @@
     "aliases": [],
     "code": "KY",
     "flag": "🇰🇾",
-    "tags": [
-      "region:territory"
-    ]
-  },
-  {
-    "country": "CEFTA",
-    "aliases": [],
-    "code": "CEFTA",
-    "flag": "🏳️",
     "tags": [
       "region:territory"
     ]
@@ -901,15 +856,6 @@
     ]
   },
   {
-    "country": "East African Community",
-    "aliases": [],
-    "code": "EAC",
-    "flag": "🏳️",
-    "tags": [
-      "region:territory"
-    ]
-  },
-  {
     "country": "Ecuador",
     "aliases": [],
     "code": "EC",
@@ -1037,15 +983,6 @@
     ]
   },
   {
-    "country": "European Union",
-    "aliases": [],
-    "code": "EU",
-    "flag": "🇪🇺",
-    "tags": [
-      "region:territory"
-    ]
-  },
-  {
     "country": "Falkland Islands",
     "aliases": [],
     "code": "FK",
@@ -1104,28 +1041,10 @@
     ]
   },
   {
-    "country": "French Guiana",
-    "aliases": [],
-    "code": "GF",
-    "flag": "🇬🇫",
-    "tags": [
-      "region:territory"
-    ]
-  },
-  {
     "country": "French Polynesia",
     "aliases": [],
     "code": "PF",
     "flag": "🇵🇫",
-    "tags": [
-      "region:territory"
-    ]
-  },
-  {
-    "country": "French Southern and Antarctic Lands",
-    "aliases": [],
-    "code": "TF",
-    "flag": "🇹🇫",
     "tags": [
       "region:territory"
     ]
@@ -1255,15 +1174,6 @@
     ]
   },
   {
-    "country": "Guadeloupe",
-    "aliases": [],
-    "code": "GP",
-    "flag": "🇬🇵",
-    "tags": [
-      "region:territory"
-    ]
-  },
-  {
     "country": "Guam",
     "aliases": [],
     "code": "GU",
@@ -1351,15 +1261,6 @@
       "symbol:coat_of_arms",
       "colors:red_blue",
       "region:north_america"
-    ]
-  },
-  {
-    "country": "Heard Island and McDonald Islands",
-    "aliases": [],
-    "code": "HM",
-    "flag": "🇭🇲",
-    "tags": [
-      "region:territory"
     ]
   },
   {
@@ -1942,15 +1843,6 @@
     ]
   },
   {
-    "country": "Mayotte",
-    "aliases": [],
-    "code": "YT",
-    "flag": "🇾🇹",
-    "tags": [
-      "region:territory"
-    ]
-  },
-  {
     "country": "Mexico",
     "aliases": [],
     "code": "MX",
@@ -2496,15 +2388,6 @@
     ]
   },
   {
-    "country": "Réunion",
-    "aliases": [],
-    "code": "RE",
-    "flag": "🇷🇪",
-    "tags": [
-      "region:territory"
-    ]
-  },
-  {
     "country": "Romania",
     "aliases": [],
     "code": "RO",
@@ -2546,28 +2429,10 @@
     ]
   },
   {
-    "country": "Saint Barthélemy",
-    "aliases": [],
-    "code": "BL",
-    "flag": "🇧🇱",
-    "tags": [
-      "region:territory"
-    ]
-  },
-  {
     "country": "Saint Helena",
     "aliases": [],
     "code": "SH-HL",
     "flag": "🏳️",
-    "tags": [
-      "region:territory"
-    ]
-  },
-  {
-    "country": "Saint Helena, Ascension and Tristan da Cunha",
-    "aliases": [],
-    "code": "SH",
-    "flag": "🇸🇭",
     "tags": [
       "region:territory"
     ]
@@ -2599,24 +2464,6 @@
       "colors:blue_white_yellow_black",
       "region:north_america",
       "history:commonwealth"
-    ]
-  },
-  {
-    "country": "Saint Martin",
-    "aliases": [],
-    "code": "MF",
-    "flag": "🇲🇫",
-    "tags": [
-      "region:territory"
-    ]
-  },
-  {
-    "country": "Saint Pierre and Miquelon",
-    "aliases": [],
-    "code": "PM",
-    "flag": "🇵🇲",
-    "tags": [
-      "region:territory"
     ]
   },
   {
@@ -2864,15 +2711,6 @@
     ]
   },
   {
-    "country": "South Georgia and the South Sandwich Islands",
-    "aliases": [],
-    "code": "GS",
-    "flag": "🇬🇸",
-    "tags": [
-      "region:territory"
-    ]
-  },
-  {
     "country": "South Korea",
     "aliases": [],
     "code": "KR",
@@ -2953,15 +2791,6 @@
     "flag": "🇸🇷",
     "tags": [
       "region:south_america"
-    ]
-  },
-  {
-    "country": "Svalbard and Jan Mayen",
-    "aliases": [],
-    "code": "SJ",
-    "flag": "🇸🇯",
-    "tags": [
-      "region:territory"
     ]
   },
   {
@@ -3271,15 +3100,6 @@
     ]
   },
   {
-    "country": "United Nations",
-    "aliases": [],
-    "code": "UN",
-    "flag": "🇺🇳",
-    "tags": [
-      "region:territory"
-    ]
-  },
-  {
     "country": "United States",
     "aliases": [
       "United States of America"
@@ -3294,15 +3114,6 @@
       "colors:red_white_blue",
       "region:north_america",
       "history:stars_and_stripes"
-    ]
-  },
-  {
-    "country": "United States Minor Outlying Islands",
-    "aliases": [],
-    "code": "UM",
-    "flag": "🇺🇲",
-    "tags": [
-      "region:territory"
     ]
   },
   {
@@ -3416,15 +3227,6 @@
     "aliases": [],
     "code": "GB-WLS",
     "flag": "🏴󠁧󠁢󠁷󠁬󠁳󠁿",
-    "tags": [
-      "region:territory"
-    ]
-  },
-  {
-    "country": "Wallis and Futuna",
-    "aliases": [],
-    "code": "WF",
-    "flag": "🇼🇫",
     "tags": [
       "region:territory"
     ]

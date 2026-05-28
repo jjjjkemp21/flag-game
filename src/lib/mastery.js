@@ -11,7 +11,7 @@ export const MASTERY_RANKS = [
     { min: 80,  title: 'Cartographer', tier: 'silver' },
     { min: 130, title: 'Geographer',   tier: 'gold' },
     { min: 200, title: 'Globetrotter', tier: 'gold' },
-    { min: 260, title: 'Atlas Master', tier: 'platinum' },
+    { min: 230, title: 'Atlas Master', tier: 'platinum' },
 ];
 
 const CHAMPION = { title: 'World Champion', tier: 'legend' };
