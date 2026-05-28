@@ -16,6 +16,7 @@ import { api } from '../api/client';
 import { usePet } from '../lib/pet';
 import { useProfile } from '../lib/profile';
 import { getStreak } from '../lib/streak';
+import { GLOBE_RENDERABLE_ISO2 } from '../lib/achievements';
 import { springs } from '../motion';
 
 // Number of consecutive title taps that exposes the hidden admin password
@@ -86,10 +87,21 @@ function MainMenu({ setView, flagsData, setQuizMode }) {
     const profile = useProfile();
     const toast = useToast();
     const { isAuthed, refresh } = useAuth();
+    // Flag-recognition mastery (MC / FR / bonus modes share this streak).
     const masteryHint = useMemo(() => {
         if (!flagsData?.length) return null;
         const mastered = flagsData.filter(f => f.streak > 5).length;
         return `${mastered}/${flagsData.length} mastered`;
+    }, [flagsData]);
+
+    // Geography mastery — Globe mode tracks its own per-flag streak and can
+    // only ask about flags whose ISO-A2 has a Natural Earth polygon, so the
+    // denominator is the renderable subset, not the whole catalog.
+    const globeMasteryHint = useMemo(() => {
+        if (!flagsData?.length) return null;
+        const eligible = flagsData.filter(f => GLOBE_RENDERABLE_ISO2.has((f.code || '').toUpperCase()));
+        const mastered = eligible.filter(f => (f.geoStreak || 0) > 5).length;
+        return `${mastered}/${eligible.length} mastered`;
     }, [flagsData]);
 
     // Hidden admin promotion: tap the "Flag Game" title five times within a
@@ -222,7 +234,13 @@ function MainMenu({ setView, flagsData, setQuizMode }) {
                                 mode={mode}
                                 index={sIdx * 10 + i + 1}
                                 onClick={() => onCardClick(mode.key)}
-                                masteryHint={mode.key === 'multiple-choice' ? masteryHint : null}
+                                masteryHint={
+                                    mode.key === 'multiple-choice' || mode.key === 'free-response'
+                                        ? masteryHint
+                                        : mode.key === 'globe'
+                                            ? globeMasteryHint
+                                            : null
+                                }
                                 streak={(mode.key === 'multiple-choice' || mode.key === 'free-response' || mode.key === 'globe') ? getStreak(mode.key) : 0}
                             />
                         ))}
