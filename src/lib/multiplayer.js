@@ -39,8 +39,10 @@ export const DEFAULT_MP_CONFIG = {
     ante: 0,
 };
 
-// Ante presets shown as quick chips in the lobby UI.
-export const ANTE_PRESETS = [0, 25, 100, 500, 2000];
+// Wager bounds. Server clamps at the same upper cap (see normalizeConfig in
+// server/routes/multiplayer.js); keep them in lock-step so the client can
+// surface the limit in the UI without a server round-trip.
+export const ANTE_MAX = 10000;
 
 export function modeMeta(key) {
     return MP_MODES.find((m) => m.key === key) || MP_MODES[0];

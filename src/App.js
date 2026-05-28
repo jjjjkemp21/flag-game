@@ -366,9 +366,8 @@ function App() {
                 }
                 return <FreeResponseQuiz {...quizProps} quizFlags={quizFlags} strictSpelling={strictSpelling} />;
             }
-            case 'mirror':
             case 'flash':
-                // Bonus-menu variants of MC: full flag pool, no category picker.
+                // Bonus-menu variant of MC: full flag pool, no category picker.
                 // `variant` switches the visual transform inside MultipleChoiceQuiz.
                 return (
                     <MultipleChoiceQuiz

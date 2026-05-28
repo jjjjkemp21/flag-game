@@ -15,7 +15,7 @@ import { refreshBattlepass } from '../lib/battlepass';
 import Globe from '../lib/globe/Globe';
 import {
     mp, useLobbyPoll, makeEngine, checkText, checkGlobePick,
-    MP_MODES, DEFAULT_MP_CONFIG, ANTE_PRESETS, modeMeta,
+    MP_MODES, DEFAULT_MP_CONFIG, ANTE_MAX, modeMeta,
 } from '../lib/multiplayer';
 import { useQuizPresence } from '../lib/presence';
 import SpectatorsBadge from './SpectatorsBadge';
@@ -174,27 +174,26 @@ function ConfigEditor({ config, regions, disabled, onChange }) {
                 <span className="mp-field__label">
                     <AtlasBucksIcon size={14} /> Wager (per player)
                 </span>
-                <div className="mp-choices">
-                    {ANTE_PRESETS.map((amount) => (
-                        <button
-                            key={amount}
-                            type="button"
-                            disabled={disabled}
-                            className={`mp-chip ${(+config.ante || 0) === amount ? 'is-on' : ''}`}
-                            onClick={() => set({ ante: amount })}
-                        >
-                            {amount === 0 ? (
-                                <><Icon name="not_interested" /> Free</>
-                            ) : (
-                                <><AtlasBucksIcon size={12} /> {amount}</>
-                            )}
-                        </button>
-                    ))}
-                </div>
+                <input
+                    type="number"
+                    inputMode="numeric"
+                    min="0"
+                    max={ANTE_MAX}
+                    step="1"
+                    className="auth-field__input"
+                    value={+config.ante || 0}
+                    disabled={disabled}
+                    onChange={(e) => {
+                        const raw = parseInt(e.target.value, 10);
+                        const n = Number.isFinite(raw) ? raw : 0;
+                        set({ ante: Math.max(0, Math.min(ANTE_MAX, n)) });
+                    }}
+                    aria-label="Wager per player in Atlas Bucks"
+                />
                 <span className="mp-field__hint">
                     {(+config.ante || 0) === 0
-                        ? 'A friendly free match — no Atlas Bucks on the line.'
-                        : `Every player antes ${(+config.ante).toLocaleString()} on start. Winner takes the whole pot.`}
+                        ? `A friendly free match — no Atlas Bucks on the line. Up to ${ANTE_MAX.toLocaleString()} per player.`
+                        : `Every player antes ${(+config.ante).toLocaleString()} on start. Winner takes the whole pot. Max ${ANTE_MAX.toLocaleString()}.`}
                 </span>
             </div>
         </div>

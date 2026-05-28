@@ -162,7 +162,7 @@ export const ACHIEVEMENTS = [
     masteryMilestone(10, 'Getting Started', 'bronze'),
     masteryMilestone(50, 'Flag Fan', 'silver'),
     masteryMilestone(100, 'Flag Scholar', 'gold'),
-    masteryMilestone(200, 'Flag Sage', 'platinum'),
+    masteryMilestone(196, 'Flag Sage', 'platinum'),
 
     ...continentAchievements,
     { id: 'all_flags', group: 'Continents', name: 'Cartographer Supreme', desc: 'Master every flag in the world', icon: 'travel_explore', tier: 'legend',
@@ -195,7 +195,7 @@ export const ACHIEVEMENTS = [
     geoMasteryMilestone(10,  'Map Reader',       'bronze'),
     geoMasteryMilestone(50,  'World Wanderer',   'silver'),
     geoMasteryMilestone(100, 'Globe Trotter',    'gold'),
-    geoMasteryMilestone(200, 'Earth Scholar',    'platinum'),
+    geoMasteryMilestone(196, 'Earth Scholar',    'platinum'),
     geoCorrectMilestone(100,  'Sure Hand',       'bronze'),
     geoCorrectMilestone(1000, 'Steady Compass',  'silver'),
     geoCorrectMilestone(5000, 'True North',      'gold'),

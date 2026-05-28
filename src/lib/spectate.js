@@ -13,7 +13,9 @@ export const spectate = {
     kick:  (userId, spectatorId) => api.post(`/spectate/${userId}/kick/${spectatorId}`),
 };
 
-const POLL_MS = 1500;
+// Tight enough that reactions and verdict pings feel near-real-time on
+// mobile, loose enough that the Pi isn't drowning in spectator polls.
+const POLL_MS = 800;
 
 // Spectator-side poll hook. Returns the latest state, errors, and a `refresh`
 // for manual pulls. `since` is tracked internally so the caller doesn't have

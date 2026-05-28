@@ -17,6 +17,11 @@ const LOBBY_TTL_MS = 2 * 60 * 60 * 1000;   // hard cap on lobby age
 const IDLE_MS = 3 * 60 * 1000;             // drop members who stop polling
 const EMPTY_GRACE_MS = 30 * 1000;          // close empty lobbies after a grace period
 const PREMATCH_COUNTDOWN_MS = 3000;        // 3-2-1 countdown before play begins
+// After a race-to-N runner crosses the line, wait this long before finalising
+// so a second player whose final POST arrives moments later still counts as a
+// tie-break candidate. Winner is decided by EARLIEST server-receive timestamp,
+// not by which POST landed first on the wire.
+const RACE_FINISH_GRACE_MS = 700;
 
 function clampInt(v, min, max, dflt) {
     const n = parseInt(v, 10);
@@ -130,6 +135,7 @@ function newMember(user) {
         picks: {},
         joinedAt: Date.now(),
         lastSeen: Date.now(),
+        reachedAt: null,
     };
 }
 
@@ -144,11 +150,16 @@ function evaluate(lobby) {
     const { mode, target } = lobby.config;
 
     if (TARGET_MODES.has(mode)) {
-        const reached = members.filter((m) => m.score >= target);
-        if (reached.length > 0) {
-            reached.sort((a, b) => b.score - a.score);
-            finish(lobby, reached[0].id);
-        }
+        const reached = members.filter((m) => m.score >= target && m.reachedAt);
+        if (reached.length === 0) return;
+        // Hold the result for a short grace period after the first crossing so
+        // a near-simultaneous second finisher isn't disqualified by network
+        // jitter alone. Once the grace elapses, the earliest reachedAt wins;
+        // ties (same ms) fall back to higher score, then earlier joinedAt.
+        const earliest = Math.min(...reached.map((m) => m.reachedAt));
+        if (Date.now() - earliest < RACE_FINISH_GRACE_MS) return;
+        reached.sort((a, b) => a.reachedAt - b.reachedAt || b.score - a.score || a.joinedAt - b.joinedAt);
+        finish(lobby, reached[0].id);
         return;
     }
 
@@ -356,7 +367,7 @@ router.post('/lobby/:code/start', (req, res) => {
         lobby.endsAt = lobby.playsAt + lobby.config.duration * 1000;
     }
     Object.values(lobby.members).forEach((m) => {
-        m.score = 0; m.streak = 0; m.bestStreak = 0; m.finished = false; m.lastSeen = Date.now();
+        m.score = 0; m.streak = 0; m.bestStreak = 0; m.finished = false; m.lastSeen = Date.now(); m.reachedAt = null;
     });
     res.json(view(lobby, req.user.id));
 });
@@ -376,7 +387,7 @@ router.post('/lobby/:code/reset', (req, res) => {
     lobby.pot = 0;
     lobby.payout = null;
     Object.values(lobby.members).forEach((m) => {
-        m.score = 0; m.streak = 0; m.bestStreak = 0; m.finished = false; m.lastSeen = Date.now();
+        m.score = 0; m.streak = 0; m.bestStreak = 0; m.finished = false; m.lastSeen = Date.now(); m.reachedAt = null;
     });
     res.json(view(lobby, req.user.id));
 });
@@ -393,6 +404,16 @@ router.post('/lobby/:code/progress', (req, res) => {
     m.streak = clampInt(b.streak, 0, 100000, m.streak);
     m.bestStreak = Math.max(m.bestStreak, clampInt(b.bestStreak, 0, 100000, m.bestStreak));
     if (b.finished) m.finished = true;
+    // Stamp the first server-receive time at which this member's score crossed
+    // the race target. The race-mode evaluator picks the winner by EARLIEST
+    // reachedAt (with a short grace) so a near-simultaneous second finisher
+    // can still tie-break instead of losing to wire timing.
+    if (TARGET_MODES.has(lobby.config.mode)
+        && !m.reachedAt
+        && m.score >= lobby.config.target
+    ) {
+        m.reachedAt = Date.now();
+    }
     // Track where this player is and what they picked, so other clients can show
     // each opponent's Atlas sitting on the option they chose for that question.
     if (b.qIndex != null) m.qIndex = clampInt(b.qIndex, 0, 1000000, m.qIndex || 0);

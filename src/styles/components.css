@@ -481,9 +481,6 @@
     .flag-image { max-width: 460px; }
 }
 
-/* Mirror Mode — horizontal flip of the flag image. */
-.flag-mirror { transform: scaleX(-1); }
-
 /* Flash Mode — placeholder shown after the 1-second reveal expires. Mirrors
    the flag-image footprint so the layout doesn't reflow when it swaps in. */
 .flag-flash-placeholder {
@@ -2435,8 +2432,22 @@
     grid-template-columns: none;
     align-items: center;
     gap: var(--space-sm);
+    /* Lock every row to the same height so a hat / horned cosmetic that
+       overflows the avatar bounds can't make one player's card taller than
+       another's. The avatar wrapper clips its content to 40px so the hat
+       still shows up to the top of its slot, but never grows the row. */
+    min-height: 64px;
+    box-sizing: border-box;
 }
-.leaderboard-avatar { flex: none; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; }
+.leaderboard-avatar {
+    flex: none;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
 .leaderboard-id { flex: 1; display: flex; flex-direction: column; min-width: 0; }
 .leaderboard-name { display: flex; align-items: center; gap: 6px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .leaderboard-flag { width: 22px; height: 15px; object-fit: cover; border-radius: 3px; box-shadow: var(--shadow-sm); flex: none; }
@@ -3433,10 +3444,15 @@
 .globe-quiz__canvas {
     position: absolute;
     inset: 0;
-    /* Three.js canvas styles itself to 100% inside */
+    /* Three.js canvas styles itself to 100% inside. touch-action: none stops
+       the browser from interpreting a near-miss drag as a page scroll/zoom
+       on mobile — otherwise tapping just off a country can scroll the page
+       sideways. Property doesn't inherit, so we set it on the canvas too. */
+    touch-action: none;
 }
 .globe-quiz__canvas canvas {
     cursor: grab;
+    touch-action: none;
 }
 .globe-quiz__canvas canvas:active { cursor: grabbing; }
 
@@ -3639,8 +3655,14 @@
 .mp-globe-canvas {
     position: absolute;
     inset: 0;
+    /* See .globe-quiz__canvas: touch-action: none on the canvas itself
+       prevents near-miss drags from scrolling the page on mobile. */
+    touch-action: none;
 }
-.mp-globe-canvas canvas { cursor: grab; }
+.mp-globe-canvas canvas {
+    cursor: grab;
+    touch-action: none;
+}
 .mp-globe-canvas canvas:active { cursor: grabbing; }
 
 .mp-globe-prompt {
@@ -4950,7 +4972,9 @@
     /* Float the messages slightly to the LEFT of the badge so they don't
        sit directly above quiz answer choices that share the topbar's right
        edge. Capped width so longer messages wrap instead of bleeding into
-       the score/streak pills. */
+       the score/streak pills. z-index keeps them above the in-quiz mastery
+       meter, which on mobile sits right under the topbar and would
+       otherwise paint over them. */
     position: absolute;
     top: calc(100% + 8px);
     right: 0;
@@ -4959,9 +4983,12 @@
     flex-direction: column;
     align-items: flex-end;
     gap: 6px;
-    z-index: 15;
+    z-index: 60;
     max-width: min(260px, 80vw);
 }
+/* Same reason: hoist the badge button into its own stacking context so the
+   reaction overlay can float above the mastery meter / flag image on mobile. */
+.spectators-badge { position: relative; z-index: 60; }
 .spectators-badge-reaction {
     display: inline-flex;
     align-items: center;
@@ -5005,6 +5032,33 @@
 .spectator-screen {
     gap: var(--space-md);
     position: relative;
+    transition: box-shadow 200ms ease;
+}
+/* Brief glow around the panel so the spectator gets a glance-able cue when
+   the spectatee answers — pairs with the topbar verdict pill. */
+.spectator-screen--correct {
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-success-deep) 55%, transparent), var(--shadow-md);
+}
+.spectator-screen--wrong {
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-danger-deep) 55%, transparent), var(--shadow-md);
+}
+.spectator-verdict-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-weight: 800;
+    font-size: 0.85rem;
+    margin-left: auto;
+}
+.spectator-verdict-pill.is-correct {
+    background: color-mix(in srgb, var(--color-success) 18%, transparent);
+    color: var(--color-success-deep);
+}
+.spectator-verdict-pill.is-wrong {
+    background: color-mix(in srgb, var(--color-danger) 18%, transparent);
+    color: var(--color-danger-deep);
 }
 .spectator-watching-pill {
     display: inline-flex;

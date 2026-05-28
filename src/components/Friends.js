@@ -9,7 +9,6 @@ import { fetchFriendsPresence } from '../lib/presence';
 const MODE_LABELS = {
     'multiple-choice':    'Multiple Choice',
     'free-response':      'Free Response',
-    'mirror':             'Mirror',
     'flash':              'Flash',
     'reverse-mc':         'Reverse MC',
     'globe':              'Globe',

@@ -13,7 +13,6 @@ import { EMOTES } from '../lib/cosmetics';
 const MODE_LABELS = {
     'multiple-choice':    'Multiple Choice',
     'free-response':      'Free Response',
-    'mirror':             'Mirror',
     'flash':              'Flash',
     'reverse-mc':         'Reverse MC',
     'globe':              'Globe',
@@ -31,9 +30,10 @@ const FLAG_FILE = (code) => (code ? `${IMAGE_BASE_URL}${code.toLowerCase()}.svg`
 // of the spectator screen. We track which ones we've already shown so a
 // polled item doesn't double-mount. Messages get a wider bubble so the
 // text is always readable, regardless of which device size renders them.
+export const REACTION_FLOAT_MS = 2800;
 function ReactionFloat({ reaction, onDone }) {
     useEffect(() => {
-        const t = setTimeout(onDone, 3200);
+        const t = setTimeout(onDone, REACTION_FLOAT_MS);
         return () => clearTimeout(t);
     }, [onDone]);
     const isMessage = reaction.kind === 'message' && reaction.payload;
@@ -122,7 +122,9 @@ function SpectatorScreen({ targetId, setView }) {
 
     const sendReaction = useCallback(async (body) => {
         if (Date.now() < reactCooldownUntil) return;
-        setReactCooldownUntil(Date.now() + 1500);
+        // Lock the tray until the float fully fades so back-to-back emotes
+        // don't stack on top of each other.
+        setReactCooldownUntil(Date.now() + REACTION_FLOAT_MS);
         // Tiny haptic preview on the player's own mascot icon — fires the
         // emote locally so they get instant feedback while the server
         // round-trip is in flight.
@@ -172,6 +174,23 @@ function SpectatorScreen({ targetId, setView }) {
     else if (gameState && gameState.lastAnswerCorrect === true) mascotMood = 'cheer';
     else if (gameState && gameState.lastAnswerCorrect === false) mascotMood = 'sad';
 
+    // Briefly flash the prompt panel green/red so the spectator gets a
+    // glance-able indication of the spectatee's last answer (poll cadence
+    // alone makes the mascot mood easy to miss).
+    const [verdictFlash, setVerdictFlash] = useState(null);
+    const lastVerdictKeyRef = useRef(null);
+    useEffect(() => {
+        if (!gameState) return undefined;
+        const key = `${gameState.score ?? 0}|${gameState.lastAnswerCorrect}`;
+        if (lastVerdictKeyRef.current === key) return undefined;
+        lastVerdictKeyRef.current = key;
+        if (gameState.lastAnswerCorrect === true) setVerdictFlash('correct');
+        else if (gameState.lastAnswerCorrect === false) setVerdictFlash('wrong');
+        else return undefined;
+        const t = setTimeout(() => setVerdictFlash(null), 1200);
+        return () => clearTimeout(t);
+    }, [gameState]);
+
     if (error && !target) {
         return (
             <div className="quiz-box spectator-screen">
@@ -191,7 +210,7 @@ function SpectatorScreen({ targetId, setView }) {
     }
 
     return (
-        <div className="quiz-box spectator-screen">
+        <div className={`quiz-box spectator-screen ${verdictFlash ? `spectator-screen--${verdictFlash}` : ''}`}>
             <div className="quiz-topbar">
                 <button className="back-button" onClick={() => setView('friends')} aria-label="Back to friends">
                     <Icon name="arrow_back" />
@@ -202,6 +221,12 @@ function SpectatorScreen({ targetId, setView }) {
                         Watching {target ? target.username : '…'}
                     </span>
                 </span>
+                {verdictFlash && (
+                    <span className={`spectator-verdict-pill is-${verdictFlash}`} aria-live="polite">
+                        <Icon name={verdictFlash === 'correct' ? 'check_circle' : 'cancel'} />
+                        {verdictFlash === 'correct' ? 'Correct!' : 'Wrong'}
+                    </span>
+                )}
             </div>
 
             <div className="spectator-main">

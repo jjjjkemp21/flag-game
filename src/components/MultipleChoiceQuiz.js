@@ -17,11 +17,10 @@ import { useQuizPresence } from '../lib/presence';
 import SpectatorsBadge from './SpectatorsBadge';
 import { springs } from '../motion';
 
-// Per-variant streak keys so Mirror / Flash best-streaks track independently
-// of plain Multiple Choice on the leaderboard + BonusMenu high-score badge.
+// Per-variant streak keys so Flash best-streaks track independently of plain
+// Multiple Choice on the leaderboard + BonusMenu high-score badge.
 const MODE_BY_VARIANT = {
     standard: 'multiple-choice',
-    mirror:   'mirror',
     flash:    'flash',
     reverse:  'reverse-mc',
 };
@@ -76,10 +75,10 @@ function MultipleChoiceQuiz({
         options: options && options.length ? options : undefined,
     });
 
-    // Mirror / Flash / Reverse come in from BonusMenu, not QuizMenu — bounce
-    // them back there instead of the quiz category picker they never visited.
+    // Flash / Reverse come in from BonusMenu, not QuizMenu — bounce them back
+    // there instead of the quiz category picker they never visited.
     const handleBack = () => {
-        if (variant === 'mirror' || variant === 'flash' || variant === 'reverse') {
+        if (variant === 'flash' || variant === 'reverse') {
             setView('bonus-menu');
             return;
         }
@@ -291,7 +290,7 @@ function MultipleChoiceQuiz({
                         key={currentFlag.file}
                         src={`${IMAGE_BASE_URL}${currentFlag.file}`}
                         alt="Flag"
-                        className={`flag-image ${variant === 'mirror' ? 'flag-mirror' : ''}`}
+                        className="flag-image"
                         initial={{ opacity: 0, scale: 0.94 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ duration: 0.28, ease: [0.25, 0.46, 0.45, 0.94] }}

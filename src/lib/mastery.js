@@ -93,7 +93,7 @@ const STAGE_TIERS = {
 // Bonus-mode tiers keyed to the achievement thresholds for each mode.
 const BONUS_TIERS = {
     frenzy:       [{ min: 0, title: 'Newcomer', tier: 'stone' }, { min: 100, title: 'Frenzy Rookie', tier: 'bronze' }, { min: 250, title: 'Frenzy Pro', tier: 'silver' }, { min: 500, title: 'Frenzy Legend', tier: 'gold' }],
-    pixelated:    [{ min: 0, title: 'Newcomer', tier: 'stone' }, { min: 100, title: 'Pixel Peeker', tier: 'bronze' }, { min: 250, title: 'Pixel Pro', tier: 'silver' }, { min: 500, title: 'Pixel Master', tier: 'gold' }],
+    pixelated:    [{ min: 0, title: 'Newcomer', tier: 'stone' }, { min: 50, title: 'Pixel Peeker', tier: 'bronze' }, { min: 300, title: 'Pixel Pro', tier: 'silver' }, { min: 500, title: 'Pixel Master', tier: 'gold' }],
     longestRoute: [{ min: 0, title: 'Newcomer', tier: 'stone' }, { min: 8,  title: 'Chain Starter', tier: 'bronze' }, { min: 15, title: 'Chain Master', tier: 'silver' }, { min: 25, title: 'Unbroken', tier: 'gold' }],
     language:     [{ min: 0, title: 'Newcomer', tier: 'stone' }, { min: 10, title: 'Linguist', tier: 'bronze' }, { min: 20, title: 'Polyglot', tier: 'silver' }, { min: 30, title: 'Babel Breaker', tier: 'gold' }],
 };
