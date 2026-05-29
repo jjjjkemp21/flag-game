@@ -117,10 +117,60 @@ function serverMetrics(userId) {
     };
 }
 
-// Combine server metrics with the client-driven counters. Server metrics win
-// for any overlapping keys (defensive).
+// MC-style modes all write the per-flag `correct` field, so their streaks count
+// toward the MC weight when proportioning the combined text total (mirror of the
+// counter backfill's split). free-response / globe / globe-name are their own.
+const MC_STREAK_KEYS = ['multiple-choice', 'mirror', 'flash', 'reverse-mc'];
+
+function splitByWeight(total, wA, wB) {
+    if (total <= 0) return [0, 0];
+    if (wA + wB <= 0) return [total, 0];          // no signal -> all to primary
+    const a = Math.round(total * (wA / (wA + wB)));
+    return [a, total - a];
+}
+
+// Raise the four client-driven counters to at least the value implied by the
+// authoritative per-flag stats. This is the PERMANENT fix for counter drift: the
+// counters (mc/fr/globe/globename) are a parallel tally the client maintains via
+// bumpMetric, so lost POSTs, multi-device play, or legacy accounts that never
+// seeded them can leave them below reality. We recompute a floor from stats_json
+// on every read and max-merge it in, so the drift self-heals (superseding the
+// one-off backfills) and can never recur.
+//
+// stats_json stores only a COMBINED text count (sum of `correct`, shared by MC +
+// FR + mirror/flash/reverse-mc) and a COMBINED geo count (sum of `geoCorrect`,
+// shared by globe-place + globe-name) — it can't tell the sub-modes apart. So we
+// split each combined total across its two sub-modes proportionally by their
+// best-streak share (streaks_json), defaulting all to the primary mode when
+// there's no signal. Because it's a FLOOR (max with the stored counter), an
+// accurate client count always wins; the split only ever fills a shortfall and
+// can never lower a real value.
+function reconciledCounters(userId, stored) {
+    const out = { ...(stored || {}) };
+    const row = db.prepare('SELECT stats_json, streaks_json FROM users WHERE id = ?').get(userId);
+    if (!row) return out;
+    const stats = safeParse(row.stats_json, []) || [];
+    const streaks = safeParse(row.streaks_json, {}) || {};
+    const n = (v) => Math.max(0, Number(v) || 0);
+    const textCorrect = stats.reduce((a, f) => a + n(f.correct), 0);
+    const geoCorrect = stats.reduce((a, f) => a + n(f.geoCorrect), 0);
+    const wMc = MC_STREAK_KEYS.reduce((a, k) => a + n(streaks[k]), 0);
+    const wFr = n(streaks['free-response']);
+    const wGlobe = n(streaks['globe']);
+    const wName = n(streaks['globe-name']);
+    const [mcFloor, frFloor] = splitByWeight(textCorrect, wMc, wFr);
+    const [globeFloor, nameFloor] = splitByWeight(geoCorrect, wGlobe, wName);
+    out.mc_correct = Math.max(n(out.mc_correct), mcFloor);
+    out.fr_correct = Math.max(n(out.fr_correct), frFloor);
+    out.globe_correct = Math.max(n(out.globe_correct), globeFloor);
+    out.globe_name_correct = Math.max(n(out.globe_name_correct), nameFloor);
+    return out;
+}
+
+// Combine server metrics with the (drift-reconciled) client-driven counters.
+// Server metrics win for any overlapping keys (defensive).
 function effectiveMetrics(userId, counters) {
-    const merged = { ...(counters || {}) };
+    const merged = { ...reconciledCounters(userId, counters) };
     Object.assign(merged, serverMetrics(userId));
     return merged;
 }
