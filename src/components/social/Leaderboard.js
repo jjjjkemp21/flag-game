@@ -21,6 +21,7 @@ const SCOPES = [
     { key: 'pixelated',    label: 'Pixelated',     icon: 'blur_on',   unit: 'pts' },
     { key: 'longestRoute', label: 'Longest Chain', icon: 'route',     unit: 'pts' },
     { key: 'language',     label: 'Language',      icon: 'translate', unit: 'pts' },
+    { key: 'capitals',     label: 'Capitals',      icon: 'location_city', unit: 'pts' },
 ];
 
 // How often the open leaderboard refreshes itself so ranks update live.

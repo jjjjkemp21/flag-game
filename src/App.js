@@ -97,6 +97,10 @@ function App() {
     const [spectateTarget, setSpectateTarget] = useState(null);
     const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'dark');
     const [strictSpelling, setStrictSpelling] = useState(() => localStorage.getItem('strictSpelling') === 'true');
+    // Whether dependent territories / subnational flags are eligible for the quiz
+    // decks. Off by default — most players want the ~195 sovereign states first.
+    // Device-global like the other UI prefs (never tied to the account).
+    const [includeTerritories, setIncludeTerritories] = useState(() => localStorage.getItem('includeTerritories') === 'true');
     const [isLoading, setIsLoading] = useState(true);
     // Question history rides on a ref so back-to-back picks see the freshest
     // value — relying on useState alone races against React's batched commit
@@ -131,6 +135,10 @@ function App() {
     useEffect(() => {
         localStorage.setItem('strictSpelling', String(strictSpelling));
     }, [strictSpelling]);
+
+    useEffect(() => {
+        localStorage.setItem('includeTerritories', String(includeTerritories));
+    }, [includeTerritories]);
 
     useEffect(() => {
         if (audio.isUnlocked) audio.play('transition', { volume: 0.5 });
@@ -437,10 +445,23 @@ function App() {
     }
 
     const renderView = () => {
+        // Quiz decks draw from the "playable" set, which drops dependent
+        // territories / subnational flags unless the player opts in (Settings).
+        // The FULL flagsData is still used everywhere progress is measured
+        // (stats, achievements, mastery totals) so the toggle never rewrites
+        // history — it only narrows what gets asked.
+        const playableFlags = includeTerritories
+            ? flagsData
+            : flagsData.filter(f => !(f.tags || []).includes('region:territory'));
+
         const getFilteredFlags = () => {
             const now = Date.now();
+            // An explicit "Territories" region pick overrides the global toggle
+            // (the player asked for them) and reads from the full catalog.
+            const isTerritoryPick = quizCategory.type === 'region' && quizCategory.value === 'territory';
+            const base = isTerritoryPick ? flagsData : playableFlags;
             if (quizCategory.type === 'all') {
-                return flagsData;
+                return base;
             }
             if (quizCategory.type === 'review') {
                 // Globe maintains its own geo review schedule; mirror the
@@ -448,15 +469,19 @@ function App() {
                 // matches the tile (use loose != null since geoNextReview is
                 // lazily added and may be undefined on untouched flags).
                 const dueField = view === 'globe' ? 'geoNextReview' : 'nextReview';
-                return flagsData.filter(f => f[dueField] != null && f[dueField] <= now);
+                return base.filter(f => f[dueField] != null && f[dueField] <= now);
             }
-            return flagsData.filter(flag =>
+            return base.filter(flag =>
                 flag.tags.includes(`${quizCategory.type}:${quizCategory.value}`)
             );
         };
 
         const quizProps = {
             allFlagsData: flagsData,
+            // Distractors (wrong MC options) are drawn from the playable set so
+            // territories don't sneak in as answers when the toggle is off,
+            // while allFlagsData stays full for stat writes + name lookups.
+            distractorPool: playableFlags,
             setFlagsData: setFlagsData,
             selectNextFlag: select_next_flag,
             setView: setView,
@@ -469,7 +494,7 @@ function App() {
 
         switch (view) {
             case 'quiz-menu':
-                return <QuizMenu setView={setView} setQuizCategory={setQuizCategory} flagsData={flagsData} quizMode={quizMode} />;
+                return <QuizMenu setView={setView} setQuizCategory={setQuizCategory} flagsData={playableFlags} quizMode={quizMode} />;
             case 'multiple-choice':
             case 'free-response': {
                 const quizFlags = getFilteredFlags();
@@ -484,7 +509,7 @@ function App() {
                 return (
                     <MultipleChoiceQuiz
                         {...quizProps}
-                        quizFlags={flagsData}
+                        quizFlags={playableFlags}
                         quizCategory={{ type: 'all', value: null }}
                         variant={view}
                     />
@@ -494,7 +519,7 @@ function App() {
                 return (
                     <MultipleChoiceQuiz
                         {...quizProps}
-                        quizFlags={flagsData}
+                        quizFlags={playableFlags}
                         quizCategory={{ type: 'all', value: null }}
                         variant="reverse"
                     />
@@ -510,19 +535,19 @@ function App() {
             case 'pixelated-quiz':
                 return (
                     <Suspense fallback={<LazyFallback label="Loading Pixelated…" />}>
-                        <PixelatedQuiz allFlagsData={flagsData} setView={setView} strictSpelling={strictSpelling} />
+                        <PixelatedQuiz allFlagsData={playableFlags} setView={setView} strictSpelling={strictSpelling} />
                     </Suspense>
                 );
             case 'frenzy-quiz':
                 return (
                     <Suspense fallback={<LazyFallback label="Loading Frenzy…" />}>
-                        <FrenzyQuiz allFlagsData={flagsData} setView={setView} strictSpelling={strictSpelling} />
+                        <FrenzyQuiz allFlagsData={playableFlags} setView={setView} strictSpelling={strictSpelling} />
                     </Suspense>
                 );
             case 'longest-route-quiz':
                 return (
                     <Suspense fallback={<LazyFallback label="Loading Longest Route…" />}>
-                        <LongestRouteQuiz allFlagsData={flagsData} setView={setView} strictSpelling={strictSpelling} />
+                        <LongestRouteQuiz allFlagsData={flagsData} setView={setView} strictSpelling={strictSpelling} includeTerritories={includeTerritories} />
                     </Suspense>
                 );
             case 'language-quiz':
@@ -534,7 +559,7 @@ function App() {
             case 'capitals-quiz':
                 return (
                     <Suspense fallback={<LazyFallback label="Loading Capitals Quiz…" />}>
-                        <CapitalsQuiz setView={setView} />
+                        <CapitalsQuiz setView={setView} includeTerritories={includeTerritories} />
                     </Suspense>
                 );
             case 'bonus-menu':
@@ -568,6 +593,8 @@ function App() {
                         setTheme={setTheme}
                         strictSpelling={strictSpelling}
                         setStrictSpelling={setStrictSpelling}
+                        includeTerritories={includeTerritories}
+                        setIncludeTerritories={setIncludeTerritories}
                         onResetStats={handleResetStats}
                         onReplayTutorial={startTutorial}
                         setView={setView}

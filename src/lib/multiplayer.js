@@ -31,6 +31,7 @@ export const DEFAULT_MP_CONFIG = {
     questionType: 'mc',   // 'mc' | 'text'
     strict: false,        // free-text: require exact spelling
     scope: 'all',         // 'all' | region key (flags only)
+    territories: false,   // include dependent territories in the flag/globe pool
     target: 50,           // race: correct answers to win
     duration: 60,         // blitz / streak: seconds
     maxPlayers: 8,
@@ -73,8 +74,13 @@ function shuffledOrder(n, seed) {
     return order;
 }
 
-function flagPool(flagsData, scope) {
-    const list = (flagsData || []).filter((f) => f && f.code && f.file);
+function flagPool(flagsData, scope, territories = false) {
+    let list = (flagsData || []).filter((f) => f && f.code && f.file);
+    // Drop dependent territories unless the host opted in (or explicitly scoped
+    // the match to them). Keeps every client's seeded pool identical.
+    if (!territories && scope !== 'territory') {
+        list = list.filter((f) => !(f.tags || []).includes('region:territory'));
+    }
     const scoped = scope && scope !== 'all'
         ? list.filter((f) => (f.tags || []).includes(`region:${scope}`))
         : list;
@@ -92,8 +98,8 @@ export function makeEngine({ config, seed, flagsData, languagesData, phrasesData
     const isGlobe = config.content === 'globe';
     let pool;
     if (isLang) pool = languagesData || [];
-    else if (isGlobe) pool = globePool(flagsData, config.scope, globeIso2);
-    else pool = flagPool(flagsData, config.scope);
+    else if (isGlobe) pool = globePool(flagsData, config.scope, globeIso2, config.territories);
+    else pool = flagPool(flagsData, config.scope, config.territories);
     const n = pool.length;
     const orders = new Map();
     const orderFor = (round) => {
@@ -153,8 +159,8 @@ export function makeEngine({ config, seed, flagsData, languagesData, phrasesData
 
 // Globe pool: same scoping as flags, then filter to entries whose ISO-A2 code
 // is one the loaded 3D globe can actually render (passed in as a Set).
-function globePool(flagsData, scope, globeIso2) {
-    const base = flagPool(flagsData, scope);
+function globePool(flagsData, scope, globeIso2, territories = false) {
+    const base = flagPool(flagsData, scope, territories);
     if (!globeIso2 || globeIso2.size === 0) return base;
     return base.filter((f) => f && f.code && globeIso2.has(f.code.toUpperCase()));
 }

@@ -40,7 +40,7 @@ function acceptedFriendIds(userId) {
     return rows.map((r) => (r.requester_id === userId ? r.addressee_id : r.requester_id));
 }
 
-const BONUS_MODES = ['frenzy', 'pixelated', 'longestRoute', 'language'];
+const BONUS_MODES = ['frenzy', 'pixelated', 'longestRoute', 'language', 'capitals'];
 const VALID_SCOPES = ['overall', 'friends', 'atlas', 'mpwins', 'globe', ...BONUS_MODES];
 
 function bestStreakOf(row) {

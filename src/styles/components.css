@@ -1787,17 +1787,22 @@
 .lang-explainer__continue:hover { background: var(--color-primary-deep); }
 
 /* Capitals quiz — reuses the language quiz's prompt/hint/explainer classes;
-   only the prompt block (big flag emoji stacked over the country name) needs
+   only the prompt block (rendered flag SVG stacked over the country name) needs
    bespoke layout. */
 .capitals-quiz-box .phrase-container.capitals-prompt {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: var(--space-xs);
+    gap: var(--space-sm);
 }
-.capitals-flag {
-    font-size: 3.2rem;
-    line-height: 1;
+.capitals-flag-img {
+    width: 100%;
+    max-width: 150px;
+    aspect-ratio: 3 / 2;
+    object-fit: contain;
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-md), 0 0 0 1px var(--color-border);
+    background: var(--color-bg-elev-1);
 }
 .capitals-prompt .phrase-text {
     font-family: var(--font-display, var(--font-body));

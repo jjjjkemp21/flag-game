@@ -12,6 +12,7 @@ export const TIER_STAR_COST = [
     1600, 1700, 1800, 1900, 2000,
     2100, 2200, 2300, 2400, 2500,
     2700, 2900, 3100, 3300, 3500,
+    3700, 3900, 4100, 4300, 4500,
 ];
 
 export const TIER_COUNT = TIER_STAR_COST.length;
@@ -42,6 +43,9 @@ export const CHALLENGES = [
     { id: 'lr_25',     metric: 'high_longestRoute', goal: 25,    stars: 1600, mode: 'longest-route',   title: 'Route Master',     desc: 'Reach 25 score in Longest Route', icon: 'route' },
     { id: 'lang_30',   metric: 'high_language',    goal: 30,     stars: 700,  mode: 'language',        title: 'Polyglot',         desc: 'Reach 30 score in Language Quiz', icon: 'translate' },
     { id: 'lang_75',   metric: 'high_language',    goal: 75,     stars: 1600, mode: 'language',        title: 'Linguist',         desc: 'Reach 75 score in Language Quiz', icon: 'translate' },
+    { id: 'cap_30',    metric: 'high_capitals',    goal: 30,     stars: 700,  mode: 'capitals',        title: 'City Slicker',     desc: 'Reach 30 score in Capitals Quiz', icon: 'location_city' },
+    { id: 'cap_75',    metric: 'high_capitals',    goal: 75,     stars: 1600, mode: 'capitals',        title: 'Capital Connoisseur', desc: 'Reach 75 score in Capitals Quiz', icon: 'location_city' },
+    { id: 'cap_150',   metric: 'high_capitals',    goal: 150,    stars: 2700, mode: 'capitals',        title: 'Capital Sage',     desc: 'Reach 150 score in Capitals Quiz', icon: 'location_city' },
     { id: 'streak_10', metric: 'best_streak_any',  goal: 10,     stars: 500,  mode: 'any',             title: 'Heating Up',       desc: 'Hit a 10-answer streak in any mode', icon: 'local_fire_department' },
     { id: 'streak_25', metric: 'best_streak_any',  goal: 25,     stars: 1500, mode: 'any',             title: 'On Fire',          desc: 'Hit a 25-answer streak in any mode', icon: 'local_fire_department' },
     { id: 'streak_50', metric: 'best_streak_any',  goal: 50,     stars: 2500, mode: 'any',             title: 'Inferno',          desc: 'Hit a 50-answer streak in any mode', icon: 'local_fire_department' },
@@ -51,6 +55,18 @@ export const CHALLENGES = [
     { id: 'master_100',metric: 'mastered',         goal: 100,    stars: 2500, mode: 'mastery',         title: 'Atlas Pro',        desc: 'Master 100 flags', icon: 'school' },
     { id: 'xp_5k',     metric: 'earned_xp',        goal: 5000,   stars: 1000, mode: 'any',             title: 'Earner',           desc: 'Earn 5,000 lifetime XP', icon: 'star' },
     { id: 'xp_25k',    metric: 'earned_xp',        goal: 25000,  stars: 2500, mode: 'any',             title: 'XP Tycoon',        desc: 'Earn 25,000 lifetime XP', icon: 'star' },
+
+    // Season 1 finale — extended-pass stretch goals added alongside tiers
+    // 26-30. They lift the obtainable-star pool above the new TOTAL_STARS so a
+    // completionist can actually reach the new capstone; higher bars on the
+    // already-established modes (the new Capitals mode is covered by cap_* above).
+    { id: 'mc_1000',   metric: 'mc_correct',       goal: 1000,   stars: 3400, mode: 'multiple-choice', title: 'Quiz Legend',      desc: 'Get 1,000 correct in Multiple Choice', icon: 'quiz' },
+    { id: 'fr_600',    metric: 'fr_correct',       goal: 600,    stars: 3400, mode: 'free-response',   title: 'Atlas Laureate',   desc: 'Type 600 country names correctly', icon: 'edit_note' },
+    { id: 'globe_300', metric: 'globe_correct',    goal: 300,    stars: 3600, mode: 'globe',           title: 'Globe Conqueror',  desc: 'Place 300 countries on the globe', icon: 'public' },
+    { id: 'globename_300', metric: 'globe_name_correct', goal: 300, stars: 3600, mode: 'globe',        title: 'Atlas Oracle',     desc: 'Name 300 countries from the globe', icon: 'edit_location_alt' },
+    { id: 'streak_75', metric: 'best_streak_any',  goal: 75,     stars: 3200, mode: 'any',             title: 'Supernova',        desc: 'Hit a 75-answer streak in any mode', icon: 'local_fire_department' },
+    { id: 'mp_25',     metric: 'mp_wins',          goal: 25,     stars: 3200, mode: 'multiplayer',     title: 'MP Legend',        desc: 'Win 25 multiplayer matches', icon: 'sports_esports' },
+    { id: 'xp_60k',    metric: 'earned_xp',        goal: 60000,  stars: 3400, mode: 'any',             title: 'XP Magnate',       desc: 'Earn 60,000 lifetime XP', icon: 'star' },
 ];
 
 export const CHALLENGES_BY_ID = Object.fromEntries(CHALLENGES.map((c) => [c.id, c]));
@@ -92,6 +108,19 @@ export const TIERS = [
     { tier: 23, free: { type: 'bucks', amount: 1300 },   prem: { type: 'cosmetic', cat: 'color',   id: 'bp_cosmic_drake' } },
     { tier: 24, free: { type: 'bucks', amount: 1600 },   prem: { type: 'cosmetic', cat: 'color',   id: 'bp_chameleon' } },
     { tier: 25, free: { type: 'cosmetic', cat: 'scene', id: 'bp_reptile' }, prem: { type: 'cosmetic', cat: 'color',   id: 'bp_dragon_fire' } },
+
+    // ---- Season 1 extension: tiers 26-30 ("Apex" finale) -------------------
+    // Five more levels past the original capstone. New BP-exclusive cosmetics
+    // (Wyvern Crown hat, Apex Visor glasses, Wing Beat emote, Meteor Storm
+    // effect, World Serpent colour) reward the deepest grinders.
+    { tier: 26, free: { type: 'bucks', amount: 1200 },   prem: { type: 'cosmetic', cat: 'hat',     id: 'bp_wyvern_crown' } },
+    { tier: 27, free: { type: 'bucks', amount: 1400 },   prem: { type: 'cosmetic', cat: 'glasses', id: 'bp_apex_visor' } },
+    // Tier 28 free: Fireworks emote on the free track; prem: the new Wing Beat emote.
+    { tier: 28, free: { type: 'cosmetic', cat: 'emote',  id: 'fireworks' }, prem: { type: 'cosmetic', cat: 'emote',  id: 'bp_wing_beat' } },
+    { tier: 29, free: { type: 'bucks', amount: 1800 },   prem: { type: 'cosmetic', cat: 'effect',  id: 'bp_meteor' } },
+    // Tier 30 — extended-season capstone. World Serpent: animated jewel-scale
+    // colour with glow + starfield overlay, the showpiece of the whole pass.
+    { tier: 30, free: { type: 'bucks', amount: 3000 },   prem: { type: 'cosmetic', cat: 'color',   id: 'bp_world_serpent' } },
 ];
 
 export const TIERS_BY_NUM = Object.fromEntries(TIERS.map((t) => [t.tier, t]));

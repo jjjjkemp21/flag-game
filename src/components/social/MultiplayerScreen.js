@@ -137,6 +137,21 @@ function ConfigEditor({ config, regions, disabled, onChange }) {
                 </div>
             )}
 
+            {(config.content === 'flags' || config.content === 'globe') && config.scope === 'all' && (
+                <div className="mp-field">
+                    <span className="mp-field__label">Territories</span>
+                    <div className="mp-choices">
+                        <button type="button" disabled={disabled} className={`mp-chip ${!config.territories ? 'is-on' : ''}`} onClick={() => set({ territories: false })}>
+                            <Icon name="block" /> Exclude
+                        </button>
+                        <button type="button" disabled={disabled} className={`mp-chip ${config.territories ? 'is-on' : ''}`} onClick={() => set({ territories: true })}>
+                            <Icon name="public" /> Include
+                        </button>
+                    </div>
+                    <span className="mp-field__hint">Add dependent territories &amp; subnational flags to the pool.</span>
+                </div>
+            )}
+
             {config.mode === 'battle' ? (
                 <div className="mp-field">
                     <span className="mp-field__label">Hits to KO: <strong>{config.target}</strong></span>
@@ -413,6 +428,9 @@ function ConfigSummary({ config }) {
             )}
             {isGlobe && (
                 <Pill tone="neutral" icon="touch_app">Tap to place</Pill>
+            )}
+            {config.content !== 'languages' && config.territories && (
+                <Pill tone="neutral" icon="public">+ Territories</Pill>
             )}
             <Pill tone="success" icon={config.mode === 'race' ? 'flag' : 'timer'}>
                 {config.mode === 'race' ? `${config.target} to win` : `${config.duration}s`}

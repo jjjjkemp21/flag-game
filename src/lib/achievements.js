@@ -144,7 +144,7 @@ const bonusMilestone = (mode, n, name, icon, tier) => ({
     id: `${mode}_${n}`,
     group: 'Bonus Modes',
     name,
-    desc: `Score ${n} in ${({ frenzy: 'Frenzy', pixelated: 'Pixelated', longestRoute: 'Longest Chain', language: 'Language' })[mode]}`,
+    desc: `Score ${n} in ${({ frenzy: 'Frenzy', pixelated: 'Pixelated', longestRoute: 'Longest Chain', language: 'Language', capitals: 'Capitals' })[mode]}`,
     icon,
     tier,
     check: (x) => (Number(x.bonus[mode]) || 0) >= n,
@@ -227,6 +227,9 @@ export const ACHIEVEMENTS = [
     bonusMilestone('language', 10, 'Linguist', 'translate', 'bronze'),
     bonusMilestone('language', 20, 'Polyglot', 'translate', 'silver'),
     bonusMilestone('language', 30, 'Babel Breaker', 'translate', 'gold'),
+    bonusMilestone('capitals', 25, 'City Mapper', 'location_city', 'bronze'),
+    bonusMilestone('capitals', 75, 'Capital Collector', 'location_city', 'silver'),
+    bonusMilestone('capitals', 150, 'Capital Sage', 'location_city', 'gold'),
 
     atlasMilestone(5, 'Atlas Companion', 'bronze'),
     atlasMilestone(10, 'Atlas Caretaker', 'silver'),

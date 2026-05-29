@@ -7,7 +7,7 @@ import { useAuth } from '../../auth/AuthProvider';
 import { useProfile, setAllowSpectate } from '../../lib/profile';
 import { api } from '../../api/client';
 
-function Settings({ theme, setTheme, strictSpelling, setStrictSpelling, onResetStats, onReplayTutorial, setView }) {
+function Settings({ theme, setTheme, strictSpelling, setStrictSpelling, includeTerritories, setIncludeTerritories, onResetStats, onReplayTutorial, setView }) {
     const audio = useAudio();
     const toast = useToast();
     const { isAuthed, user, patchUser } = useAuth();
@@ -142,6 +142,17 @@ function Settings({ theme, setTheme, strictSpelling, setStrictSpelling, onResetS
                         checked={strictSpelling}
                         onChange={(on) => setStrictSpelling(on)}
                         ariaLabel="Toggle strict spelling"
+                    />
+                </div>
+                <div className="setting-row">
+                    <div className="setting-row__label">
+                        <span className="setting-row__title">Include territories</span>
+                        <span className="setting-row__desc">Add dependent territories &amp; subnational flags to every mode's deck. Off by default.</span>
+                    </div>
+                    <Toggle
+                        checked={!!includeTerritories}
+                        onChange={(on) => setIncludeTerritories(on)}
+                        ariaLabel="Toggle including territories"
                     />
                 </div>
             </section>

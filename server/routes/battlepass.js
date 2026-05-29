@@ -113,6 +113,7 @@ function serverMetrics(userId) {
         high_pixelated: Math.max(0, Number(bonus.pixelated) || 0),
         high_longestRoute: Math.max(0, Number(bonus.longestRoute) || 0),
         high_language: Math.max(0, Number(bonus.language) || 0),
+        high_capitals: Math.max(0, Number(bonus.capitals) || 0),
     };
 }
 
@@ -219,7 +220,7 @@ router.get('/', (req, res) => {
 // server-derived metrics are ignored if posted.
 const SERVER_METRIC_KEYS = new Set([
     'mastered', 'mp_wins', 'earned_xp', 'best_streak_any',
-    'high_frenzy', 'high_pixelated', 'high_longestRoute', 'high_language',
+    'high_frenzy', 'high_pixelated', 'high_longestRoute', 'high_language', 'high_capitals',
 ]);
 router.post('/progress', (req, res) => {
     const { counters } = req.body || {};

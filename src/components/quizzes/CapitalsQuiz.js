@@ -19,6 +19,7 @@ import { springs } from '../../motion/index';
 
 const FLAGS_URL = './data/flags.json';
 const CAPITALS_URL = './data/capitals.json';
+const IMAGE_BASE_URL = './assets/flags/';
 const TOTAL_LIVES = 3;
 const OPTIONS_PER_QUESTION = 4;
 
@@ -38,7 +39,7 @@ function regionLabel(region) {
     return REGION_LABELS[region] || 'the world';
 }
 
-function CapitalsQuiz({ setView }) {
+function CapitalsQuiz({ setView, includeTerritories = false }) {
     const [flagsData, setFlagsData] = useState([]);
     const [capitalsData, setCapitalsData] = useState([]);
     const [currentQuestion, setCurrentQuestion] = useState(null);
@@ -81,10 +82,12 @@ function CapitalsQuiz({ setView }) {
     // question with "Singapore" on the prompt gives itself away.
     const pool = useMemo(() => {
         if (!flagsData.length || !capitalsData.length) return [];
-        const flagByCountry = new Map();
+        // Render the real flag SVG from the on-disk library (public/assets/flags/
+        // <code>.svg, same scheme the other quizzes use) instead of the emoji.
+        const flagFileByCountry = new Map();
         const regionByCountry = new Map();
         for (const f of flagsData) {
-            flagByCountry.set(f.country, f.flag || '');
+            flagFileByCountry.set(f.country, f.code ? `${f.code.toLowerCase()}.svg` : '');
             const tag = (f.tags || []).find((t) => t.startsWith('region:'));
             regionByCountry.set(f.country, tag ? tag.slice('region:'.length) : 'territory');
         }
@@ -93,10 +96,13 @@ function CapitalsQuiz({ setView }) {
             .map((c) => ({
                 country: c.country,
                 capital: c.capital,
-                flag: flagByCountry.get(c.country) || '🏳️',
+                flagFile: flagFileByCountry.get(c.country) || '',
                 region: regionByCountry.get(c.country) || 'territory',
-            }));
-    }, [flagsData, capitalsData]);
+            }))
+            // Honour the global "include territories" toggle (Settings) — off by
+            // default, so capitals of dependent territories are excluded.
+            .filter((e) => includeTerritories || e.region !== 'territory');
+    }, [flagsData, capitalsData, includeTerritories]);
 
     useEffect(() => {
         setHighScore(getHighScore('capitals'));
@@ -159,7 +165,7 @@ function CapitalsQuiz({ setView }) {
         setCurrentQuestion({
             country: entry.country,
             capital: entry.capital,
-            flag: entry.flag,
+            flagFile: entry.flagFile,
             region: entry.region,
         });
         setOptionCountry(countryByCapital);
@@ -358,7 +364,13 @@ function CapitalsQuiz({ setView }) {
                     exit={{ opacity: 0, y: -8 }}
                     transition={springs.gentle}
                 >
-                    <span className="capitals-flag" aria-hidden="true">{currentQuestion.flag}</span>
+                    {currentQuestion.flagFile && (
+                        <img
+                            src={`${IMAGE_BASE_URL}${currentQuestion.flagFile}`}
+                            alt=""
+                            className="capitals-flag-img"
+                        />
+                    )}
                     <h2 className="phrase-text">{currentQuestion.country}</h2>
                 </motion.div>
             </AnimatePresence>

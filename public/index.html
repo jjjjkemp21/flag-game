@@ -6,6 +6,19 @@
     <meta name="theme-color" content="#FFF7EC" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#0F0E1E" media="(prefers-color-scheme: dark)" />
 
+    <!-- Apply the saved theme before first paint to avoid a light flash. Dark
+         is the default when no preference has been saved (matches App.js). -->
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem('theme') || 'dark';
+          document.documentElement.setAttribute('data-theme', t);
+        } catch (e) {
+          document.documentElement.setAttribute('data-theme', 'dark');
+        }
+      })();
+    </script>
+
     <!-- Primary SEO -->
     <title>Flag Game – Free Quiz to Learn the Flags of the World</title>
     <meta

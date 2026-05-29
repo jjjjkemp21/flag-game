@@ -63,6 +63,9 @@ function normalizeConfig(c) {
         questionType,
         strict: !!c.strict,
         scope,
+        // Include dependent territories in the flag/globe pool (host choice,
+        // shared with every client so the seeded question stream stays in sync).
+        territories: !!c.territories,
         target: clampInt(c.target, 5, 200, 50),     // race: correct answers to win
         duration: clampInt(c.duration, 20, 300, 60), // blitz/streak: seconds
         maxPlayers,

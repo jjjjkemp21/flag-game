@@ -47,7 +47,7 @@ const BUCKETS = [
     { key: 'random',   label: 'Random',   icon: 'shuffle',       min: 0,  max: 999 },
 ];
 
-function LongestRouteQuiz({ allFlagsData, setView, strictSpelling = false }) {
+function LongestRouteQuiz({ allFlagsData, setView, strictSpelling = false, includeTerritories = false }) {
     const [allRoutes, setAllRoutes] = useState(null);
     const [routeKeys, setRouteKeys] = useState([]);
     const [quizPath, setQuizPath] = useState([]);
@@ -152,11 +152,21 @@ function LongestRouteQuiz({ allFlagsData, setView, strictSpelling = false }) {
         // no routes match (data drift), fall back to the full pool so the mode
         // is never bricked.
         const bucket = BUCKETS.find((b) => b.key === selectedBucket) || BUCKETS[BUCKETS.length - 1];
+        // Honour the global "include territories" toggle: drop any route that
+        // passes through a dependent territory unless the player opted in. The
+        // name→flag map stays built from the FULL catalog so every node still
+        // resolves — we only filter which whole routes are eligible.
+        const territoryOk = (k) => includeTerritories || allRoutes[k].every((name) => {
+            const f = flagMapByName.current.get(name);
+            return f && !(f.tags || []).includes('region:territory');
+        });
         const eligible = routeKeys.filter((k) => {
             const len = allRoutes[k].length;
-            return len >= bucket.min && len <= bucket.max;
+            return len >= bucket.min && len <= bucket.max && territoryOk(k);
         });
-        const pool = eligible.length > 0 ? eligible : routeKeys;
+        // Fallbacks also respect the toggle so territories never slip back in.
+        const territoryPool = routeKeys.filter(territoryOk);
+        const pool = eligible.length > 0 ? eligible : (territoryPool.length > 0 ? territoryPool : routeKeys);
         const randomKey = pool[Math.floor(Math.random() * pool.length)];
         const randomPathArray = allRoutes[randomKey];
         setQuizPath(randomPathArray);

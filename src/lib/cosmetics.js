@@ -284,6 +284,22 @@ export const COLORS = {
         ] },
         glow: { color: '#FF8A3F' },
     },
+
+    // ---- Season 1 extension (tiers 26-30) ------------------------------------
+    bp_world_serpent: {
+        // Tier 30 — extended-season capstone. The World Serpent coiling the
+        // globe: oceanic teal jewel-scales that cycle into emerald then cosmic
+        // violet, with a starfield overlay AND glow — the richest colour here.
+        name: 'World Serpent', xp: 999999, bpOnly: true, stroke: '#0F2A3A', overlay: 'stars',
+        stops: ['#A8F0E0', '#1FA0AC', '#0F2A3A'],
+        pattern: { kind: 'jewelScales', base: '#0F3A4A', accent: '#1FC0B0', accent2: '#FFD86B' },
+        anim: { dur: '6s', frames: [
+            ['#A8F0E0', '#1FA0AC', '#0F2A3A'],
+            ['#A8F0C8', '#19C37D', '#0F4A2A'],
+            ['#C9A8F0', '#7A4FD0', '#241850'],
+        ] },
+        glow: { color: '#3FE0D0' },
+    },
 };
 
 // ---- Hat colorways ---------------------------------------------------------
@@ -391,6 +407,9 @@ export const HATS = {
     bp_frill_crimson:  { name: 'Crimson Frill',  xp: 999999, bpOnly: true, shape: 'frill',       c: hc('#E5414C', '#8A1F1F', '#FFC247') },
     bp_frill_violet:   { name: 'Violet Frill',   xp: 999999, bpOnly: true, shape: 'frill',       c: hc('#7A4FD0', '#3F1F8A', '#FFC247') },
     bp_scale_helm:     { name: 'Scaled Hood',    xp: 999999, bpOnly: true, shape: 'scaleHelm',   c: hc('#3FAA60', '#1F5A3F', '#7FE0A8', '#FFD86B') },
+    // Season 1 extension (tier 26) — a wyvern-bone circlet of upswept scaled
+    // spikes around a central gem; icy teal keratin with gold + frost accents.
+    bp_wyvern_crown:   { name: 'Wyvern Crown',   xp: 999999, bpOnly: true, shape: 'wyvernCrown', c: hc('#2FA0C0', '#15506A', '#FFD86B', '#A8E8FF') },
 };
 
 // ---- Glasses colorways -----------------------------------------------------
@@ -473,6 +492,9 @@ export const GLASSES = {
     bp_serpent_eyes:  { name: 'Serpent Gaze',    xp: 999999, bpOnly: true, shape: 'snakeEyes', c: gc('#3F1F8A', '#A270FF', '#FFC247') },
     bp_lizard_eyes:   { name: 'Lizard Eyes',     xp: 999999, bpOnly: true, shape: 'snakeEyes', c: gc('#5A3A18', '#FF6A2E', '#FFD86B') },
     bp_dragon_gaze:   { name: 'Dragon Gaze',     xp: 999999, bpOnly: true, shape: 'dragonGaze', c: gc('#8A1F0F', '#FF6A2E', '#FFD86B') },
+    // Season 1 extension (tier 27) — a single wraparound apex visor with twin
+    // glowing slits and a crest ridge; dark-teal frame, glowing cyan lens.
+    bp_apex_visor:    { name: 'Apex Visor',      xp: 999999, bpOnly: true, shape: 'apexVisor',  c: gc('#15506A', '#3FE0D0', '#FFD86B') },
 };
 
 // ---- Mouth colorways -------------------------------------------------------
@@ -564,6 +586,9 @@ export const EFFECTS = {
     // ---- Reptile Kingdom effects (Atlas Pass exclusives) -------------------
     bp_scales: { name: 'Scale Shower',   xp: 999999, bpOnly: true, kind: 'scaleFall' },
     bp_breath: { name: "Dragon's Breath", xp: 999999, bpOnly: true, kind: 'dragonBreath', sizable: true },
+    // Season 1 extension (tier 29) — meteors streaking down across the globe
+    // with fiery trails + impact sparks. Fills the canvas, so not sizable.
+    bp_meteor: { name: 'Meteor Storm',   xp: 999999, bpOnly: true, kind: 'meteorShower' },
 };
 
 // Which effects support the player-controlled position/size transform.
@@ -603,6 +628,9 @@ export const EMOTES = {
     bp_dragon_roar:  { name: "Dragon's Roar",   xp: 999999, bpOnly: true, kind: 'dragonRoar' },
     bp_scale_flex:   { name: 'Scale Flex',      xp: 999999, bpOnly: true, kind: 'scaleFlex' },
     bp_serpent_coil: { name: 'Serpent Coil',    xp: 999999, bpOnly: true, kind: 'serpentCoil' },
+    // Season 1 extension (tier 28) — Atlas unfurls a pair of dragon wings and
+    // beats them, kicking up a wind gust + "SOAR!" banner.
+    bp_wing_beat:    { name: 'Wing Beat',       xp: 999999, bpOnly: true, kind: 'wingBeat' },
 };
 
 // Items that ship as free starters — owned without showing up in

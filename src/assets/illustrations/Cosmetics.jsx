@@ -622,6 +622,43 @@ const HAT_SHAPES = {
             </g>
         );
     },
+
+    // wyvernCrown (Atlas Pass — S1 extension): a fanned circlet of upswept,
+    // outward-leaning bony spikes (wyvern-style), each layered dark→main with a
+    // sheen rib, sitting on a crescent band with a central diamond gem + side
+    // jewels. Reads as a regal reptilian crown.
+    wyvernCrown: (c) => {
+        const trim = c.trim || c.accent;
+        // One bony spike: dark backing + main body. Curves from a base on the
+        // band (y≈21) up to (tipX, tipY); negative tipY points it skyward.
+        const spike = (bx, tipX, tipY) => (
+            <g key={`${bx}`}>
+                <path d={`M${bx - 3.6} 21 Q${bx - 1} 10 ${tipX} ${tipY} Q${bx + 1} 10 ${bx + 3.6} 21 Z`} fill={c.dark} />
+                <path d={`M${bx - 2.5} 21 Q${bx - 0.6} 11 ${tipX} ${tipY + 1.6} Q${bx + 0.6} 11 ${bx + 2.5} 21 Z`} fill={c.main} stroke={c.dark} strokeWidth="0.55" />
+                <path d={`M${bx - 0.6} 20 Q${bx - 0.2} 12 ${tipX} ${tipY + 2.4}`} stroke={trim} strokeWidth="0.6" fill="none" opacity="0.6" />
+            </g>
+        );
+        return (
+            <g strokeLinejoin="round">
+                {/* Spikes (drawn first so the band overlaps their bases) */}
+                {spike(30, 24, 4)}
+                {spike(39, 38, -5)}
+                {spike(48, 48, -13)}
+                {spike(57, 58, -5)}
+                {spike(66, 72, 4)}
+                {/* Crescent circlet band: dark backing + main + top sheen */}
+                <path d="M17 24 Q48 17 79 24 Q48 20 17 24 Z" fill={c.dark} />
+                <path d="M19 23.4 Q48 17.6 77 23.4 Q48 20.4 19 23.4 Z" fill={c.main} stroke={c.dark} strokeWidth="0.7" />
+                <path d="M23 21.8 Q48 18.2 73 21.8" stroke={trim} strokeWidth="0.8" fill="none" opacity="0.55" />
+                {/* Central diamond gem */}
+                <path d="M48 14.6 l 3 4 l -3 4 l -3 -4 Z" fill={c.accent} stroke={c.dark} strokeWidth="0.6" />
+                <circle cx="47.1" cy="17" r="0.7" fill="#FFFFFF" opacity="0.9" />
+                {/* Side jewels seated on the band */}
+                <circle cx="31" cy="21.4" r="1" fill={c.accent} stroke={c.dark} strokeWidth="0.4" />
+                <circle cx="65" cy="21.4" r="1" fill={c.accent} stroke={c.dark} strokeWidth="0.4" />
+            </g>
+        );
+    },
 };
 
 const GLASS_SHAPES = {
@@ -974,6 +1011,37 @@ const GLASS_SHAPES = {
             <path d="M46 41 L 48 38 L 50 41 L 48 43 Z" fill={c.frame} stroke={c.accent} strokeWidth="0.5" />
             {/* Top highlight along the brow */}
             <path d="M29 40 L 48 43 L 67 40" stroke="#FFFFFF" strokeWidth="0.6" fill="none" opacity="0.4" />
+        </g>
+    ),
+
+    // apexVisor (Atlas Pass — S1 extension): a single wraparound visor bar with
+    // twin glowing eye-slits, a central dragon-fin crest, temple tabs, and a top
+    // sheen. The slits + core pulse so it reads as powered-on tech-bone armour.
+    apexVisor: (c) => (
+        <g strokeLinejoin="round">
+            {/* Temple arms */}
+            <path d="M22 45 L 16 43 L 16 47 L 22 48 Z" fill={c.frame} />
+            <path d="M74 45 L 80 43 L 80 47 L 74 48 Z" fill={c.frame} />
+            {/* Frame bar — gently curved wraparound (outer) */}
+            <path d="M22 44 Q48 39 74 44 L 74 52 Q48 55 22 52 Z" fill={c.frame} />
+            {/* Lens inset (the glass) */}
+            <path d="M25 45 Q48 41.2 71 45 L 71 50.6 Q48 53 25 50.6 Z" fill={c.lens} />
+            {/* Brow shadow across the top of the lens for depth */}
+            <path d="M25 45 Q48 41.2 71 45 L 71 46.6 Q48 43 25 46.6 Z" fill={c.frame} opacity="0.4" />
+            {/* Glowing eye-slits over each eye — pulse in unison */}
+            <ellipse cx="38" cy="47.6" rx="5" ry="1.7" fill={c.accent} opacity="0.85">
+                <animate attributeName="opacity" values="0.5;1;0.5" dur="2s" repeatCount="indefinite" />
+            </ellipse>
+            <ellipse cx="58" cy="47.6" rx="5" ry="1.7" fill={c.accent} opacity="0.85">
+                <animate attributeName="opacity" values="0.5;1;0.5" dur="2s" repeatCount="indefinite" />
+            </ellipse>
+            {/* Hot white cores */}
+            <circle cx="38" cy="47.6" r="0.9" fill="#FFFFFF" opacity="0.9" />
+            <circle cx="58" cy="47.6" r="0.9" fill="#FFFFFF" opacity="0.9" />
+            {/* Central dragon-fin crest */}
+            <path d="M44 42 L 48 35 L 52 42 Z" fill={c.frame} stroke={c.accent} strokeWidth="0.5" />
+            {/* Top sheen */}
+            <path d="M26 44 Q48 40 70 44" stroke="#FFFFFF" strokeWidth="0.6" fill="none" opacity="0.45" />
         </g>
     ),
 };
@@ -1818,6 +1886,41 @@ const EFFECT_SHAPES = {
             ))}
         </g>
     ),
+
+    // meteorShower (Atlas Pass — S1 extension): meteors streak diagonally down
+    // across the globe, each a white-hot head trailing a tapered fiery tail,
+    // with a few impact sparkles popping near the lower-left rim. The parent g
+    // owns the travel translate; the inner g positions + draws each meteor.
+    meteorShower: () => {
+        const meteor = (sx, sy, len, dur, begin, hue) => (
+            <g opacity="0">
+                <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.15;0.7;1" dur={`${dur}s`} begin={`${begin}s`} repeatCount="indefinite" />
+                <animateTransform attributeName="transform" type="translate" values="24 -24; -30 54" keyTimes="0;1" dur={`${dur}s`} begin={`${begin}s`} repeatCount="indefinite" />
+                <g transform={`translate(${sx} ${sy})`}>
+                    {/* Tail trails up-right (behind the down-left motion) */}
+                    <path d={`M0 0 L ${len * 0.72} ${-len} L ${len * 0.2} ${-len * 0.5} Z`} fill={hue} opacity="0.5" />
+                    <path d={`M0 0 L ${len * 0.42} ${-len * 0.92} L ${len * 0.1} ${-len * 0.5} Z`} fill="#FFE08A" opacity="0.85" />
+                    {/* Glowing head */}
+                    <circle cx="0" cy="0" r="3.4" fill={hue} opacity="0.5" />
+                    <circle cx="0" cy="0" r="2.1" fill="#FFFDF7" />
+                </g>
+            </g>
+        );
+        return (
+            <g>
+                {meteor(70, 8, 14, 1.6, 0, '#FF8A3F')}
+                {meteor(86, 26, 11, 1.9, 0.5, '#FFC247')}
+                {meteor(60, 2, 16, 2.2, 1.0, '#FF6A2E')}
+                {meteor(92, 44, 10, 1.7, 1.5, '#FFD86B')}
+                {/* Impact sparkles flaring near the lower-left rim */}
+                {[[20, 72, 0.3], [30, 80, 0.9], [14, 60, 1.4]].map(([x, y, b], i) => (
+                    <circle key={i} cx={x} cy={y} r="1.5" fill="#FFE08A" opacity="0">
+                        <animate attributeName="opacity" values="0;1;0" dur="0.6s" begin={`${b}s`} repeatCount="indefinite" />
+                    </circle>
+                ))}
+            </g>
+        );
+    },
 };
 
 export function renderEffect(id) {
@@ -2497,6 +2600,58 @@ const EMOTE_SHAPES = {
             </g>
         </g>
     ),
+    // Wing Beat (Atlas Pass — S1 extension): Atlas unfurls a pair of dragon
+    // wings and beats them, kicking up a wind gust + lift glow + "SOAR!" banner.
+    // Each wing nests translate(shoulder) → scale(unfurl) → rotate(flap); the
+    // mirrored scale on the right wing makes the rotate flap symmetrically.
+    wingBeat: () => {
+        const wing = (px, flip) => (
+            <g transform={`translate(${px} 40)`}>
+                <g>
+                    <animateTransform attributeName="transform" type="scale" values={`0 0; ${flip} 1; ${flip} 1`} keyTimes="0; 0.3; 1" dur={`${EMOTE_DUR}s`} repeatCount="1" fill="freeze" />
+                    <g>
+                        <animateTransform attributeName="transform" type="rotate" values="-22 0 0; 14 0 0; -16 0 0; 8 0 0; -6 0 0" keyTimes="0; 0.32; 0.55; 0.8; 1" dur={`${EMOTE_DUR}s`} repeatCount="1" fill="freeze" />
+                        {/* Membrane */}
+                        <path d="M0 0 Q -24 -18 -38 -6 Q -28 -3 -30 7 Q -20 4 -25 16 Q -13 10 -16 20 Q -7 13 -6 17 Q -2 7 0 0 Z" fill="#2FA0C0" stroke="#15506A" strokeWidth="1.6" strokeLinejoin="round" />
+                        {/* Finger ribs */}
+                        <g stroke="#15506A" strokeWidth="1" fill="none" opacity="0.85">
+                            <path d="M0 0 Q -20 -10 -37 -5" />
+                            <path d="M0 0 Q -17 -1 -25 15" />
+                            <path d="M0 0 Q -9 4 -15 19" />
+                        </g>
+                        {/* Leading-edge frost highlight */}
+                        <path d="M0 0 Q -24 -18 -38 -6" stroke="#A8E8FF" strokeWidth="0.9" fill="none" opacity="0.6" />
+                    </g>
+                </g>
+            </g>
+        );
+        return (
+            <g>
+                {/* Soft lift glow behind the mascot */}
+                <ellipse cx="48" cy="48" rx="30" ry="30" fill="#3FE0D0" opacity="0">
+                    <animate attributeName="opacity" values="0; 0.3; 0" keyTimes="0; 0.35; 1" dur={`${EMOTE_DUR}s`} repeatCount="1" fill="freeze" />
+                </ellipse>
+                {wing(40, 1)}
+                {wing(56, -1)}
+                {/* Wind gust streaks sweeping outward + up as the wings beat */}
+                {[[30, 30, -10], [26, 44, -14], [66, 30, 10], [70, 44, 14]].map(([x, y, dx], i) => (
+                    <path key={i} d={`M${x} ${y} q ${dx} -2 ${dx * 1.8} -1`} stroke="#A8E8FF" strokeWidth="2" fill="none" strokeLinecap="round" opacity="0">
+                        <animate attributeName="opacity" values="0; 0.8; 0" keyTimes="0; 0.5; 1" begin={`${0.3 + (i % 2) * 0.15}s`} dur="0.7s" repeatCount="1" fill="freeze" />
+                        <animateTransform attributeName="transform" type="translate" values={`0 0; ${dx > 0 ? 10 : -10} -8`} keyTimes="0; 1" begin={`${0.3 + (i % 2) * 0.15}s`} dur="0.7s" repeatCount="1" fill="freeze" />
+                    </path>
+                ))}
+                {/* SOAR! banner — outer translate, inner scale (no additive stacking) */}
+                <g opacity="0">
+                    <animate attributeName="opacity" values="0; 1; 1; 0" keyTimes="0; 0.25; 0.8; 1" dur={`${EMOTE_DUR}s`} repeatCount="1" fill="freeze" />
+                    <animateTransform attributeName="transform" type="translate" values="0 10; 0 0; 0 -8" keyTimes="0; 0.5; 1" dur={`${EMOTE_DUR}s`} repeatCount="1" fill="freeze" />
+                    <g>
+                        <animateTransform attributeName="transform" type="scale" values="0.4; 1.35; 1.15" keyTimes="0; 0.5; 1" dur={`${EMOTE_DUR}s`} repeatCount="1" fill="freeze" />
+                        <text x="48" y="20" textAnchor="middle" fontSize="20" fontWeight="900" fill="#3FE0D0" stroke="#15506A" strokeWidth="2.2" paintOrder="stroke">SOAR!</text>
+                    </g>
+                </g>
+            </g>
+        );
+    },
 };
 
 export function renderEmote(id) {

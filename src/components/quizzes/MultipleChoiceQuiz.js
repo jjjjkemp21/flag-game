@@ -35,6 +35,10 @@ const IMAGE_BASE_URL = './assets/flags/';
 function MultipleChoiceQuiz({
     allFlagsData,
     quizFlags,
+    // Pool the wrong-answer options are drawn from. Defaults to the full
+    // catalog, but App passes the territory-filtered set so distractors honour
+    // the "include territories" toggle. Stat writes still use allFlagsData.
+    distractorPool,
     setFlagsData,
     selectNextFlag,
     setView,
@@ -131,12 +135,12 @@ function MultipleChoiceQuiz({
 
         if (questionFlag) {
             updateQuestionHistory(questionFlag.code);
-            const distractors = get_distractor_options(questionFlag, allFlagsData, 3, quizCategory, history);
+            const distractors = get_distractor_options(questionFlag, distractorPool || allFlagsData, 3, quizCategory, history);
             const shuffledOptions = [...distractors, questionFlag.name].sort(() => Math.random() - 0.5);
             setOptions(shuffledOptions);
         }
         setIsLoading(false);
-    }, [quizFlags, allFlagsData, selectNextFlag, quizCategory, getQuestionHistory, updateQuestionHistory]);
+    }, [quizFlags, allFlagsData, distractorPool, selectNextFlag, quizCategory, getQuestionHistory, updateQuestionHistory]);
 
     useEffect(() => {
         nextQuestion();
