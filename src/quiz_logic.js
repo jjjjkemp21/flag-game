@@ -24,6 +24,19 @@ const SOFT_MISS_AFTER_MS = 14 * 24 * 60 * 60 * 1000;
 
 const LEECH_THRESHOLD = 6;
 
+// A leeched flag is parked for this long, then resurfaces so the player can
+// actually clear it. Previously it was pushed 10 years out, which — combined
+// with the leech filter in pickFlag — meant a leech could NEVER be answered
+// again and was excluded permanently. Now leeches age back into rotation.
+const LEECH_COOLOFF_MS = 3 * 24 * 60 * 60 * 1000;
+
+// A flag is eligible for selection if it isn't leeched OR it is a leech whose
+// cool-off has elapsed (so tricky flags resurface instead of vanishing).
+function isSelectable(flag, f) {
+    if (!flag[f.isLeech]) return true;
+    return flag[f.nextReview] != null && flag[f.nextReview] <= Date.now();
+}
+
 // Maps an axis ('flag' or 'geo') onto the per-flag field names. Lets one
 // selection/scheduling engine drive both flag-recognition (regular quizzes)
 // and country-placement (Globe mode) without duplicating logic.
@@ -77,7 +90,7 @@ function runWeightedSelection(flagsToSelectFrom, axis = 'flag') {
 function pickFlag(flags, recently_shown_codes, axis) {
     const f = axisFields(axis);
     const now = Date.now();
-    const availableFlags = flags.filter((x) => !x[f.isLeech]);
+    const availableFlags = flags.filter((x) => isSelectable(x, f));
     if (availableFlags.length === 0) return null;
 
     const lastFlagCode = recently_shown_codes.length > 0
@@ -132,7 +145,7 @@ function select_next_flag(flags, recently_shown_codes = [], axis = 'flag') {
         : null;
     if (pick && lastFlagCode && pick.code === lastFlagCode) {
         const f = axisFields(axis);
-        const alternatives = flags.filter((x) => !x[f.isLeech] && x.code !== lastFlagCode);
+        const alternatives = flags.filter((x) => isSelectable(x, f) && x.code !== lastFlagCode);
         if (alternatives.length > 0) return runWeightedSelection(alternatives, axis);
         return null; // genuinely a pool of 1 — caller decides what to show.
     }
@@ -177,7 +190,13 @@ function get_distractor_options(correct_flag, all_flags, num_options = 3, quiz_c
     if (distractors.length < num_options) {
         const existingDistractors = new Set(distractors);
         existingDistractors.add(correct_flag.name);
-        const remainingFlags = all_flags.filter((f) => !existingDistractors.has(f.name));
+        // Keep the region filter on the top-up pool too, so a region quiz can
+        // never surface an out-of-region distractor if the in-region pool runs
+        // short. Layout decks intentionally allow cross-region options.
+        const fallbackPool = (quiz_category && quiz_category.type === 'region')
+            ? all_flags.filter((f) => f.tags.includes(`region:${quiz_category.value}`))
+            : all_flags;
+        const remainingFlags = fallbackPool.filter((f) => !existingDistractors.has(f.name));
         while (distractors.length < num_options && remainingFlags.length > 0) {
             const randomIndex = Math.floor(Math.random() * remainingFlags.length);
             const randomFlag = remainingFlags.splice(randomIndex, 1)[0];
@@ -235,8 +254,13 @@ function update_flag_stats(flags, correct_flag_object, user_was_correct, reason 
         color = 'green';
         flag.correct += 1;
         flag.streak += 1;
+        const wasLeech = flag.isLeech;
         flag.isLeech = false;
-        flag.lapses = flag.lapses ? Math.max(0, flag.lapses - 1) : 0;
+        // A recovering leech gets breathing room so a single later miss doesn't
+        // instantly re-park it; ordinary correct answers just decay lapses by one.
+        flag.lapses = wasLeech
+            ? Math.max(0, LEECH_THRESHOLD - 2)
+            : (flag.lapses ? Math.max(0, flag.lapses - 1) : 0);
         flag.nextReview = calculateNextReview(flag.streak);
     } else {
         const text = reason === 'skipped'
@@ -256,8 +280,8 @@ function update_flag_stats(flags, correct_flag_object, user_was_correct, reason 
 
         if (flag.lapses > LEECH_THRESHOLD) {
             flag.isLeech = true;
-            flag.nextReview = now + 10 * 365 * 24 * 60 * 60 * 1000;
-            message.text = "This flag seems tricky, so we'll set it aside for now. The answer was:";
+            flag.nextReview = now + LEECH_COOLOFF_MS;
+            message.text = "This flag seems tricky, so we'll set it aside for a bit. The answer was:";
         } else {
             flag.nextReview = now;
         }
@@ -304,8 +328,11 @@ function update_geo_stats(flags, correct_flag_object, user_was_correct, reason =
         color = 'green';
         flag.geoCorrect = (flag.geoCorrect || 0) + 1;
         flag.geoStreak = (flag.geoStreak || 0) + 1;
-        flag.geoLapses = flag.geoLapses ? Math.max(0, flag.geoLapses - 1) : 0;
+        const wasGeoLeech = flag.geoIsLeech;
         flag.geoIsLeech = false;
+        flag.geoLapses = wasGeoLeech
+            ? Math.max(0, LEECH_THRESHOLD - 2)
+            : (flag.geoLapses ? Math.max(0, flag.geoLapses - 1) : 0);
         flag.geoNextReview = calculateNextReview(flag.geoStreak);
     } else {
         const text = reason === 'skipped'
@@ -323,8 +350,8 @@ function update_geo_stats(flags, correct_flag_object, user_was_correct, reason =
 
         if (flag.geoLapses > LEECH_THRESHOLD) {
             flag.geoIsLeech = true;
-            flag.geoNextReview = now + 10 * 365 * 24 * 60 * 60 * 1000;
-            message.text = "This one's tricky on the globe — we'll set it aside for now. The answer was:";
+            flag.geoNextReview = now + LEECH_COOLOFF_MS;
+            message.text = "This one's tricky on the globe — we'll set it aside for a bit. The answer was:";
         } else {
             flag.geoNextReview = now;
         }

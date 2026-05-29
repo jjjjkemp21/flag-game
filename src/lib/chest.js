@@ -71,7 +71,7 @@ export function rollChest({
     // Boosts: high accuracy shifts mass toward legendary; long streaks shift
     // mass toward epic and above. Both are bounded so the floor of 1% legend
     // doesn't accidentally hit 50% on a perfect 100-question run.
-    const accBoost = Math.max(0, Math.min(15, Math.round((accuracy - 0.6) * 25)));   // +0..+15 to legendary as acc 0.60→1.00
+    const accBoost = Math.max(0, Math.min(10, Math.round((accuracy - 0.6) * 25)));   // +0..+10 to legendary as acc 0.60→1.00 (acc maxes at 1.0)
     const streakBoost = Math.max(0, Math.min(5, Math.round((bestStreak - 8) * 0.5))); // +0..+5 to epic at bestStreak 8→18+
 
     const weights = {

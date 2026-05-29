@@ -53,6 +53,17 @@ function applySummary(s) {
     });
 }
 
+// Merge a server response that returns an authoritative owned-cosmetics set +
+// bucks balance (battlepass tier claims, XP-road grants) into the currency
+// store, so isOwnedKey() immediately reflects the just-granted item and the
+// shop/equip paths see it as owned without a full reload.
+export function applyOwnedAndBucks({ bucks, ownedCosmetics }) {
+    const patch = {};
+    if (bucks != null) patch.bucks = Math.max(0, Math.round(Number(bucks) || 0));
+    if (Array.isArray(ownedCosmetics)) patch.owned = new Set(ownedCosmetics);
+    if (Object.keys(patch).length) setState(patch);
+}
+
 export async function loadCurrency() {
     try {
         const summary = await api.get('/currency');

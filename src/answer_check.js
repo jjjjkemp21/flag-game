@@ -24,6 +24,31 @@ function levenshtein(a, b) {
     return matrix[bn][an];
 }
 
+// Registry of every known country name/alias (normalized). Populated once on
+// catalog load via setKnownAnswers. Used by the fuzzy matcher to HARD-REJECT a
+// guess that exactly spells a DIFFERENT country — without this, the 80%
+// similarity gate accepts real adjacent names (Gambia/Zambia, Iceland/Ireland,
+// North/South Korea, Niger/Nigeria, Slovakia/Slovenia), marking a wrong
+// country correct. Empty until set, in which case the reject is simply skipped.
+let KNOWN_ANSWERS = new Set();
+
+function setKnownAnswers(names) {
+    KNOWN_ANSWERS = new Set(
+        (names || [])
+            .filter(Boolean)
+            .map((n) => String(n).trim().toLowerCase())
+            .filter((n) => n.length > 0)
+    );
+}
+
+// Max edit distance tolerated for a fuzzy accept, scaled by answer length so a
+// short name can't be matched across a 1-char gap to a different short name.
+function editBudget(len) {
+    if (len <= 4) return 0;
+    if (len <= 8) return 1;
+    return 2;
+}
+
 function checkAnswer(userGuess, flag, strictSpelling = false) {
     const normalizedGuess = (userGuess || '').trim().toLowerCase();
     if (normalizedGuess === '') return false;
@@ -33,21 +58,26 @@ function checkAnswer(userGuess, flag, strictSpelling = false) {
         flag.name,
         ...(flag.aliases || [])
     ].filter(Boolean);
+    const ownAnswers = new Set(possibleAnswers.map((a) => a.toLowerCase()));
 
-    if (strictSpelling) {
-        const normalizedAnswers = possibleAnswers.map(ans => ans.toLowerCase());
-        return normalizedAnswers.includes(normalizedGuess);
-    }
+    // Exact match against this flag's own names/aliases is always correct,
+    // regardless of strict mode.
+    if (ownAnswers.has(normalizedGuess)) return true;
+    if (strictSpelling) return false;
 
-    for (const answer of possibleAnswers) {
-        const normalizedAnswer = answer.toLowerCase();
+    // The guess exactly spells a DIFFERENT country — never a fuzzy match.
+    if (KNOWN_ANSWERS.has(normalizedGuess)) return false;
+
+    for (const normalizedAnswer of ownAnswers) {
         const distance = levenshtein(normalizedGuess, normalizedAnswer);
         const maxLength = Math.max(normalizedGuess.length, normalizedAnswer.length);
         if (maxLength === 0) continue;
         const similarity = 1 - (distance / maxLength);
-        if (similarity >= 0.8) return true;
+        if (distance <= editBudget(normalizedAnswer.length) && similarity >= 0.8) {
+            return true;
+        }
     }
     return false;
 }
 
-export { levenshtein, checkAnswer };
+export { levenshtein, checkAnswer, setKnownAnswers };

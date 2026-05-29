@@ -103,15 +103,3 @@ export function recordHighScore(name, value) {
     return bonus[name];
 }
 
-// Trigger a stats sync without any new XP/bucks delta — used after directly
-// crediting Bucks server-side (chest opens, quest claims) so the lifetime
-// counter the client holds isn't drifted from server truth on the next push.
-export function refreshFromServer() {
-    if (!authed) return Promise.resolve(null);
-    return api.get('/stats').then((r) => {
-        if (Number.isFinite(Number(r && r.earnedXp))) {
-            earnedXp = Math.max(earnedXp, Math.round(Number(r.earnedXp)));
-        }
-        return r;
-    }).catch(() => null);
-}

@@ -161,7 +161,7 @@ function globePool(flagsData, scope, globeIso2) {
 
 // Check a globe pick: case-insensitive ISO-A2 compare.
 export function checkGlobePick(iso2, question) {
-    return (iso2 || '').toUpperCase() === (question && question.answerIso2 || '').toUpperCase();
+    return (iso2 || '').toUpperCase() === (question?.answerIso2 || '').toUpperCase();
 }
 
 function shuffleArr(arr, rng) {

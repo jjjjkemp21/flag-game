@@ -24,7 +24,19 @@ function enableMock() {
     useMock = true;
     try { localStorage.setItem(MOCK_FLAG_KEY, '1'); } catch (_) { /* ignore */ }
     // eslint-disable-next-line no-console
-    console.info('[api] Local backend unreachable — using dev mock. Call window.__resetDevMock() to wipe its state.');
+    console.info('[api] Local backend unreachable — using dev mock. Call window.__useRealApi() then reload to retry the real backend, or window.__resetDevMock() to wipe its state.');
+}
+
+// Dev escape hatch: clear the sticky mock latch so a reload retries the real
+// backend. Without this the mock pins the whole session even after the server
+// comes up. Localhost-only (the flag is never set in production).
+if (typeof window !== 'undefined') {
+    window.__useRealApi = () => {
+        useMock = false;
+        try { localStorage.removeItem(MOCK_FLAG_KEY); } catch (_) { /* ignore */ }
+        // eslint-disable-next-line no-console
+        console.info('[api] Dev mock disabled — reload to use the real backend.');
+    };
 }
 
 // Treat 502/503/504 as "proxy can't reach upstream"; everything else (incl.

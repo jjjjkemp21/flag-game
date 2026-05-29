@@ -214,10 +214,6 @@ export function setShowcase(ids) {
     persist();
 }
 
-export function getCosmetics() {
-    return state.cosmetics;
-}
-
 export function useProfile() {
     return useSyncExternalStore(
         (cb) => { listeners.add(cb); return () => listeners.delete(cb); },

@@ -407,7 +407,6 @@ export const HATS = {
     bp_frill_crimson:  { name: 'Crimson Frill',  xp: 999999, bpOnly: true, shape: 'frill',       c: hc('#E5414C', '#8A1F1F', '#FFC247') },
     bp_frill_violet:   { name: 'Violet Frill',   xp: 999999, bpOnly: true, shape: 'frill',       c: hc('#7A4FD0', '#3F1F8A', '#FFC247') },
     bp_scale_helm:     { name: 'Scaled Hood',    xp: 999999, bpOnly: true, shape: 'scaleHelm',   c: hc('#3FAA60', '#1F5A3F', '#7FE0A8', '#FFD86B') },
-    bp_scale_helm_gold:{ name: 'Gilded Hood',    xp: 999999, bpOnly: true, shape: 'scaleHelm',   c: hc('#FFD86B', '#A07A1A', '#FFEFC2', '#FFFFFF') },
 
     // ---- XP Road exclusives ------------------------------------------------
     // Vine crown — wraps a leafy circlet around the mascot. Granted at XP 3000.
@@ -494,7 +493,6 @@ export const GLASSES = {
     bp_serpent_eyes:  { name: 'Serpent Gaze',    xp: 999999, bpOnly: true, shape: 'snakeEyes', c: gc('#3F1F8A', '#A270FF', '#FFC247') },
     bp_lizard_eyes:   { name: 'Lizard Eyes',     xp: 999999, bpOnly: true, shape: 'snakeEyes', c: gc('#5A3A18', '#FF6A2E', '#FFD86B') },
     bp_dragon_gaze:   { name: 'Dragon Gaze',     xp: 999999, bpOnly: true, shape: 'dragonGaze', c: gc('#8A1F0F', '#FF6A2E', '#FFD86B') },
-    bp_drake_visor:   { name: 'Drake Visor',     xp: 999999, bpOnly: true, shape: 'dragonGaze', c: gc('#1F5A3F', '#7FE05B', '#FFD86B') },
 
     // ---- XP Road exclusives ------------------------------------------------
     // Leaflet lenses — leaf-shaped frames. Granted at XP 10,000.
@@ -590,7 +588,6 @@ export const EFFECTS = {
     // ---- Reptile Kingdom effects (Atlas Pass exclusives) -------------------
     bp_scales: { name: 'Scale Shower',   xp: 999999, bpOnly: true, kind: 'scaleFall' },
     bp_breath: { name: "Dragon's Breath", xp: 999999, bpOnly: true, kind: 'dragonBreath', sizable: true },
-    bp_mist:   { name: 'Swamp Mist',     xp: 999999, bpOnly: true, kind: 'swampMist' },
 
     // ---- XP Road exclusives ------------------------------------------------
     // Drifting leaves — gentle leaf particles falling around the mascot.

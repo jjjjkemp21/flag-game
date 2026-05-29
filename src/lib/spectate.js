@@ -65,14 +65,22 @@ export function useSpectatePoll(targetUserId, active) {
 export function useSpectateAsTarget(myUserId, hasWatchers, startSince = 0) {
     const [state, setState] = useState(null);
     const sinceRef = useRef(startSince);
+    // Mirror startSince into a ref so the effect can read the LATEST value on the
+    // OFF→ON transition (useRef ignores its arg after first render, when
+    // startSince/lastReactionId is still 0). Without this the first poll uses
+    // since=0 and replays the whole reaction buffer instead of resuming.
+    const startSinceRef = useRef(startSince);
+    startSinceRef.current = startSince;
     const timerRef = useRef(null);
 
     useEffect(() => {
         if (!myUserId || !hasWatchers) {
             setState(null);
-            sinceRef.current = startSince;
+            sinceRef.current = startSinceRef.current;
             return undefined;
         }
+        // Resume from the latest reaction id captured when watching turned on.
+        sinceRef.current = startSinceRef.current;
         let cancelled = false;
         const tick = async () => {
             try {

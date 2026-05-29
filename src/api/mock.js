@@ -25,6 +25,7 @@ const defaultState = () => ({
     },
     earnedXp: 12000,
     bucksMintedXp: 0,
+    bucksEarnedLifetime: 0,
     flagStats: null,
     bonusScores: null,
     pet: {
@@ -40,6 +41,7 @@ const defaultState = () => ({
         achievements: { showcase: [], count: 0 },
         streaks: {},
         selectedTitle: null,
+        allowSpectate: true,
     },
     bp: {
         owned: false,
@@ -167,6 +169,16 @@ const routes = [
             store.earnedXp = Math.max(store.earnedXp, body.earnedXp);
             store.user.xp = Math.max(store.user.xp, body.earnedXp);
         }
+        // Mirror the server's delta-credit so gameplay-earned Bucks survive a
+        // reload in dev (the topbar/shop can be exercised against real earnings).
+        if (body && Number.isFinite(Number(body.bucksEarnedLifetime))) {
+            const incoming = Math.max(0, Math.round(Number(body.bucksEarnedLifetime)));
+            const stored = Math.max(0, Math.round(store.bucksEarnedLifetime || 0));
+            if (incoming > stored) {
+                store.user.bucks += incoming - stored;
+                store.bucksEarnedLifetime = incoming;
+            }
+        }
         save();
         return { ok: true, xp: store.user.xp, earnedXp: store.earnedXp };
     }},
@@ -197,6 +209,7 @@ const routes = [
         }
         if (body.achievements !== undefined) store.profile.achievements = body.achievements;
         if (body.streaks !== undefined) store.profile.streaks = body.streaks;
+        if (body.allowSpectate !== undefined) store.profile.allowSpectate = body.allowSpectate;
         if (body.selectedTitle !== undefined) {
             store.profile.selectedTitle = body.selectedTitle;
             store.user.selectedTitle = body.selectedTitle;
