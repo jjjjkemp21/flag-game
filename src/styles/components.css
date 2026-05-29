@@ -1662,7 +1662,8 @@
 .frenzy-unanswered-list { padding-left: var(--space-lg); list-style: square; color: var(--color-ink-soft); }
 
 /* Language quiz */
-.language-quiz-box .phrase-container {
+.language-quiz-box .phrase-container,
+.capitals-quiz-box .phrase-container {
     padding: var(--space-lg);
     background: var(--color-primary-soft);
     border-radius: var(--radius-lg);
@@ -1784,6 +1785,25 @@
     cursor: pointer;
 }
 .lang-explainer__continue:hover { background: var(--color-primary-deep); }
+
+/* Capitals quiz — reuses the language quiz's prompt/hint/explainer classes;
+   only the prompt block (big flag emoji stacked over the country name) needs
+   bespoke layout. */
+.capitals-quiz-box .phrase-container.capitals-prompt {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-xs);
+}
+.capitals-flag {
+    font-size: 3.2rem;
+    line-height: 1;
+}
+.capitals-prompt .phrase-text {
+    font-family: var(--font-display, var(--font-body));
+    font-weight: 800;
+    font-size: var(--fs-xl);
+}
 
 /* Settings panel (legacy class compat) */
 .settings-box .switch {

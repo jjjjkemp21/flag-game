@@ -5,7 +5,7 @@ import { addEarnedBucks, getBucksEarnedLifetime } from './currency';
 // account: nothing is written to localStorage. For guests it lives only for the
 // current session; for logged-in users it is loaded from / pushed to the server.
 
-const EMPTY = { frenzy: 0, pixelated: 0, longestRoute: 0, language: 0 };
+const EMPTY = { frenzy: 0, pixelated: 0, longestRoute: 0, language: 0, capitals: 0 };
 
 let bonus = { ...EMPTY };
 // Lifetime XP earned from answering flags (mode- and streak-scaled). Bonus-mode

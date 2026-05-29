@@ -96,6 +96,15 @@ const INFO = {
             'Your best score is added to your total XP.',
         ],
     },
+    capitals: {
+        title: 'Capitals — scoring',
+        lines: [
+            'A country is shown — pick its capital city from four options. You have three lives.',
+            'Distractors are pulled from the same region, so the choices stay plausible.',
+            'Stuck? The Hint reveals the capital’s first letter — but a hinted answer scores no point.',
+            'Your best score is added to your total XP.',
+        ],
+    },
 };
 
 function ScoringInfo({ mode, className = '' }) {

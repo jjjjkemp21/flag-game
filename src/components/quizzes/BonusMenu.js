@@ -16,6 +16,7 @@ const MODES = [
     { key: 'frenzy-quiz',        title: 'Frenzy Mode',     desc: 'Race the clock on 4 flags',  icon: 'bolt',          tone: 'accent',   scoreKey: 'frenzy',        mood: 'cheer' },
     { key: 'longest-route-quiz', title: 'Longest Chain',   desc: 'Travel from country to country', icon: 'route',     tone: 'primary',  scoreKey: 'longestRoute',  mood: 'wave'  },
     { key: 'language-quiz',      title: 'Language Quiz',   desc: 'Match phrase to language',   icon: 'translate',     tone: 'purple',   scoreKey: 'language',      mood: 'idle'  },
+    { key: 'capitals-quiz',      title: 'Capitals Quiz',   desc: 'Name the capital city',      icon: 'location_city', tone: 'info',     scoreKey: 'capitals',      mood: 'think' },
     { key: 'flash',              title: 'Flash Mode',      desc: 'See it for a second, then guess', icon: 'visibility_off', tone: 'danger', streakKey: 'flash',  mood: 'wave'  },
     { key: 'reverse-mc',         title: 'Country → Flag',  desc: 'Pick the flag for the country', icon: 'swap_horiz',  tone: 'versus',   streakKey: 'reverse-mc',   mood: 'idle'  },
 ];

@@ -34,6 +34,7 @@ const MODE_MULT = {
     'pixelated': 1.15,
     'longestRoute': 1.2,
     'language': 1.15,
+    'capitals': 1.15,
 };
 
 // Minimum correct answers required for the chest to roll. Below this we skip

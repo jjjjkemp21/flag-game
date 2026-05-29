@@ -55,6 +55,7 @@ const PixelatedQuiz    = lazy(() => import('./components/quizzes/PixelatedQuiz')
 const FrenzyQuiz       = lazy(() => import('./components/quizzes/FrenzyQuiz'));
 const LongestRouteQuiz = lazy(() => import('./components/quizzes/LongestRouteQuiz'));
 const LanguageQuiz     = lazy(() => import('./components/quizzes/LanguageQuiz'));
+const CapitalsQuiz     = lazy(() => import('./components/quizzes/CapitalsQuiz'));
 // Globe mode pulls in Three.js + earcut; keep it out of the main bundle.
 const GlobeQuiz        = lazy(() => import('./components/quizzes/GlobeQuiz'));
 
@@ -528,6 +529,12 @@ function App() {
                 return (
                     <Suspense fallback={<LazyFallback label="Loading Language Quiz…" />}>
                         <LanguageQuiz setView={setView} />
+                    </Suspense>
+                );
+            case 'capitals-quiz':
+                return (
+                    <Suspense fallback={<LazyFallback label="Loading Capitals Quiz…" />}>
+                        <CapitalsQuiz setView={setView} />
                     </Suspense>
                 );
             case 'bonus-menu':

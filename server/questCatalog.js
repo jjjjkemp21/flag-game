@@ -19,6 +19,7 @@ const HWM_METRICS = new Set([
     'frenzy_score',
     'pixelated_score',
     'language_score',
+    'capitals_score',
     'longest_score',
 ]);
 
@@ -55,6 +56,9 @@ const DAILY_POOL = [
     { id: 'q_language_play',   tier: 'bronze', icon: 'translate',
         title: 'Play Language',
         metric: 'language_play', goal: 1, bucks: 35 },
+    { id: 'q_capitals_play',   tier: 'bronze', icon: 'location_city',
+        title: 'Play Capitals',
+        metric: 'capitals_play', goal: 1, bucks: 35 },
     { id: 'q_longest_play',    tier: 'bronze', icon: 'route',
         title: 'Try a Longest Chain run',
         metric: 'longest_play', goal: 1, bucks: 35 },
@@ -93,6 +97,9 @@ const DAILY_POOL = [
     { id: 'q_language_score_10', tier: 'silver', icon: 'translate',
         title: 'Score 10 in Language',
         metric: 'language_score', goal: 10, bucks: 75 },
+    { id: 'q_capitals_score_10', tier: 'silver', icon: 'location_city',
+        title: 'Score 10 in Capitals',
+        metric: 'capitals_score', goal: 10, bucks: 75 },
     { id: 'q_longest_score_5', tier: 'silver', icon: 'route',
         title: 'Reach 5 flags in Longest Chain',
         metric: 'longest_score', goal: 5, bucks: 80 },
