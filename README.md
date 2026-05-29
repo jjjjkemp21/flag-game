@@ -1,8 +1,7 @@
 # Flag Game
 
 A playful flag & geography quiz with spaced-repetition learning, a virtual pet
-("Atlas"), cosmetics, quests, a battlepass, an XP road, multiplayer, and
-leaderboards.
+("Atlas"), cosmetics, quests, a battlepass, multiplayer, and leaderboards.
 
 - **Frontend:** Create React App (React 18) + framer-motion, with a 3D globe
   mode built on three.js.
@@ -56,7 +55,7 @@ src/
   auth/ audio/             Auth + Web Audio SFX providers.
   components/
     quizzes/               The quiz modes + their menus (MC, free response, globe, frenzy, …).
-    economy/               Store, battlepass, quests, XP road, chests, modals.
+    economy/               Store, battlepass, quests, chests, modals.
     social/                Leaderboard, friends, inbox, multiplayer, spectate, profile card.
     profile/               Achievements, stats, settings, auth screen, pet panel, badges.
     menu/                  Main menu + top bar.

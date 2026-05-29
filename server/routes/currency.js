@@ -1,7 +1,7 @@
 const express = require('express');
 const db = require('../db');
 const { requireAuth, requireAdmin } = require('../middleware');
-const { priceOf, isDefault, isBpOnly, isXprOnly } = require('../cosmeticsCatalog');
+const { priceOf, isDefault, isBpOnly } = require('../cosmeticsCatalog');
 
 const router = express.Router();
 router.use(requireAuth);
@@ -88,10 +88,6 @@ router.post('/buy', (req, res) => {
     // claiming a battlepass tier. Refuse even if the client somehow sends one.
     if (isBpOnly(category, id)) {
         return res.status(403).json({ error: 'This item is only available through the Atlas Pass.' });
-    }
-    // XP Road exclusives are unlocked by crossing a milestone, not by buying.
-    if (isXprOnly(category, id)) {
-        return res.status(403).json({ error: 'This item is only granted along the XP Road.' });
     }
     if (price === 0 || isDefault(category, id)) {
         // Defaults are always free + already owned — nothing to do but report success.

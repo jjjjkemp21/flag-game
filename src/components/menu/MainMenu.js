@@ -8,7 +8,6 @@ import WorldDots from '../../assets/illustrations/WorldDots';
 import Scene, { isCustomScene } from '../../assets/illustrations/Scene';
 import PetPanel from '../profile/PetPanel';
 import BattlepassCard from '../economy/BattlepassCard';
-import XpRoadCard from '../economy/XpRoadCard';
 import { Modal, Button } from '../ui/index';
 import { useToast } from '../ui/Toast';
 import { useAudio } from '../../audio/AudioProvider';
@@ -230,11 +229,6 @@ function MainMenu({ setView, flagsData, setQuizMode }) {
                 forced into a section column. */}
             <div className="mode-grid">
                 <BattlepassCard onClick={() => setView('battlepass')} index={0} />
-            </div>
-            {/* XP Road — beanstalk-themed hero card directly below the Atlas
-                Pass. Same hero shape; opens the vertical climbing screen. */}
-            <div className="mode-grid">
-                <XpRoadCard onClick={() => setView('xproad')} index={0} />
             </div>
 
             {SECTIONS.map((section, sIdx) => (

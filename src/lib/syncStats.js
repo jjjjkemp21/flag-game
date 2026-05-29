@@ -1,7 +1,6 @@
 import { api } from '../api/client';
-import { readBonusScores } from './xp';
+import { readBonusScores, MASTERY_STREAK } from './xp';
 import { getEarnedXp } from './progress';
-import { applyGrantedFromStats } from './xpRoad';
 
 const STAT_FIELDS = [
     'correct', 'incorrect', 'streak', 'lapses', 'isLeech', 'nextReview', 'lastAnswered',
@@ -12,6 +11,28 @@ const STAT_FIELDS = [
     'geoCorrect', 'geoIncorrect', 'geoStreak', 'geoLapses', 'geoLastAnswered',
     'geoNextReview', 'geoIsLeech',
 ];
+
+// --- Flag-mastery count cache ----------------------------------------------
+// The end-of-run chest yield scales with how many flags the player has
+// mastered (streak > MASTERY_STREAK). Bonus modes (e.g. Language) roll a chest
+// without holding the flag list, so the live count is cached here and read by
+// currentChestYieldMult() in chest.js. App.js refreshes it on every progress
+// change (including the logout zeroing, which drops it back to 0).
+let masteredCount = 0;
+let masteredTotal = 0;
+
+export function updateMasteredCount(flagsData) {
+    const list = Array.isArray(flagsData) ? flagsData : [];
+    masteredTotal = list.length;
+    masteredCount = list.reduce(
+        (n, f) => n + ((Number(f && f.streak) || 0) > MASTERY_STREAK ? 1 : 0),
+        0,
+    );
+    return masteredCount;
+}
+
+export function getMasteredCount() { return masteredCount; }
+export function getMasteredTotal() { return masteredTotal; }
 
 // Pull the minimal per-flag progress records out of the full flagsData array.
 export function extractFlagStats(flagsData) {
@@ -83,19 +104,14 @@ function payload(flagsData) {
 }
 
 // Debounced upload of the current progress to the backend. Safe to call on every
-// stats change; only the last call within the window actually fires. The
-// server's response can carry `grantedXpRoad` (milestones it just auto-paid);
-// we fold those into the local XP Road store so the hero card / screen tick
-// over without a separate fetch.
+// stats change; only the last call within the window actually fires.
 export function pushStats(flagsData, delay = 1500) {
     if (pushTimer) clearTimeout(pushTimer);
     pushTimer = setTimeout(() => {
         pushTimer = null;
-        api.put('/stats', payload(flagsData))
-            .then((res) => { if (res && res.grantedXpRoad) applyGrantedFromStats(res.grantedXpRoad); })
-            .catch(() => {
-                /* offline / transient — will sync again on the next change */
-            });
+        api.put('/stats', payload(flagsData)).catch(() => {
+            /* offline / transient — will sync again on the next change */
+        });
     }, delay);
 }
 

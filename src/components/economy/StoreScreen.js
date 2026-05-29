@@ -418,9 +418,7 @@ function StoreScreen({ setView, flagsData }) {
                     // Atlas Pass exclusives never appear in the "Shop" tab — they
                     // can only be unlocked by claiming a pass tier. Once owned,
                     // they DO show up in "Owned" so the player can equip them.
-                    // XP Road exclusives follow the same rule (unlocked by
-                    // crossing milestones, never purchasable).
-                    .filter(([id, item]) => !((item.bpOnly || item.xprOnly) && shopTab === 'shop'))
+                    .filter(([id, item]) => !(item.bpOnly && shopTab === 'shop'))
                     // Emote "none" is the empty-slot placeholder, not a cosmetic
                     // to display in the store.
                     .filter(([id]) => !(cat.key === 'emote' && id === 'none'))

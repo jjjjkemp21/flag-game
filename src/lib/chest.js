@@ -8,6 +8,8 @@
 // Accuracy + streak nudge the distribution upward without ever making
 // Legendary likely from a tiny run.
 
+import { getMasteredCount, getMasteredTotal } from './syncStats';
+
 export const RARITIES = {
     common:    { weight: 70, min:   5, max:  15, label: 'Common' },
     rare:      { weight: 22, min:  15, max:  40, label: 'Rare' },
@@ -52,9 +54,9 @@ function pickRarity(weights, rng) {
 // Roll a chest given the run summary. `correct` is the count of correct
 // answers; `accuracy` is correct / total (0..1); `bestStreak` is the highest
 // streak hit during the run; `mode` is the quiz mode key. `yieldMult` is the
-// XP Road chest-tier multiplier (1.0..1.25 — see chestYieldMultFromXp in
-// xpRoadCatalog), applied AFTER the mode multiplier so an Atlas at Tier V
-// reads as "+25% on top of the mode bonus" rather than compounded twice.
+// flag-mastery chest-yield multiplier (1.0..1.25 — see chestYieldMultFromMastery
+// below), applied AFTER the mode multiplier so a player who has mastered most of
+// the world reads as "+25% on top of the mode bonus" rather than compounded twice.
 //
 // Returns null when the run was too short to qualify, so the caller can
 // quickly skip the chest UI without a special case.
@@ -89,4 +91,37 @@ export function rollChest({
     const bucks = Math.max(1, Math.round(raw * mult * yMult));
 
     return { rarity, bucks, raw, mult, yieldMult: yMult };
+}
+
+// --- Chest yield from flag mastery -----------------------------------------
+// The chest-yield bonus is earned through learning: the more flags you've
+// mastered (streak > MASTERY_STREAK), the more Bucks each end-of-run chest pays
+// out. Five tiers of +5% each (cap +25%), anchored to the Mastery achievement
+// milestones so the Achievements screen can denote exactly what each is worth:
+//   10 mastered → +5% · 50 → +10% · 100 → +15% · 230 → +20% · every flag → +25%
+export const CHEST_YIELD_TIERS = [
+    { mastered: 10,  bonus: 0.05 },
+    { mastered: 50,  bonus: 0.10 },
+    { mastered: 100, bonus: 0.15 },
+    { mastered: 230, bonus: 0.20 },
+];
+export const CHEST_YIELD_MAX_BONUS = 0.25; // mastering every flag in the catalog
+
+// Multiplier (1.0..1.25) for a given mastered-flag count. `total` enables the
+// top tier — mastering the whole catalog — without hard-coding the catalog size
+// here. Highest tier reached wins; the bonus never decreases.
+export function chestYieldMultFromMastery(mastered, total) {
+    const m = Math.max(0, Math.floor(Number(mastered) || 0));
+    const t = Math.max(0, Math.floor(Number(total) || 0));
+    if (t > 0 && m >= t) return 1 + CHEST_YIELD_MAX_BONUS;
+    let bonus = 0;
+    for (const tier of CHEST_YIELD_TIERS) if (m >= tier.mastered) bonus = tier.bonus;
+    return 1 + bonus;
+}
+
+// Live convenience used by the quiz modes at end-of-run. Reads the cached
+// flag-mastery count (kept current by App.js) so even modes that don't carry
+// the flag list (e.g. Language) get the right yield.
+export function currentChestYieldMult() {
+    return chestYieldMultFromMastery(getMasteredCount(), getMasteredTotal());
 }

@@ -21,14 +21,13 @@ import QuestsScreen from './components/economy/QuestsScreen';
 import StatsScreen from './components/profile/StatsScreen';
 import MultiplayerScreen from './components/social/MultiplayerScreen';
 import BattlepassScreen from './components/economy/BattlepassScreen';
-import XpRoadScreen from './components/economy/XpRoadScreen';
 import SpectatorScreen from './components/social/SpectatorScreen';
 import TopBar from './components/menu/TopBar';
 import Spinner from './assets/illustrations/Spinner';
 import { useAudio } from './audio/AudioProvider';
 import { useAuth } from './auth/AuthProvider';
 import { api } from './api/client';
-import { applyStatsToFlags, zeroFlagStats, pushStats, flushStats } from './lib/syncStats';
+import { applyStatsToFlags, zeroFlagStats, pushStats, flushStats, updateMasteredCount } from './lib/syncStats';
 import { computeXp, readBonusScores } from './lib/xp';
 import { setAuthed, loadBonus, resetBonus, loadEarnedXp, resetEarnedXp, getEarnedXp } from './lib/progress';
 import { loadPet, resetPet, recordCorrect, recordIncorrect, getPet } from './lib/pet';
@@ -47,7 +46,6 @@ import {
     setAuthed as setBpAuthed,
     flushBattlepass,
 } from './lib/battlepass';
-import { loadXpRoad, resetXpRoad } from './lib/xpRoad';
 import { buildContext, evaluate } from './lib/achievements';
 import { variants } from './motion/index';
 
@@ -185,6 +183,14 @@ function App() {
         }
     }, [flagsData, isLoading, patchUser]);
 
+    // Keep the live flag-mastery count cached for the end-of-run chest yield.
+    // Bonus modes (e.g. Language) don't carry the full flag list, so they read
+    // this global instead. Recomputed on every progress change — including the
+    // logout zeroing, which drops it back to 0.
+    useEffect(() => {
+        updateMasteredCount(flagsData);
+    }, [flagsData]);
+
     // Flush any pending progress when the tab is hidden or closed so a long
     // session's most recent answers / streak / XP aren't lost (a debounced push
     // would otherwise be dropped on unload, especially when backgrounded on mobile).
@@ -284,13 +290,6 @@ function App() {
                     setBpAuthed(true);
                     try { await loadBattlepass(); } catch (_) { /* pass screen will lazy-retry */ }
                 }
-                // XP Road — claimed milestone ids + unlocked titles + friend
-                // climbers. Loaded last so any auto-grants the stats-push that
-                // ran during sign-in triggered are already reflected in the
-                // server's claimed set.
-                if (!cancelled) {
-                    try { await loadXpRoad(); } catch (_) { /* screen will lazy-retry */ }
-                }
                 // Recompute unlocked achievements from the just-loaded progress so the
                 // account's count + showcase are correct. Without this they stay at the
                 // load-time defaults (unlocked=[]) and a later cosmetic-only persist
@@ -311,7 +310,6 @@ function App() {
                 setQuestsAuthed(false);
                 resetQuests();
                 resetBattlepass();
-                resetXpRoad();
                 answerTotalsRef.current = { correct: 0, incorrect: 0 };
                 // Run/best streaks live in device-global localStorage; clear them
                 // on logout/guest so one account's streaks don't bleed into the
@@ -506,8 +504,6 @@ function App() {
                 return <MultiplayerScreen setView={setView} flagsData={flagsData} />;
             case 'battlepass':
                 return <BattlepassScreen setView={setView} />;
-            case 'xproad':
-                return <XpRoadScreen setView={setView} />;
             case 'quests':
                 return <QuestsScreen setView={setView} />;
             case 'settings':

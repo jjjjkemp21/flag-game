@@ -150,16 +150,12 @@ if (!hasCol('quests_json')) db.exec('ALTER TABLE users ADD COLUMN quests_json TE
 // player to a fresh state on next request — keeping past purchases scoped to
 // the season they were made in.
 if (!hasCol('battlepass_json')) db.exec('ALTER TABLE users ADD COLUMN battlepass_json TEXT');
-// ---- XP Road ----
-// `claimed_xproad_json` is the JSON array of milestone ids the server has
-// already auto-granted to this user (bucks credited, cosmetics added, titles
-// unlocked). Guards against double-paying on every stats push — without this,
-// a client could re-PUT the same earned_xp and re-trigger the grant loop.
-// Cleared by stats /reset alongside the rest of the player progress.
+// ---- XP Road (removed) ----
+// These two columns backed the now-removed XP Road feature. They're retained
+// rather than dropped — SQLite can't drop a column without a full table
+// rebuild, and they're harmless dead weight: nothing reads or writes them
+// anymore. Kept so a fresh dev database keeps the same schema as production.
 if (!hasCol('claimed_xproad_json')) db.exec('ALTER TABLE users ADD COLUMN claimed_xproad_json TEXT');
-// `xp_road_titles_json` is the set of titles the player has unlocked via the
-// XP Road (so the Achievements screen's title picker can list them alongside
-// mastery titles). Stored as a JSON array of strings.
 if (!hasCol('xp_road_titles_json')) db.exec('ALTER TABLE users ADD COLUMN xp_road_titles_json TEXT');
 
 // ---- Spectator privacy ----

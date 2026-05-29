@@ -13,8 +13,6 @@ const COLORS = {
     bp_jade: 999999, bp_python: 999999, bp_gecko: 999999, bp_iguana: 999999,
     bp_komodo: 999999, bp_anaconda: 999999, bp_basilisk: 999999, bp_chameleon: 999999,
     bp_dragon_fire: 999999, bp_frost_serpent: 999999, bp_cosmic_drake: 999999,
-    // XP Road exclusives — only granted by crossing an XP Road milestone.
-    xpr_beanstalk: 999999,
 };
 
 const HATS = {
@@ -37,8 +35,6 @@ const HATS = {
     bp_horns_jade: 999999, bp_horns_obsidian: 999999, bp_horns_fire: 999999, bp_horns_gold: 999999,
     bp_frill_emerald: 999999, bp_frill_crimson: 999999, bp_frill_violet: 999999,
     bp_scale_helm: 999999,
-    // XP Road exclusives.
-    xpr_vine_crown: 999999,
 };
 
 const GLASSES = {
@@ -60,8 +56,6 @@ const GLASSES = {
     // Atlas Pass exclusives.
     bp_snake_eyes: 999999, bp_serpent_eyes: 999999, bp_lizard_eyes: 999999,
     bp_dragon_gaze: 999999,
-    // XP Road exclusives.
-    xpr_leaflet: 999999,
 };
 
 const EFFECTS = {
@@ -69,8 +63,6 @@ const EFFECTS = {
     rings: 3600, flames: 4400, electric: 5400, confetti: 6800, notes: 2700, disco: 5800,
     // Atlas Pass exclusives.
     bp_scales: 999999, bp_breath: 999999,
-    // XP Road exclusives.
-    xpr_leaves: 999999,
 };
 
 // Emotes. Same shape as everywhere else — id -> price. `wave` ships free
@@ -125,13 +117,6 @@ function isBpOnly(category, id) {
     return typeof id === 'string' && id.startsWith('bp_');
 }
 
-// XP Road exclusives. Same idea as the BP exclusives, but the path to
-// ownership is crossing an XP Road milestone (see applyXpRoadGrants in
-// routes/stats.js). The shop hides these and the /buy endpoint refuses them.
-function isXprOnly(category, id) {
-    return typeof id === 'string' && id.startsWith('xpr_');
-}
-
 function priceOf(category, id) {
     const cat = CATALOG[category];
     if (!cat) return null;
@@ -147,4 +132,4 @@ function isFreeStarter(category, id) {
     return !!(FREE_STARTERS[category] && FREE_STARTERS[category].has(id));
 }
 
-module.exports = { CATALOG, DEFAULTS, FREE_STARTERS, priceOf, isDefault, isFreeStarter, isBpOnly, isXprOnly };
+module.exports = { CATALOG, DEFAULTS, FREE_STARTERS, priceOf, isDefault, isFreeStarter, isBpOnly };

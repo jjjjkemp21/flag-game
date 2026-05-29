@@ -10,6 +10,7 @@ import { useProfile, setShowcase, setSelectedTitle, setAchievementsUnlocked } fr
 import { getBonus, getEarnedXp } from '../../lib/progress';
 import { buildContext, evaluate, ACHIEVEMENTS, ACHIEVEMENT_GROUPS } from '../../lib/achievements';
 import { masteryRank, nextRank, MASTERY_RANKS, geoMasteryRank, nextGeoRank, GEO_MASTERY_RANKS } from '../../lib/mastery';
+import { chestYieldMultFromMastery } from '../../lib/chest';
 
 function Achievements({ setView, flagsData }) {
     const { isAuthed } = useAuth();
@@ -52,6 +53,8 @@ function Achievements({ setView, flagsData }) {
     const showcase = profile.achievements.showcase;
     const rank = masteryRank(ctx.mastered, ctx.total);
     const nr = nextRank(ctx.mastered, ctx.total);
+    // Chest-yield bonus is earned through flag mastery (see chestYieldMultFromMastery).
+    const chestYieldPct = Math.round((chestYieldMultFromMastery(ctx.mastered, ctx.total) - 1) * 100);
     const geoRank = geoMasteryRank(ctx.geoMastered, ctx.total);
     const geoNr = nextGeoRank(ctx.geoMastered, ctx.total);
     const selectedTitle = profile.selectedTitle || null;
@@ -144,6 +147,10 @@ function Achievements({ setView, flagsData }) {
                             : `Next: ${nr.title}.`}
                     </p>
                 )}
+                <p className="rank-next auth-hint">
+                    <Icon name="redeem" /> Chest yield bonus <strong>+{chestYieldPct}%</strong> — mastering flags
+                    boosts every end-of-run chest, up to +25%.
+                </p>
             </div>
 
             {/* Globe-mode mastery: parallel section so the geo ladder reads

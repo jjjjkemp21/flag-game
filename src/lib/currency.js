@@ -54,7 +54,7 @@ function applySummary(s) {
 }
 
 // Merge a server response that returns an authoritative owned-cosmetics set +
-// bucks balance (battlepass tier claims, XP-road grants) into the currency
+// bucks balance (e.g. battlepass tier claims) into the currency
 // store, so isOwnedKey() immediately reflects the just-granted item and the
 // shop/equip paths see it as owned without a full reload.
 export function applyOwnedAndBucks({ bucks, ownedCosmetics }) {

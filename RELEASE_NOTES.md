@@ -1,3 +1,17 @@
+## Streamlined progression — chests now reward your flag mastery
+
+*Less clutter, one clear way to grow: learn flags, earn bigger chests.*
+
+**What changed**
+
+- **The XP Road has been retired.** Progression now lives where the learning is — mastery ranks, achievements, and the Atlas Pass — so the home screen is cleaner and there's a single clear path forward.
+- **Chest yield now scales with flag mastery.** The more flags you've mastered, the more Atlas Bucks every end-of-run chest pays out — **+5%** once you've mastered 10 flags, climbing to **+25%** when you've mastered the whole world.
+- **Your Achievements screen spells it out.** Each mastery milestone now shows the chest-yield bonus it unlocks, and your current bonus sits right at the top of the screen.
+
+*Your XP and Atlas Bucks are untouched. A few beanstalk-themed cosmetics that were exclusive to the XP Road have retired along with it.*
+
+---
+
 ## Polish & fixes — sharper cosmetics, clearer screens
 
 *A big quality pass under the hood and on the surface.*
