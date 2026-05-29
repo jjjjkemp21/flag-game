@@ -3,7 +3,6 @@
 // ids are synced to the account so they can appear on the leaderboard.
 
 import { MASTERY_STREAK } from './xp';
-import { getWaterMasteredCount, getWaterTotal, getWaterCorrectTotal } from './waters';
 
 export const CONTINENTS = [
     { key: 'africa',        label: 'Africa',        tag: 'region:africa' },
@@ -98,12 +97,6 @@ export function buildContext(flagsData, bonus, petLevel, earnedXp) {
         geoMastered,
         geoEligibleTotal,
         geoContinents,
-        // Bodies-of-Water mastery — its own track, read live from the water
-        // store (kept out of the per-flag walk above since water bodies aren't
-        // flags). See src/lib/waters.js.
-        waterMastered: getWaterMasteredCount(),
-        waterTotal: getWaterTotal(),
-        waterCorrect: getWaterCorrectTotal(),
     };
 }
 
@@ -206,19 +199,6 @@ const geoContinentAchievements = CONTINENTS.map((c) => ({
     progress: (x) => ({ cur: x.geoContinents[c.key].mastered, goal: x.geoContinents[c.key].total }),
 }));
 
-// Bodies-of-Water mode — its own mastery ladder (master = identify a body past
-// the shared mastery streak). Separate group so it reads as a distinct track.
-const waterMasteryMilestone = (n, name, tier) => ({
-    id: `water_mastery_${n}`,
-    group: 'Bodies of Water',
-    name,
-    desc: `Master ${n} bodies of water`,
-    icon: 'water',
-    tier,
-    check: (x) => x.waterMastered >= n,
-    progress: (x) => ({ cur: x.waterMastered, goal: n }),
-});
-
 export const ACHIEVEMENTS = [
     { id: 'first_steps', group: 'Mastery', name: 'First Steps', desc: 'Answer your first flag correctly', icon: 'flag', tier: 'stone',
         check: (x) => x.totalCorrect >= 1, progress: (x) => ({ cur: Math.min(x.totalCorrect, 1), goal: 1 }) },
@@ -268,16 +248,6 @@ export const ACHIEVEMENTS = [
     ...geoContinentAchievements,
     { id: 'geo_all_flags', group: 'Globe', name: 'Atlas Cartographer', desc: 'Place every country the globe can render', icon: 'public', tier: 'legend',
         check: (x) => x.geoEligibleTotal > 0 && x.geoMastered >= x.geoEligibleTotal, progress: (x) => ({ cur: x.geoMastered, goal: x.geoEligibleTotal }) },
-
-    // Bodies of Water — seas, gulfs, straits, lakes & rivers.
-    { id: 'water_first_drop', group: 'Bodies of Water', name: 'First Drop', desc: 'Correctly name your first body of water', icon: 'water_drop', tier: 'stone',
-        check: (x) => x.waterCorrect >= 1, progress: (x) => ({ cur: Math.min(x.waterCorrect, 1), goal: 1 }) },
-    waterMasteryMilestone(10, 'Tide Watcher', 'bronze'),
-    waterMasteryMilestone(25, 'Navigator', 'silver'),
-    waterMasteryMilestone(50, 'Hydrographer', 'gold'),
-    waterMasteryMilestone(100, 'Master Mariner', 'platinum'),
-    { id: 'water_all', group: 'Bodies of Water', name: 'Lord of the Seven Seas', desc: 'Master every body of water', icon: 'sailing', tier: 'legend',
-        check: (x) => x.waterTotal > 0 && x.waterMastered >= x.waterTotal, progress: (x) => ({ cur: x.waterMastered, goal: x.waterTotal }) },
 ];
 
 export const ACHIEVEMENTS_BY_ID = Object.fromEntries(ACHIEVEMENTS.map((a) => [a.id, a]));

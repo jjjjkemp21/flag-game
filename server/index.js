@@ -28,7 +28,6 @@ app.use('/api/currency', require('./routes/currency'));
 app.use('/api/login-chest', require('./routes/loginChest'));
 app.use('/api/quests', require('./routes/quests'));
 app.use('/api/battlepass', require('./routes/battlepass'));
-app.use('/api/waters', require('./routes/waters'));
 app.use('/api/presence', require('./routes/presence'));
 app.use('/api/spectate', require('./routes/spectate'));
 app.use('/api', require('./routes/social'));

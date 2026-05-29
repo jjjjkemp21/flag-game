@@ -17,7 +17,6 @@ import { usePet } from '../../lib/pet';
 import { useProfile } from '../../lib/profile';
 import { useQuests, claimableCount } from '../../lib/quests';
 import { getStreak } from '../../lib/streak';
-import { useWaters, getWaterMasteredCount, getWaterTotal } from '../../lib/waters';
 import { GLOBE_RENDERABLE_ISO2 } from '../../lib/achievements';
 import { MASTERY_STREAK } from '../../lib/xp';
 import { springs } from '../../motion/index';
@@ -42,7 +41,6 @@ const SECTIONS = [
             { key: 'multiple-choice', title: 'Multiple Choice', desc: 'Pick from four options',         icon: 'quiz',          tone: 'primary' },
             { key: 'free-response',   title: 'Free Response',   desc: 'Type the country name',          icon: 'edit_note',     tone: 'success' },
             { key: 'globe',           title: 'Globe',           desc: 'Find the country on a 3D globe', icon: 'public',        tone: 'info'    },
-            { key: 'bodies-of-water', title: 'Bodies of Water', desc: 'Name seas, lakes & rivers on the globe', icon: 'waves',  tone: 'info'    },
             { key: 'bonus',           title: 'Bonus Modes',     desc: 'Frenzy, Pixelated, Language…',   icon: 'rocket_launch', tone: 'purple'  },
         ],
     },
@@ -101,11 +99,6 @@ function MainMenu({ setView, flagsData, setQuizMode }) {
     // Subscribe to quests so the "Quests" card shows a live claimable count.
     useQuests();
     const questsClaimable = claimableCount();
-    // Subscribe to the water store so the Bodies-of-Water card's mastery badge
-    // ticks up live as bodies are mastered.
-    useWaters();
-    const waterTotal = getWaterTotal();
-    const waterMasteryHint = waterTotal > 0 ? `${getWaterMasteredCount()}/${waterTotal} mastered` : null;
     // Flag-recognition mastery (MC / FR / bonus modes share this streak). The
     // raw count gates the Reptile Kingdom Pass card below; the hint string drives
     // the hero pill + the per-mode card badges.
@@ -177,9 +170,6 @@ function MainMenu({ setView, flagsData, setQuizMode }) {
     const onCardClick = (modeKey) => {
         if (modeKey === 'multiple-choice' || modeKey === 'free-response' || modeKey === 'globe') {
             handleStartQuiz(modeKey);
-        } else if (modeKey === 'bodies-of-water') {
-            // Standalone mode — straight into the quiz, no deck picker.
-            setView('bodies-of-water');
         } else if (modeKey === 'multiplayer') {
             setView('multiplayer');
         } else if (modeKey === 'bonus') {
@@ -277,13 +267,11 @@ function MainMenu({ setView, flagsData, setQuizMode }) {
                                         ? masteryHint
                                         : mode.key === 'globe'
                                             ? globeMasteryHint
-                                            : mode.key === 'bodies-of-water'
-                                                ? waterMasteryHint
-                                                : mode.key === 'quests' && questsClaimable > 0
-                                                    ? `${questsClaimable} ready to claim`
-                                                    : null
+                                            : mode.key === 'quests' && questsClaimable > 0
+                                                ? `${questsClaimable} ready to claim`
+                                                : null
                                 }
-                                streak={(mode.key === 'multiple-choice' || mode.key === 'free-response' || mode.key === 'globe' || mode.key === 'bodies-of-water') ? getStreak(mode.key) : 0}
+                                streak={(mode.key === 'multiple-choice' || mode.key === 'free-response' || mode.key === 'globe') ? getStreak(mode.key) : 0}
                             />
                         ))}
                     </div>

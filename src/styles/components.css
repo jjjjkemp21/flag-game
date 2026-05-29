@@ -3865,20 +3865,6 @@
 }
 .globe-quiz__canvas canvas:active { cursor: grabbing; }
 
-/* Bodies-of-Water mode reuses the Globe quiz shell, but the highlighted body is
-   the question and the answer is picked from four choices below — so the stage
-   gives up some height to make room for the options grid. */
-.bow-quiz__stage { height: min(46vh, 420px); }
-.bow-quiz__options { width: 100%; margin-top: var(--space-xs); }
-/* The prompt tag sits top-left here (the choices own the bottom of the screen),
-   clear of the floating XP reward that rises from the centre. */
-.bow-quiz__prompt {
-    top: var(--space-md);
-    left: var(--space-md);
-    right: auto;
-    bottom: auto;
-}
-
 .globe-quiz__overlay {
     position: absolute;
     inset: 0;
