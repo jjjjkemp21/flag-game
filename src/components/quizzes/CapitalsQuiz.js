@@ -1,285 +1,237 @@
-import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Icon from '../common/Icon';
 import { ChoiceCard, ScoreBubble } from '../ui/index';
 import Mascot from '../../assets/illustrations/Mascot';
 import Confetti from '../../assets/illustrations/Confetti';
 import Spinner from '../../assets/illustrations/Spinner';
+import AtlasBucksIcon from '../../assets/illustrations/AtlasBucks';
+import MasteryMeter from './MasteryMeter';
 import { useAudio } from '../../audio/AudioProvider';
-import { getHighScore, recordHighScore, flushBonus } from '../../lib/progress';
+import { useProfile } from '../../lib/profile';
+import { recordHighScore, flushBonus, addEarnedXp } from '../../lib/progress';
 import { refreshBattlepass } from '../../lib/battlepass';
-import { bumpQuestMetric, reportHwm } from '../../lib/quests';
+import { bumpQuestMetric, reportHwm, reportStreakHwm } from '../../lib/quests';
 import { addEarnedBucks } from '../../lib/currency';
+import { awardForAnswer, awardBucksForAnswer, penaltyForAnswer, streakMultiplier, MASTERY_STREAK } from '../../lib/xp';
 import { rollChest, MIN_CORRECT_FOR_CHEST, currentChestYieldMult } from '../../lib/chest';
 import ChestReveal from '../economy/ChestReveal';
-import { recordPlay } from '../../lib/pet';
+import { recordCorrect, recordIncorrect } from '../../lib/pet';
+import { getStreak, saveStreak, resetStreak } from '../../lib/streak';
 import { useQuizPresence } from '../../lib/presence';
 import SpectatorsBadge from '../social/SpectatorsBadge';
 import { springs } from '../../motion/index';
+import {
+    useCapitals,
+    ensureCapitalsCatalog,
+    getCapitalById,
+    getCapitalStat,
+    recordCapitalAnswer,
+    selectNextCapital,
+    capitalDistractors,
+    availableCapitalCodes,
+} from '../../lib/capitals';
 
-const FLAGS_URL = './data/flags.json';
-const CAPITALS_URL = './data/capitals.json';
 const IMAGE_BASE_URL = './assets/flags/';
-const TOTAL_LIVES = 3;
+const MODE = 'capitals';
 const OPTIONS_PER_QUESTION = 4;
 
-// Pretty labels for the region tag carried on each flag (region:xxx). Used by
-// the hint chip / explainer so "north_america" reads as "North America".
-const REGION_LABELS = {
-    africa: 'Africa',
-    asia: 'Asia',
-    europe: 'Europe',
-    north_america: 'North America',
-    south_america: 'South America',
-    oceania: 'Oceania',
-    territory: 'an overseas territory or region',
-};
-
-function regionLabel(region) {
-    return REGION_LABELS[region] || 'the world';
-}
-
+// Capitals mode — an endless, flag-style mastery quiz. The flag is shown with
+// the country name beneath it and the player picks its capital from four
+// choices. Mastery is tracked per country in its own track (src/lib/capitals.js),
+// completely separate from flag-recognition mastery — exactly like Globe mode's
+// geography axis. Shares the standard XP / Bucks / streak / chest loop.
 function CapitalsQuiz({ setView, includeTerritories = false }) {
-    const [flagsData, setFlagsData] = useState([]);
-    const [capitalsData, setCapitalsData] = useState([]);
-    const [currentQuestion, setCurrentQuestion] = useState(null);
+    const capitalsState = useCapitals();
+    const catalogReady = capitalsState.catalogLoaded;
+
+    const [current, setCurrent] = useState(null); // { code, country, capital, flagFile, region }
     const [options, setOptions] = useState([]);
-    const [optionCountry, setOptionCountry] = useState({});
     const [score, setScore] = useState(0);
-    const [highScore, setHighScore] = useState(() => getHighScore('capitals'));
-    const [lives, setLives] = useState(TOTAL_LIVES);
-    const [isGameOver, setIsGameOver] = useState(false);
-    const [isNewHigh, setIsNewHigh] = useState(false);
+    const [streak, setStreak] = useState(() => getStreak(MODE));
+    const [masteryStreak, setMasteryStreak] = useState(0); // current capital's progress to mastery
     const [feedback, setFeedback] = useState({ text: ' ' });
-    const [isLoading, setIsLoading] = useState(true);
-    const [isAnswered, setIsAnswered] = useState(false);
-    const [chest, setChest] = useState(null);
-    const [answerStatus, setAnswerStatus] = useState({});
+    const [answered, setAnswered] = useState(false);
+    const [chosenAnswer, setChosenAnswer] = useState(null);
     const [flashColor, setFlashColor] = useState(null);
-    const [lifeLostIndex, setLifeLostIndex] = useState(null);
+    const [xpGain, setXpGain] = useState(null);
     const [showConfetti, setShowConfetti] = useState(false);
-    const [hintUsed, setHintUsed] = useState(false);
-    const [explainer, setExplainer] = useState(null);
-    const [scoreDelta, setScoreDelta] = useState(null);
+    const [bestStreak, setBestStreak] = useState(0);
+    const [answeredTotal, setAnsweredTotal] = useState(0);
+    const [chest, setChest] = useState(null);
 
     const audio = useAudio();
+    const profile = useProfile();
+    const recentRef = useRef([]);
 
     // The prompt names the country, never its capital, so it's safe to share
     // with spectators — but for parity with the other quizzes we only surface
     // score + streak (no prompt payload).
-    const isPlaying = !isGameOver && !isLoading && currentQuestion;
+    const isPlaying = catalogReady && !!current;
     const { watchers, lastReactionId } = useQuizPresence(isPlaying ? 'capitals-quiz' : null, {
-        score, streak: 0,
+        score, streak,
     });
 
-    // Pending advance for the wrong-answer explainer; runs only when the
-    // player clicks Continue so they can read at their own pace.
-    const pendingAdvanceRef = useRef(null);
-
-    // Quiz pool: join the capital list against flags.json for the flag emoji +
-    // region tag, and drop entries whose capital equals the country name
-    // (Singapore, Monaco, Vatican City, Gibraltar) — a "capital of Singapore?"
-    // question with "Singapore" on the prompt gives itself away.
-    const pool = useMemo(() => {
-        if (!flagsData.length || !capitalsData.length) return [];
-        // Render the real flag SVG from the on-disk library (public/assets/flags/
-        // <code>.svg, same scheme the other quizzes use) instead of the emoji.
-        const flagFileByCountry = new Map();
-        const regionByCountry = new Map();
-        for (const f of flagsData) {
-            flagFileByCountry.set(f.country, f.code ? `${f.code.toLowerCase()}.svg` : '');
-            const tag = (f.tags || []).find((t) => t.startsWith('region:'));
-            regionByCountry.set(f.country, tag ? tag.slice('region:'.length) : 'territory');
-        }
-        return capitalsData
-            .filter((c) => c.capital && c.capital !== c.country)
-            .map((c) => ({
-                country: c.country,
-                capital: c.capital,
-                flagFile: flagFileByCountry.get(c.country) || '',
-                region: regionByCountry.get(c.country) || 'territory',
-            }))
-            // Honour the global "include territories" toggle (Settings) — off by
-            // default, so capitals of dependent territories are excluded.
-            .filter((e) => includeTerritories || e.region !== 'territory');
-    }, [flagsData, capitalsData, includeTerritories]);
-
-    useEffect(() => {
-        setHighScore(getHighScore('capitals'));
-        async function loadData() {
-            try {
-                const [flagsResponse, capitalsResponse] = await Promise.all([
-                    fetch(FLAGS_URL),
-                    fetch(CAPITALS_URL),
-                ]);
-                setFlagsData(await flagsResponse.json());
-                setCapitalsData(await capitalsResponse.json());
-            } catch (error) {
-                console.error('Failed to load capitals data:', error);
-            }
-            setIsLoading(false);
-        }
-        loadData();
-    }, []);
+    // Warm the catalog (capitals.json joined to flags.json) on mount.
+    useEffect(() => { ensureCapitalsCatalog(); }, []);
 
     const nextQuestion = useCallback(() => {
         setFlashColor(null);
-        setLifeLostIndex(null);
-        setShowConfetti(false);
         setFeedback({ text: ' ' });
-        setIsAnswered(false);
-        setAnswerStatus({});
-        setHintUsed(false);
-        setExplainer(null);
-        setScoreDelta(null);
-        pendingAdvanceRef.current = null;
+        setAnswered(false);
+        setChosenAnswer(null);
+        setXpGain(null);
+        setShowConfetti(false);
 
-        if (pool.length < OPTIONS_PER_QUESTION) return;
+        const available = availableCapitalCodes(includeTerritories);
+        if (available.length < OPTIONS_PER_QUESTION) { setCurrent(null); return; }
 
-        const entry = pool[Math.floor(Math.random() * pool.length)];
+        const code = selectNextCapital(available, recentRef.current);
+        const entry = getCapitalById(code);
+        if (!entry) { setCurrent(null); return; }
+        recentRef.current = [...recentRef.current.slice(-4), code];
 
-        // Distractors: prefer capitals from the SAME region (a harder, more
-        // plausible set), then top up from anywhere. Dedupe by capital string
-        // so "Kingston" (Jamaica) and "Kingston" (Norfolk Island) never collide
-        // in one question, and never repeat the country or the right answer.
-        const usedCapitals = new Set([entry.capital]);
-        const usedCountries = new Set([entry.country]);
-        const distractors = [];
-        const drawFrom = (list) => {
-            const shuffled = [...list].sort(() => Math.random() - 0.5);
-            for (const e of shuffled) {
-                if (distractors.length >= OPTIONS_PER_QUESTION - 1) break;
-                if (usedCapitals.has(e.capital) || usedCountries.has(e.country)) continue;
-                usedCapitals.add(e.capital);
-                usedCountries.add(e.country);
-                distractors.push(e);
-            }
-        };
-        drawFrom(pool.filter((e) => e.region === entry.region));
-        if (distractors.length < OPTIONS_PER_QUESTION - 1) drawFrom(pool);
+        const distractors = capitalDistractors(code, available, OPTIONS_PER_QUESTION - 1);
+        const shuffled = [entry.capital, ...distractors].sort(() => Math.random() - 0.5);
+        setCurrent(entry);
+        setMasteryStreak(getCapitalStat(code).streak || 0);
+        setOptions(shuffled);
+    }, [includeTerritories]);
 
-        const chosen = [entry, ...distractors];
-        const countryByCapital = {};
-        chosen.forEach((e) => { countryByCapital[e.capital] = e.country; });
-
-        setCurrentQuestion({
-            country: entry.country,
-            capital: entry.capital,
-            flagFile: entry.flagFile,
-            region: entry.region,
-        });
-        setOptionCountry(countryByCapital);
-        setOptions(chosen.map((e) => e.capital).sort(() => Math.random() - 0.5));
-    }, [pool]);
-
+    // Kick off the first question once the catalog is ready.
     useEffect(() => {
-        if (!isLoading && pool.length >= OPTIONS_PER_QUESTION) {
-            nextQuestion();
-        }
-    }, [isLoading, pool, nextQuestion]);
+        if (catalogReady && !current) nextQuestion();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [catalogReady]);
 
-    const handleRevealHint = () => {
-        if (isAnswered || isGameOver || hintUsed || !currentQuestion) return;
-        audio.play('click');
-        setHintUsed(true);
+    const navigateBack = () => setView('menu');
+
+    // End-of-run path: roll a chest reflecting the session's accuracy + max
+    // streak, and record the session's correct count as the Capitals high score
+    // (feeds the leaderboard / Atlas Pass / quests). The chest's Continue button
+    // triggers navigateBack() via onClose.
+    const handleBack = () => {
+        reportHwm('capitals_score', score);
+        if (score > 0) {
+            recordHighScore('capitals', score);
+            flushBonus().then(() => refreshBattlepass());
+        }
+        if (chest || score < MIN_CORRECT_FOR_CHEST) {
+            navigateBack();
+            return;
+        }
+        const accuracy = answeredTotal > 0 ? score / answeredTotal : 0;
+        const rolled = rollChest({ correct: score, accuracy, bestStreak, mode: MODE, yieldMult: currentChestYieldMult() });
+        if (!rolled) {
+            navigateBack();
+            return;
+        }
+        addEarnedBucks(rolled.bucks);
+        setChest(rolled);
     };
 
-    const handleAnswer = (answerCapital) => {
-        if (isAnswered || isGameOver) return;
-        setIsAnswered(true);
+    const handleAnswer = (answer) => {
+        if (!current || answered) return;
+        setAnswered(true);
+        setChosenAnswer(answer);
+        const wasCorrect = answer === current.capital;
+        setFlashColor(wasCorrect ? 'correct' : 'incorrect');
+        setAnsweredTotal((n) => n + 1);
 
-        if (answerCapital === currentQuestion.capital) {
+        const preStat = getCapitalStat(current.code);
+        const { before, after } = recordCapitalAnswer(current.code, wasCorrect);
+        setMasteryStreak(after);
+
+        if (wasCorrect) {
             audio.play('correct');
+            setScore((s) => s + 1);
+            recordCorrect(1);
+            const next = streak + 1;
+            if (next === 3 || next === 5 || next === 10) audio.play('streak');
+            setStreak(next);
+            saveStreak(MODE, next);
+            if (next > bestStreak) setBestStreak(next);
+            // Scaled XP: a brand-new capital is worth more than an already-
+            // mastered one, the hot streak multiplies up to 2x. Bucks land
+            // alongside at the old (pre-double) rate.
+            const award = awardForAnswer({ correct: preStat.correct, streak: before }, MODE, next);
+            addEarnedXp(award.amount);
+            const bucksAward = awardBucksForAnswer(award);
+            if (bucksAward > 0) addEarnedBucks(bucksAward);
+            setXpGain({ ...award, bucks: bucksAward });
+            bumpQuestMetric('capitals_play', 1);
+            bumpQuestMetric('any_correct', 1);
+            reportStreakHwm(next);
+            setFeedback({ text: 'Correct! The capital is:', answer: current.capital, tone: 'green' });
             setShowConfetti(true);
-            // Hint forfeits the point — same rule as the Language quiz.
-            const newScore = hintUsed ? score : score + 1;
-            if (!hintUsed) {
-                setScore(newScore);
-                setScoreDelta(1);
-            }
-            if (!hintUsed && (newScore === 3 || newScore === 5 || newScore === 10)) {
-                audio.play('streak');
-            }
-            setFeedback({
-                text: hintUsed
-                    ? 'Correct (hint used — no points):'
-                    : 'Correct! The capital is:',
-                answer: currentQuestion.capital,
-                tone: 'green',
-            });
-            setAnswerStatus({ [answerCapital]: 'correct' });
-            setFlashColor('correct');
-            setTimeout(nextQuestion, 1500);
+            // A satisfying flourish the moment a capital crosses into "mastered".
+            if (before <= MASTERY_STREAK && after > MASTERY_STREAK) audio.play('levelUp');
         } else {
             audio.play('incorrect');
-            setFlashColor('incorrect');
-            setAnswerStatus({ [answerCapital]: 'incorrect', [currentQuestion.capital]: 'correct' });
-
-            const newLives = lives - 1;
-            setLives(newLives);
-            setLifeLostIndex(TOTAL_LIVES - lives);
-            setFeedback({
-                text: 'Incorrect. The capital is:',
-                answer: currentQuestion.capital,
-                tone: 'red',
-            });
-
-            // Explainer: name the right answer's region, and tell the player
-            // which country the city they picked is actually the capital of.
-            setExplainer({
-                country: currentQuestion.country,
-                capital: currentQuestion.capital,
-                region: currentQuestion.region,
-                chosenCapital: answerCapital,
-                chosenCountry: optionCountry[answerCapital] || null,
-            });
-
-            const advance = newLives <= 0
-                ? () => {
-                    recordPlay(1.5);
-                    const beatBest = score > highScore;   // capture before mutating highScore
-                    setIsNewHigh(beatBest);
-                    if (beatBest) {
-                        setHighScore(score);
-                        recordHighScore('capitals', score);
-                        flushBonus().then(() => refreshBattlepass());
-                    }
-                    bumpQuestMetric('bonus_play', 1);
-                    bumpQuestMetric('capitals_play', 1);
-                    reportHwm('capitals_score', score);
-                    if (score >= MIN_CORRECT_FOR_CHEST) {
-                        const accuracy = lives / TOTAL_LIVES * 0.5 + 0.5; // 0.5..1.0
-                        const rolled = rollChest({ correct: score, accuracy, bestStreak: Math.floor(score / 3), mode: 'capitals', yieldMult: currentChestYieldMult() });
-                        if (rolled) {
-                            addEarnedBucks(rolled.bucks);
-                            setChest(rolled);
-                        }
-                    }
-                    audio.play('gameOver');
-                    setIsGameOver(true);
-                }
-                : nextQuestion;
-            pendingAdvanceRef.current = advance;
+            recordIncorrect(1);
+            setStreak(0);
+            resetStreak(MODE);
+            const penalty = penaltyForAnswer(MODE);
+            addEarnedXp(-penalty);
+            setXpGain({ amount: -penalty });
+            setFeedback({ text: 'Incorrect. The capital is:', answer: current.capital, tone: 'red' });
         }
+
+        setTimeout(() => { nextQuestion(); }, 2000);
     };
 
-    const handleContinue = () => {
-        const advance = pendingAdvanceRef.current;
-        pendingAdvanceRef.current = null;
-        if (advance) advance();
+    const handleSkip = () => {
+        if (!current || answered) return;
+        setAnswered(true);
+        setFlashColor('incorrect');
+        audio.play('incorrect');
+        setStreak(0);
+        resetStreak(MODE);
+        setAnsweredTotal((n) => n + 1);
+        const { after } = recordCapitalAnswer(current.code, false);
+        setMasteryStreak(after);
+        setFeedback({ text: 'Skipped. The capital is:', answer: current.capital, tone: 'red' });
+        setTimeout(() => { nextQuestion(); }, 2000);
     };
 
-    const handlePlayAgain = () => {
-        audio.play('click');
-        setIsGameOver(false);
-        setIsNewHigh(false);
-        setChest(null);
-        setScore(0);
-        setLives(TOTAL_LIVES);
-        nextQuestion();
+    const getChoiceState = (option) => {
+        if (!answered) return 'idle';
+        if (option === current.capital) return 'correct';
+        if (option === chosenAnswer && option !== current.capital) return 'incorrect';
+        return 'idle';
     };
 
-    if (isLoading) {
+    // Keyboard play: 1–4 / A–D pick an option while unanswered; Enter/Space
+    // advances once answered. Latest values via a ref so the listener binds once.
+    const kbRef = useRef({});
+    kbRef.current = { answered, options, handleAnswer, nextQuestion, hasQuestion: !!current };
+    useEffect(() => {
+        const onKey = (e) => {
+            const st = kbRef.current;
+            if (!st.hasQuestion) return;
+            const tag = e.target && e.target.tagName;
+            if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+            if (!st.answered) {
+                let idx = -1;
+                if (e.key >= '1' && e.key <= '4') idx = Number(e.key) - 1;
+                else {
+                    const k = e.key.toLowerCase();
+                    if (k >= 'a' && k <= 'd') idx = k.charCodeAt(0) - 97;
+                }
+                if (idx >= 0 && idx < st.options.length) {
+                    e.preventDefault();
+                    st.handleAnswer(st.options[idx]);
+                }
+            } else if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                st.nextQuestion();
+            }
+        };
+        document.addEventListener('keydown', onKey);
+        return () => document.removeEventListener('keydown', onKey);
+    }, []);
+
+    if (!catalogReady) {
         return (
             <div className="loading-box">
                 <Spinner />
@@ -288,116 +240,127 @@ function CapitalsQuiz({ setView, includeTerritories = false }) {
         );
     }
 
-    if (isGameOver) {
+    if (!current) {
         return (
-            <div className="quiz-box capitals-quiz-box game-over-box">
+            <div className="quiz-box">
                 <div className="quiz-topbar">
-                    <button className="back-button" onClick={() => setView('bonus-menu')} aria-label="Back">
+                    <button className="back-button" onClick={navigateBack} aria-label="Back to menu">
                         <Icon name="arrow_back" />
                     </button>
                 </div>
-                <Mascot size={120} mood={isNewHigh ? 'cheer' : 'sad'} />
-                <h1 className="menu-title">Game Over!</h1>
-                <p className="final-score-lang">Final Score: {score}</p>
-                <p className="high-score-lang">High Score: {highScore}</p>
-                {isNewHigh && (
-                    <p className="new-high-score-lang">
-                        <Icon name="emoji_events" variant="highlight" size="lg" pop /> New High Score!
-                    </p>
-                )}
-                <button className="response-submit" onClick={handlePlayAgain}>
-                    <Icon name="replay" /> Play Again
-                </button>
-                {/* Mounted here too so the end-of-run chest plays at game over
-                    (the main play tree is unreachable while isGameOver). */}
-                <ChestReveal
-                    open={!!chest}
-                    rarity={chest?.rarity || 'common'}
-                    bucks={chest?.bucks || 0}
-                    title="Capitals run complete!"
-                    subtitle={`Score ${score}`}
-                    showRarity
-                    onClose={() => setChest(null)}
-                />
+                <Mascot size={120} mood="cheer" cosmetics={profile.cosmetics} />
+                <h1 className="text-center">No capitals to show.</h1>
+                <p className="text-center" style={{ color: 'var(--color-ink-soft)' }}>
+                    Try enabling territories in Settings for more.
+                </p>
             </div>
         );
     }
 
-    if (!currentQuestion) {
-        return (
-            <div className="loading-box">
-                <Spinner />
-                <span>Preparing quiz…</span>
-            </div>
-        );
-    }
+    const feedbackColor = feedback.tone === 'green'
+        ? 'var(--color-success-deep)'
+        : feedback.tone === 'red'
+            ? 'var(--color-danger-deep)'
+            : 'var(--color-ink-soft)';
 
     return (
         <div className={`quiz-box capitals-quiz-box ${flashColor ? `flash-${flashColor}` : ''}`}>
             <div className="quiz-topbar">
-                <button className="back-button" onClick={() => setView('bonus-menu')} aria-label="Back">
+                <button className="back-button" onClick={handleBack} aria-label="Back">
                     <Icon name="arrow_back" />
                 </button>
-                <div className="lives-container" aria-label={`${lives} lives left`}>
-                    {[...Array(TOTAL_LIVES)].map((_, i) => {
-                        const livesLost = TOTAL_LIVES - lives;
-                        return (
-                            <motion.div
-                                key={i}
-                                className={`life-box ${i < livesLost ? 'lost' : ''} ${i === lifeLostIndex ? 'shake' : ''}`}
-                                animate={{ scale: i === lifeLostIndex ? [1, 0.6, 0.85] : 1 }}
-                                transition={{ duration: 0.4 }}
-                            />
-                        );
-                    })}
-                </div>
-                <ScoreBubble score={score} icon="star" floatingDelta={scoreDelta} />
+                <span className="ui-pill ui-pill--primary">
+                    <Icon name="local_fire_department" /> Streak {streak}
+                    {streak > 0 && <span className="streak-mult">×{streakMultiplier(streak).toFixed(1)}</span>}
+                </span>
+                <ScoreBubble score={score} icon="star" />
                 <SpectatorsBadge watchers={watchers} lastReactionId={lastReactionId} />
             </div>
 
-            <AnimatePresence mode="wait">
-                <motion.div
-                    key={currentQuestion.country}
-                    className="phrase-container capitals-prompt"
-                    initial={{ opacity: 0, y: 12 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -8 }}
-                    transition={springs.gentle}
-                >
-                    {currentQuestion.flagFile && (
-                        <img
-                            src={`${IMAGE_BASE_URL}${currentQuestion.flagFile}`}
-                            alt=""
-                            className="capitals-flag-img"
-                        />
-                    )}
-                    <h2 className="phrase-text">{currentQuestion.country}</h2>
-                </motion.div>
-            </AnimatePresence>
-            <p className="menu-subtitle language-subtitle">What is its capital?</p>
+            <MasteryMeter streak={masteryStreak} />
 
-            <div className="lang-hint-row">
-                {hintUsed ? (
-                    <span className="lang-hint-chip">
-                        <Icon name="lightbulb" /> Starts with “{currentQuestion.capital.charAt(0)}”
-                    </span>
-                ) : (
-                    <button
-                        type="button"
-                        className="lang-hint-btn"
-                        onClick={handleRevealHint}
-                        disabled={isAnswered}
+            <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', width: '100%' }}>
+                <AnimatePresence mode="wait">
+                    <motion.div
+                        key={current.code}
+                        className="capitals-prompt"
+                        initial={{ opacity: 0, y: 12 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -8 }}
+                        transition={springs.gentle}
                     >
-                        <Icon name="lightbulb" /> Hint (no points)
-                    </button>
-                )}
+                        {current.flagFile && (
+                            <img
+                                src={`${IMAGE_BASE_URL}${current.flagFile}`}
+                                alt=""
+                                className="flag-image"
+                            />
+                        )}
+                        <h2 className="capitals-country">{current.country}</h2>
+                        <p className="menu-subtitle capitals-subtitle">What is its capital?</p>
+                    </motion.div>
+                </AnimatePresence>
+                <AnimatePresence>
+                    {answered && flashColor === 'correct' && (
+                        <motion.div
+                            initial={{ x: 40, opacity: 0 }}
+                            animate={{ x: 0, opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={springs.bouncy}
+                            style={{ position: 'absolute', right: 'min(2vw, 12px)', bottom: 'min(2vw, 12px)' }}
+                            aria-hidden="true"
+                        >
+                            <Mascot size={56} mood="cheer" cosmetics={profile.cosmetics} still />
+                        </motion.div>
+                    )}
+                    {answered && flashColor === 'incorrect' && (
+                        <motion.div
+                            initial={{ y: 16, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={springs.gentle}
+                            style={{ position: 'absolute', right: 'min(2vw, 12px)', bottom: 'min(2vw, 12px)' }}
+                            aria-hidden="true"
+                        >
+                            <Mascot size={56} mood="sad" cosmetics={profile.cosmetics} still />
+                        </motion.div>
+                    )}
+                    {xpGain && (
+                        <motion.div
+                            className={`xp-gain ${xpGain.amount < 0 ? 'xp-gain--neg' : ''}`}
+                            initial={{ x: '-50%', y: 8, opacity: 0, scale: 0.9 }}
+                            animate={{ x: '-50%', y: -18, opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={springs.bouncy}
+                            style={{ position: 'absolute', left: '50%', top: 'min(2vw, 12px)' }}
+                            aria-hidden="true"
+                        >
+                            {xpGain.amount < 0 ? (
+                                `${xpGain.amount} XP`
+                            ) : (
+                                <>
+                                    <span className="xp-gain__amount">
+                                        +{xpGain.amount} XP
+                                        {xpGain.multiplier > 1 && (
+                                            <span className="xp-gain__mult">×{xpGain.multiplier.toFixed(1)}</span>
+                                        )}
+                                    </span>
+                                    {xpGain.bucks > 0 && (
+                                        <>
+                                            <span className="xp-gain__sep" aria-hidden="true" />
+                                            <span className="xp-gain__bucks">
+                                                <AtlasBucksIcon size={16} /> +{xpGain.bucks}
+                                            </span>
+                                        </>
+                                    )}
+                                </>
+                            )}
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </div>
 
-            <AnimatePresence>
-                {showConfetti && <Confetti pieces={20} />}
-            </AnimatePresence>
-
-            <div className="feedback-label" style={{ color: feedback.tone === 'green' ? 'var(--color-success-deep)' : feedback.tone === 'red' ? 'var(--color-danger-deep)' : 'var(--color-ink-soft)' }} aria-live="polite">
+            <div className="feedback-label" style={{ color: feedbackColor }} aria-live="polite">
                 <div className="feedback-row">
                     {flashColor === 'correct' && <Icon name="check_circle" variant="correct" size="lg" pop />}
                     {flashColor === 'incorrect' && <Icon name="cancel" variant="incorrect" size="lg" pop />}
@@ -406,62 +369,39 @@ function CapitalsQuiz({ setView, includeTerritories = false }) {
                 {feedback.answer && <span className="feedback-answer">{feedback.answer}</span>}
             </div>
 
-            <div className="options-box language-options">
+            <div className="options-box">
                 {options.map((option, i) => (
-                    <ChoiceCard
-                        key={option}
-                        label={option}
-                        index={i}
-                        state={answerStatus[option] === 'correct' ? 'correct' : answerStatus[option] === 'incorrect' ? 'incorrect' : 'idle'}
-                        disabled={isAnswered}
-                        onSelect={handleAnswer}
-                    />
+                    <div className="choice-wrap" key={`${current.code}-${option}`}>
+                        <ChoiceCard
+                            label={option}
+                            index={i}
+                            state={getChoiceState(option)}
+                            disabled={answered}
+                            onSelect={handleAnswer}
+                        />
+                        <AnimatePresence>
+                            {showConfetti && option === current.capital && (
+                                <Confetti pieces={16} radius={110} />
+                            )}
+                        </AnimatePresence>
+                    </div>
                 ))}
             </div>
 
-            <AnimatePresence>
-                {explainer && (
-                    <motion.div
-                        key="capitals-explainer"
-                        className="lang-explainer"
-                        initial={{ opacity: 0, y: 8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -4 }}
-                        transition={springs.gentle}
-                        role="status"
-                    >
-                        <h3 className="lang-explainer__title">
-                            <Icon name="public" /> {explainer.capital} — {explainer.country}
-                        </h3>
-                        <p className="lang-explainer__line">
-                            <strong>{explainer.capital}</strong> is the capital of{' '}
-                            <strong>{explainer.country}</strong>, in {regionLabel(explainer.region)}.
-                        </p>
-                        {explainer.chosenCountry && explainer.chosenCountry !== explainer.country && (
-                            <p className="lang-explainer__line lang-explainer__line--contrast">
-                                You picked <strong>{explainer.chosenCapital}</strong> — that's the capital of{' '}
-                                <strong>{explainer.chosenCountry}</strong>.
-                            </p>
-                        )}
-                        <button
-                            type="button"
-                            className="lang-explainer__continue"
-                            onClick={handleContinue}
-                            autoFocus
-                        >
-                            Continue <Icon name="arrow_forward" />
-                        </button>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+            <div className="quiz-actions">
+                <button type="button" onClick={handleSkip} disabled={answered} className="skip-button">
+                    Skip
+                </button>
+            </div>
+
             <ChestReveal
                 open={!!chest}
                 rarity={chest?.rarity || 'common'}
                 bucks={chest?.bucks || 0}
                 title="Capitals run complete!"
-                subtitle={`Score ${score}`}
+                subtitle={`${score} correct · streak ${bestStreak}`}
                 showRarity
-                onClose={() => setChest(null)}
+                onClose={() => { setChest(null); navigateBack(); }}
             />
         </div>
     );

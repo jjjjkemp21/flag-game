@@ -17,6 +17,7 @@ import { usePet } from '../../lib/pet';
 import { useProfile } from '../../lib/profile';
 import { useQuests, claimableCount } from '../../lib/quests';
 import { getStreak } from '../../lib/streak';
+import { useCapitals, getCapitalMasteredCount, getCapitalTotal } from '../../lib/capitals';
 import { GLOBE_RENDERABLE_ISO2 } from '../../lib/achievements';
 import { MASTERY_STREAK } from '../../lib/xp';
 import { springs } from '../../motion/index';
@@ -41,6 +42,7 @@ const SECTIONS = [
             { key: 'multiple-choice', title: 'Multiple Choice', desc: 'Pick from four options',         icon: 'quiz',          tone: 'primary' },
             { key: 'free-response',   title: 'Free Response',   desc: 'Type the country name',          icon: 'edit_note',     tone: 'success' },
             { key: 'globe',           title: 'Globe',           desc: 'Find the country on a 3D globe', icon: 'public',        tone: 'info'    },
+            { key: 'capitals-quiz',   title: 'Capitals',        desc: 'Name each country’s capital',    icon: 'location_city', tone: 'accent'  },
             { key: 'bonus',           title: 'Bonus Modes',     desc: 'Frenzy, Pixelated, Language…',   icon: 'rocket_launch', tone: 'purple'  },
         ],
     },
@@ -99,6 +101,11 @@ function MainMenu({ setView, flagsData, setQuizMode }) {
     // Subscribe to quests so the "Quests" card shows a live claimable count.
     useQuests();
     const questsClaimable = claimableCount();
+    // Subscribe to the capitals store so the Capitals card's mastery badge ticks
+    // up live as capitals are mastered.
+    useCapitals();
+    const capitalTotal = getCapitalTotal();
+    const capitalMasteryHint = capitalTotal > 0 ? `${getCapitalMasteredCount()}/${capitalTotal} mastered` : null;
     // Flag-recognition mastery (MC / FR / bonus modes share this streak). The
     // raw count gates the Reptile Kingdom Pass card below; the hint string drives
     // the hero pill + the per-mode card badges.
@@ -170,6 +177,9 @@ function MainMenu({ setView, flagsData, setQuizMode }) {
     const onCardClick = (modeKey) => {
         if (modeKey === 'multiple-choice' || modeKey === 'free-response' || modeKey === 'globe') {
             handleStartQuiz(modeKey);
+        } else if (modeKey === 'capitals-quiz') {
+            // Standalone mode — straight into the quiz, no deck picker.
+            setView('capitals-quiz');
         } else if (modeKey === 'multiplayer') {
             setView('multiplayer');
         } else if (modeKey === 'bonus') {
@@ -267,11 +277,19 @@ function MainMenu({ setView, flagsData, setQuizMode }) {
                                         ? masteryHint
                                         : mode.key === 'globe'
                                             ? globeMasteryHint
-                                            : mode.key === 'quests' && questsClaimable > 0
-                                                ? `${questsClaimable} ready to claim`
-                                                : null
+                                            : mode.key === 'capitals-quiz'
+                                                ? capitalMasteryHint
+                                                : mode.key === 'quests' && questsClaimable > 0
+                                                    ? `${questsClaimable} ready to claim`
+                                                    : null
                                 }
-                                streak={(mode.key === 'multiple-choice' || mode.key === 'free-response' || mode.key === 'globe') ? getStreak(mode.key) : 0}
+                                streak={
+                                    mode.key === 'capitals-quiz'
+                                        ? getStreak('capitals')
+                                        : (mode.key === 'multiple-choice' || mode.key === 'free-response' || mode.key === 'globe')
+                                            ? getStreak(mode.key)
+                                            : 0
+                                }
                             />
                         ))}
                     </div>

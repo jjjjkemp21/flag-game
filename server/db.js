@@ -150,6 +150,12 @@ if (!hasCol('quests_json')) db.exec('ALTER TABLE users ADD COLUMN quests_json TE
 // player to a fresh state on next request — keeping past purchases scoped to
 // the season they were made in.
 if (!hasCol('battlepass_json')) db.exec('ALTER TABLE users ADD COLUMN battlepass_json TEXT');
+// ---- Capitals ----
+// Per-capital mastery for the Capitals mode, keyed by the country's (lowercased)
+// flag code. Shape: { [code]: { correct, incorrect, streak, nextReview,
+// lastAnswered } }. Entirely separate from flag/geo mastery. See
+// server/routes/capitals.js and src/lib/capitals.js.
+if (!hasCol('capital_stats_json')) db.exec('ALTER TABLE users ADD COLUMN capital_stats_json TEXT');
 // ---- XP Road (removed) ----
 // These two columns backed the now-removed XP Road feature. They're retained
 // rather than dropped — SQLite can't drop a column without a full table

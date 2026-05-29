@@ -3,6 +3,7 @@
 // ids are synced to the account so they can appear on the leaderboard.
 
 import { MASTERY_STREAK } from './xp';
+import { getCapitalMasteredCount, getCapitalTotal, getCapitalCorrectTotal } from './capitals';
 
 export const CONTINENTS = [
     { key: 'africa',        label: 'Africa',        tag: 'region:africa' },
@@ -97,6 +98,12 @@ export function buildContext(flagsData, bonus, petLevel, earnedXp) {
         geoMastered,
         geoEligibleTotal,
         geoContinents,
+        // Capitals mastery — its own track, read live from the capitals store
+        // (kept out of the per-flag walk above since capitals aren't flags).
+        // See src/lib/capitals.js.
+        capitalMastered: getCapitalMasteredCount(),
+        capitalTotal: getCapitalTotal(),
+        capitalCorrect: getCapitalCorrectTotal(),
     };
 }
 
@@ -188,6 +195,20 @@ const geoCorrectMilestone = (n, name, tier) => ({
     progress: (x) => ({ cur: x.geoTotalCorrect, goal: n }),
 });
 
+// Capitals mode — its own mastery ladder (master = recall a country's capital
+// past the shared mastery streak). Separate group so it reads as a distinct
+// track, parallel to Globe's geography axis. See src/lib/capitals.js.
+const capitalMasteryMilestone = (n, name, tier) => ({
+    id: `capital_mastery_${n}`,
+    group: 'Capitals',
+    name,
+    desc: `Master ${n} capitals`,
+    icon: 'location_city',
+    tier,
+    check: (x) => x.capitalMastered >= n,
+    progress: (x) => ({ cur: x.capitalMastered, goal: n }),
+});
+
 const geoContinentAchievements = CONTINENTS.map((c) => ({
     id: `geo_continent_${c.key}`,
     group: 'Globe',
@@ -248,6 +269,16 @@ export const ACHIEVEMENTS = [
     ...geoContinentAchievements,
     { id: 'geo_all_flags', group: 'Globe', name: 'Atlas Cartographer', desc: 'Place every country the globe can render', icon: 'public', tier: 'legend',
         check: (x) => x.geoEligibleTotal > 0 && x.geoMastered >= x.geoEligibleTotal, progress: (x) => ({ cur: x.geoMastered, goal: x.geoEligibleTotal }) },
+
+    // Capitals — name each country's capital. Its own per-capital mastery axis.
+    { id: 'capital_first', group: 'Capitals', name: 'First Capital', desc: 'Correctly name your first capital', icon: 'location_city', tier: 'stone',
+        check: (x) => x.capitalCorrect >= 1, progress: (x) => ({ cur: Math.min(x.capitalCorrect, 1), goal: 1 }) },
+    capitalMasteryMilestone(10, 'City Scout', 'bronze'),
+    capitalMasteryMilestone(25, 'Capital Navigator', 'silver'),
+    capitalMasteryMilestone(50, 'Capital Cartographer', 'gold'),
+    capitalMasteryMilestone(100, 'Capital Authority', 'platinum'),
+    { id: 'capital_all', group: 'Capitals', name: 'Capital of the World', desc: 'Master every capital', icon: 'public', tier: 'legend',
+        check: (x) => x.capitalTotal > 0 && x.capitalMastered >= x.capitalTotal, progress: (x) => ({ cur: x.capitalMastered, goal: x.capitalTotal }) },
 ];
 
 export const ACHIEVEMENTS_BY_ID = Object.fromEntries(ACHIEVEMENTS.map((a) => [a.id, a]));
@@ -268,7 +299,7 @@ export function topAchievements(unlockedIds, n = 3) {
         .map((a) => a.id);
 }
 
-export const ACHIEVEMENT_GROUPS = ['Mastery', 'Continents', 'Accuracy', 'Globe', 'Bonus Modes', 'Atlas'];
+export const ACHIEVEMENT_GROUPS = ['Mastery', 'Continents', 'Accuracy', 'Globe', 'Capitals', 'Bonus Modes', 'Atlas'];
 
 // Returns the array of unlocked achievement ids for a context.
 export function evaluate(ctx) {

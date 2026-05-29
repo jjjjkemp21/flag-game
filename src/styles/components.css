@@ -1662,8 +1662,7 @@
 .frenzy-unanswered-list { padding-left: var(--space-lg); list-style: square; color: var(--color-ink-soft); }
 
 /* Language quiz */
-.language-quiz-box .phrase-container,
-.capitals-quiz-box .phrase-container {
+.language-quiz-box .phrase-container {
     padding: var(--space-lg);
     background: var(--color-primary-soft);
     border-radius: var(--radius-lg);
@@ -1786,29 +1785,26 @@
 }
 .lang-explainer__continue:hover { background: var(--color-primary-deep); }
 
-/* Capitals quiz — reuses the language quiz's prompt/hint/explainer classes;
-   only the prompt block (rendered flag SVG stacked over the country name) needs
-   bespoke layout. */
-.capitals-quiz-box .phrase-container.capitals-prompt {
+/* Capitals quiz — styled like a normal flag mode: the flag (reusing .flag-image)
+   stacked over the country name, with the standard options grid below. The
+   country name IS the prompt, so it gets display weight. */
+.capitals-prompt {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: var(--space-sm);
-}
-.capitals-flag-img {
     width: 100%;
-    max-width: 150px;
-    aspect-ratio: 3 / 2;
-    object-fit: contain;
-    border-radius: var(--radius-sm);
-    box-shadow: var(--shadow-md), 0 0 0 1px var(--color-border);
-    background: var(--color-bg-elev-1);
 }
-.capitals-prompt .phrase-text {
+.capitals-country {
     font-family: var(--font-display, var(--font-body));
     font-weight: 800;
     font-size: var(--fs-xl);
+    color: var(--color-ink);
+    margin: 0;
+    text-align: center;
+    line-height: 1.2;
 }
+.capitals-subtitle { margin: 0; }
 
 /* Settings panel (legacy class compat) */
 .settings-box .switch {

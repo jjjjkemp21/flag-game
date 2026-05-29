@@ -48,6 +48,13 @@ import {
     flushBattlepass,
 } from './lib/battlepass';
 import { buildContext, evaluate } from './lib/achievements';
+import {
+    ensureCapitalsCatalog,
+    loadCapitals,
+    resetCapitals,
+    flushCapitals,
+    setCapitalsAuthed,
+} from './lib/capitals';
 import { variants } from './motion/index';
 
 // Heavy bonus modes — lazy-loaded
@@ -188,6 +195,12 @@ function App() {
         loadData();
     }, [loadData]);
 
+    // Warm the Capitals catalog (capitals.json joined to flags.json) so the
+    // home-screen mastery badge can show "N/total" without mounting the quiz.
+    useEffect(() => {
+        ensureCapitalsCatalog();
+    }, []);
+
     // Persist progress only for logged-in users; guests are intentionally
     // ephemeral. Guarded by progressReadyRef so we don't push before the
     // account's progress has finished loading on sign-in.
@@ -226,6 +239,7 @@ function App() {
             if (authedRef.current && progressReadyRef.current) flushStats(flagsDataRef.current);
             if (authedRef.current) flushBattlepass();
             if (authedRef.current) flushQuests();
+            if (authedRef.current) flushCapitals();
         };
         const onVisibility = () => { if (document.visibilityState === 'hidden') flush(); };
         window.addEventListener('pagehide', flush);
@@ -317,6 +331,11 @@ function App() {
                     setBpAuthed(true);
                     try { await loadBattlepass(); } catch (_) { /* pass screen will lazy-retry */ }
                 }
+                // Capitals mastery — its own per-capital progress track.
+                if (!cancelled) {
+                    setCapitalsAuthed(true);
+                    try { const c = await api.get('/capitals'); loadCapitals(c.stats); } catch (_) { /* mode will lazy-retry */ }
+                }
                 // Recompute unlocked achievements from the just-loaded progress so the
                 // account's count + showcase are correct. Without this they stay at the
                 // load-time defaults (unlocked=[]) and a later cosmetic-only persist
@@ -355,6 +374,8 @@ function App() {
                 setQuestsAuthed(false);
                 resetQuests();
                 resetBattlepass();
+                setCapitalsAuthed(false);
+                resetCapitals();
                 answerTotalsRef.current = { correct: 0, incorrect: 0 };
                 // Run/best streaks live in device-global localStorage; clear them
                 // on logout/guest so one account's streaks don't bleed into the
@@ -413,10 +434,14 @@ function App() {
                 const prof = await api.get('/profile');
                 loadProfile(prof);
             } catch (_) { resetProfile(); }
+            // Wipe capital mastery too (the /stats/reset above already NULLs the
+            // column server-side; clear the in-memory store to match).
+            loadCapitals({});
         } else {
             // Guests: clear the in-memory pet + profile (never persisted).
             resetPet();
             resetProfile();
+            resetCapitals();
         }
         setView('menu');
     };

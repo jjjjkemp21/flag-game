@@ -46,6 +46,7 @@ export const MODE_XP = {
     'free-response': 3,       // was 1.5
     'globe': 3.5,             // was 1.75
     'globe-name': 4,          // was 2
+    'capitals': 3,            // capital recall — its own mastery track
 };
 
 // 1.0 at streak 0, ramping to the 2x cap at a 30-answer streak.
