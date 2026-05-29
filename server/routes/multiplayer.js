@@ -289,15 +289,30 @@ router.post('/lobby/:code/join', (req, res) => {
     res.json(view(lobby, me));
 });
 
+// Member user-ids ordered by JOIN time. Object key order is numeric-id order
+// (= account registration order), NOT join order, so host handoff / trim must
+// sort by the stamped joinedAt to be fair (longest-present first).
+function memberIdsByJoin(lobby) {
+    return Object.entries(lobby.members)
+        .sort((a, b) => (a[1].joinedAt || 0) - (b[1].joinedAt || 0))
+        .map(([id]) => parseInt(id, 10));
+}
+
+// Minimum plausible wall-clock per point. On a WAGERED match we won't stamp
+// "reached the target" until at least target × this has elapsed, so a tampered
+// client can't POST score=target instantly and steal the pot. Generous enough
+// that no human-speed legitimate run is affected.
+const MIN_MS_PER_POINT = 600;
+
 router.post('/lobby/:code/leave', (req, res) => {
     const lobby = getLobbyOr404(req, res);
     if (!lobby) return;
     delete lobby.members[req.user.id];
-    const remaining = Object.keys(lobby.members);
+    const remaining = memberIdsByJoin(lobby);
     if (remaining.length === 0) {
         lobby.emptyAt = Date.now();
     } else if (lobby.hostId === req.user.id) {
-        lobby.hostId = parseInt(remaining[0], 10); // hand off host
+        lobby.hostId = remaining[0]; // hand off host to the earliest-joined member
     }
     if (lobby.state === 'playing') evaluate(lobby);
     res.json({ ok: true });
@@ -309,12 +324,17 @@ router.put('/lobby/:code/config', (req, res) => {
     if (lobby.hostId !== req.user.id) return res.status(403).json({ error: 'Only the host can change settings.' });
     if (lobby.state !== 'lobby') return res.status(409).json({ error: 'Cannot change settings after the match starts.' });
     lobby.config = normalizeConfig(req.body && req.body.config);
-    // Trim members if the new cap is lower.
-    const ids = Object.keys(lobby.members);
-    if (ids.length > lobby.config.maxPlayers) {
-        ids.slice(lobby.config.maxPlayers).forEach((id) => {
-            if (parseInt(id, 10) !== lobby.hostId) delete lobby.members[id];
-        });
+    // Trim members if the new cap is lower: always keep the host, then the
+    // earliest-joined others up to the cap. (Reserving the host slot inside the
+    // cap also avoids the old maxPlayers+1 overflow.)
+    const ordered = memberIdsByJoin(lobby);
+    if (ordered.length > lobby.config.maxPlayers) {
+        const keep = new Set([lobby.hostId]);
+        for (const id of ordered) {
+            if (keep.size >= lobby.config.maxPlayers) break;
+            keep.add(id);
+        }
+        ordered.forEach((id) => { if (!keep.has(id)) delete lobby.members[id]; });
     }
     res.json(view(lobby, req.user.id));
 });
@@ -412,7 +432,16 @@ router.post('/lobby/:code/progress', (req, res) => {
         && !m.reachedAt
         && m.score >= lobby.config.target
     ) {
-        m.reachedAt = Date.now();
+        // On a wagered match, the pot is real Atlas Bucks and the score is
+        // client-reported, so gate the target-cross on a human-plausible
+        // minimum elapsed time. This blocks the "POST score=target instantly
+        // and take the pot" exploit without affecting legitimate (paced) runs.
+        const ante = Math.max(0, Math.round(Number(lobby.config.ante) || 0));
+        const minMs = lobby.config.target * MIN_MS_PER_POINT;
+        const elapsed = Date.now() - (lobby.playsAt || lobby.startedAt || 0);
+        if (ante <= 0 || elapsed >= minMs) {
+            m.reachedAt = Date.now();
+        }
     }
     // Track where this player is and what they picked, so other clients can show
     // each opponent's Atlas sitting on the option they chose for that question.
@@ -445,8 +474,8 @@ setInterval(() => {
                 if (now - m.lastSeen > IDLE_MS) {
                     delete lobby.members[id];
                     if (lobby.hostId === parseInt(id, 10)) {
-                        const rest = Object.keys(lobby.members);
-                        if (rest.length) lobby.hostId = parseInt(rest[0], 10);
+                        const rest = memberIdsByJoin(lobby);
+                        if (rest.length) lobby.hostId = rest[0];
                     }
                 }
             }

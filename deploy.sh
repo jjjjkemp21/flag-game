@@ -33,6 +33,7 @@ docker run -d --restart always --name flag-game --network=my_proxy_network \
   -v /home/jjjjkemp/flag-game-data:/data \
   -e DB_PATH=/data/flagquest.db \
   -e JWT_SECRET="${JWT_SECRET}" \
+  -e ADMIN_CLAIM_PASSWORD="${ADMIN_CLAIM_PASSWORD}" \
   flag-game
 
 # Auto-publish release notes for this deploy — but ONLY when RELEASE_NOTES.md

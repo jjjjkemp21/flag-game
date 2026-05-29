@@ -212,16 +212,58 @@ if (!alreadyWiped) {
 const ECON_V2_KEY = 'economy_v2_2026_05_28';
 const econV2Done = db.prepare('SELECT 1 FROM _meta WHERE key = ?').get(ECON_V2_KEY);
 if (!econV2Done) {
+    // bucks_earned_lifetime defaults to 0 and is the lifetime gameplay-earned
+    // total, so it should equal the grant — NOT `bucks + grant` (SQLite reads
+    // the pre-update `bucks` here, conflating any prior balance into the
+    // lifetime stat).
     db.exec(`
         UPDATE users
         SET
             bucks = bucks + MAX(0, COALESCE(earned_xp, 0) - bucks_minted_xp),
-            bucks_earned_lifetime = bucks + MAX(0, COALESCE(earned_xp, 0) - bucks_minted_xp),
+            bucks_earned_lifetime = MAX(0, COALESCE(earned_xp, 0) - bucks_minted_xp),
             migration_v2_grant = MAX(0, COALESCE(earned_xp, 0) - bucks_minted_xp),
             bucks_minted_xp = COALESCE(earned_xp, 0)
         WHERE COALESCE(earned_xp, 0) > bucks_minted_xp
     `);
     db.prepare('INSERT INTO _meta (key, value) VALUES (?, ?)').run(ECON_V2_KEY, String(Date.now()));
+}
+
+// Economy-v2 follow-up: the migration above keyed on COALESCE(earned_xp, 0), so
+// legacy accounts whose earned_xp was still NULL at v2-boot (dormant since
+// before per-answer scaling shipped) were treated as 0 earned XP and received
+// NO Bucks grant. Their earned_xp is only materialized lazily on a /stats
+// request, which never happened. Here we materialize earned_xp from the legacy
+// formula for any still-NULL rows and credit the Bucks they were owed at the
+// same 1:1 rate — mirroring exactly what the v2 grant would have done. Strictly
+// scoped to earned_xp IS NULL (rows that provably never ran the real v2 grant),
+// idempotent via _meta, so it can never double-pay an already-migrated account.
+const ECON_V2_LEGACY_KEY = 'economy_v2_legacy_seed_2026_05_28';
+const econV2LegacyDone = db.prepare('SELECT 1 FROM _meta WHERE key = ?').get(ECON_V2_LEGACY_KEY);
+if (!econV2LegacyDone) {
+    const { legacyBaseXp } = require('./xp');
+    const nullRows = db.prepare(
+        'SELECT id, stats_json, bucks_minted_xp FROM users WHERE earned_xp IS NULL'
+    ).all();
+    const apply = db.prepare(
+        `UPDATE users SET
+            earned_xp = @earned,
+            bucks = bucks + @grant,
+            bucks_earned_lifetime = bucks_earned_lifetime + @grant,
+            migration_v2_grant = migration_v2_grant + @grant,
+            bucks_minted_xp = @earned
+         WHERE id = @id`
+    );
+    const seedTx = db.transaction((rows) => {
+        for (const r of rows) {
+            let stats = [];
+            try { stats = r.stats_json ? JSON.parse(r.stats_json) : []; } catch (_) { stats = []; }
+            const earned = legacyBaseXp(Array.isArray(stats) ? stats : []);
+            const grant = Math.max(0, earned - (Number(r.bucks_minted_xp) || 0));
+            apply.run({ id: r.id, earned, grant });
+        }
+    });
+    seedTx(nullRows);
+    db.prepare('INSERT INTO _meta (key, value) VALUES (?, ?)').run(ECON_V2_LEGACY_KEY, String(Date.now()));
 }
 
 module.exports = db;

@@ -125,12 +125,19 @@ function buildEntry(row, scope) {
     }
     const ach = achievementsOf(row);
     const pet = petOf(row);
+    // Guard this parse like every sibling parse in buildEntry — buildEntry is
+    // mapped over EVERY user row, so one malformed cosmetics_json would throw
+    // out of the .map and 500 the entire leaderboard / user-search for everyone.
+    let cosmetics = null;
+    if (row.cosmetics_json) {
+        try { cosmetics = JSON.parse(row.cosmetics_json); } catch (_) { /* ignore malformed */ }
+    }
     return {
         id: row.id,
         username: row.username,
         xp: row.xp,
         region: row.region || null,
-        cosmetics: row.cosmetics_json ? JSON.parse(row.cosmetics_json) : null,
+        cosmetics,
         petLevel: row.pet_level || 1,
         petName: pet && pet.name ? String(pet.name) : null,
         petStage: petStageOf(pet),

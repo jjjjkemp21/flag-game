@@ -7,15 +7,16 @@ const { XP_ROAD_MILESTONES } = require('../xpRoadCatalog');
 
 const router = express.Router();
 
-// Auto-grant any XP Road milestones the player's new earned XP has just
-// crossed. Mutates the passed arrays/totals in place and returns the list of
-// granted milestone ids so the caller can include it in the API response.
-// Idempotent: a milestone is granted at most once thanks to the claimed-set
-// check, even if earned_xp is pushed identically several times in a row.
-function applyXpRoadGrants(earnedXp, claimedSet, ownedSet, titlesSet, totals) {
+// Auto-grant any XP Road milestones the player's new TOTAL XP has just crossed
+// (earned XP + bonus high scores — the same quantity the client displays).
+// Mutates the passed arrays/totals in place and returns the list of granted
+// milestone ids so the caller can include it in the API response. Idempotent: a
+// milestone is granted at most once thanks to the claimed-set check, even if xp
+// is pushed identically several times in a row.
+function applyXpRoadGrants(xpTotal, claimedSet, ownedSet, titlesSet, totals) {
     const granted = [];
     for (const mi of XP_ROAD_MILESTONES) {
-        if (earnedXp < mi.xp) break; // milestones are catalog-ordered by xp asc
+        if (xpTotal < mi.xp) break; // milestones are catalog-ordered by xp asc
         if (claimedSet.has(mi.id)) continue;
         claimedSet.add(mi.id);
         granted.push(mi.id);
@@ -67,9 +68,18 @@ function applyUpdate(userId, body) {
     const newFlagStats = Array.isArray(flagStats)
         ? flagStats
         : (row.stats_json ? safeParse(row.stats_json, []) : []);
-    const newBonus = bonusScores && typeof bonusScores === 'object'
-        ? bonusScores
-        : (row.bonus_scores_json ? safeParse(row.bonus_scores_json, {}) : {});
+    // Bonus high scores are a max-type metric (like streaks) — never let an
+    // incoming value LOWER a stored best, and clamp each to a non-negative
+    // integer. A plain last-write-wins here let a stale snapshot clobber a
+    // higher score and let a doctored client set arbitrary leaderboard values.
+    const prevBonus = row.bonus_scores_json ? safeParse(row.bonus_scores_json, {}) : {};
+    const newBonus = { ...prevBonus };
+    if (bonusScores && typeof bonusScores === 'object') {
+        for (const [mode, val] of Object.entries(bonusScores)) {
+            const n = Math.max(0, Math.round(Number(val) || 0));
+            if (n > (newBonus[mode] || 0)) newBonus[mode] = n;
+        }
+    }
 
     // Last-write-wins (consistent with flag stats): use the client's absolute
     // earned_xp when provided, else keep the existing/seeded baseline.
@@ -98,11 +108,14 @@ function applyUpdate(userId, body) {
     const ownedSet = new Set(safeParse(row.owned_cosmetics_json, []) || []);
     const titlesSet = new Set(safeParse(row.xp_road_titles_json, []) || []);
     const totals = { bucks: nextBucks, bucksLifetime: newBucksLifetime };
-    const grantedXpRoad = applyXpRoadGrants(newEarned, claimedSet, ownedSet, titlesSet, totals);
+    // Grant milestones on TOTAL xp (earned + bonus high scores), the same
+    // quantity the client uses to mark milestones "reached" and to position the
+    // climber (computeXp()). Keying grants on earned_xp alone left bonus-mode
+    // players seeing a milestone as reached but never actually paid/granted it.
+    const xp = totalXp(newEarned, newBonus);
+    const grantedXpRoad = applyXpRoadGrants(xp, claimedSet, ownedSet, titlesSet, totals);
     nextBucks = totals.bucks;
     newBucksLifetime = totals.bucksLifetime;
-
-    const xp = totalXp(newEarned, newBonus);
 
     db.prepare(
         `UPDATE users SET stats_json = ?, bonus_scores_json = ?, earned_xp = ?, xp = ?, bucks = ?, bucks_earned_lifetime = ?,
@@ -133,7 +146,11 @@ router.post('/beacon', (req, res) => {
     if (!token) return res.status(401).end();
     let uid;
     try {
-        uid = jwt.verify(token, JWT_SECRET).uid;
+        const payload = jwt.verify(token, JWT_SECRET);
+        // Reject reset tokens (which also carry a uid); accept legacy kind-less
+        // access tokens.
+        if (payload.kind && payload.kind !== 'access') return res.status(401).end();
+        uid = payload.uid;
     } catch (_) {
         return res.status(401).end();
     }

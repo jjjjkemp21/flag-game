@@ -36,7 +36,7 @@ const HATS = {
     // Atlas Pass exclusives.
     bp_horns_jade: 999999, bp_horns_obsidian: 999999, bp_horns_fire: 999999, bp_horns_gold: 999999,
     bp_frill_emerald: 999999, bp_frill_crimson: 999999, bp_frill_violet: 999999,
-    bp_scale_helm: 999999, bp_scale_helm_gold: 999999,
+    bp_scale_helm: 999999,
     // XP Road exclusives.
     xpr_vine_crown: 999999,
 };
@@ -59,7 +59,7 @@ const GLASSES = {
     party_shades: 1900, monocle_diamond: 4200,
     // Atlas Pass exclusives.
     bp_snake_eyes: 999999, bp_serpent_eyes: 999999, bp_lizard_eyes: 999999,
-    bp_dragon_gaze: 999999, bp_drake_visor: 999999,
+    bp_dragon_gaze: 999999,
     // XP Road exclusives.
     xpr_leaflet: 999999,
 };
@@ -68,7 +68,7 @@ const EFFECTS = {
     none: 0, spin: 500, orbit: 900, sparkle: 1200, bubbles: 1800, snow: 2400, hearts: 3000,
     rings: 3600, flames: 4400, electric: 5400, confetti: 6800, notes: 2700, disco: 5800,
     // Atlas Pass exclusives.
-    bp_scales: 999999, bp_breath: 999999, bp_mist: 999999,
+    bp_scales: 999999, bp_breath: 999999,
     // XP Road exclusives.
     xpr_leaves: 999999,
 };

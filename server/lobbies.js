@@ -5,14 +5,4 @@
 
 const lobbies = new Map(); // code -> lobby
 
-// Find the lobby a given user is currently a member of, if any. Used by the
-// spectator endpoint to resolve a target's active match without the spectator
-// needing to know the lobby code. Returns the lobby object, not a view.
-function findLobbyByMemberId(userId) {
-    for (const lobby of lobbies.values()) {
-        if (lobby.members && lobby.members[userId]) return lobby;
-    }
-    return null;
-}
-
-module.exports = { lobbies, findLobbyByMemberId };
+module.exports = { lobbies };

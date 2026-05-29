@@ -201,14 +201,19 @@ router.get('/me', requireAuth, (req, res) => {
     res.json({ user: publicUser(req.user) });
 });
 
-// Promote the current user to admin if they know the secret password. This
-// replaces the env-seeded "admin" account: there is no privileged username
-// anymore — anyone signed in who knows the password becomes an admin. Inherits
-// the /api/auth/* rate limiter (60 req / 15 min per IP) so brute-forcing the
-// password is impractical even with the value sitting in the source.
-const ADMIN_CLAIM_PASSWORD = 'adminpassword';
+// Promote the current user to admin if they know the secret password. The
+// password is read from the ADMIN_CLAIM_PASSWORD env var (set on the host, never
+// committed) — a hardcoded value in this public repo would let anyone self-
+// promote. When the var is unset/blank the endpoint is DISABLED (403): a missing
+// secret must never fall back to an exploitable default. To (re-)enable admin
+// claiming, set ADMIN_CLAIM_PASSWORD in the Pi's .env and pass it through in
+// deploy.sh (alongside JWT_SECRET). Inherits the /api/auth/* rate limiter.
+const ADMIN_CLAIM_PASSWORD = process.env.ADMIN_CLAIM_PASSWORD || '';
 
 router.post('/claim-admin', requireAuth, (req, res) => {
+    if (!ADMIN_CLAIM_PASSWORD) {
+        return res.status(403).json({ error: 'Admin claiming is disabled.' });
+    }
     const { password } = req.body || {};
     if (typeof password !== 'string' || password !== ADMIN_CLAIM_PASSWORD) {
         return res.status(401).json({ error: 'Wrong password.' });

@@ -4,7 +4,7 @@ const db = require('./db');
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-insecure-secret-change-me';
 
 function signToken(user) {
-    return jwt.sign({ uid: user.id }, JWT_SECRET, { expiresIn: '30d' });
+    return jwt.sign({ uid: user.id, kind: 'access' }, JWT_SECRET, { expiresIn: '30d' });
 }
 
 function signResetToken(userId) {
@@ -23,6 +23,12 @@ function requireAuth(req, res, next) {
     if (!token) return res.status(401).json({ error: 'Not authenticated' });
     try {
         const payload = jwt.verify(token, JWT_SECRET);
+        // Reject non-access tokens (e.g. password-reset tokens, which also carry
+        // a uid). Legacy access tokens predate the `kind` claim, so a missing
+        // kind is still accepted.
+        if (payload.kind && payload.kind !== 'access') {
+            return res.status(401).json({ error: 'Invalid token' });
+        }
         const user = db.prepare('SELECT * FROM users WHERE id = ?').get(payload.uid);
         if (!user) return res.status(401).json({ error: 'User not found' });
         req.user = user;
