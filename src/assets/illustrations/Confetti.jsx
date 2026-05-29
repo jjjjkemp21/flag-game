@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
-import { confettiPalette } from '../../motion';
+import { confettiPalette } from '../../motion/index';
 
 /**
  * One-shot confetti burst. Renders a layer of randomly oriented pieces that

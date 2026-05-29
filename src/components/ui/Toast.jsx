@@ -1,8 +1,8 @@
 import React, { createContext, useCallback, useContext, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { variants } from '../../motion';
-import Icon from '../Icon';
+import { variants } from '../../motion/index';
+import Icon from '../common/Icon';
 
 const ToastContext = createContext(null);
 

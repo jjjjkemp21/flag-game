@@ -6853,3 +6853,113 @@
     color: #5B3FA0;
     font-weight: 700;
 }
+
+/* =================================================================
+   Accessibility layer — keyboard focus, touch targets, contrast.
+   Appended last so these rules win without editing each component.
+   Implements the WCAG findings from the UX audit app-wide.
+   ================================================================= */
+
+/* Bulletproof keyboard focus. An outline is painted outside the border box and
+   isn't clipped by an element's own `overflow:hidden` (the box-shadow ring is),
+   so cards and tabs in scroll rows now show a clear focus indicator. */
+.mode-card:focus-visible,
+.grid-button:focus-visible,
+.scope-tab:focus-visible,
+.lb-filter__btn:focus-visible,
+.player-search__result:focus-visible,
+.choice-card:focus-visible,
+.leaderboard-row.is-clickable:focus-visible,
+.pw-toggle:focus-visible,
+.auth-tab:focus-visible,
+.auth-link:focus-visible,
+.icon-button:focus-visible,
+.ach-feature:focus-visible,
+.bell-button:focus-visible,
+.account-chip:focus-visible,
+.ab-chip:focus-visible,
+.reward-tile:focus-visible,
+.rt-art:focus-visible,
+.topbar__home:focus-visible {
+    outline: 3px solid var(--color-primary);
+    outline-offset: 2px;
+    box-shadow: none;
+}
+/* A focused search result must show a ring, not just a near-hover tint. */
+.player-search__result:focus-visible {
+    background: var(--color-bg-elev-1);
+}
+
+/* Minimum ~44×44 hit area for icon-only / small controls. Keeps the visible
+   glyph size; only the clickable box grows (mirrors the project's own pattern). */
+.icon-button,
+.ach-feature,
+.bell-button,
+.pw-toggle {
+    min-width: 44px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Section headings: the primary menu IA grouping needs to read. Full ink
+   colour + heavier weight clears the AA contrast threshold at small sizes. */
+.section-heading {
+    color: var(--color-ink);
+    font-weight: 800;
+}
+
+/* Locked progression tiles: dim the art a little less so the name/"Locked"
+   status text stays legible (whole-element opacity dropped text below AA). */
+.bp-tile.is-locked,
+.bp-tile.is-pass-locked {
+    opacity: 0.72;
+}
+
+/* Global Home button (left of the top bar) — every non-menu screen gets a
+   consistent way back so store/settings/leaderboard aren't dead ends. */
+.topbar__home {
+    margin-right: auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
+    border-radius: var(--radius-md);
+    color: var(--color-ink-soft);
+    background: var(--color-bg-elev-1);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-sm);
+    transition: background var(--dur-fast) ease, color var(--dur-fast) ease, transform var(--dur-fast) ease;
+}
+.topbar__home:hover {
+    color: var(--color-primary);
+    background: var(--color-primary-soft);
+    transform: translateY(-1px);
+}
+.topbar__home .app-icon { font-size: 1.4em; }
+
+/* Caret on the account chip signals it opens a menu (recognition over recall). */
+.account-chip__caret {
+    font-size: 1.1em;
+    color: var(--color-ink-muted);
+    margin-left: 2px;
+}
+
+/* Friendly empty state for the Stats screen (was a bare blank panel). */
+.stats-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-md);
+    text-align: center;
+    padding: var(--space-3xl) var(--space-xl);
+    color: var(--color-ink-soft);
+    max-width: 380px;
+}
+.stats-empty .app-icon {
+    font-size: 3rem;
+    color: var(--color-primary);
+    opacity: 0.7;
+}

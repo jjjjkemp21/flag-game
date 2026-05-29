@@ -1,0 +1,84 @@
+import React from 'react';
+import { motion } from 'framer-motion';
+import Icon from '../common/Icon';
+import { Button, Pill } from '../ui/index';
+import { usePet } from '../../lib/pet';
+
+const STATUS = {
+    cheer: 'is thriving! Keep those flags coming.',
+    wave: 'is happy to see you.',
+    idle: 'is content for now.',
+    hungry: 'is famished — answer flags correctly to feed it!',
+    sleepy: 'is drowsy — a few rounds will perk it up.',
+    sad: 'feels lonely. Play to cheer it up!',
+    sick: "isn't feeling well. Play to nurse it back to health!",
+};
+
+const NEEDS = [
+    { key: 'fed', label: 'Fed', icon: 'restaurant', tone: 'success' },
+    { key: 'joy', label: 'Joy', icon: 'mood', tone: 'accent' },
+    { key: 'energy', label: 'Energy', icon: 'bolt', tone: 'info' },
+];
+
+function NeedBar({ label, icon, tone, value }) {
+    const low = value < 25;
+    return (
+        <div className="need-row">
+            <span className="need-label">
+                <Icon name={icon} /> {label}
+            </span>
+            <span className={`need-track ${low ? 'is-low' : ''}`}>
+                <motion.span
+                    className={`need-fill need-fill--${tone}`}
+                    initial={false}
+                    animate={{ width: `${Math.round(value)}%` }}
+                    transition={{ duration: 0.5, ease: 'easeOut' }}
+                />
+            </span>
+        </div>
+    );
+}
+
+function PetPanel({ setView }) {
+    const pet = usePet();
+
+    return (
+        <div className="pet-panel">
+            <div className="pet-header">
+                <span className="pet-name">{pet.name}</span>
+                <span className="pet-pills">
+                    <Pill tone="info" icon="military_tech">Lv {pet.level}</Pill>
+                    <Pill tone="primary" icon="auto_awesome">{pet.stageLabel}</Pill>
+                    <Pill tone={pet.health < 25 ? 'danger' : 'success'} icon="favorite">{Math.round(pet.health)}</Pill>
+                    {pet.ko ? (
+                        <Pill tone="danger" icon="sentiment_very_dissatisfied">KO'd</Pill>
+                    ) : pet.bruised ? (
+                        <Pill tone="accent" icon="healing">Bruised</Pill>
+                    ) : null}
+                </span>
+            </div>
+
+            <div className="pet-needs">
+                {NEEDS.map((n) => (
+                    <NeedBar key={n.key} label={n.label} icon={n.icon} tone={n.tone} value={pet[n.key]} />
+                ))}
+            </div>
+
+            <div className="pet-footer">
+                <p className="pet-status">
+                    <strong>{pet.name}</strong>{' '}
+                    {pet.ko
+                        ? 'was knocked out in an Atlas Battle — play other modes to nurse it back up!'
+                        : (STATUS[pet.mood] || STATUS.idle)}
+                </p>
+                {setView && (
+                    <Button variant="secondary" size="sm" icon="storefront" onClick={() => setView('store')}>
+                        Customize
+                    </Button>
+                )}
+            </div>
+        </div>
+    );
+}
+
+export default PetPanel;

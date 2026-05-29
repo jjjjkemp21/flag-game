@@ -1,28 +1,29 @@
 import React, { useState, useEffect, useCallback, useRef, Suspense, lazy } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { select_next_flag } from './quiz_logic';
-import MainMenu from './components/MainMenu';
-import MultipleChoiceQuiz from './components/MultipleChoiceQuiz';
-import FreeResponseQuiz from './components/FreeResponseQuiz';
-import Settings from './components/Settings';
-import QuizMenu from './components/QuizMenu';
-import BonusMenu from './components/BonusMenu';
-import AuthScreen from './components/AuthScreen';
-import Leaderboard from './components/Leaderboard';
-import Friends from './components/Friends';
-import Achievements from './components/Achievements';
-import AdminAnnounce from './components/AdminAnnounce';
-import StoreScreen from './components/StoreScreen';
-import MigrationV2Modal from './components/MigrationV2Modal';
-import LoginChestModal from './components/LoginChestModal';
-import QuestCompleteModal from './components/QuestCompleteModal';
-import QuestsScreen from './components/QuestsScreen';
-import StatsScreen from './components/StatsScreen';
-import MultiplayerScreen from './components/MultiplayerScreen';
-import BattlepassScreen from './components/BattlepassScreen';
-import XpRoadScreen from './components/XpRoadScreen';
-import SpectatorScreen from './components/SpectatorScreen';
-import TopBar from './components/TopBar';
+import { setKnownAnswers } from './answer_check';
+import MainMenu from './components/menu/MainMenu';
+import MultipleChoiceQuiz from './components/quizzes/MultipleChoiceQuiz';
+import FreeResponseQuiz from './components/quizzes/FreeResponseQuiz';
+import Settings from './components/profile/Settings';
+import QuizMenu from './components/quizzes/QuizMenu';
+import BonusMenu from './components/quizzes/BonusMenu';
+import AuthScreen from './components/profile/AuthScreen';
+import Leaderboard from './components/social/Leaderboard';
+import Friends from './components/social/Friends';
+import Achievements from './components/profile/Achievements';
+import AdminAnnounce from './components/profile/AdminAnnounce';
+import StoreScreen from './components/economy/StoreScreen';
+import MigrationV2Modal from './components/economy/MigrationV2Modal';
+import LoginChestModal from './components/economy/LoginChestModal';
+import QuestCompleteModal from './components/economy/QuestCompleteModal';
+import QuestsScreen from './components/economy/QuestsScreen';
+import StatsScreen from './components/profile/StatsScreen';
+import MultiplayerScreen from './components/social/MultiplayerScreen';
+import BattlepassScreen from './components/economy/BattlepassScreen';
+import XpRoadScreen from './components/economy/XpRoadScreen';
+import SpectatorScreen from './components/social/SpectatorScreen';
+import TopBar from './components/menu/TopBar';
 import Spinner from './assets/illustrations/Spinner';
 import { useAudio } from './audio/AudioProvider';
 import { useAuth } from './auth/AuthProvider';
@@ -48,15 +49,15 @@ import {
 } from './lib/battlepass';
 import { loadXpRoad, resetXpRoad } from './lib/xpRoad';
 import { buildContext, evaluate } from './lib/achievements';
-import { variants } from './motion';
+import { variants } from './motion/index';
 
 // Heavy bonus modes — lazy-loaded
-const PixelatedQuiz    = lazy(() => import('./components/PixelatedQuiz'));
-const FrenzyQuiz       = lazy(() => import('./components/FrenzyQuiz'));
-const LongestRouteQuiz = lazy(() => import('./components/LongestRouteQuiz'));
-const LanguageQuiz     = lazy(() => import('./components/LanguageQuiz'));
+const PixelatedQuiz    = lazy(() => import('./components/quizzes/PixelatedQuiz'));
+const FrenzyQuiz       = lazy(() => import('./components/quizzes/FrenzyQuiz'));
+const LongestRouteQuiz = lazy(() => import('./components/quizzes/LongestRouteQuiz'));
+const LanguageQuiz     = lazy(() => import('./components/quizzes/LanguageQuiz'));
 // Globe mode pulls in Three.js + earcut; keep it out of the main bundle.
-const GlobeQuiz        = lazy(() => import('./components/GlobeQuiz'));
+const GlobeQuiz        = lazy(() => import('./components/quizzes/GlobeQuiz'));
 
 const DATA_URL = './data/flags.json';
 
@@ -156,6 +157,11 @@ function App() {
                 geoNextReview: null,
                 geoIsLeech: false,
             }));
+            // Register every country name + alias so the fuzzy answer matcher
+            // can reject a guess that exactly spells a DIFFERENT country.
+            setKnownAnswers(
+                initializedData.flatMap((f) => [f.name, ...(f.aliases || [])])
+            );
             setFlagsData(initializedData);
         } catch (error) {
             console.error("Failed to load flags data:", error);
@@ -307,6 +313,13 @@ function App() {
                 resetBattlepass();
                 resetXpRoad();
                 answerTotalsRef.current = { correct: 0, incorrect: 0 };
+                // Run/best streaks live in device-global localStorage; clear them
+                // on logout/guest so one account's streaks don't bleed into the
+                // next user on a shared browser (and inflate their XP multiplier).
+                try {
+                    localStorage.removeItem('flagGameStreaks');
+                    localStorage.removeItem('flagGameBestStreaks');
+                } catch (_) { /* private mode etc. */ }
                 setFlagsData(prev => zeroFlagStats(prev));
             }
             if (!cancelled) progressReadyRef.current = true;
@@ -332,11 +345,20 @@ function App() {
         } catch (_) { /* private mode etc. */ }
 
         if (authedRef.current) {
-            // Server-side full wipe — clears stats, bonus, earned/cached XP,
-            // streaks, pet (json + level), cosmetics, achievements, region,
-            // mp_wins, and any selected title. Keeps identity + recovery rows.
+            // Server-side wipe clears flag stats, streaks, pet (json + level),
+            // cosmetics, achievements, region, mp_wins, and any selected title —
+            // but INTENTIONALLY PRESERVES earned XP and bonus high scores ("a
+            // reward you keep"). Keeps identity + recovery rows.
             try { await api.post('/stats/reset'); } catch (_) { /* offline — local wipe still applies */ }
-            patchUser({ xp: 0 });
+            // Re-hydrate XP/bonus from the server's preserved values; otherwise
+            // the local zero above would be pushed back and clobber them on the
+            // next sync (silent data loss of the kept reward).
+            try {
+                const remote = await api.get('/stats');
+                loadEarnedXp(remote.earnedXp || 0);
+                loadBonus(remote.bonusScores || {});
+            } catch (_) { /* keep local zero if the re-fetch fails */ }
+            patchUser({ xp: computeXp() });
             // Re-hydrate the account-tied stores from the now-empty server state.
             // loadPet / loadProfile flip authed back on (resetPet/resetProfile
             // turn it off) so future changes persist again.
@@ -374,7 +396,12 @@ function App() {
                 return flagsData;
             }
             if (quizCategory.type === 'review') {
-                return flagsData.filter(f => f.nextReview !== null && f.nextReview <= now);
+                // Globe maintains its own geo review schedule; mirror the
+                // mode-aware count QuizMenu advertises so the launched deck
+                // matches the tile (use loose != null since geoNextReview is
+                // lazily added and may be undefined on untouched flags).
+                const dueField = view === 'globe' ? 'geoNextReview' : 'nextReview';
+                return flagsData.filter(f => f[dueField] != null && f[dueField] <= now);
             }
             return flagsData.filter(flag =>
                 flag.tags.includes(`${quizCategory.type}:${quizCategory.value}`)
@@ -436,19 +463,19 @@ function App() {
             case 'pixelated-quiz':
                 return (
                     <Suspense fallback={<LazyFallback label="Loading Pixelated…" />}>
-                        <PixelatedQuiz allFlagsData={flagsData} setView={setView} />
+                        <PixelatedQuiz allFlagsData={flagsData} setView={setView} strictSpelling={strictSpelling} />
                     </Suspense>
                 );
             case 'frenzy-quiz':
                 return (
                     <Suspense fallback={<LazyFallback label="Loading Frenzy…" />}>
-                        <FrenzyQuiz allFlagsData={flagsData} setView={setView} />
+                        <FrenzyQuiz allFlagsData={flagsData} setView={setView} strictSpelling={strictSpelling} />
                     </Suspense>
                 );
             case 'longest-route-quiz':
                 return (
                     <Suspense fallback={<LazyFallback label="Loading Longest Route…" />}>
-                        <LongestRouteQuiz allFlagsData={flagsData} setView={setView} />
+                        <LongestRouteQuiz allFlagsData={flagsData} setView={setView} strictSpelling={strictSpelling} />
                     </Suspense>
                 );
             case 'language-quiz':
@@ -505,7 +532,7 @@ function App() {
 
     return (
         <div className={containerClassName}>
-            <TopBar setView={setView} />
+            <TopBar setView={setView} view={view} />
             <AnimatePresence mode="wait" initial={false}>
                 <motion.div
                     key={view}

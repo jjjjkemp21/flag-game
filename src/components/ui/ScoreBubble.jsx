@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import Icon from '../Icon';
-import { variants } from '../../motion';
+import Icon from '../common/Icon';
+import { variants } from '../../motion/index';
 
 export default function ScoreBubble({ score = 0, label = 'Score', icon = 'star', tone = 'accent', floatingDelta = null }) {
     const [popKey, setPopKey] = useState(0);

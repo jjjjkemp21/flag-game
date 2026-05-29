@@ -1,8 +1,8 @@
 import React from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
-import { variants, springs } from '../../motion';
+import { variants, springs } from '../../motion/index';
 import { useAudio } from '../../audio/AudioProvider';
-import Icon from '../Icon';
+import Icon from '../common/Icon';
 
 /**
  * A multiple-choice answer card with state-aware animation.

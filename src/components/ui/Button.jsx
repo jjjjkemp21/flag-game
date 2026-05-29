@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { useAudio } from '../../audio/AudioProvider';
-import Icon from '../Icon';
+import Icon from '../common/Icon';
 
 const VARIANT_CLASS = {
     primary:   'ui-button ui-button--primary',

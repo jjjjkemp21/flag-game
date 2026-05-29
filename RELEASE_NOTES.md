@@ -1,3 +1,28 @@
+## Polish & fixes — sharper cosmetics, clearer screens
+
+*A big quality pass under the hood and on the surface.*
+
+**Looking sharper**
+
+- **Atlas's cosmetics got a glow-up** — moustaches, beards, lips, and the novelty mouths are redrawn to sit right on Atlas's face, and the Cat-Eye, Aviator, and Rimless glasses plus the Blazing and Electric effects were rebuilt to read crisply.
+
+**Clearer & easier to use**
+
+- **A Home button** now sits in the top bar on every screen, so you're never stranded.
+- **Play with the keyboard** in Multiple Choice — press 1–4 or A–D to answer, Enter to move on.
+- Clearer focus outlines, bigger tap targets, and better contrast throughout, plus friendlier empty/loading states.
+- Removing a friend now asks you to confirm first.
+
+**Fixes**
+
+- Typing a *different* country that's spelled similarly (e.g. Zambia for Gambia) is no longer accepted as correct.
+- "Reset Data" no longer wipes the XP and high scores you'd kept.
+- Frenzy and Pixelated no longer double-count a record run, and the "New High Score!" banner stays put.
+- Tricky flags you'd set aside now resurface so you can actually master them.
+- Various scoring, quest, and leaderboard accuracy fixes.
+
+---
+
 ## Globe Mode & geography mastery
 
 *A new way to study — spin the planet, find the country.*

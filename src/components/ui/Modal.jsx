@@ -1,8 +1,8 @@
 import React, { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { variants } from '../../motion';
-import Icon from '../Icon';
+import { variants } from '../../motion/index';
+import Icon from '../common/Icon';
 
 export default function Modal({ open, onClose, title, children, labelledBy }) {
     const ref = useRef(null);
