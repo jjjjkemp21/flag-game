@@ -170,6 +170,38 @@ const HAT_SHAPES = {
             <circle cx="48" cy="6" r="2" fill={c.accent} />
         </g>
     ),
+    // XP Road exclusive — leafy circlet that loops around the mascot. Two
+    // tendrils sweep up from the temples; alternating mint/dark-green leaves
+    // give it depth, with a centre bloom in the brand gold for an heroic note.
+    vineCrown: (c) => {
+        const leaf = (x, y, rot, fill, w = 4, h = 2.4) => (
+            <ellipse cx={x} cy={y} rx={w} ry={h} fill={fill}
+                stroke={c.dark} strokeWidth="0.6"
+                transform={`rotate(${rot} ${x} ${y})`} />
+        );
+        return (
+            <g>
+                {/* Twisting vine stem behind the leaves */}
+                <path d="M22 24 Q30 8 48 6 Q66 8 74 24"
+                    stroke={c.dark} strokeWidth="2.2" fill="none" strokeLinecap="round" />
+                <path d="M24 22 Q32 10 48 9 Q64 10 72 22"
+                    stroke={c.main} strokeWidth="1.2" fill="none" strokeLinecap="round" opacity="0.85" />
+                {/* Left tendril leaves (dark/light alternating) */}
+                {leaf(22, 24, -30, c.dark)}
+                {leaf(26, 16, -55, c.trim || c.main, 4.4, 2.6)}
+                {leaf(33, 10, -75, c.main)}
+                {/* Right tendril leaves */}
+                {leaf(74, 24,  30, c.dark)}
+                {leaf(70, 16,  55, c.trim || c.main, 4.4, 2.6)}
+                {leaf(63, 10,  75, c.main)}
+                {/* Centre bloom — gold star/jewel cradled in two small leaves */}
+                {leaf(42, 8, -10, c.main, 3.6, 2)}
+                {leaf(54, 8,  10, c.main, 3.6, 2)}
+                <circle cx="48" cy="6" r="2.8" fill={c.accent} stroke={c.dark} strokeWidth="0.7" />
+                <circle cx="47.2" cy="5.2" r="0.9" fill="#FFFDF7" opacity="0.85" />
+            </g>
+        );
+    },
     laurel: (c) => {
         const leaf = (x, y, rot) => (
             <ellipse cx={x} cy={y} rx="3" ry="1.6" fill={c.main} transform={`rotate(${rot} ${x} ${y})`} />
@@ -951,6 +983,31 @@ const GLASS_SHAPES = {
             <path d="M29 40 L 48 43 L 67 40" stroke="#FFFFFF" strokeWidth="0.6" fill="none" opacity="0.4" />
         </g>
     ),
+
+    // XP Road exclusive — leaflet lenses. Two stylised leaves used as frames,
+    // with a translucent inner "lens" panel and a vine bridge between them.
+    // Reads as botanical-but-clearly-eyewear at the 96-viewbox scale.
+    leaflet: (c) => {
+        // Each lens is a leaf path: pointed tip outward, rounded base inward.
+        // Inner shape is a slightly inset duplicate filled with the lens tint.
+        return (
+            <g>
+                {/* Left leaf — points down-left, base near the bridge */}
+                <path d="M30 39 Q22 44 27 52 Q34 54 44 49 Q45 43 30 39 Z"
+                    fill={c.frame} stroke={c.accent} strokeWidth="0.8" strokeLinejoin="round" />
+                <path d="M31 41 Q26 45 29 51 Q34 52 42 48 Q43 43 31 41 Z" fill={c.lens} />
+                <path d="M44 49 Q35 47 28 43" stroke={c.accent} strokeWidth="0.6" fill="none" opacity="0.7" />
+                {/* Right leaf — mirrored */}
+                <path d="M66 39 Q74 44 69 52 Q62 54 52 49 Q51 43 66 39 Z"
+                    fill={c.frame} stroke={c.accent} strokeWidth="0.8" strokeLinejoin="round" />
+                <path d="M65 41 Q70 45 67 51 Q62 52 54 48 Q53 43 65 41 Z" fill={c.lens} />
+                <path d="M52 49 Q61 47 68 43" stroke={c.accent} strokeWidth="0.6" fill="none" opacity="0.7" />
+                {/* Vine bridge between the lenses, with a tiny centre bud */}
+                <path d="M44 45 Q48 42 52 45" stroke={c.accent} strokeWidth="1.4" fill="none" strokeLinecap="round" />
+                <circle cx="48" cy="43.5" r="1.1" fill={c.accent} stroke={c.frame} strokeWidth="0.4" />
+            </g>
+        );
+    },
 };
 
 // ---- Mouth cosmetics -------------------------------------------------------
@@ -1730,6 +1787,52 @@ const EFFECT_SHAPES = {
             ))}
         </g>
     ),
+
+    // XP Road exclusive — Drifting Leaves. Five leaves slowly fall from the
+    // top of the canvas with a gentle horizontal sway and rotation, in two
+    // greens + a gold so each loop reads as several different leaves rather
+    // than the same one re-cycling. Drifts slowly enough to feel ambient
+    // rather than busy.
+    driftingLeaves: () => {
+        const leaf = (color) => (
+            // Simple leaf silhouette in a 6-unit bounding box. Rendered around
+            // the origin so the transform translates the leaf's centre.
+            <path d="M0 -3 Q3 0 0 3 Q-3 0 0 -3 Z" fill={color} stroke="#1F5A2A" strokeWidth="0.4" />
+        );
+        const LEAVES = [
+            { x: 18, dur: 6.5, delay: 0.0, color: '#7FE05B' },
+            { x: 36, dur: 7.5, delay: 1.0, color: '#3FAA4F' },
+            { x: 52, dur: 6.0, delay: 0.4, color: '#FFD86B' },
+            { x: 66, dur: 8.0, delay: 1.6, color: '#7FE05B' },
+            { x: 80, dur: 6.8, delay: 0.8, color: '#3FAA4F' },
+        ];
+        return (
+            <g>
+                {LEAVES.map((l, i) => (
+                    <g key={i}>
+                        {/* Outer transform: vertical fall (-6 → 96) over `dur` */}
+                        <g>
+                            <animateTransform attributeName="transform" type="translate"
+                                values={`${l.x} -6;${l.x} 96`}
+                                dur={`${l.dur}s`} begin={`${l.delay}s`} repeatCount="indefinite" />
+                            {/* Inner transform: gentle sway + rotation */}
+                            <g>
+                                <animateTransform attributeName="transform" type="rotate"
+                                    values="0;360"
+                                    dur={`${l.dur}s`} begin={`${l.delay}s`} repeatCount="indefinite" additive="sum" />
+                                <animateTransform attributeName="transform" type="translate"
+                                    values="-4 0;4 0;-4 0"
+                                    dur={`${l.dur * 0.5}s`} begin={`${l.delay}s`} repeatCount="indefinite" additive="sum" />
+                                {leaf(l.color)}
+                            </g>
+                            <animate attributeName="opacity" values="0;1;1;0"
+                                dur={`${l.dur}s`} begin={`${l.delay}s`} repeatCount="indefinite" />
+                        </g>
+                    </g>
+                ))}
+            </g>
+        );
+    },
 };
 
 export function renderEffect(id) {

@@ -8,6 +8,11 @@ import Spinner from '../assets/illustrations/Spinner';
 import { useAudio } from '../audio/AudioProvider';
 import { getHighScore, recordHighScore, flushBonus } from '../lib/progress';
 import { refreshBattlepass } from '../lib/battlepass';
+import { bumpQuestMetric, reportHwm } from '../lib/quests';
+import { addEarnedBucks } from '../lib/currency';
+import { rollChest, MIN_CORRECT_FOR_CHEST } from '../lib/chest';
+import { currentChestYieldMult } from '../lib/xpRoadCatalog';
+import ChestReveal from './ChestReveal';
 import { recordPlay } from '../lib/pet';
 import { useQuizPresence } from '../lib/presence';
 import SpectatorsBadge from './SpectatorsBadge';
@@ -29,6 +34,7 @@ function LanguageQuiz({ setView }) {
     const [feedback, setFeedback] = useState({ text: ' ' });
     const [isLoading, setIsLoading] = useState(true);
     const [isAnswered, setIsAnswered] = useState(false);
+    const [chest, setChest] = useState(null);
     const [answerStatus, setAnswerStatus] = useState({});
     const [flashColor, setFlashColor] = useState(null);
     const [lifeLostIndex, setLifeLostIndex] = useState(null);
@@ -181,6 +187,17 @@ function LanguageQuiz({ setView }) {
                         setHighScore(score);
                         recordHighScore('language', score);
                         flushBonus().then(() => refreshBattlepass());
+                    }
+                    bumpQuestMetric('bonus_play', 1);
+                    bumpQuestMetric('language_play', 1);
+                    reportHwm('language_score', score);
+                    if (score >= MIN_CORRECT_FOR_CHEST) {
+                        const accuracy = lives / TOTAL_LIVES * 0.5 + 0.5; // 0.5..1.0
+                        const rolled = rollChest({ correct: score, accuracy, bestStreak: Math.floor(score / 3), mode: 'language', yieldMult: currentChestYieldMult() });
+                        if (rolled) {
+                            addEarnedBucks(rolled.bucks);
+                            setChest(rolled);
+                        }
                     }
                     audio.play('gameOver');
                     setIsGameOver(true);
@@ -434,6 +451,15 @@ function LanguageQuiz({ setView }) {
                     </motion.div>
                 )}
             </AnimatePresence>
+            <ChestReveal
+                open={!!chest}
+                rarity={chest?.rarity || 'common'}
+                bucks={chest?.bucks || 0}
+                title="Language run complete!"
+                subtitle={`Score ${score}`}
+                showRarity
+                onClose={() => setChest(null)}
+            />
         </div>
     );
 }

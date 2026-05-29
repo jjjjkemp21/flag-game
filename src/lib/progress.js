@@ -1,4 +1,5 @@
 import { api } from '../api/client';
+import { addEarnedBucks, getBucksEarnedLifetime } from './currency';
 
 // In-memory progress store for bonus-mode high scores. Progress is tied to the
 // account: nothing is written to localStorage. For guests it lives only for the
@@ -63,7 +64,11 @@ function pushBonus(delay = 1200) {
     if (pushTimer) clearTimeout(pushTimer);
     pushTimer = setTimeout(() => {
         pushTimer = null;
-        api.put('/stats', { bonusScores: getBonus(), earnedXp }).catch(() => {
+        api.put('/stats', {
+            bonusScores: getBonus(),
+            earnedXp,
+            bucksEarnedLifetime: getBucksEarnedLifetime(),
+        }).catch(() => {
             /* offline / transient — guest progress is intentionally ephemeral */
         });
     }, delay);
@@ -75,16 +80,38 @@ function pushBonus(delay = 1200) {
 export function flushBonus() {
     if (!authed) return Promise.resolve(null);
     if (pushTimer) { clearTimeout(pushTimer); pushTimer = null; }
-    return api.put('/stats', { bonusScores: getBonus(), earnedXp }).catch(() => null);
+    return api.put('/stats', {
+        bonusScores: getBonus(),
+        earnedXp,
+        bucksEarnedLifetime: getBucksEarnedLifetime(),
+    }).catch(() => null);
 }
 
 // Record a new score for a bonus mode. Only persisted (to the account) when
-// logged in; guests just keep it in memory until reload/logout.
+// logged in; guests just keep it in memory until reload/logout. Economy v2:
+// a new high also credits Bucks at the OLD rate (half the delta), since the
+// XP rate doubled but Bucks track the pre-v2 reward scale.
 export function recordHighScore(name, value) {
     const v = Number(value) || 0;
-    if (v > (bonus[name] || 0)) {
+    const prev = bonus[name] || 0;
+    if (v > prev) {
         bonus[name] = v;
+        const bucksDelta = Math.floor((v - prev) / 2);
+        if (bucksDelta > 0) addEarnedBucks(bucksDelta);
         if (authed) pushBonus();
     }
     return bonus[name];
+}
+
+// Trigger a stats sync without any new XP/bucks delta — used after directly
+// crediting Bucks server-side (chest opens, quest claims) so the lifetime
+// counter the client holds isn't drifted from server truth on the next push.
+export function refreshFromServer() {
+    if (!authed) return Promise.resolve(null);
+    return api.get('/stats').then((r) => {
+        if (Number.isFinite(Number(r && r.earnedXp))) {
+            earnedXp = Math.max(earnedXp, Math.round(Number(r.earnedXp)));
+        }
+        return r;
+    }).catch(() => null);
 }

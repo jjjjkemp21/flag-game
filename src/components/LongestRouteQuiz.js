@@ -9,6 +9,11 @@ import Spinner from '../assets/illustrations/Spinner';
 import { useAudio } from '../audio/AudioProvider';
 import { getHighScore, recordHighScore, flushBonus } from '../lib/progress';
 import { refreshBattlepass } from '../lib/battlepass';
+import { bumpQuestMetric, reportHwm } from '../lib/quests';
+import { addEarnedBucks } from '../lib/currency';
+import { rollChest, MIN_CORRECT_FOR_CHEST } from '../lib/chest';
+import { currentChestYieldMult } from '../lib/xpRoadCatalog';
+import ChestReveal from './ChestReveal';
 import { recordPlay } from '../lib/pet';
 import { useQuizPresence } from '../lib/presence';
 import SpectatorsBadge from './SpectatorsBadge';
@@ -57,6 +62,7 @@ function LongestRouteQuiz({ allFlagsData, setView }) {
     const [showGameOverScreen, setShowGameOverScreen] = useState(false);
     const [isWin, setIsWin] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
+    const [chest, setChest] = useState(null);
 
     const [score, setScore] = useState(0);
     const [longestRouteHighScore, setLongestRouteHighScore] = useState(() => getHighScore('longestRoute'));
@@ -117,6 +123,20 @@ function LongestRouteQuiz({ allFlagsData, setView }) {
         audio.play('incorrect');
         setGameOver(true);
         setIsWin(false);
+        // Failed runs still award a (lower-rarity) chest if the player got far
+        // enough — feels worse to fail at flag 9 and walk away empty-handed
+        // than to skip the celebration on a near-miss.
+        bumpQuestMetric('bonus_play', 1);
+        bumpQuestMetric('longest_play', 1);
+        const reached = Math.max(0, Number(currentPathIndex) || 0);
+        reportHwm('longest_score', reached);
+        if (reached >= MIN_CORRECT_FOR_CHEST) {
+            const rolled = rollChest({ correct: reached, accuracy: 0.7, bestStreak: reached, mode: 'longestRoute', yieldMult: currentChestYieldMult() });
+            if (rolled) {
+                addEarnedBucks(rolled.bucks);
+                setChest(rolled);
+            }
+        }
         if (gameOverTimeoutRef.current) clearTimeout(gameOverTimeoutRef.current);
         gameOverTimeoutRef.current = setTimeout(() => setShowGameOverScreen(true), GAME_OVER_DELAY);
     };
@@ -219,6 +239,17 @@ function LongestRouteQuiz({ allFlagsData, setView }) {
                     recordHighScore('longestRoute', finalScore);
                     setLongestRouteHighScore(finalScore);
                     flushBonus().then(() => refreshBattlepass());
+                }
+                bumpQuestMetric('bonus_play', 1);
+                bumpQuestMetric('longest_play', 1);
+                bumpQuestMetric('perfect_run', 1);
+                reportHwm('longest_score', finalScore);
+                // Perfect-run chest. Accuracy is effectively 1.0 here so the
+                // distribution leans heavily toward higher rarities.
+                const rolled = rollChest({ correct: Math.max(MIN_CORRECT_FOR_CHEST, finalScore), accuracy: 1.0, bestStreak: finalScore, mode: 'longestRoute', yieldMult: currentChestYieldMult() });
+                if (rolled) {
+                    addEarnedBucks(rolled.bucks);
+                    setChest(rolled);
                 }
                 setGameOver(true);
                 setIsWin(true);
@@ -457,6 +488,15 @@ function LongestRouteQuiz({ allFlagsData, setView }) {
                     </div>
                 </form>
             </div>
+            <ChestReveal
+                open={!!chest}
+                rarity={chest?.rarity || 'common'}
+                bucks={chest?.bucks || 0}
+                title={isWin ? 'Perfect route!' : 'Route ended'}
+                subtitle={`Reached ${Math.max(0, currentPathIndex)} flag${currentPathIndex === 1 ? '' : 's'}`}
+                showRarity
+                onClose={() => setChest(null)}
+            />
         </>
     );
 }

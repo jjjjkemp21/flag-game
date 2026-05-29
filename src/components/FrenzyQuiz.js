@@ -6,6 +6,11 @@ import { ScoreBubble, ProgressRing } from './ui';
 import Mascot from '../assets/illustrations/Mascot';
 import { useAudio } from '../audio/AudioProvider';
 import { getHighScore, recordHighScore, flushBonus } from '../lib/progress';
+import { bumpQuestMetric, reportHwm } from '../lib/quests';
+import { addEarnedBucks } from '../lib/currency';
+import { rollChest, MIN_CORRECT_FOR_CHEST } from '../lib/chest';
+import { currentChestYieldMult } from '../lib/xpRoadCatalog';
+import ChestReveal from './ChestReveal';
 import { refreshBattlepass } from '../lib/battlepass';
 import { recordPlay } from '../lib/pet';
 import { useQuizPresence } from '../lib/presence';
@@ -36,6 +41,7 @@ function FrenzyQuiz({ allFlagsData, setView }) {
     const [gameOver, setGameOver] = useState(false);
     const [gameStarted, setGameStarted] = useState(false);
     const [showNotification, setShowNotification] = useState(true);
+    const [chest, setChest] = useState(null);
     const [scoreDelta, setScoreDelta] = useState(null);
     const [shake, setShake] = useState(false);
     const [countdown, setCountdown] = useState(null); // 3..1 pre-game, then null
@@ -160,6 +166,20 @@ function FrenzyQuiz({ allFlagsData, setView }) {
                 // Push the new high synchronously so the battlepass refresh
                 // reads it instead of the previous (stale) bonus_scores_json.
                 flushBonus().then(() => refreshBattlepass());
+            }
+            bumpQuestMetric('bonus_play', 1);
+            bumpQuestMetric('frenzy_play', 1);
+            reportHwm('frenzy_score', score);
+            // End-of-run chest. Frenzy has no explicit accuracy metric, so we
+            // approximate it from score relative to a "good run" threshold of
+            // 30 — anything at or above that biases the chest toward higher
+            // rarities, matching how the standard quizzes' accuracy boost works.
+            const correct = Math.max(MIN_CORRECT_FOR_CHEST, score);
+            const accuracy = Math.min(1, score / 30);
+            const rolled = rollChest({ correct, accuracy, bestStreak: Math.floor(score / 5), mode: 'frenzy', yieldMult: currentChestYieldMult() });
+            if (rolled) {
+                addEarnedBucks(rolled.bucks);
+                setChest(rolled);
             }
         }
     }, [gameOver, score, highScore]);
@@ -445,6 +465,15 @@ function FrenzyQuiz({ allFlagsData, setView }) {
                     );
                 })}
             </div>
+            <ChestReveal
+                open={!!chest}
+                rarity={chest?.rarity || 'common'}
+                bucks={chest?.bucks || 0}
+                title="Frenzy complete!"
+                subtitle={`Score ${score}`}
+                showRarity
+                onClose={() => setChest(null)}
+            />
         </motion.div>
     );
 }

@@ -13,9 +13,14 @@ import Friends from './components/Friends';
 import Achievements from './components/Achievements';
 import AdminAnnounce from './components/AdminAnnounce';
 import StoreScreen from './components/StoreScreen';
+import MigrationV2Modal from './components/MigrationV2Modal';
+import LoginChestModal from './components/LoginChestModal';
+import QuestCompleteModal from './components/QuestCompleteModal';
+import QuestsScreen from './components/QuestsScreen';
 import StatsScreen from './components/StatsScreen';
 import MultiplayerScreen from './components/MultiplayerScreen';
 import BattlepassScreen from './components/BattlepassScreen';
+import XpRoadScreen from './components/XpRoadScreen';
 import SpectatorScreen from './components/SpectatorScreen';
 import TopBar from './components/TopBar';
 import Spinner from './assets/illustrations/Spinner';
@@ -24,16 +29,24 @@ import { useAuth } from './auth/AuthProvider';
 import { api } from './api/client';
 import { applyStatsToFlags, zeroFlagStats, pushStats, flushStats } from './lib/syncStats';
 import { computeXp, readBonusScores } from './lib/xp';
-import { setAuthed, loadBonus, resetBonus, loadEarnedXp, resetEarnedXp } from './lib/progress';
+import { setAuthed, loadBonus, resetBonus, loadEarnedXp, resetEarnedXp, getEarnedXp } from './lib/progress';
 import { loadPet, resetPet, recordCorrect, recordIncorrect, getPet } from './lib/pet';
 import { loadProfile, resetProfile, setAchievementsUnlocked } from './lib/profile';
 import { loadCurrency, resetCurrency } from './lib/currency';
+import { loadLoginChest, resetLoginChest } from './lib/loginChest';
+import {
+    loadQuests,
+    resetQuests,
+    setAuthed as setQuestsAuthed,
+    flushQuests,
+} from './lib/quests';
 import {
     loadBattlepass,
     resetBattlepass,
     setAuthed as setBpAuthed,
     flushBattlepass,
 } from './lib/battlepass';
+import { loadXpRoad, resetXpRoad } from './lib/xpRoad';
 import { buildContext, evaluate } from './lib/achievements';
 import { variants } from './motion';
 
@@ -173,6 +186,7 @@ function App() {
         const flush = () => {
             if (authedRef.current && progressReadyRef.current) flushStats(flagsDataRef.current);
             if (authedRef.current) flushBattlepass();
+            if (authedRef.current) flushQuests();
         };
         const onVisibility = () => { if (document.visibilityState === 'hidden') flush(); };
         window.addEventListener('pagehide', flush);
@@ -201,7 +215,7 @@ function App() {
     // ones also refresh whenever the player opens the Achievements screen.
     useEffect(() => {
         if (isLoading || flagsData.length === 0 || !progressReadyRef.current || !authedRef.current) return;
-        const ctx = buildContext(flagsData, readBonusScores(), getPet().level);
+        const ctx = buildContext(flagsData, readBonusScores(), getPet().level, getEarnedXp());
         setAchievementsUnlocked(evaluate(ctx));
     }, [flagsData, isLoading]);
 
@@ -244,6 +258,19 @@ function App() {
                 if (!cancelled) {
                     try { await loadCurrency(); } catch (_) { /* shop will lazy-retry */ }
                 }
+                // Daily login chest — rolled on first request of a new UTC day.
+                // Loaded after currency so the modal's onClose claim path sees
+                // the freshest bucks balance.
+                if (!cancelled) {
+                    try { await loadLoginChest(); } catch (_) { /* modal will lazy-retry */ }
+                }
+                // Quests — daily (3) + weekly (2) rotating Bucks quests. Set
+                // authed before load so the in-flight metric bumps that may
+                // arrive during play schedule a flush.
+                if (!cancelled) {
+                    setQuestsAuthed(true);
+                    try { await loadQuests(); } catch (_) { /* screen will lazy-retry */ }
+                }
                 // Atlas Pass snapshot — challenge progress + claimed rewards.
                 // Loaded after the rest so server-derived metrics (mp_wins,
                 // bonus high scores) reflect everything else we just synced.
@@ -251,12 +278,19 @@ function App() {
                     setBpAuthed(true);
                     try { await loadBattlepass(); } catch (_) { /* pass screen will lazy-retry */ }
                 }
+                // XP Road — claimed milestone ids + unlocked titles + friend
+                // climbers. Loaded last so any auto-grants the stats-push that
+                // ran during sign-in triggered are already reflected in the
+                // server's claimed set.
+                if (!cancelled) {
+                    try { await loadXpRoad(); } catch (_) { /* screen will lazy-retry */ }
+                }
                 // Recompute unlocked achievements from the just-loaded progress so the
                 // account's count + showcase are correct. Without this they stay at the
                 // load-time defaults (unlocked=[]) and a later cosmetic-only persist
                 // would wipe the stored achievements to 0.
                 if (!cancelled && loadedFlags) {
-                    const ctx = buildContext(loadedFlags, readBonusScores(), getPet().level);
+                    const ctx = buildContext(loadedFlags, readBonusScores(), getPet().level, getEarnedXp());
                     setAchievementsUnlocked(evaluate(ctx));
                 }
             } else {
@@ -267,7 +301,11 @@ function App() {
                 resetPet();
                 resetProfile();
                 resetCurrency();
+                resetLoginChest();
+                setQuestsAuthed(false);
+                resetQuests();
                 resetBattlepass();
+                resetXpRoad();
                 answerTotalsRef.current = { correct: 0, incorrect: 0 };
                 setFlagsData(prev => zeroFlagStats(prev));
             }
@@ -441,6 +479,10 @@ function App() {
                 return <MultiplayerScreen setView={setView} flagsData={flagsData} />;
             case 'battlepass':
                 return <BattlepassScreen setView={setView} />;
+            case 'xproad':
+                return <XpRoadScreen setView={setView} />;
+            case 'quests':
+                return <QuestsScreen setView={setView} />;
             case 'settings':
                 return (
                     <Settings
@@ -476,6 +518,9 @@ function App() {
                     {renderView()}
                 </motion.div>
             </AnimatePresence>
+            <MigrationV2Modal />
+            <LoginChestModal />
+            <QuestCompleteModal />
         </div>
     );
 }

@@ -9,6 +9,11 @@ import Spinner from '../assets/illustrations/Spinner';
 import { useAudio } from '../audio/AudioProvider';
 import { getHighScore, recordHighScore, flushBonus } from '../lib/progress';
 import { refreshBattlepass } from '../lib/battlepass';
+import { bumpQuestMetric, reportHwm } from '../lib/quests';
+import { addEarnedBucks } from '../lib/currency';
+import { rollChest, MIN_CORRECT_FOR_CHEST } from '../lib/chest';
+import { currentChestYieldMult } from '../lib/xpRoadCatalog';
+import ChestReveal from './ChestReveal';
 import { recordPlay } from '../lib/pet';
 import { useQuizPresence } from '../lib/presence';
 import SpectatorsBadge from './SpectatorsBadge';
@@ -38,6 +43,7 @@ function PixelatedQuiz({ allFlagsData, setView }) {
     const [gameStarted, setGameStarted] = useState(false);
     const [showNotification, setShowNotification] = useState(true);
     const [flagOver, setFlagOver] = useState(false);
+    const [chest, setChest] = useState(null);
     const [scoreDelta, setScoreDelta] = useState(null);
     const [isCorrect, setIsCorrect] = useState(false);
     const [flashColor, setFlashColor] = useState(null);
@@ -134,6 +140,16 @@ function PixelatedQuiz({ allFlagsData, setView }) {
                 setHighScore(score);
                 recordHighScore('pixelated', score);
                 flushBonus().then(() => refreshBattlepass());
+            }
+            bumpQuestMetric('bonus_play', 1);
+            bumpQuestMetric('pixelated_play', 1);
+            reportHwm('pixelated_score', score);
+            const correct = Math.max(MIN_CORRECT_FOR_CHEST, score);
+            const accuracy = Math.min(1, score / 30);
+            const rolled = rollChest({ correct, accuracy, bestStreak: Math.floor(score / 5), mode: 'pixelated', yieldMult: currentChestYieldMult() });
+            if (rolled) {
+                addEarnedBucks(rolled.bucks);
+                setChest(rolled);
             }
         }
     }, [gameOver, gameStarted, score, highScore]);
@@ -385,6 +401,15 @@ function PixelatedQuiz({ allFlagsData, setView }) {
                     </>
                 )}
             </div>
+            <ChestReveal
+                open={!!chest}
+                rarity={chest?.rarity || 'common'}
+                bucks={chest?.bucks || 0}
+                title="Pixelated complete!"
+                subtitle={`Score ${score}`}
+                showRarity
+                onClose={() => setChest(null)}
+            />
         </>
     );
 }

@@ -36,12 +36,16 @@ export function readBonusScores() {
 // ---- Per-answer XP scaling -------------------------------------------------
 // Harder modes pay more per answer; a hot streak multiplies up to 2x (reached at
 // a streak of 30); brand-new flags are worth more than already-mastered ones.
+//
+// Economy v2 (2026-05-28): XP rates doubled. The legacy XP→Bucks claim is gone;
+// Atlas Bucks now land directly per answer at the OLD rate (= half the new XP
+// rate). `awardBucksForAnswer()` returns that companion Bucks number.
 
 export const MODE_XP = {
-    'multiple-choice': 1,     // easiest
-    'free-response': 1.5,     // harder — type it from memory
-    'globe': 1.75,            // harder still — find the country on the globe
-    'globe-name': 2.0,        // hardest — type the country named from its outline alone
+    'multiple-choice': 2,     // was 1
+    'free-response': 3,       // was 1.5
+    'globe': 3.5,             // was 1.75
+    'globe-name': 4,          // was 2
 };
 
 // 1.0 at streak 0, ramping to the 2x cap at a 30-answer streak.
@@ -74,4 +78,14 @@ export function awardForAnswer(flag, mode, newStreak) {
 export function penaltyForAnswer(mode) {
     const modeMult = MODE_XP[mode] || 1;
     return Math.max(1, Math.round(5 * modeMult));
+}
+
+// Companion Bucks award for a correct answer. The new XP rate is 2x the old
+// rate; Bucks land at the OLD rate (= XP amount / 2). Returns a whole number
+// (floor) so a 1-XP answer still pays 0 Bucks instead of rounding up to 1 —
+// otherwise every minimum-XP answer would over-reward Bucks vs. the old
+// trade-in economy. Wrong answers never refund or subtract Bucks.
+export function awardBucksForAnswer(xpAward) {
+    const xp = Math.max(0, Math.round(Number(xpAward && xpAward.amount) || 0));
+    return Math.floor(xp / 2);
 }

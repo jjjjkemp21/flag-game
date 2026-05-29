@@ -8,6 +8,7 @@ import WorldDots from '../assets/illustrations/WorldDots';
 import Scene, { isCustomScene } from '../assets/illustrations/Scene';
 import PetPanel from './PetPanel';
 import BattlepassCard from './BattlepassCard';
+import XpRoadCard from './XpRoadCard';
 import { Modal, Button } from './ui';
 import { useToast } from './ui/Toast';
 import { useAudio } from '../audio/AudioProvider';
@@ -15,6 +16,7 @@ import { useAuth } from '../auth/AuthProvider';
 import { api } from '../api/client';
 import { usePet } from '../lib/pet';
 import { useProfile } from '../lib/profile';
+import { useQuests, claimableCount } from '../lib/quests';
 import { getStreak } from '../lib/streak';
 import { GLOBE_RENDERABLE_ISO2 } from '../lib/achievements';
 import { springs } from '../motion';
@@ -49,8 +51,9 @@ const SECTIONS = [
         key: 'you',
         label: 'You',
         modes: [
-            { key: 'achievements', title: 'Achievements', desc: 'Earn badges and mastery ranks', icon: 'emoji_events', tone: 'accent'  },
-            { key: 'statistics',   title: 'Statistics',   desc: 'Your progress and high scores', icon: 'insights',     tone: 'neutral' },
+            { key: 'quests',       title: 'Quests',       desc: 'Daily + weekly Atlas Bucks bounties', icon: 'task_alt',     tone: 'success' },
+            { key: 'achievements', title: 'Achievements', desc: 'Earn badges and mastery ranks',        icon: 'emoji_events', tone: 'accent'  },
+            { key: 'statistics',   title: 'Statistics',   desc: 'Your progress and high scores',        icon: 'insights',     tone: 'neutral' },
         ],
     },
 ];
@@ -87,6 +90,9 @@ function MainMenu({ setView, flagsData, setQuizMode }) {
     const profile = useProfile();
     const toast = useToast();
     const { isAuthed, refresh } = useAuth();
+    // Subscribe to quests so the "Quests" card shows a live claimable count.
+    useQuests();
+    const questsClaimable = claimableCount();
     // Flag-recognition mastery (MC / FR / bonus modes share this streak).
     const masteryHint = useMemo(() => {
         if (!flagsData?.length) return null;
@@ -161,6 +167,8 @@ function MainMenu({ setView, flagsData, setQuizMode }) {
             setView('leaderboard');
         } else if (modeKey === 'achievements') {
             setView('achievements');
+        } else if (modeKey === 'quests') {
+            setView('quests');
         } else if (modeKey === 'friends') {
             setView('friends');
         } else if (modeKey === 'statistics') {
@@ -201,7 +209,7 @@ function MainMenu({ setView, flagsData, setQuizMode }) {
                     >Flag Game</h1>
                 </div>
                 <p className="menu-subtitle hero-band__subtitle">
-                    Master 250+ world flags with spaced repetition, frenzy challenges, and pixel reveals.
+                    Master 200+ world flags with spaced repetition, frenzy challenges, and pixel reveals.
                 </p>
                 <div style={{ position: 'relative', zIndex: 2, marginTop: 'var(--space-xs)' }}>
                     <Mascot size={92} mood={pet.mood} cosmetics={profile.cosmetics} chubby={pet.obese} bruised={pet.bruised} />
@@ -223,6 +231,11 @@ function MainMenu({ setView, flagsData, setQuizMode }) {
             <div className="mode-grid">
                 <BattlepassCard onClick={() => setView('battlepass')} index={0} />
             </div>
+            {/* XP Road — beanstalk-themed hero card directly below the Atlas
+                Pass. Same hero shape; opens the vertical climbing screen. */}
+            <div className="mode-grid">
+                <XpRoadCard onClick={() => setView('xproad')} index={0} />
+            </div>
 
             {SECTIONS.map((section, sIdx) => (
                 <section key={section.key} className="menu-section">
@@ -239,7 +252,9 @@ function MainMenu({ setView, flagsData, setQuizMode }) {
                                         ? masteryHint
                                         : mode.key === 'globe'
                                             ? globeMasteryHint
-                                            : null
+                                            : mode.key === 'quests' && questsClaimable > 0
+                                                ? `${questsClaimable} ready to claim`
+                                                : null
                                 }
                                 streak={(mode.key === 'multiple-choice' || mode.key === 'free-response' || mode.key === 'globe') ? getStreak(mode.key) : 0}
                             />

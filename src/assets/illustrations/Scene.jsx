@@ -757,7 +757,7 @@ function NorthAmerica() {
             <g fill="url(#sc-na-pine)">
                 {/* Tree 1 */}
                 <g transform="translate(40,262)">
-                    <rect x="-3" y="0" width="6" height="8" fill="#2A1408" />
+                    <rect x="-3" y="-10" width="6" height="18" fill="#2A1408" />
                     <polygon points="0,-68 -14,-46 -7,-46 -16,-28 -8,-28 -18,-10 18,-10 8,-28 16,-28 7,-46 14,-46" />
                     <path d="M0,-68 L-4,-62 L0,-65 L4,-62 Z" fill="#FFFFFF" opacity="0.9" />
                     <path d="M-13,-46 L-7,-46 L-8,-43 Z" fill="#FFFFFF" opacity="0.7" />
@@ -766,7 +766,7 @@ function NorthAmerica() {
                 </g>
                 {/* Tree 2 — small */}
                 <g transform="translate(95,262)">
-                    <rect x="-2" y="0" width="4" height="6" fill="#2A1408" />
+                    <rect x="-2" y="-6" width="4" height="12" fill="#2A1408" />
                     <polygon points="0,-50 -10,-34 -5,-34 -12,-20 -5,-20 -12,-6 12,-6 5,-20 12,-20 5,-34 10,-34" />
                     <path d="M0,-50 L-3,-45 L0,-47 L3,-45 Z" fill="#FFFFFF" opacity="0.9" />
                     <path d="M-9,-34 L-5,-34 L-6,-32 Z" fill="#FFFFFF" opacity="0.65" />
@@ -774,7 +774,7 @@ function NorthAmerica() {
                 </g>
                 {/* Tree 3 */}
                 <g transform="translate(150,262)">
-                    <rect x="-3" y="0" width="6" height="9" fill="#2A1408" />
+                    <rect x="-3" y="-12" width="6" height="21" fill="#2A1408" />
                     <polygon points="0,-76 -16,-52 -8,-52 -18,-32 -10,-32 -20,-12 20,-12 10,-32 18,-32 8,-52 16,-52" />
                     <path d="M0,-76 L-5,-68 L0,-71 L5,-68 Z" fill="#FFFFFF" opacity="0.92" />
                     <path d="M-14,-52 L-8,-52 L-9,-49 Z" fill="#FFFFFF" opacity="0.72" />
@@ -783,7 +783,7 @@ function NorthAmerica() {
                 </g>
                 {/* Tree 4 — small */}
                 <g transform="translate(205,262)">
-                    <rect x="-2" y="0" width="4" height="7" fill="#2A1408" />
+                    <rect x="-2" y="-6" width="4" height="13" fill="#2A1408" />
                     <polygon points="0,-52 -11,-36 -5,-36 -13,-20 -6,-20 -13,-6 13,-6 6,-20 13,-20 5,-36 11,-36" />
                     <path d="M0,-52 L-4,-46 L0,-48 L4,-46 Z" fill="#FFFFFF" opacity="0.9" />
                     <path d="M-9,-36 L-5,-36 L-7,-33 Z" fill="#FFFFFF" opacity="0.65" />
@@ -791,7 +791,7 @@ function NorthAmerica() {
                 </g>
                 {/* Tree 5 — big center */}
                 <g transform="translate(252,262)">
-                    <rect x="-4" y="0" width="8" height="11" fill="#2A1408" />
+                    <rect x="-4" y="-14" width="8" height="25" fill="#2A1408" />
                     <polygon points="0,-88 -19,-60 -10,-60 -23,-38 -13,-38 -25,-14 25,-14 13,-38 23,-38 10,-60 19,-60" />
                     <path d="M0,-88 L-6,-78 L0,-82 L6,-78 Z" fill="#FFFFFF" opacity="0.95" />
                     <path d="M-17,-60 L-10,-60 L-12,-56 Z" fill="#FFFFFF" opacity="0.8" />
@@ -802,7 +802,7 @@ function NorthAmerica() {
                 </g>
                 {/* Tree 6 */}
                 <g transform="translate(308,262)">
-                    <rect x="-2.5" y="0" width="5" height="8" fill="#2A1408" />
+                    <rect x="-2.5" y="-8" width="5" height="16" fill="#2A1408" />
                     <polygon points="0,-58 -12,-40 -6,-40 -14,-24 -6,-24 -14,-8 14,-8 6,-24 14,-24 6,-40 12,-40" />
                     <path d="M0,-58 L-4,-52 L0,-54 L4,-52 Z" fill="#FFFFFF" opacity="0.9" />
                     <path d="M-10,-40 L-6,-40 L-8,-37 Z" fill="#FFFFFF" opacity="0.7" />
@@ -810,7 +810,7 @@ function NorthAmerica() {
                 </g>
                 {/* Tree 7 — small */}
                 <g transform="translate(358,262)">
-                    <rect x="-2" y="0" width="4" height="6" fill="#2A1408" />
+                    <rect x="-2" y="-6" width="4" height="12" fill="#2A1408" />
                     <polygon points="0,-50 -10,-34 -5,-34 -12,-20 -5,-20 -12,-6 12,-6 5,-20 12,-20 5,-34 10,-34" />
                     <path d="M0,-50 L-3,-45 L0,-47 L3,-45 Z" fill="#FFFFFF" opacity="0.9" />
                     <path d="M-9,-34 L-5,-34 L-6,-32 Z" fill="#FFFFFF" opacity="0.65" />
@@ -818,7 +818,7 @@ function NorthAmerica() {
                 </g>
                 {/* Tree 8 */}
                 <g transform="translate(412,262)">
-                    <rect x="-3.5" y="0" width="7" height="10" fill="#2A1408" />
+                    <rect x="-3.5" y="-12" width="7" height="22" fill="#2A1408" />
                     <polygon points="0,-80 -17,-56 -9,-56 -21,-34 -11,-34 -22,-12 22,-12 11,-34 21,-34 9,-56 17,-56" />
                     <path d="M0,-80 L-5,-72 L0,-75 L5,-72 Z" fill="#FFFFFF" opacity="0.93" />
                     <path d="M-15,-56 L-9,-56 L-11,-52 Z" fill="#FFFFFF" opacity="0.75" />
@@ -827,7 +827,7 @@ function NorthAmerica() {
                 </g>
                 {/* Tree 9 — small */}
                 <g transform="translate(465,262)">
-                    <rect x="-2" y="0" width="4" height="7" fill="#2A1408" />
+                    <rect x="-2" y="-6" width="4" height="13" fill="#2A1408" />
                     <polygon points="0,-54 -11,-36 -5,-36 -13,-22 -6,-22 -13,-6 13,-6 6,-22 13,-22 5,-36 11,-36" />
                     <path d="M0,-54 L-4,-48 L0,-50 L4,-48 Z" fill="#FFFFFF" opacity="0.9" />
                     <path d="M-9,-36 L-5,-36 L-7,-33 Z" fill="#FFFFFF" opacity="0.65" />
@@ -835,7 +835,7 @@ function NorthAmerica() {
                 </g>
                 {/* Tree 10 */}
                 <g transform="translate(515,262)">
-                    <rect x="-3" y="0" width="6" height="8" fill="#2A1408" />
+                    <rect x="-3" y="-10" width="6" height="18" fill="#2A1408" />
                     <polygon points="0,-70 -15,-48 -8,-48 -17,-28 -9,-28 -19,-10 19,-10 9,-28 17,-28 8,-48 15,-48" />
                     <path d="M0,-70 L-4,-63 L0,-66 L4,-63 Z" fill="#FFFFFF" opacity="0.92" />
                     <path d="M-13,-48 L-8,-48 L-9,-45 Z" fill="#FFFFFF" opacity="0.7" />
@@ -844,7 +844,7 @@ function NorthAmerica() {
                 </g>
                 {/* Tree 11 */}
                 <g transform="translate(565,262)">
-                    <rect x="-2.5" y="0" width="5" height="8" fill="#2A1408" />
+                    <rect x="-2.5" y="-8" width="5" height="16" fill="#2A1408" />
                     <polygon points="0,-62 -13,-42 -6,-42 -15,-24 -7,-24 -15,-8 15,-8 7,-24 15,-24 6,-42 13,-42" />
                     <path d="M0,-62 L-4,-55 L0,-58 L4,-55 Z" fill="#FFFFFF" opacity="0.9" />
                     <path d="M-11,-42 L-6,-42 L-7,-39 Z" fill="#FFFFFF" opacity="0.7" />

@@ -1,7 +1,7 @@
 const express = require('express');
 const db = require('../db');
 const { requireAuth, requireAdmin } = require('../middleware');
-const { priceOf, isDefault, isBpOnly } = require('../cosmeticsCatalog');
+const { priceOf, isDefault, isBpOnly, isXprOnly } = require('../cosmeticsCatalog');
 
 const router = express.Router();
 router.use(requireAuth);
@@ -10,19 +10,18 @@ router.use(requireAuth);
 // low enough that a typo can't mint an account into the millions in one click.
 const MAX_ADMIN_GRANT = 1_000_000;
 
-// Currency model — XP and Atlas Bucks are independent.
+// Currency model — XP and Atlas Bucks are siblings, not parent/child.
 //
-// `earned_xp` tracks lifetime, scaled flag-answer XP and never decreases.
-// `bucks_minted_xp` tracks how much of that earned XP has already been
-// "traded in" for Atlas Bucks. The trade-in mints (earned_xp - minted_xp) ÷
-// RATE bucks into `bucks` and bumps `bucks_minted_xp` so the same XP can't
-// be claimed twice. The XP balance itself is untouched — the player keeps
-// their XP for leaderboards / mastery while the bucks become spendable.
-
-// 1 Atlas Buck per earned XP — a fair and easy-to-reason-about rate that
-// matches the numeric prices the cosmetics catalogue was already calibrated
-// for (old XP unlock thresholds are now buck prices).
-const XP_PER_BUCK = 1;
+// Economy v2 (2026-05-28): the XP→Bucks trade-in is gone. Bucks land directly
+// during play (per correct answer, end-of-run chest, new high-score). The
+// lifetime gameplay-earned total lives in `bucks_earned_lifetime`; clients
+// push it absolute to PUT /api/stats and the server credits the delta to
+// `bucks` so admin grants + purchases aren't clobbered.
+//
+// `bucks_minted_xp` is retained because the one-shot migration set it to
+// each user's earned_xp at v2 cutover — kept so the same migration row can
+// never re-grant on re-deploy. New accounts and gameplay never write to it.
+// `migration_v2_grant` holds the one-shot patch-notes amount until dismissed.
 
 function safeParseArr(s) {
     if (!s) return [];
@@ -44,17 +43,12 @@ function saveOwned(userId, set) {
 
 function summary(userId) {
     const row = db.prepare(
-        'SELECT bucks, bucks_minted_xp, earned_xp, owned_cosmetics_json FROM users WHERE id = ?'
+        'SELECT bucks, bucks_earned_lifetime, migration_v2_grant, owned_cosmetics_json FROM users WHERE id = ?'
     ).get(userId);
-    const earned = Math.max(0, Math.round(Number(row && row.earned_xp) || 0));
-    const minted = Math.max(0, Math.round(Number(row && row.bucks_minted_xp) || 0));
-    const claimable = Math.max(0, Math.floor((earned - minted) / XP_PER_BUCK));
     return {
         bucks: Math.max(0, Math.round(Number(row && row.bucks) || 0)),
-        claimableBucks: claimable,
-        mintedXp: minted,
-        earnedXp: earned,
-        rate: XP_PER_BUCK,
+        bucksEarnedLifetime: Math.max(0, Math.round(Number(row && row.bucks_earned_lifetime) || 0)),
+        migrationGrant: Math.max(0, Math.round(Number(row && row.migration_v2_grant) || 0)),
         ownedCosmetics: safeParseArr(row && row.owned_cosmetics_json),
     };
 }
@@ -63,32 +57,20 @@ router.get('/', (req, res) => {
     res.json(summary(req.user.id));
 });
 
-// Trade-in: convert unclaimed earned XP into Atlas Bucks at XP_PER_BUCK.
-// The player's XP balance is unchanged — we just remember how much XP has
-// been "spent" toward a mint so the same XP isn't claimed twice.
-// Optional body.amount lets the client trade only a portion (clamped to
-// [1, claimable]); omitting it trades the whole claimable balance.
+// Legacy XP→Bucks claim endpoint. Removed in economy v2 (2026-05-28) — Bucks
+// now land directly during play. Returns 410 Gone so any straggling clients
+// surface an actionable error instead of silently no-oping.
 router.post('/claim', (req, res) => {
-    const hasAmount = req.body && req.body.amount != null && req.body.amount !== '';
-    const requested = hasAmount ? Math.floor(Number(req.body.amount)) : null;
-    if (hasAmount && (!Number.isFinite(requested) || requested <= 0)) {
-        return res.status(400).json({ error: 'Amount must be a positive whole number.' });
-    }
-    const tx = db.transaction(() => {
-        const row = db.prepare('SELECT bucks, bucks_minted_xp, earned_xp FROM users WHERE id = ?').get(req.user.id);
-        const earned = Math.max(0, Math.round(Number(row && row.earned_xp) || 0));
-        const minted = Math.max(0, Math.round(Number(row && row.bucks_minted_xp) || 0));
-        const claimable = Math.max(0, Math.floor((earned - minted) / XP_PER_BUCK));
-        if (claimable <= 0) return { claimed: 0 };
-        const toClaim = requested !== null ? Math.min(requested, claimable) : claimable;
-        const newBucks = Math.max(0, Math.round(Number(row && row.bucks) || 0)) + toClaim;
-        const newMinted = minted + toClaim * XP_PER_BUCK;
-        db.prepare('UPDATE users SET bucks = ?, bucks_minted_xp = ? WHERE id = ?')
-            .run(newBucks, newMinted, req.user.id);
-        return { claimed: toClaim };
+    res.status(410).json({
+        error: 'The XP trade-in is gone — Atlas Bucks now land directly as you play.',
     });
-    const { claimed } = tx();
-    res.json({ claimed, ...summary(req.user.id) });
+});
+
+// Dismiss the one-shot v2 patch-notes modal. Clears migration_v2_grant so the
+// modal never appears again for this user.
+router.post('/dismiss-migration', (req, res) => {
+    db.prepare('UPDATE users SET migration_v2_grant = 0 WHERE id = ?').run(req.user.id);
+    res.json(summary(req.user.id));
 });
 
 // Buy a cosmetic. Validates the catalog id + price, deducts the cost from the
@@ -106,6 +88,10 @@ router.post('/buy', (req, res) => {
     // claiming a battlepass tier. Refuse even if the client somehow sends one.
     if (isBpOnly(category, id)) {
         return res.status(403).json({ error: 'This item is only available through the Atlas Pass.' });
+    }
+    // XP Road exclusives are unlocked by crossing a milestone, not by buying.
+    if (isXprOnly(category, id)) {
+        return res.status(403).json({ error: 'This item is only granted along the XP Road.' });
     }
     if (price === 0 || isDefault(category, id)) {
         // Defaults are always free + already owned — nothing to do but report success.

@@ -6,13 +6,19 @@ import Icon from './Icon';
 import { ScoreBubble } from './ui';
 import Mascot from '../assets/illustrations/Mascot';
 import Confetti from '../assets/illustrations/Confetti';
+import AtlasBucksIcon from '../assets/illustrations/AtlasBucks';
 import MasteryMeter from './MasteryMeter';
 import Spinner from '../assets/illustrations/Spinner';
 import { useAudio } from '../audio/AudioProvider';
 import { useProfile, recordBestStreak, flushProfile } from '../lib/profile';
-import { awardForAnswer, penaltyForAnswer, streakMultiplier, MASTERY_STREAK } from '../lib/xp';
+import { awardForAnswer, awardBucksForAnswer, penaltyForAnswer, streakMultiplier, MASTERY_STREAK } from '../lib/xp';
 import { addEarnedXp } from '../lib/progress';
+import { addEarnedBucks } from '../lib/currency';
 import { bumpMetric, refreshBattlepass } from '../lib/battlepass';
+import { bumpQuestMetric, reportStreakHwm } from '../lib/quests';
+import { rollChest, MIN_CORRECT_FOR_CHEST } from '../lib/chest';
+import { currentChestYieldMult } from '../lib/xpRoadCatalog';
+import ChestReveal from './ChestReveal';
 import { getStreak, saveStreak, resetStreak } from '../lib/streak';
 import { useQuizPresence } from '../lib/presence';
 import SpectatorsBadge from './SpectatorsBadge';
@@ -45,6 +51,9 @@ function FreeResponseQuiz({
     const [xpGain, setXpGain] = useState(null);
     const [showConfetti, setShowConfetti] = useState(false);
     const [masteryStreak, setMasteryStreak] = useState(0);
+    const [bestStreak, setBestStreak] = useState(0);
+    const [answeredTotal, setAnsweredTotal] = useState(0);
+    const [chest, setChest] = useState(null);
     const audio = useAudio();
     const profile = useProfile();
 
@@ -57,9 +66,24 @@ function FreeResponseQuiz({
             flashColor === 'correct' ? true : flashColor === 'wrong' ? false : null,
     });
 
-    const handleBack = () => {
+    const navigateBack = () => {
         setView('quiz-menu');
         setQuizCategory({ type: 'all', value: null });
+    };
+
+    const handleBack = () => {
+        if (chest || score < MIN_CORRECT_FOR_CHEST) {
+            navigateBack();
+            return;
+        }
+        const accuracy = answeredTotal > 0 ? score / answeredTotal : 0;
+        const rolled = rollChest({ correct: score, accuracy, bestStreak, mode: 'free-response', yieldMult: currentChestYieldMult() });
+        if (!rolled) {
+            navigateBack();
+            return;
+        }
+        addEarnedBucks(rolled.bucks);
+        setChest(rolled);
     };
 
     const nextQuestion = useCallback(() => {
@@ -110,6 +134,7 @@ function FreeResponseQuiz({
 
         setAnswered(true);
         setFlashColor(wasCorrect ? 'correct' : 'incorrect');
+        setAnsweredTotal((n) => n + 1);
 
         const beforeStreak = currentFlag.streak || 0;
         const { message, color, updatedFlags } = update_flag_stats(allFlagsData, currentFlag, wasCorrect);
@@ -127,11 +152,20 @@ function FreeResponseQuiz({
             if (next === 3 || next === 5 || next === 10) audio.play('streak');
             setStreak(next);
             saveStreak(MODE, next);
+            if (next > bestStreak) setBestStreak(next);
             if (recordBestStreak(MODE, next)) flushProfile().then(() => refreshBattlepass());
             const award = awardForAnswer(currentFlag, 'free-response', next);
             addEarnedXp(award.amount);
+            const bucksAward = awardBucksForAnswer(award);
+            if (bucksAward > 0) addEarnedBucks(bucksAward);
             bumpMetric('fr_correct', 1);
-            setXpGain(award);
+            bumpQuestMetric('fr_correct', 1);
+            bumpQuestMetric('any_correct', 1);
+            reportStreakHwm(next);
+            if (beforeStreak <= MASTERY_STREAK && afterStreak > MASTERY_STREAK) {
+                bumpQuestMetric('master_new', 1);
+            }
+            setXpGain({ ...award, bucks: bucksAward });
             setShowConfetti(true);
             if (beforeStreak <= MASTERY_STREAK && afterStreak > MASTERY_STREAK) {
                 audio.play('levelUp');
@@ -155,6 +189,7 @@ function FreeResponseQuiz({
         audio.play('incorrect');
         setStreak(0);
         resetStreak(MODE);
+        setAnsweredTotal((n) => n + 1);
         const { message, color, updatedFlags } = update_flag_stats(allFlagsData, currentFlag, false, 'skipped');
         setFlagsData(updatedFlags);
         setFeedback({ text: message.text, answer: message.answer, tone: color });
@@ -235,9 +270,26 @@ function FreeResponseQuiz({
                             style={{ position: 'absolute', left: '50%', top: 'min(2vw, 12px)' }}
                             aria-hidden="true"
                         >
-                            {xpGain.amount < 0
-                                ? `${xpGain.amount} XP`
-                                : `+${xpGain.amount} XP${xpGain.multiplier > 1 ? ` ×${xpGain.multiplier.toFixed(1)}` : ''}`}
+                            {xpGain.amount < 0 ? (
+                                `${xpGain.amount} XP`
+                            ) : (
+                                <>
+                                    <span className="xp-gain__amount">
+                                        +{xpGain.amount} XP
+                                        {xpGain.multiplier > 1 && (
+                                            <span className="xp-gain__mult">×{xpGain.multiplier.toFixed(1)}</span>
+                                        )}
+                                    </span>
+                                    {xpGain.bucks > 0 && (
+                                        <>
+                                            <span className="xp-gain__sep" aria-hidden="true" />
+                                            <span className="xp-gain__bucks">
+                                                <AtlasBucksIcon size={16} /> +{xpGain.bucks}
+                                            </span>
+                                        </>
+                                    )}
+                                </>
+                            )}
                         </motion.div>
                     )}
                 </AnimatePresence>
@@ -274,6 +326,16 @@ function FreeResponseQuiz({
                     </button>
                 </div>
             </form>
+
+            <ChestReveal
+                open={!!chest}
+                rarity={chest?.rarity || 'common'}
+                bucks={chest?.bucks || 0}
+                title="Run complete!"
+                subtitle={`${score} correct · streak ${bestStreak}`}
+                showRarity
+                onClose={() => { setChest(null); navigateBack(); }}
+            />
         </div>
     );
 }

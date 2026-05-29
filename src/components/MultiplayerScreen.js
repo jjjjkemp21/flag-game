@@ -12,6 +12,7 @@ import { useAudio } from '../audio/AudioProvider';
 import { recordBattleResult } from '../lib/pet';
 import { useCurrency, setBucksLocal } from '../lib/currency';
 import { refreshBattlepass } from '../lib/battlepass';
+import { bumpQuestMetric } from '../lib/quests';
 import Globe from '../lib/globe/Globe';
 import {
     mp, useLobbyPoll, makeEngine, checkText, checkGlobePick,
@@ -872,6 +873,9 @@ function Results({ lobby, meId, code, onLeave, setState }) {
         // route). Pull a fresh battlepass summary so the MP challenges update
         // immediately instead of waiting for the next pass-screen visit.
         if (iWon) refreshBattlepass();
+        // Quests — every finished match counts toward mp_play; wins also toward mp_win.
+        bumpQuestMetric('mp_play', 1);
+        if (iWon) bumpQuestMetric('mp_win', 1);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 

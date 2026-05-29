@@ -1052,6 +1052,7 @@
 
 /* Stats subtitle (kept for compat) */
 .stats-subtitle { margin: var(--space-md) 0 var(--space-xs); font-family: var(--font-display); font-size: var(--fs-md); color: var(--color-ink-soft); }
+.stats-catalog-summary { margin: 0; color: var(--color-ink-soft); font-size: var(--fs-sm); }
 
 /* Helpers */
 .full-width { width: 100%; }
@@ -2571,13 +2572,386 @@
 
 /* Streak multiplier chip + floating XP reward shown during the standard quizzes */
 .streak-mult { margin-left: 6px; font-size: var(--fs-xs); font-weight: 800; opacity: 0.92; }
+/* Floating reward pill shown when an answer is graded. A dark translucent
+   capsule keeps the green XP + gold bucks legible over any flag colour, with
+   the streak multiplier as an attached chip and a thin divider before bucks. */
 .xp-gain {
     z-index: 5; pointer-events: none; white-space: nowrap;
-    font-family: var(--font-display); font-weight: 800; font-size: var(--fs-lg);
-    color: var(--color-success-deep);
-    text-shadow: 0 1px 0 var(--color-bg-elev-1), 0 2px 6px rgba(0,0,0,0.18);
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 6px 12px 6px 14px;
+    border-radius: 999px;
+    background: rgba(20, 24, 40, 0.82);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    font-family: var(--font-display);
+    font-weight: 800;
 }
-.xp-gain--neg { color: var(--color-danger-deep); }
+.xp-gain--neg {
+    background: rgba(80, 20, 28, 0.82);
+    color: #FFD0D6;
+    font-size: var(--fs-lg);
+    padding: 6px 14px;
+}
+.xp-gain__amount {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: var(--fs-lg);
+    color: #5BE38C;
+    line-height: 1;
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.45);
+}
+.xp-gain__mult {
+    display: inline-flex; align-items: center;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #FFD166, #FF9F45);
+    color: #1F1A3B;
+    font-size: var(--fs-xs);
+    font-weight: 900;
+    letter-spacing: 0.02em;
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.25);
+}
+.xp-gain__hint {
+    font-size: var(--fs-sm);
+    font-weight: 800;
+    color: rgba(255, 255, 255, 0.7);
+}
+.xp-gain__sep {
+    width: 1px;
+    height: 18px;
+    background: rgba(255, 255, 255, 0.22);
+}
+.xp-gain__bucks {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: var(--fs-md);
+    font-weight: 800;
+    color: #FFD166;
+    line-height: 1;
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.45);
+}
+
+/* ==== quests screen ==== */
+.quests-box { gap: var(--space-md); }
+.quests-box__hint { margin: 0; text-align: center; font-size: var(--fs-sm); color: var(--color-ink-soft); }
+.quests-list { display: flex; flex-direction: column; gap: var(--space-sm); width: 100%; }
+.quest-row {
+    /* Tier vars default to silver; the .quest-row--{tier} modifier overrides
+       --quest-color / --quest-soft / --quest-glow to match the achievement
+       palette so a daily quest reads the same as an achievement of that tier. */
+    --quest-color: #9AA7B4;
+    --quest-soft:  rgba(154,167,180,0.18);
+    --quest-glow:  rgba(154,167,180,0.45);
+    position: relative;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: var(--space-md);
+    align-items: center;
+    padding: var(--space-md);
+    background: var(--color-bg-elev-2);
+    border: 1px solid var(--color-border);
+    border-left: 4px solid var(--quest-color);
+    border-radius: var(--radius-lg);
+    transition: box-shadow var(--dur-base), border-color var(--dur-base);
+}
+.quest-row--stone    { --quest-color: #8794A6; --quest-soft: rgba(135,148,166,0.18); --quest-glow: rgba(135,148,166,0.4); }
+.quest-row--bronze   { --quest-color: #C77B3C; --quest-soft: rgba(199,123,60,0.18);  --quest-glow: rgba(199,123,60,0.5); }
+.quest-row--silver   { --quest-color: #9AA7B4; --quest-soft: rgba(154,167,180,0.20); --quest-glow: rgba(154,167,180,0.45); }
+.quest-row--gold     { --quest-color: #E5A018; --quest-soft: rgba(229,160,24,0.22);  --quest-glow: rgba(229,160,24,0.55); }
+.quest-row--platinum { --quest-color: #3FB6C4; --quest-soft: rgba(63,182,196,0.22);  --quest-glow: rgba(63,182,196,0.5); }
+.quest-row--legend   { --quest-color: #8B5BF6; --quest-soft: rgba(139,91,246,0.22);  --quest-glow: rgba(139,91,246,0.55); }
+/* Done — tier color floods the card. Claimed wins out below and quiets it. */
+.quest-row.is-done:not(.is-claimed) {
+    border-color: color-mix(in srgb, var(--quest-color) 60%, var(--color-border));
+    background: linear-gradient(160deg, color-mix(in srgb, var(--quest-color) 14%, transparent), var(--color-bg-elev-2));
+    box-shadow: 0 6px 18px -12px var(--quest-glow);
+}
+.quest-row.is-claimed { opacity: 0.62; }
+.quest-row__icon {
+    width: 40px; height: 40px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--quest-soft);
+    color: var(--quest-color);
+    border-radius: var(--radius-md);
+    font-size: 22px;
+}
+.quest-row__icon .app-icon { color: var(--quest-color); font-size: 22px; }
+.quest-row__body { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.quest-row__title {
+    display: flex; align-items: center; gap: 6px;
+    font-weight: 800; font-size: var(--fs-sm);
+}
+.quest-row__title-text { min-width: 0; }
+/* Tier medallion — re-uses the .ach-badge color ring used on leaderboard /
+   profile so quest tier reads the same as an achievement tier badge. */
+.quest-row__tier { width: 20px; height: 20px; }
+.quest-row__tier .app-icon { font-size: 12px; }
+.quest-row__bar {
+    height: 6px;
+    background: var(--color-bg-elev-1);
+    border-radius: var(--radius-pill);
+    overflow: hidden;
+}
+.quest-row__fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--quest-color), color-mix(in srgb, var(--quest-color) 65%, var(--color-accent-deep, #ffb648)));
+    transition: width 0.4s var(--ease-out-quart);
+}
+.quest-row__progress { font-size: var(--fs-xs); color: var(--color-ink-soft); }
+.quest-row__reward { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+.quest-row__bucks {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-weight: 800; color: var(--color-accent-deep, #ffb648);
+    font-size: var(--fs-sm);
+}
+.quest-row__pending { font-size: var(--fs-xs); color: var(--color-ink-soft); }
+
+/* ==== chest reveal (login chest, quest reward, end-of-run chest) ==== */
+.chest-reveal-backdrop {
+    position: fixed; inset: 0; z-index: 200;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(8, 12, 22, 0.62);
+    backdrop-filter: blur(8px);
+    padding: var(--space-md);
+}
+.chest-reveal {
+    position: relative;
+    width: min(440px, 100%);
+    background: var(--color-bg-elev-1);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    padding: var(--space-lg) var(--space-lg) var(--space-md);
+    display: flex; flex-direction: column; align-items: center; gap: var(--space-md);
+    box-shadow: 0 24px 60px rgba(0,0,0,0.45);
+}
+.chest-reveal--common    { box-shadow: 0 24px 60px rgba(0,0,0,0.45), 0 0 0 1px rgba(207,213,224,0.18), 0 0 40px rgba(207,213,224,0.10) inset; }
+.chest-reveal--rare      { box-shadow: 0 24px 60px rgba(0,0,0,0.45), 0 0 0 1px rgba(84,160,255,0.32),  0 0 40px rgba(84,160,255,0.16)  inset; }
+.chest-reveal--epic      { box-shadow: 0 24px 60px rgba(0,0,0,0.45), 0 0 0 1px rgba(165,94,234,0.36),  0 0 40px rgba(165,94,234,0.18)  inset; }
+.chest-reveal--legendary { box-shadow: 0 24px 60px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,209,102,0.45), 0 0 50px rgba(255,209,102,0.24) inset; }
+
+.chest-reveal__title { margin: 0; font-family: var(--font-display); font-size: var(--fs-xl); }
+.chest-reveal__subtitle { margin: 0; font-size: var(--fs-sm); color: var(--color-ink-soft); text-align: center; }
+
+.chest-reveal__stage {
+    position: relative;
+    width: 220px; height: 220px;
+    display: flex; align-items: center; justify-content: center;
+}
+.chest-reveal__chest-wrap { position: relative; z-index: 2; }
+.chest-reveal__spark {
+    position: absolute; top: 28%;
+    transform: translateX(-50%);
+    z-index: 3; pointer-events: none;
+    font-size: 18px;
+    filter: drop-shadow(0 0 6px currentColor);
+}
+.chest-reveal__flash {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 140px; height: 140px;
+    border-radius: 50%;
+    filter: blur(18px);
+    z-index: 1; pointer-events: none;
+}
+.chest-reveal__payout {
+    display: inline-flex; align-items: center; gap: 10px;
+    font-family: var(--font-display); font-weight: 900;
+    font-size: clamp(2rem, 7vw, 3rem);
+    color: var(--color-accent-deep, #ffb648);
+    text-shadow: 0 2px 0 var(--color-bg-elev-1), 0 4px 14px rgba(0,0,0,0.18);
+}
+.chest-reveal__payout-num { line-height: 1; }
+.chest-reveal__rarity {
+    font-family: var(--font-display); font-weight: 900;
+    font-size: var(--fs-md);
+    letter-spacing: 0.18em;
+    padding: 4px 12px;
+    border-radius: var(--radius-pill);
+}
+.chest-reveal__rarity--common    { color: #cfd5e0; background: rgba(154,163,178,0.18); }
+.chest-reveal__rarity--rare      { color: #8bc0ff; background: rgba(84,160,255,0.18); }
+.chest-reveal__rarity--epic      { color: #d39bff; background: rgba(165,94,234,0.20); }
+.chest-reveal__rarity--legendary { color: #ffd166; background: rgba(255,209,102,0.20); }
+.chest-reveal__actions { width: 100%; display: flex; justify-content: center; }
+
+/* ==== quest complete celebration modal ==== */
+/* Tier vars match the quest-row palette so the pop-up reads as "this quest's
+   tier" at a glance. Animated entry handled by framer-motion in the JSX. */
+.quest-complete {
+    --q-color: #9AA7B4;
+    --q-soft:  rgba(154,167,180,0.22);
+    --q-glow:  rgba(154,167,180,0.45);
+    position: relative;
+    width: min(440px, 100%);
+    background: var(--color-bg-elev-1);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    padding: var(--space-lg);
+    display: flex; flex-direction: column; align-items: center; gap: var(--space-sm);
+    box-shadow:
+        0 24px 60px rgba(0,0,0,0.45),
+        0 0 0 1px var(--q-glow),
+        0 0 50px -10px var(--q-glow) inset;
+    overflow: hidden;
+}
+.quest-complete--stone    { --q-color: #8794A6; --q-soft: rgba(135,148,166,0.22); --q-glow: rgba(135,148,166,0.40); }
+.quest-complete--bronze   { --q-color: #C77B3C; --q-soft: rgba(199,123,60,0.22);  --q-glow: rgba(199,123,60,0.50); }
+.quest-complete--silver   { --q-color: #9AA7B4; --q-soft: rgba(154,167,180,0.22); --q-glow: rgba(154,167,180,0.45); }
+.quest-complete--gold     { --q-color: #E5A018; --q-soft: rgba(229,160,24,0.24);  --q-glow: rgba(229,160,24,0.55); }
+.quest-complete--platinum { --q-color: #3FB6C4; --q-soft: rgba(63,182,196,0.24);  --q-glow: rgba(63,182,196,0.50); }
+.quest-complete--legend   { --q-color: #8B5BF6; --q-soft: rgba(139,91,246,0.24);  --q-glow: rgba(139,91,246,0.55); }
+
+.quest-complete__confetti {
+    position: absolute; inset: 0;
+    pointer-events: none;
+    z-index: 0;
+}
+.quest-complete__eyebrow {
+    position: relative; z-index: 1;
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: var(--font-display); font-weight: 800;
+    font-size: var(--fs-sm);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--q-color);
+    padding: 4px 12px;
+    border-radius: var(--radius-pill);
+    background: var(--q-soft);
+    border: 1px solid color-mix(in srgb, var(--q-color) 45%, transparent);
+}
+.quest-complete__eyebrow .app-icon { font-size: 16px; }
+.quest-complete__icon {
+    position: relative; z-index: 1;
+    width: 84px; height: 84px;
+    display: flex; align-items: center; justify-content: center;
+    margin-top: var(--space-xs);
+    background: radial-gradient(circle at 50% 45%, var(--q-soft), transparent 75%);
+    border-radius: 50%;
+    color: var(--q-color);
+    filter: drop-shadow(0 6px 18px var(--q-glow));
+}
+.quest-complete__icon .app-icon { font-size: 56px; line-height: 1; }
+.quest-complete__title {
+    position: relative; z-index: 1;
+    margin: 0; text-align: center;
+    font-family: var(--font-display);
+    font-size: var(--fs-lg);
+    color: var(--color-ink);
+}
+.quest-complete__tier {
+    position: relative; z-index: 1;
+    width: auto; height: auto; border-radius: var(--radius-pill);
+    padding: 3px 10px; gap: 5px;
+    font-size: var(--fs-xs); font-weight: 800; letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+.quest-complete__tier .app-icon { font-size: 12px; }
+.quest-complete__bar {
+    position: relative; z-index: 1;
+    width: 100%;
+    height: 8px;
+    background: var(--color-bg-elev-2);
+    border-radius: var(--radius-pill);
+    overflow: hidden;
+    margin-top: var(--space-xs);
+}
+.quest-complete__fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--q-color), color-mix(in srgb, var(--q-color) 65%, var(--color-accent-deep, #ffb648)));
+    box-shadow: 0 0 12px var(--q-glow);
+}
+.quest-complete__progress {
+    position: relative; z-index: 1;
+    font-size: var(--fs-xs); font-weight: 700;
+    color: var(--color-ink-soft);
+}
+.quest-complete__reward {
+    position: relative; z-index: 1;
+    display: inline-flex; align-items: center; gap: 10px;
+    font-family: var(--font-display); font-weight: 900;
+    font-size: clamp(1.6rem, 5.5vw, 2.4rem);
+    color: var(--color-accent-deep, #ffb648);
+    text-shadow: 0 2px 0 var(--color-bg-elev-1), 0 4px 14px rgba(0,0,0,0.18);
+    margin-top: var(--space-xs);
+}
+.quest-complete__reward-num { line-height: 1; }
+.quest-complete__actions {
+    position: relative; z-index: 1;
+    width: 100%;
+    display: flex; gap: var(--space-sm); justify-content: center;
+    margin-top: var(--space-xs);
+}
+.quest-complete__actions .ui-button { flex: 1; }
+
+/* QuestsButton — reuses .bell-button base; this just nudges the icon tone
+   when there's something to claim so the badge isn't the only signal. */
+.quests-button.has-claims { color: var(--color-accent-deep, #ffb648); }
+.quests-button.has-claims:hover { background: var(--color-bg-soft); }
+
+/* Day-pip strip for the login chest — 7 pips, today highlighted, Day 7 sparkles. */
+.login-chest-pips { display: flex; gap: 6px; justify-content: center; }
+.login-chest-pip {
+    display: inline-flex; flex-direction: column; align-items: center; gap: 2px;
+    padding: 4px 6px; min-width: 28px;
+    border-radius: var(--radius-md);
+    background: var(--color-bg-elev-2);
+    border: 1px solid var(--color-border);
+    font-size: var(--fs-xs); color: var(--color-ink-soft);
+}
+.login-chest-pip__num { font-weight: 800; font-size: var(--fs-sm); color: var(--color-ink); }
+.login-chest-pip__bucks { display: inline-flex; align-items: center; gap: 2px; font-weight: 700; }
+.login-chest-pip.is-today {
+    background: rgba(255,182,72,0.18);
+    border-color: rgba(255,182,72,0.55);
+    color: var(--color-ink);
+}
+.login-chest-pip.is-today .login-chest-pip__num,
+.login-chest-pip.is-today .login-chest-pip__bucks { color: var(--color-accent-deep, #ffb648); }
+.login-chest-pip.is-day7 .login-chest-pip__num::after { content: ' ✨'; }
+.login-chest-pip.is-past { opacity: 0.55; }
+
+/* Floating strip rendered over the chest backdrop so it sits below the modal
+   without nesting inside it (the chest reveal has its own padding/layout). */
+.login-chest-floating-pips {
+    position: fixed; bottom: 24px; left: 50%;
+    transform: translateX(-50%);
+    z-index: 210;
+    display: flex; gap: 6px;
+    padding: 6px 10px;
+    background: rgba(8, 12, 22, 0.72);
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--color-border);
+    pointer-events: none;
+}
+.login-chest-floating-pips .login-chest-pip {
+    background: transparent;
+    border-color: rgba(255,255,255,0.08);
+}
+.login-chest-floating-pips .login-chest-pip.is-today {
+    background: rgba(255,182,72,0.18);
+    border-color: rgba(255,182,72,0.55);
+}
+
+/* ==== economy v2 patch-notes modal ==== */
+.migration-modal { display: flex; flex-direction: column; gap: var(--space-lg); }
+.migration-modal__grant {
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    padding: var(--space-md) var(--space-md) var(--space-lg);
+    border-radius: var(--radius-lg);
+    background: linear-gradient(160deg, rgba(255,182,72,0.18), rgba(255,182,72,0.04));
+    border: 1px solid rgba(255,182,72,0.35);
+}
+.migration-modal__grant-num {
+    font-family: var(--font-display); font-weight: 900;
+    font-size: clamp(2rem, 6vw, 3rem);
+    color: var(--color-accent-deep, #ffb648);
+    text-shadow: 0 2px 0 var(--color-bg-elev-1), 0 4px 14px rgba(0,0,0,0.18);
+}
+.migration-modal__grant-label { font-size: var(--fs-sm); color: var(--color-ink-soft); }
+.migration-modal__notes h3 { margin: 0 0 8px; font-size: var(--fs-md); }
+.migration-modal__notes ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; }
+.migration-modal__notes li { font-size: var(--fs-sm); line-height: 1.45; }
+.migration-modal__actions { display: flex; justify-content: flex-end; }
 
 /* Per-flag mastery progress meter shown above the flag in standard quizzes. */
 .mastery-meter {
@@ -2786,6 +3160,14 @@
 }
 .ab-chip:hover { background: var(--color-bg-soft); transform: translateY(-1px); }
 .ab-chip:active { transform: translateY(0); }
+/* Number pulse when bucks increase (economy v2 — direct payouts). React's
+   `key` on the span resets the animation each time the value rises. */
+.ab-chip__num { display: inline-block; animation: ab-chip-pulse 0.4s var(--ease-pop, cubic-bezier(0.18, 0.89, 0.32, 1.28)); }
+@keyframes ab-chip-pulse {
+    0%   { transform: scale(1);    color: var(--color-ink); }
+    35%  { transform: scale(1.18); color: var(--color-accent-deep, #ffb648); }
+    100% { transform: scale(1);    color: var(--color-ink); }
+}
 
 /* Pill variant used in the multiplayer HUD for the active pot. */
 .ab-pill { display: inline-flex; align-items: center; gap: 4px; }

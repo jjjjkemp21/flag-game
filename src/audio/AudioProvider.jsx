@@ -6,7 +6,12 @@ const STORAGE_KEY_MUTED = 'audioMuted';
 const STORAGE_KEY_VOLUME = 'audioVolume';
 
 /* Procedurally generated tones via Web Audio API so no media files are required.
-   Each "sound" is a short tone-shape with envelope. Keeps bundle tiny. */
+   Each "sound" is a short tone-shape with envelope. Keeps bundle tiny.
+
+   `chestTap` + `chestSparkle` are designed to be played together each tap —
+   sawtooth body for the wooden knock + rising triangle sparkle for magic.
+   Pass opts.pitchShift to scale both base and end frequency, so callers
+   can ramp pitch up across a tap sequence and sell anticipation. */
 const SOUND_DEFS = {
     click:     { type: 'sine',     freq: 520, dur: 0.06, gain: 0.10, slide: -60 },
     hover:     { type: 'sine',     freq: 700, dur: 0.04, gain: 0.04, slide: 0 },
@@ -17,6 +22,8 @@ const SOUND_DEFS = {
     streak:    { type: 'triangle', freq: 520, dur: 0.30, gain: 0.18, slide: 600 },  // sparkle
     levelUp:   { type: 'triangle', freq: 440, dur: 0.40, gain: 0.20, slide: 540 },
     gameOver:  { type: 'sawtooth', freq: 320, dur: 0.45, gain: 0.16, slide: -180 },
+    chestTap:    { type: 'sawtooth', freq: 220,  dur: 0.11, gain: 0.13, slide: 200 },   // wooden tap, rises
+    chestSparkle:{ type: 'triangle', freq: 1480, dur: 0.20, gain: 0.04, slide: 420 },   // high magical layer
 };
 
 function getAudioCtx() {
@@ -94,8 +101,9 @@ export function AudioProvider({ children }) {
         const gain = ctx.createGain();
         const osc = ctx.createOscillator();
         osc.type = def.type;
-        const baseFreq = def.freq;
-        const endFreq  = Math.max(80, baseFreq + (def.slide || 0));
+        const shift = opts.pitchShift ?? 1;
+        const baseFreq = def.freq * shift;
+        const endFreq  = Math.max(80, baseFreq + (def.slide || 0) * shift);
         osc.frequency.setValueAtTime(baseFreq, now);
         if (def.slide) {
             osc.frequency.exponentialRampToValueAtTime(endFreq, now + def.dur);

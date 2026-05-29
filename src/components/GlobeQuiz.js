@@ -6,13 +6,19 @@ import Icon from './Icon';
 import { Button, ScoreBubble } from './ui';
 import Confetti from '../assets/illustrations/Confetti';
 import Mascot from '../assets/illustrations/Mascot';
+import AtlasBucksIcon from '../assets/illustrations/AtlasBucks';
 import MasteryMeter from './MasteryMeter';
 import Spinner from '../assets/illustrations/Spinner';
 import { useAudio } from '../audio/AudioProvider';
 import { useProfile, recordBestStreak, flushProfile } from '../lib/profile';
-import { awardForAnswer, penaltyForAnswer, streakMultiplier, MASTERY_STREAK } from '../lib/xp';
+import { awardForAnswer, awardBucksForAnswer, penaltyForAnswer, streakMultiplier, MASTERY_STREAK } from '../lib/xp';
 import { addEarnedXp } from '../lib/progress';
+import { addEarnedBucks } from '../lib/currency';
+import { rollChest, MIN_CORRECT_FOR_CHEST } from '../lib/chest';
+import { currentChestYieldMult } from '../lib/xpRoadCatalog';
+import ChestReveal from './ChestReveal';
 import { bumpMetric, refreshBattlepass } from '../lib/battlepass';
+import { bumpQuestMetric, reportStreakHwm } from '../lib/quests';
 import { recordCorrect, recordIncorrect } from '../lib/pet';
 import { getStreak, saveStreak, resetStreak } from '../lib/streak';
 import { useQuizPresence } from '../lib/presence';
@@ -99,6 +105,9 @@ function GlobeQuiz({
     const [masteryStreak, setMasteryStreak] = useState(0); // current flag's progress to geo-mastery
     const [nameInput, setNameInput] = useState('');
     const [isWiggling, setIsWiggling] = useState(false);
+    const [bestStreak, setBestStreak] = useState(0);
+    const [answeredTotal, setAnsweredTotal] = useState(0);
+    const [chest, setChest] = useState(null);
     // Ref mirror so resolveAnswer (memoised before hintUsed is in scope above
     // it) sees the latest value without depending on state in the deps array.
     const hintUsedRef = useRef(false);
@@ -119,11 +128,27 @@ function GlobeQuiz({
     answeredRef.current = answered;
     // resolveAnswerRef is assigned below once resolveAnswer is defined.
 
-    const handleBack = useCallback(() => {
+    const navigateBack = useCallback(() => {
         if (nextTimerRef.current) clearTimeout(nextTimerRef.current);
         setView('quiz-menu');
         setQuizCategory({ type: 'all', value: null });
     }, [setView, setQuizCategory]);
+
+    const handleBack = useCallback(() => {
+        if (chest || score < MIN_CORRECT_FOR_CHEST) {
+            navigateBack();
+            return;
+        }
+        const accuracy = answeredTotal > 0 ? score / answeredTotal : 0;
+        const chestMode = subMode === 'name' ? MODE_NAME : MODE_FIND;
+        const rolled = rollChest({ correct: score, accuracy, bestStreak, mode: chestMode, yieldMult: currentChestYieldMult() });
+        if (!rolled) {
+            navigateBack();
+            return;
+        }
+        addEarnedBucks(rolled.bucks);
+        setChest(rolled);
+    }, [chest, score, answeredTotal, bestStreak, subMode, navigateBack]);
 
     const pickNextQuestion = useCallback(() => {
         const pool = eligibleFlagsRef.current;
@@ -210,10 +235,12 @@ function GlobeQuiz({
         if (wasCorrect) {
             audio.play('correct');
             setScore(s => s + 1);
+            setAnsweredTotal((n) => n + 1);
             const next = streak + 1;
             if (next === 3 || next === 5 || next === 10) audio.play('streak');
             setStreak(next);
             saveStreak(mode, next);
+            if (next > bestStreak) setBestStreak(next);
             if (recordBestStreak(mode, next)) flushProfile().then(() => refreshBattlepass());
             // Pretend flag's `correct` field is the geoCorrect for the XP scaler
             // so brand-new geography wins land the biggest reward.
@@ -224,11 +251,19 @@ function GlobeQuiz({
             const amount = hintUsedRef.current
                 ? Math.max(1, Math.round(base.amount * HINT_XP_MULTIPLIER))
                 : base.amount;
-            const award = { ...base, amount, hinted: hintUsedRef.current };
+            const bucksAward = awardBucksForAnswer({ amount });
+            const award = { ...base, amount, hinted: hintUsedRef.current, bucks: bucksAward };
             addEarnedXp(award.amount);
+            if (bucksAward > 0) addEarnedBucks(bucksAward);
             // Separate battlepass counters per sub-mode so the pass can offer
             // distinct challenges for each play style.
             bumpMetric(mode === MODE_NAME ? 'globe_name_correct' : 'globe_correct', 1);
+            bumpQuestMetric('globe_correct', 1);
+            bumpQuestMetric('any_correct', 1);
+            reportStreakHwm(next);
+            if (beforeStreak <= MASTERY_STREAK && afterStreak > MASTERY_STREAK) {
+                bumpQuestMetric('master_new', 1);
+            }
             setXpGain(award);
             setShowConfetti(true);
             if (beforeStreak <= MASTERY_STREAK && afterStreak > MASTERY_STREAK) audio.play('levelUp');
@@ -236,6 +271,7 @@ function GlobeQuiz({
             if (!skipped) audio.play('incorrect');
             setStreak(0);
             resetStreak(mode);
+            setAnsweredTotal((n) => n + 1);
             const penalty = penaltyForAnswer(mode);
             addEarnedXp(-penalty);
             setXpGain({ amount: -penalty });
@@ -245,7 +281,7 @@ function GlobeQuiz({
         nextTimerRef.current = setTimeout(() => {
             pickNextQuestion();
         }, NEXT_DELAY_MS);
-    }, [allFlagsData, setFlagsData, audio, streak, pickNextQuestion]);
+    }, [allFlagsData, setFlagsData, audio, streak, bestStreak, pickNextQuestion]);
 
     // Find-mode tap-confirm: guessIso2 is what the player clicked.
     const resolveAnswer = useCallback((guessIso2) => {
@@ -533,9 +569,29 @@ function GlobeQuiz({
                             style={{ position: 'absolute', left: '50%', top: '20%', transform: 'translateX(-50%)' }}
                             aria-hidden="true"
                         >
-                            {xpGain.amount < 0
-                                ? `${xpGain.amount} XP`
-                                : `+${xpGain.amount} XP${xpGain.multiplier > 1 ? ` ×${xpGain.multiplier.toFixed(1)}` : ''}${xpGain.hinted ? ' (½)' : ''}`}
+                            {xpGain.amount < 0 ? (
+                                `${xpGain.amount} XP`
+                            ) : (
+                                <>
+                                    <span className="xp-gain__amount">
+                                        +{xpGain.amount} XP
+                                        {xpGain.multiplier > 1 && (
+                                            <span className="xp-gain__mult">×{xpGain.multiplier.toFixed(1)}</span>
+                                        )}
+                                        {xpGain.hinted && (
+                                            <span className="xp-gain__hint">(½)</span>
+                                        )}
+                                    </span>
+                                    {xpGain.bucks > 0 && (
+                                        <>
+                                            <span className="xp-gain__sep" aria-hidden="true" />
+                                            <span className="xp-gain__bucks">
+                                                <AtlasBucksIcon size={16} /> +{xpGain.bucks}
+                                            </span>
+                                        </>
+                                    )}
+                                </>
+                            )}
                         </motion.div>
                     )}
                 </AnimatePresence>
@@ -622,6 +678,16 @@ function GlobeQuiz({
                     Skip
                 </button>
             </div>
+
+            <ChestReveal
+                open={!!chest}
+                rarity={chest?.rarity || 'common'}
+                bucks={chest?.bucks || 0}
+                title="Run complete!"
+                subtitle={`${score} correct · streak ${bestStreak}`}
+                showRarity
+                onClose={() => { setChest(null); navigateBack(); }}
+            />
         </div>
     );
 }

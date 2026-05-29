@@ -7,7 +7,7 @@ import { useToast } from './ui/Toast';
 import { useAuth } from '../auth/AuthProvider';
 import { usePet } from '../lib/pet';
 import { useProfile, setShowcase, setSelectedTitle, setAchievementsUnlocked } from '../lib/profile';
-import { getBonus } from '../lib/progress';
+import { getBonus, getEarnedXp } from '../lib/progress';
 import { buildContext, evaluate, ACHIEVEMENTS, ACHIEVEMENT_GROUPS } from '../lib/achievements';
 import { masteryRank, nextRank, MASTERY_RANKS, geoMasteryRank, nextGeoRank, GEO_MASTERY_RANKS } from '../lib/mastery';
 
@@ -18,9 +18,10 @@ function Achievements({ setView, flagsData }) {
     const profile = useProfile();
     const { frenzy, pixelated, longestRoute, language } = getBonus();
 
+    const earnedXp = getEarnedXp();
     const ctx = useMemo(
-        () => buildContext(flagsData, { frenzy, pixelated, longestRoute, language }, pet.level),
-        [flagsData, pet.level, frenzy, pixelated, longestRoute, language]
+        () => buildContext(flagsData, { frenzy, pixelated, longestRoute, language }, pet.level, earnedXp),
+        [flagsData, pet.level, frenzy, pixelated, longestRoute, language, earnedXp]
     );
     const unlocked = useMemo(() => evaluate(ctx), [ctx]);
     const unlockedSet = useMemo(() => new Set(unlocked), [unlocked]);

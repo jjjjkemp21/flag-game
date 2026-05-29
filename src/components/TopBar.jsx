@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Icon from './Icon';
 import { Modal, Button } from './ui';
 import { useAuth } from '../auth/AuthProvider';
@@ -8,6 +8,7 @@ import { ACHIEVEMENTS_BY_ID } from '../lib/achievements';
 import AtlasBucksIcon from '../assets/illustrations/AtlasBucks';
 import AchievementBadge from './AchievementBadge';
 import InboxButton from './InboxButton';
+import QuestsButton from './QuestsButton';
 
 function TopBar({ setView }) {
     const { isAuthed, user, logout } = useAuth();
@@ -21,6 +22,16 @@ function TopBar({ setView }) {
     // Bucks live in the currency store after login; fall back to the user
     // payload so the chip doesn't flicker between login and the first poll.
     const bucks = currency.loaded ? currency.bucks : (user?.bucks || 0);
+    // Economy v2: pulse the chip when Bucks land directly during play. We
+    // track the previous value in a ref so the animation only fires on actual
+    // increases (not on first render, decrements from purchases, or rerenders
+    // where the number is unchanged).
+    const [pulseKey, setPulseKey] = useState(0);
+    const prevBucksRef = useRef(bucks);
+    useEffect(() => {
+        if (bucks > prevBucksRef.current) setPulseKey((k) => k + 1);
+        prevBucksRef.current = bucks;
+    }, [bucks]);
 
     return (
         <header className="topbar">
@@ -32,9 +43,11 @@ function TopBar({ setView }) {
                         onClick={() => setView('store')}
                     >
                         <AtlasBucksIcon size={16} />
-                        <span>{bucks.toLocaleString()}</span>
+                        <span key={pulseKey} className="ab-chip__num">{bucks.toLocaleString()}</span>
                     </button>
                 )}
+
+                {isAuthed && <QuestsButton setView={setView} />}
 
                 {isAuthed && <InboxButton />}
 

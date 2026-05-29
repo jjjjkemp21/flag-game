@@ -122,6 +122,27 @@ if (!hasCol('selected_title')) db.exec('ALTER TABLE users ADD COLUMN selected_ti
 if (!hasCol('bucks')) db.exec('ALTER TABLE users ADD COLUMN bucks INTEGER NOT NULL DEFAULT 0');
 if (!hasCol('bucks_minted_xp')) db.exec('ALTER TABLE users ADD COLUMN bucks_minted_xp INTEGER NOT NULL DEFAULT 0');
 if (!hasCol('owned_cosmetics_json')) db.exec('ALTER TABLE users ADD COLUMN owned_cosmetics_json TEXT');
+// Economy v2 (2026-05-28): lifetime gameplay-earned bucks (monotonic mirror of
+// earned_xp). The /api/stats PUT carries this absolute value; the server adds
+// (incoming - stored) to the spendable `bucks` balance so admin grants and
+// purchases are never clobbered. `migration_v2_grant` holds the one-shot
+// amount we credited to legacy claimants — non-zero means we still owe them a
+// patch-notes modal on next sign-in (cleared to 0 on dismissal).
+if (!hasCol('bucks_earned_lifetime')) db.exec('ALTER TABLE users ADD COLUMN bucks_earned_lifetime INTEGER NOT NULL DEFAULT 0');
+if (!hasCol('migration_v2_grant')) db.exec('ALTER TABLE users ADD COLUMN migration_v2_grant INTEGER NOT NULL DEFAULT 0');
+// ---- Login chest (economy v2) ----
+// last_login_chest_date: YYYY-MM-DD (UTC) of the most recent daily-chest
+// rollover. login_streak: current cycle position; day-of-cycle is
+// ((login_streak - 1) % 7) + 1 (1..7) with Day 7 paying the jackpot.
+// pending_login_chest_json: { day, bucks, claimed } staged for the client to
+// open; cleared on claim.
+if (!hasCol('last_login_chest_date')) db.exec('ALTER TABLE users ADD COLUMN last_login_chest_date TEXT');
+if (!hasCol('login_streak')) db.exec('ALTER TABLE users ADD COLUMN login_streak INTEGER NOT NULL DEFAULT 0');
+if (!hasCol('pending_login_chest_json')) db.exec('ALTER TABLE users ADD COLUMN pending_login_chest_json TEXT');
+// ---- Quests (economy v2) ----
+// quests_json: { daily: { date, quests: [...] }, weekly: { weekStart, quests: [...] } }
+// Rolled fresh on date rollover (UTC midnight daily / Monday UTC weekly).
+if (!hasCol('quests_json')) db.exec('ALTER TABLE users ADD COLUMN quests_json TEXT');
 // ---- Battlepass ----
 // `battlepass_json` holds the per-user season blob: { season, owned (premium
 // pass bought?), claimed[] (reward keys "free:N"/"prem:N"), counters{} }. When
@@ -129,6 +150,18 @@ if (!hasCol('owned_cosmetics_json')) db.exec('ALTER TABLE users ADD COLUMN owned
 // player to a fresh state on next request — keeping past purchases scoped to
 // the season they were made in.
 if (!hasCol('battlepass_json')) db.exec('ALTER TABLE users ADD COLUMN battlepass_json TEXT');
+// ---- XP Road ----
+// `claimed_xproad_json` is the JSON array of milestone ids the server has
+// already auto-granted to this user (bucks credited, cosmetics added, titles
+// unlocked). Guards against double-paying on every stats push — without this,
+// a client could re-PUT the same earned_xp and re-trigger the grant loop.
+// Cleared by stats /reset alongside the rest of the player progress.
+if (!hasCol('claimed_xproad_json')) db.exec('ALTER TABLE users ADD COLUMN claimed_xproad_json TEXT');
+// `xp_road_titles_json` is the set of titles the player has unlocked via the
+// XP Road (so the Achievements screen's title picker can list them alongside
+// mastery titles). Stored as a JSON array of strings.
+if (!hasCol('xp_road_titles_json')) db.exec('ALTER TABLE users ADD COLUMN xp_road_titles_json TEXT');
+
 // ---- Spectator privacy ----
 // When set to 0, friends can still see the player as "Playing X" on the Friends
 // tab (presence heartbeat is unaffected), but the spectator endpoints refuse to
@@ -167,6 +200,28 @@ if (!alreadyWiped) {
         db.exec("DELETE FROM sqlite_sequence WHERE name = 'announcements'");
     } catch (_) { /* table absent if AUTOINCREMENT never used */ }
     db.prepare('INSERT INTO _meta (key, value) VALUES (?, ?)').run(WIPE_KEY, String(Date.now()));
+}
+
+// 2026-05-28: economy v2 — kill the XP→Bucks claim, pay Bucks directly. Every
+// existing account that hasn't yet "minted" all its earned XP is one-shot
+// credited with (earned_xp - bucks_minted_xp) Bucks at the original 1:1 rate
+// so nobody loses purchasing power. The grant amount is stashed in
+// migration_v2_grant so the client can show a patch-notes modal on next
+// sign-in (cleared to 0 when the user dismisses it). Idempotent: guarded by
+// _meta so re-deploys never re-grant.
+const ECON_V2_KEY = 'economy_v2_2026_05_28';
+const econV2Done = db.prepare('SELECT 1 FROM _meta WHERE key = ?').get(ECON_V2_KEY);
+if (!econV2Done) {
+    db.exec(`
+        UPDATE users
+        SET
+            bucks = bucks + MAX(0, COALESCE(earned_xp, 0) - bucks_minted_xp),
+            bucks_earned_lifetime = bucks + MAX(0, COALESCE(earned_xp, 0) - bucks_minted_xp),
+            migration_v2_grant = MAX(0, COALESCE(earned_xp, 0) - bucks_minted_xp),
+            bucks_minted_xp = COALESCE(earned_xp, 0)
+        WHERE COALESCE(earned_xp, 0) > bucks_minted_xp
+    `);
+    db.prepare('INSERT INTO _meta (key, value) VALUES (?, ?)').run(ECON_V2_KEY, String(Date.now()));
 }
 
 module.exports = db;

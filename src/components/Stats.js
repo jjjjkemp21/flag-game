@@ -2,9 +2,15 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
 import { ProgressRing, Pill } from './ui';
 import BadgeRing from '../assets/illustrations/BadgeRing';
+import TitleBadge from './TitleBadge';
 import Icon from './Icon';
 import { computeXp, readBonusScores } from '../lib/xp';
-import { GLOBE_RENDERABLE_ISO2 } from '../lib/achievements';
+import { CONTINENTS, GLOBE_RENDERABLE_ISO2 } from '../lib/achievements';
+import { masteryRank, nextRank, geoMasteryRank, nextGeoRank } from '../lib/mastery';
+
+// Continent key -> display label (matches the labels used everywhere else, so
+// region:territory renders as "Territories" instead of titlecased "Territory").
+const REGION_LABELS = Object.fromEntries(CONTINENTS.map((c) => [c.key, c.label]));
 
 function CountUp({ to = 0, duration = 0.9 }) {
     const count = useMotionValue(0);
@@ -78,6 +84,7 @@ function Stats({ flagsData }) {
             learningCount,
             needsPracticeCount,
             total,
+            regionCount: regionMap.size,
             mastery: masteredCount / total,
             best: sortedByKnowledge[0] || null,
             worst: sortedByKnowledge[sortedByKnowledge.length - 1] || null,
@@ -100,25 +107,54 @@ function Stats({ flagsData }) {
         };
     }, [flagsData]);
 
-    const titleCase = (s) => s.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
-
     if (!stats) return null;
 
     const xp = computeXp();
 
+    // Mastery rank pills + next-rank hints. Mirrors the Achievements screen so
+    // the badges, titles, and thresholds shown here match the rest of the app
+    // (rather than the old generic Bronze/Silver/Gold/Platinum cutoffs).
+    const rank = masteryRank(stats.masteredCount, stats.total);
+    const nextR = nextRank(stats.masteredCount, stats.total);
+    const geoRank = geoMasteryRank(stats.geoMastered, stats.geoEligibleTotal);
+    const nextGR = nextGeoRank(stats.geoMastered, stats.geoEligibleTotal);
+
+    // Mastery-tier badges — one per BadgeRing colour, using the actual
+    // MASTERY_RANKS thresholds from src/lib/mastery.js so the unlocks here
+    // match the titles a player can earn on the leaderboard.
     const tiers = [
-        { tier: 'bronze',   label: 'Bronze',   threshold: 10 },
-        { tier: 'silver',   label: 'Silver',   threshold: 50 },
-        { tier: 'gold',     label: 'Gold',     threshold: 150 },
-        { tier: 'platinum', label: 'Platinum', threshold: stats.total },
+        { tier: 'bronze',   label: 'Explorer',     threshold: 15 },
+        { tier: 'silver',   label: 'Cartographer', threshold: 80 },
+        { tier: 'gold',     label: 'Globetrotter', threshold: 200 },
+        { tier: 'platinum', label: 'Atlas Master', threshold: 230 },
     ];
 
     return (
         <div className="stats-box">
             <h2 className="text-center">Your Progress</h2>
 
+            <p className="stats-catalog-summary text-center">
+                {stats.total} flags across {stats.regionCount} regions
+            </p>
+
             <div style={{ display: 'flex', justifyContent: 'center' }}>
                 <Pill tone="primary" icon="star"><CountUp to={xp} /> XP</Pill>
+            </div>
+
+            <div className="rank-banner">
+                <span className={`rank-pill rank-pill--${rank.tier}`}>
+                    <TitleBadge scope="mastery" tier={rank.tier} size={28} /> {rank.title}
+                </span>
+                <p className="rank-summary">
+                    <strong>{stats.masteredCount}</strong> / {stats.total} flags mastered
+                </p>
+                {nextR && (
+                    <p className="rank-next auth-hint">
+                        {nextR.remaining > 0
+                            ? `Master ${nextR.remaining} more to reach ${nextR.title}.`
+                            : `Next: ${nextR.title}.`}
+                    </p>
+                )}
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'var(--space-md)' }}>
@@ -138,6 +174,21 @@ function Stats({ flagsData }) {
             </div>
 
             <h3 className="stats-subtitle text-center">Geography Mastery</h3>
+            <div className="rank-banner">
+                <span className={`rank-pill rank-pill--${geoRank.tier}`}>
+                    <TitleBadge scope="geo" tier={geoRank.tier} size={28} /> {geoRank.title}
+                </span>
+                <p className="rank-summary">
+                    <strong>{stats.geoMastered}</strong> / {stats.geoEligibleTotal} countries mastered on the globe
+                </p>
+                {nextGR && (
+                    <p className="rank-next auth-hint">
+                        {nextGR.remaining > 0
+                            ? `Master ${nextGR.remaining} more on the globe to reach ${nextGR.title}.`
+                            : `Next geography rank: ${nextGR.title}.`}
+                    </p>
+                )}
+            </div>
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'var(--space-md)' }}>
                 <ProgressRing value={stats.geoMastery} size={100} stroke={10} tone="info" label={`${stats.geoMastered} of ${stats.geoEligibleTotal} placed on the globe`}>
                     <div style={{ fontSize: 'var(--fs-lg)' }}>
@@ -188,7 +239,7 @@ function Stats({ flagsData }) {
                             const pct = Math.round((r.mastered / r.total) * 100);
                             return (
                                 <div className="region-stat" key={r.region}>
-                                    <span className="region-stat__name">{titleCase(r.region)}</span>
+                                    <span className="region-stat__name">{REGION_LABELS[r.region] || r.region}</span>
                                     <span className="region-stat__track">
                                         <span className="region-stat__fill" style={{ width: `${pct}%` }} />
                                     </span>

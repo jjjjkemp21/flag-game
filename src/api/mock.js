@@ -81,15 +81,10 @@ function userPayload() {
 }
 
 function currencySummary() {
-    const earned = Math.max(0, Math.round(store.earnedXp || 0));
-    const minted = Math.max(0, Math.round(store.bucksMintedXp || 0));
-    const rate = 10;
     return {
         bucks: store.user.bucks,
-        claimableBucks: Math.max(0, Math.floor((earned - minted) / rate)),
-        mintedXp: minted,
-        earnedXp: earned,
-        rate,
+        bucksEarnedLifetime: Math.max(0, Math.round(store.bucksEarnedLifetime || 0)),
+        migrationGrant: 0,
         ownedCosmetics: [...store.user.ownedCosmetics],
     };
 }
@@ -213,13 +208,13 @@ const routes = [
     // ---- Currency -----------------------------------------------------
     { m: 'GET',  p: /^\/currency$/,       h: () => currencySummary() },
     { m: 'POST', p: /^\/currency\/claim$/, h: () => {
-        const sum = currencySummary();
-        const claim = sum.claimableBucks;
-        store.user.bucks += claim;
-        store.bucksMintedXp += claim * sum.rate;
-        save();
-        return { claimed: claim, ...currencySummary() };
+        // Legacy endpoint — economy v2 removed the trade-in. Mock the 410 the
+        // real server returns so offline-mode surfaces the same error.
+        const err = new Error('The XP trade-in is gone — Atlas Bucks now land directly as you play.');
+        err.status = 410;
+        throw err;
     }},
+    { m: 'POST', p: /^\/currency\/dismiss-migration$/, h: () => currencySummary() },
     { m: 'POST', p: /^\/currency\/buy$/,  h: ({ body }) => {
         const key = body && body.category && body.id ? `${body.category}:${body.id}` : null;
         if (key && !store.user.ownedCosmetics.includes(key)) {

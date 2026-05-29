@@ -30,6 +30,13 @@ function publicUser(u) {
         // Atlas Bucks — spendable currency. Bought cosmetics deduct from this
         // balance and add their id to ownedCosmetics ("category:id" strings).
         bucks: Math.max(0, Math.round(Number(u.bucks) || 0)),
+        // Lifetime gameplay-earned Bucks (monotonic). Clients push this absolute
+        // so the server can credit the delta to `bucks` without overwriting
+        // admin grants or purchases.
+        bucksEarnedLifetime: Math.max(0, Math.round(Number(u.bucks_earned_lifetime) || 0)),
+        // Non-zero means the one-shot economy-v2 patch-notes modal still owes
+        // an appearance — cleared on dismissal via /api/currency/dismiss-migration.
+        migrationGrant: Math.max(0, Math.round(Number(u.migration_v2_grant) || 0)),
         ownedCosmetics: owned,
         region: u.region || null,
         cosmetics: u.cosmetics_json ? JSON.parse(u.cosmetics_json) : null,

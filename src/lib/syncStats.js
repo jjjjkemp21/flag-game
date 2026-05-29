@@ -1,6 +1,7 @@
 import { api } from '../api/client';
 import { readBonusScores } from './xp';
 import { getEarnedXp } from './progress';
+import { applyGrantedFromStats } from './xpRoad';
 
 const STAT_FIELDS = [
     'correct', 'incorrect', 'streak', 'lapses', 'isLeech', 'nextReview', 'lastAnswered',
@@ -82,14 +83,19 @@ function payload(flagsData) {
 }
 
 // Debounced upload of the current progress to the backend. Safe to call on every
-// stats change; only the last call within the window actually fires.
+// stats change; only the last call within the window actually fires. The
+// server's response can carry `grantedXpRoad` (milestones it just auto-paid);
+// we fold those into the local XP Road store so the hero card / screen tick
+// over without a separate fetch.
 export function pushStats(flagsData, delay = 1500) {
     if (pushTimer) clearTimeout(pushTimer);
     pushTimer = setTimeout(() => {
         pushTimer = null;
-        api.put('/stats', payload(flagsData)).catch(() => {
-            /* offline / transient — will sync again on the next change */
-        });
+        api.put('/stats', payload(flagsData))
+            .then((res) => { if (res && res.grantedXpRoad) applyGrantedFromStats(res.grantedXpRoad); })
+            .catch(() => {
+                /* offline / transient — will sync again on the next change */
+            });
     }, delay);
 }
 

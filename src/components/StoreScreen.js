@@ -10,7 +10,7 @@ import { usePet, setPetName } from '../lib/pet';
 import { useProfile, setRegion, setCosmetic, setCosmeticPos, toggleEmoteInLoadout } from '../lib/profile';
 import { CATEGORIES, EMOTES, EMOTE_LOADOUT_SIZE, priceOf, isDefaultItem, isEffectSizable, DEFAULT_POS } from '../lib/cosmetics';
 import { EMOTE_DURATION_S } from '../assets/illustrations/Cosmetics';
-import { useCurrency, loadCurrency, claimBucks, buyCosmetic, isOwnedKey, CURRENCY_RATE } from '../lib/currency';
+import { useCurrency, loadCurrency, buyCosmetic, isOwnedKey } from '../lib/currency';
 
 // Auto-replay interval = animation length + a short idle gap so the burst
 // finishes before it restarts. Sourced from EMOTE_DURATION_S so this stays in
@@ -48,15 +48,6 @@ function StoreScreen({ setView, flagsData }) {
     const [nameDraft, setNameDraft] = useState(pet.name);
     const xp = user?.xp || 0;
     const bucks = currency.bucks;
-    const claimable = currency.claimableBucks;
-
-    // Custom trade-in amount. Defaults to the full claimable balance so the
-    // common "trade everything" action is still one click — but the player
-    // can edit it to convert just a portion.
-    const [tradeDraft, setTradeDraft] = useState('');
-    useEffect(() => {
-        setTradeDraft(claimable > 0 ? String(claimable) : '');
-    }, [claimable]);
 
     const countries = useMemo(
         () => (flagsData || [])
@@ -147,33 +138,9 @@ function StoreScreen({ setView, flagsData }) {
         toast.success(`Renamed to ${n}!`);
     };
 
-    // Trading in XP for bucks: server mints up to the requested amount (or
-    // everything if no amount is given) at the current rate. The XP balance
-    // is untouched. patchUser updates the topbar chip.
-    const tradeAmount = (() => {
-        const n = parseInt(tradeDraft, 10);
-        if (!Number.isFinite(n) || n <= 0) return 0;
-        return Math.min(n, claimable);
-    })();
-    const onTradeIn = async () => {
-        if (claimable <= 0) {
-            // useToast() exposes show/success/danger/accent — there is no
-            // toast.info(), so use the neutral show() variant here.
-            toast.show('No new XP to trade in yet.', { icon: 'info' });
-            return;
-        }
-        if (tradeAmount <= 0) {
-            toast.danger('Enter how many Atlas Bucks to trade for.');
-            return;
-        }
-        try {
-            const out = await claimBucks(tradeAmount);
-            patchUser({ bucks: out.bucks });
-            toast.success(`Traded ${(out.claimed * CURRENCY_RATE).toLocaleString()} XP for ${out.claimed.toLocaleString()} Atlas Bucks!`);
-        } catch (err) {
-            toast.danger(err.message || 'Could not trade XP right now.');
-        }
-    };
+    // Economy v2: the XP→Bucks trade-in is gone. Bucks now land directly as the
+    // player answers correctly, finishes runs, sets new high scores, and claims
+    // login / quest rewards. patchUser is still relied on by purchases below.
 
     // Card click handler. Owned/default items equip immediately (no money
     // moves, no confirmation needed). Unowned items open the confirmation
@@ -312,56 +279,16 @@ function StoreScreen({ setView, flagsData }) {
                     </div>
                 )}
 
-                {/* Wallet: bucks balance + XP-trade-in. The "trade-in" is the
-                    only way to get bucks from your XP — XP itself never drops. */}
+                {/* Wallet: just the bucks balance. Economy v2 — Bucks land
+                    directly during play; no trade-in widget anymore. */}
                 <div className="ab-wallet">
                     <div className="ab-wallet__balance" aria-label="Atlas Bucks balance">
                         <AtlasBucksIcon size={26} />
                         <span className="ab-wallet__num">{bucks.toLocaleString()}</span>
                         <span className="ab-wallet__label">Atlas Bucks</span>
                     </div>
-                    <div className="ab-wallet__trade">
-                        <span className="ab-wallet__xp">
-                            {xp.toLocaleString()} XP
-                            {claimable > 0 && (
-                                <span className="ab-wallet__claimable"> · up to {claimable.toLocaleString()}</span>
-                            )}
-                        </span>
-                        <div className="ab-wallet__trade-input">
-                            <input
-                                className="ab-wallet__amount"
-                                type="number"
-                                inputMode="numeric"
-                                min="1"
-                                max={claimable || undefined}
-                                step="1"
-                                value={tradeDraft}
-                                onChange={(e) => setTradeDraft(e.target.value.replace(/[^\d]/g, ''))}
-                                disabled={claimable <= 0}
-                                placeholder="0"
-                                aria-label="Atlas Bucks to trade for"
-                            />
-                            <button
-                                type="button"
-                                className="ab-wallet__max"
-                                onClick={() => setTradeDraft(String(claimable))}
-                                disabled={claimable <= 0}
-                            >
-                                Max
-                            </button>
-                            <Button
-                                variant={tradeAmount > 0 ? 'primary' : 'secondary'}
-                                size="sm"
-                                icon="paid"
-                                onClick={onTradeIn}
-                                disabled={claimable <= 0 || tradeAmount <= 0}
-                            >
-                                Trade{tradeAmount > 0 ? ` (+${tradeAmount.toLocaleString()})` : ''}
-                            </Button>
-                        </div>
-                    </div>
                     <p className="ab-wallet__hint">
-                        {CURRENCY_RATE} XP = 1 Atlas Buck · your XP stays after trading.
+                        {xp.toLocaleString()} XP · Bucks land as you play.
                     </p>
                 </div>
 
@@ -486,7 +413,9 @@ function StoreScreen({ setView, flagsData }) {
                     // Atlas Pass exclusives never appear in the "Shop" tab — they
                     // can only be unlocked by claiming a pass tier. Once owned,
                     // they DO show up in "Owned" so the player can equip them.
-                    .filter(([id, item]) => !(item.bpOnly && shopTab === 'shop'))
+                    // XP Road exclusives follow the same rule (unlocked by
+                    // crossing milestones, never purchasable).
+                    .filter(([id, item]) => !((item.bpOnly || item.xprOnly) && shopTab === 'shop'))
                     // Emote "none" is the empty-slot placeholder, not a cosmetic
                     // to display in the store.
                     .filter(([id]) => !(cat.key === 'emote' && id === 'none'))

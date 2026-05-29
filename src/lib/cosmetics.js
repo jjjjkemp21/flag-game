@@ -270,6 +270,22 @@ export const COLORS = {
         ] },
         glow: { color: '#FFFFFF' },
     },
+    // ---- XP Road exclusives ------------------------------------------------
+    // xprOnly:true is the parallel to bpOnly. Shop hides them; the buy endpoint
+    // refuses them. They're granted only by crossing an XP Road milestone.
+    xpr_beanstalk: {
+        // Milestone xp 25,000 — fresh greens cycling to gold (the beanstalk
+        // climbing into sunlight). Animated to read as a "magical" reward.
+        name: 'Beanstalk', xp: 999999, xprOnly: true, stroke: '#1F5A2A',
+        stops: ['#D5F0B0', '#3FAA4F', '#1F5A2A'],
+        anim: { dur: '6s', frames: [
+            ['#D5F0B0', '#3FAA4F', '#1F5A2A'],
+            ['#F0E5A8', '#A8C047', '#5A6F1A'],
+            ['#FFE08A', '#FFC247', '#A07A1A'],
+            ['#E0F0B0', '#7FAE3F', '#2F7D2A'],
+        ] },
+    },
+
     bp_dragon_fire: {
         // Tier 25 — capstone. Molten dragon fire: bright fire with ember
         // overlay AND glow AND jewel scales — pulls every premium effect.
@@ -392,6 +408,10 @@ export const HATS = {
     bp_frill_violet:   { name: 'Violet Frill',   xp: 999999, bpOnly: true, shape: 'frill',       c: hc('#7A4FD0', '#3F1F8A', '#FFC247') },
     bp_scale_helm:     { name: 'Scaled Hood',    xp: 999999, bpOnly: true, shape: 'scaleHelm',   c: hc('#3FAA60', '#1F5A3F', '#7FE0A8', '#FFD86B') },
     bp_scale_helm_gold:{ name: 'Gilded Hood',    xp: 999999, bpOnly: true, shape: 'scaleHelm',   c: hc('#FFD86B', '#A07A1A', '#FFEFC2', '#FFFFFF') },
+
+    // ---- XP Road exclusives ------------------------------------------------
+    // Vine crown — wraps a leafy circlet around the mascot. Granted at XP 3000.
+    xpr_vine_crown:    { name: 'Vine Crown',     xp: 999999, xprOnly: true, shape: 'vineCrown',  c: hc('#3FAA4F', '#1F5A2A', '#FFD86B', '#A8E060') },
 };
 
 // ---- Glasses colorways -----------------------------------------------------
@@ -475,6 +495,10 @@ export const GLASSES = {
     bp_lizard_eyes:   { name: 'Lizard Eyes',     xp: 999999, bpOnly: true, shape: 'snakeEyes', c: gc('#5A3A18', '#FF6A2E', '#FFD86B') },
     bp_dragon_gaze:   { name: 'Dragon Gaze',     xp: 999999, bpOnly: true, shape: 'dragonGaze', c: gc('#8A1F0F', '#FF6A2E', '#FFD86B') },
     bp_drake_visor:   { name: 'Drake Visor',     xp: 999999, bpOnly: true, shape: 'dragonGaze', c: gc('#1F5A3F', '#7FE05B', '#FFD86B') },
+
+    // ---- XP Road exclusives ------------------------------------------------
+    // Leaflet lenses — leaf-shaped frames. Granted at XP 10,000.
+    xpr_leaflet:      { name: 'Leaflet Lenses', xp: 999999, xprOnly: true, shape: 'leaflet',   c: gc('#1F5A2A', 'rgba(180,240,180,0.35)', '#3FAA4F') },
 };
 
 // ---- Mouth colorways -------------------------------------------------------
@@ -567,6 +591,11 @@ export const EFFECTS = {
     bp_scales: { name: 'Scale Shower',   xp: 999999, bpOnly: true, kind: 'scaleFall' },
     bp_breath: { name: "Dragon's Breath", xp: 999999, bpOnly: true, kind: 'dragonBreath', sizable: true },
     bp_mist:   { name: 'Swamp Mist',     xp: 999999, bpOnly: true, kind: 'swampMist' },
+
+    // ---- XP Road exclusives ------------------------------------------------
+    // Drifting leaves — gentle leaf particles falling around the mascot.
+    // Granted at XP 50,000.
+    xpr_leaves: { name: 'Drifting Leaves', xp: 999999, xprOnly: true, kind: 'driftingLeaves' },
 };
 
 // Which effects support the player-controlled position/size transform.

@@ -4,13 +4,16 @@ import { FREE_STARTER_ITEMS } from './cosmetics';
 
 // Atlas Bucks (currency) + cosmetic ownership store.
 //
-// Bucks are the spendable currency. Players trade in earned XP for Bucks at
-// CURRENCY_RATE (1 XP → 1 Buck). XP itself never decreases — `bucks_minted_xp`
-// on the server tracks how much XP has already been claimed so the same XP
-// can't be traded twice. Bought cosmetics live in `owned` as "category:id"
-// strings; defaults (color:teal, none:none, etc.) are always considered owned.
-
-export const CURRENCY_RATE = 1; // XP earned per Atlas Buck
+// Economy v2 (2026-05-28): Bucks are no longer claimed from XP — they land
+// directly during play (per correct answer, end-of-run chest, new high score).
+// `bucksEarnedLifetime` is the monotonic lifetime gameplay-earned total; the
+// client pushes it absolute via PUT /api/stats and the server credits the
+// delta to the spendable `bucks` balance. Admin grants and purchases on the
+// same balance are preserved because the server only adds the delta.
+//
+// `migrationGrant` is the one-shot amount the server credited to legacy
+// claimants at v2 cutover. While non-zero, the patch-notes modal still owes
+// an appearance — dismissMigration() clears it server-side.
 
 // Defaults are free + always equippable, so we treat them as implicitly owned
 // without needing them to show up in the server's owned_cosmetics_json.
@@ -26,9 +29,8 @@ const DEFAULT_OWNED = {
 
 let state = {
     bucks: 0,
-    claimableBucks: 0,
-    mintedXp: 0,
-    earnedXp: 0,
+    bucksEarnedLifetime: 0,
+    migrationGrant: 0,
     owned: new Set(),
     loaded: false,
 };
@@ -44,9 +46,8 @@ function setState(patch) {
 function applySummary(s) {
     setState({
         bucks: Math.max(0, Math.round(Number(s.bucks) || 0)),
-        claimableBucks: Math.max(0, Math.round(Number(s.claimableBucks) || 0)),
-        mintedXp: Math.max(0, Math.round(Number(s.mintedXp) || 0)),
-        earnedXp: Math.max(0, Math.round(Number(s.earnedXp) || 0)),
+        bucksEarnedLifetime: Math.max(0, Math.round(Number(s.bucksEarnedLifetime) || 0)),
+        migrationGrant: Math.max(0, Math.round(Number(s.migrationGrant) || 0)),
         owned: new Set(Array.isArray(s.ownedCosmetics) ? s.ownedCosmetics : []),
         loaded: true,
     });
@@ -68,6 +69,8 @@ export function hydrateFromUser(user) {
     if (!user) return;
     setState({
         bucks: Math.max(0, Math.round(Number(user.bucks) || 0)),
+        bucksEarnedLifetime: Math.max(0, Math.round(Number(user.bucksEarnedLifetime) || 0)),
+        migrationGrant: Math.max(0, Math.round(Number(user.migrationGrant) || 0)),
         owned: new Set(Array.isArray(user.ownedCosmetics) ? user.ownedCosmetics : []),
         loaded: true,
     });
@@ -76,22 +79,44 @@ export function hydrateFromUser(user) {
 export function resetCurrency() {
     state = {
         bucks: 0,
-        claimableBucks: 0,
-        mintedXp: 0,
-        earnedXp: 0,
+        bucksEarnedLifetime: 0,
+        migrationGrant: 0,
         owned: new Set(),
         loaded: false,
     };
     notify();
 }
 
-// Trade in XP for Atlas Bucks. Pass a positive integer to convert only that
-// many bucks' worth of XP; omit to claim everything available.
-export async function claimBucks(amount) {
-    const body = amount != null ? { amount } : {};
-    const result = await api.post('/currency/claim', body);
-    applySummary(result);
-    return result;
+// Increment the local lifetime gameplay-earned counter and mirror to the
+// spendable balance so the topbar chip ticks up immediately. The persist path
+// (via progress.pushBonus) pushes the absolute lifetime number; the server
+// adds the matching delta to the canonical `bucks` balance, which the next
+// summary read confirms.
+export function addEarnedBucks(amount) {
+    const a = Math.max(0, Math.round(Number(amount) || 0));
+    if (a === 0) return state.bucks;
+    setState({
+        bucks: state.bucks + a,
+        bucksEarnedLifetime: state.bucksEarnedLifetime + a,
+    });
+    return state.bucks;
+}
+
+export function getBucksEarnedLifetime() {
+    return state.bucksEarnedLifetime;
+}
+
+// One-shot patch-notes dismiss for economy v2. Clears server-side so the
+// modal won't appear on the next sign-in.
+export async function dismissMigration() {
+    try {
+        const out = await api.post('/currency/dismiss-migration', {});
+        applySummary(out);
+    } catch (_) {
+        // Even on transient failure, clear locally so the user isn't pestered
+        // again this session — server retry on next /currency load.
+        setState({ migrationGrant: 0 });
+    }
 }
 
 export async function buyCosmetic(category, id) {

@@ -36,10 +36,12 @@ export const GLOBE_RENDERABLE_ISO2 = new Set([
 // above). Surfaced as a constant so callers don't have to know it's a Set.
 export const GLOBE_RENDERABLE_COUNT = GLOBE_RENDERABLE_ISO2.size;
 
-// Build the evaluation context from the full flagsData + bonus high scores + pet level.
-// Geography stats (Globe mode) live on the same per-flag record so we walk the
-// list once and accumulate both axes.
-export function buildContext(flagsData, bonus, petLevel) {
+// Build the evaluation context from the full flagsData + bonus high scores +
+// pet level + lifetime earned XP. Geography stats (Globe mode) live on the
+// same per-flag record so we walk the list once and accumulate both axes.
+// `earnedXp` is the same number powering the XP Road; it feeds the XP Road
+// achievement checks (Sprout, Climber, Vinekeeper, Skyward, Champion).
+export function buildContext(flagsData, bonus, petLevel, earnedXp) {
     const flags = Array.isArray(flagsData) ? flagsData : [];
     const continents = {};
     const geoContinents = {};
@@ -92,6 +94,7 @@ export function buildContext(flagsData, bonus, petLevel) {
         continents,
         bonus: bonus || {},
         petLevel: Number(petLevel) || 1,
+        earnedXp: Math.max(0, Number(earnedXp) || 0),
         geoTotalCorrect,
         geoMastered,
         geoEligibleTotal,
@@ -241,6 +244,21 @@ export const ACHIEVEMENTS = [
     ...geoContinentAchievements,
     { id: 'geo_all_flags', group: 'Globe', name: 'Atlas Cartographer', desc: 'Place every country the globe can render', icon: 'public', tier: 'legend',
         check: (x) => x.geoEligibleTotal > 0 && x.geoMastered >= x.geoEligibleTotal, progress: (x) => ({ cur: x.geoMastered, goal: x.geoEligibleTotal }) },
+
+    // XP Road — milestones along the beanstalk. Each tier unlocks at the
+    // matching milestone in src/lib/xpRoadCatalog.js, so the achievement
+    // catalog stays in lock-step with the road. Thresholds picked at the
+    // milestones that also grant a chest-yield tier + title.
+    { id: 'xproad_sprout',      group: 'XP Road', name: 'Sprout',              desc: 'Reach 1,000 lifetime XP on the XP Road',  icon: 'spa',          tier: 'bronze',
+        check: (x) => (x.earnedXp || 0) >= 1000,   progress: (x) => ({ cur: Math.min(x.earnedXp || 0, 1000),   goal: 1000 }) },
+    { id: 'xproad_climber',     group: 'XP Road', name: 'Climber',             desc: 'Reach 6,000 lifetime XP on the XP Road',  icon: 'hiking',       tier: 'silver',
+        check: (x) => (x.earnedXp || 0) >= 6000,   progress: (x) => ({ cur: Math.min(x.earnedXp || 0, 6000),   goal: 6000 }) },
+    { id: 'xproad_vinekeeper',  group: 'XP Road', name: 'Vinekeeper',          desc: 'Reach 16,000 lifetime XP on the XP Road', icon: 'eco',          tier: 'gold',
+        check: (x) => (x.earnedXp || 0) >= 16000,  progress: (x) => ({ cur: Math.min(x.earnedXp || 0, 16000),  goal: 16000 }) },
+    { id: 'xproad_skyward',     group: 'XP Road', name: 'Skyward',             desc: 'Reach 32,000 lifetime XP on the XP Road', icon: 'cloud',        tier: 'platinum',
+        check: (x) => (x.earnedXp || 0) >= 32000,  progress: (x) => ({ cur: Math.min(x.earnedXp || 0, 32000),  goal: 32000 }) },
+    { id: 'xproad_champion',    group: 'XP Road', name: 'Beanstalk Champion',  desc: 'Reach 110,000 lifetime XP — the top of the XP Road', icon: 'emoji_events', tier: 'legend',
+        check: (x) => (x.earnedXp || 0) >= 110000, progress: (x) => ({ cur: Math.min(x.earnedXp || 0, 110000), goal: 110000 }) },
 ];
 
 export const ACHIEVEMENTS_BY_ID = Object.fromEntries(ACHIEVEMENTS.map((a) => [a.id, a]));
@@ -261,7 +279,7 @@ export function topAchievements(unlockedIds, n = 3) {
         .map((a) => a.id);
 }
 
-export const ACHIEVEMENT_GROUPS = ['Mastery', 'Continents', 'Accuracy', 'Globe', 'Bonus Modes', 'Atlas'];
+export const ACHIEVEMENT_GROUPS = ['Mastery', 'Continents', 'Accuracy', 'Globe', 'Bonus Modes', 'Atlas', 'XP Road'];
 
 // Returns the array of unlocked achievement ids for a context.
 export function evaluate(ctx) {
