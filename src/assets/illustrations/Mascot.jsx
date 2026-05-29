@@ -543,8 +543,10 @@ export default function Mascot({ size = 96, mood = 'idle', cosmetics, still = fa
                 )}
 
                 {/* Mouth — mood expression is hidden when a covering mouth cosmetic
-                    (lipstick, mask, fangs) is equipped, so it doesn't bleed through. */}
-                {!hideMoodMouth && mouth}
+                    (lipstick, mask, fangs) is equipped, so it doesn't bleed through.
+                    Exception: when KO'd ('dead'), the cosmetic mouth is suppressed
+                    below, so keep the flat dead-mouth line or the face has no mouth. */}
+                {(!hideMoodMouth || mood === 'dead') && mouth}
 
                 {/* Mouth cosmetic (beard / lipstick / mask / lollipop) */}
                 {mouthEl && mood !== 'dead' && (

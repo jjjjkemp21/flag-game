@@ -692,17 +692,31 @@ const GLASS_SHAPES = {
         </g>
     ),
     cateye: (c) => (
-        <g stroke={c.frame} strokeWidth="2.5" fill={c.lens}>
-            <path d="M30 48 Q30 40 40 40 Q47 40 46 46 Q40 50 30 48 Z" />
-            <path d="M66 48 Q66 40 56 40 Q49 40 50 46 Q56 50 66 48 Z" />
-            <path d="M46 45 L50 45" />
+        <g stroke={c.frame} strokeWidth="2" fill={c.lens} strokeLinejoin="round">
+            {/* Lenses centred on the eyes (38/58, y46) with crisp upswept wing
+                tips at the outer-top corners (x30/x66, y40). */}
+            <path d="M46 46 Q 45 41 38 41 Q 31 41 30 44 Q 31 49 38 50 Q 45 50 46 46 Z" />
+            <path d="M50 46 Q 51 41 58 41 Q 65 41 66 44 Q 65 49 58 50 Q 51 50 50 46 Z" />
+            <path d="M46 45 L 50 45" />
+            {/* Thickened wing tips + glass glints */}
+            <path d="M30 43.5 Q 28 41 30.5 39.6" stroke={c.frame} strokeWidth="2.4" fill="none" strokeLinecap="round" />
+            <path d="M66 43.5 Q 68 41 65.5 39.6" stroke={c.frame} strokeWidth="2.4" fill="none" strokeLinecap="round" />
+            <ellipse cx="35" cy="44" rx="1.6" ry="0.6" fill="#FFFFFF" opacity="0.45" />
+            <ellipse cx="55" cy="44" rx="1.6" ry="0.6" fill="#FFFFFF" opacity="0.45" />
         </g>
     ),
     aviator: (c) => (
-        <g stroke={c.frame} strokeWidth="2" fill={c.lens}>
-            <path d="M30 42 L46 42 Q46 54 38 54 Q30 52 30 42 Z" />
-            <path d="M66 42 L50 42 Q50 54 58 54 Q66 52 66 42 Z" />
-            <path d="M46 44 L50 44" />
+        <g stroke={c.frame} strokeWidth="1.8" fill={c.lens} strokeLinejoin="round">
+            {/* Teardrop lenses centred on the eyes: flat-ish top, rounded point
+                at the bottom-outer. */}
+            <path d="M30 42 L 46 42 Q 47 49 42 53 Q 35 55 31 49 Q 29 45 30 42 Z" />
+            <path d="M66 42 L 50 42 Q 49 49 54 53 Q 61 55 65 49 Q 67 45 66 42 Z" />
+            {/* Signature double brow bar + bridge */}
+            <path d="M30 42 L 46 42 M 50 42 L 66 42" strokeWidth="2" />
+            <path d="M46 44 L 50 44" />
+            {/* Mirror-finish specular sweeps */}
+            <path d="M33 45 Q 38 43 43 45" stroke="#FFFFFF" strokeWidth="1" fill="none" opacity="0.4" />
+            <path d="M53 45 Q 58 43 63 45" stroke="#FFFFFF" strokeWidth="1" fill="none" opacity="0.4" />
         </g>
     ),
     star: (c) => {
@@ -782,10 +796,21 @@ const GLASS_SHAPES = {
         </g>
     ),
     rimless: (c) => (
-        <g stroke={c.frame} strokeWidth="1.5" fill={c.lens}>
-            <rect x="30" y="42" width="15" height="9" rx="2" />
-            <rect x="51" y="42" width="15" height="9" rx="2" />
-            <path d="M45 46 L51 46" />
+        <g>
+            {/* Genuinely frame-free: fill-only lenses (no outline) with just the
+                bridge + temple wire in the frame colour — the defining rimless look. */}
+            <rect x="31" y="41" width="14" height="10" rx="3" fill={c.lens} />
+            <rect x="51" y="41" width="14" height="10" rx="3" fill={c.lens} />
+            <g stroke={c.frame} strokeWidth="1" fill="none" strokeLinecap="round">
+                <path d="M45 46 L 51 46" />
+                <path d="M31 44 L 25 42" />
+                <path d="M65 44 L 71 42" />
+            </g>
+            {/* Thin top-edge highlight defines the lens; tiny mount screws */}
+            <path d="M33 42 L 43 42" stroke="#FFFFFF" strokeWidth="0.8" opacity="0.5" />
+            <path d="M53 42 L 63 42" stroke="#FFFFFF" strokeWidth="0.8" opacity="0.5" />
+            <circle cx="45.5" cy="46" r="0.6" fill={c.frame} />
+            <circle cx="50.5" cy="46" r="0.6" fill={c.frame} />
         </g>
     ),
     threeD: () => (
@@ -1027,12 +1052,16 @@ const MOUTH_SHAPES = {
     // a moustache from the silhouette alone.
     mustache: (c) => (
         <g strokeLinejoin="round">
+            {/* Fuller W-bar with the outer tips flicking UP (y56.5) above the
+                centre dip (y60) so it reads as groomed, not droopy. */}
             <path
-                d="M32 58 Q 38 56 44 58 Q 46 60.5 48 60 Q 50 60.5 52 58 Q 58 56 64 58 Q 60 62 54 60.5 Q 50 60 48 61 Q 46 60 42 60.5 Q 36 62 32 58 Z"
-                fill={c.main} stroke={c.dark} strokeWidth="0.6"
+                d="M31 57 Q 35 55 39 56.8 Q 44 58.5 48 59.6 Q 52 58.5 57 56.8 Q 61 55 65 57 Q 61 63 54 60.6 Q 50 59.4 48 60.6 Q 46 59.4 42 60.6 Q 35 63 31 57 Z"
+                fill={c.main} stroke={c.dark} strokeWidth="0.7"
             />
-            {/* Subtle top sheen */}
-            <path d="M36 58 Q 48 56.5 60 58" stroke={c.accent} strokeWidth="0.4" fill="none" opacity="0.55" />
+            {/* One bold groomed top highlight (survives downscale) */}
+            <path d="M35 57.4 Q 48 56 61 57.4" stroke={c.accent} strokeWidth="0.9" fill="none" opacity="0.65" />
+            {/* Centre part */}
+            <path d="M48 58.6 L 48 60.4" stroke={c.dark} strokeWidth="0.6" opacity="0.6" />
         </g>
     ),
 
@@ -1041,15 +1070,18 @@ const MOUTH_SHAPES = {
     handlebar: (c) => (
         <g strokeLinejoin="round">
             {/* Centre bar */}
-            <path d="M40 58.5 Q 48 56.5 56 58.5 Q 52 60.5 48 60 Q 44 60.5 40 58.5 Z" fill={c.main} stroke={c.dark} strokeWidth="0.5" />
-            {/* Left twirl — sweeps out, then curls upward */}
-            <path d="M40 58.5 Q 33 59 28 56 Q 26 53 28 52 Q 30 52 30 54 Q 30 56 33 56.5 Q 36 57 40 58.5 Z"
-                fill={c.main} stroke={c.dark} strokeWidth="0.5" />
+            <path d="M40 58 Q 48 56 56 58 Q 52 60.2 48 59.7 Q 44 60.2 40 58 Z" fill={c.main} stroke={c.dark} strokeWidth="0.6" />
+            {/* Left twirl — sweeps out, then loops UP and back inward into a
+                near-closed spiral (the iconic waxed curl). */}
+            <path d="M40 58 Q 30 58.5 27 53.5 Q 25.5 49.5 29.5 49 Q 33 49 32 52.5 Q 31.2 55.5 35 56.2 Q 38 56.8 40 58 Z"
+                fill={c.main} stroke={c.dark} strokeWidth="0.6" />
             {/* Right twirl (mirrored) */}
-            <path d="M56 58.5 Q 63 59 68 56 Q 70 53 68 52 Q 66 52 66 54 Q 66 56 63 56.5 Q 60 57 56 58.5 Z"
-                fill={c.main} stroke={c.dark} strokeWidth="0.5" />
-            {/* Sheen along the top */}
-            <path d="M34 57.5 Q 48 56 62 57.5" stroke={c.accent} strokeWidth="0.45" fill="none" opacity="0.6" />
+            <path d="M56 58 Q 66 58.5 69 53.5 Q 70.5 49.5 66.5 49 Q 63 49 64 52.5 Q 64.8 55.5 61 56.2 Q 58 56.8 56 58 Z"
+                fill={c.main} stroke={c.dark} strokeWidth="0.6" />
+            {/* Waxed-tip glints + top sheen */}
+            <circle cx="28.8" cy="50.4" r="0.85" fill={c.accent} />
+            <circle cx="67.2" cy="50.4" r="0.85" fill={c.accent} />
+            <path d="M40 57.2 Q 48 55.8 56 57.2" stroke={c.accent} strokeWidth="0.6" fill="none" opacity="0.6" />
         </g>
     ),
 
@@ -1058,16 +1090,16 @@ const MOUTH_SHAPES = {
     goatee: (c) => (
         <g strokeLinejoin="round">
             {/* Thin moustache */}
-            <path d="M40 58.5 Q 48 56.5 56 58.5 Q 52 60.5 48 60 Q 44 60.5 40 58.5 Z"
+            <path d="M40 57.5 Q 48 55.5 56 57.5 Q 52 59.5 48 59 Q 44 59.5 40 57.5 Z"
                 fill={c.main} stroke={c.dark} strokeWidth="0.5" />
-            {/* Connecting cheek strands */}
-            <path d="M42 60 Q 41 62.5 43 65 L 53 65 Q 55 62.5 54 60 Q 50 62 48 62 Q 46 62 42 60 Z"
-                fill={c.main} stroke={c.dark} strokeWidth="0.5" />
-            {/* Pointed beard tip */}
-            <path d="M43 65 Q 46 73 48 75 Q 50 73 53 65 Q 50 67 48 67 Q 46 67 43 65 Z"
-                fill={c.main} stroke={c.dark} strokeWidth="0.5" />
-            {/* Texture hint */}
-            <path d="M45 67 Q 48 69 51 67" stroke={c.dark} strokeWidth="0.35" fill="none" opacity="0.55" />
+            {/* One continuous chin patch (no internal seams): soft inverted
+                teardrop, widest at the lip line, tapering to a rounded point
+                kept above y74 so it stays on the sphere. */}
+            <path d="M41 60.5 Q 40 65 42.5 69 Q 45.5 73 48 73.5 Q 50.5 73 53.5 69 Q 56 65 55 60.5 Q 50 62 48 62 Q 46 62 41 60.5 Z"
+                fill={c.main} stroke={c.dark} strokeWidth="0.6" />
+            {/* Bold centre hair-part line + side highlight */}
+            <path d="M48 62.5 L 48 71" stroke={c.dark} strokeWidth="0.6" fill="none" opacity="0.55" />
+            <path d="M44 64 Q 43 68 45.5 71.5" stroke={c.accent} strokeWidth="0.7" fill="none" opacity="0.5" />
         </g>
     ),
 
@@ -1076,26 +1108,21 @@ const MOUTH_SHAPES = {
     // top sheen sell the fluffiness.
     fullBeard: (c) => (
         <g strokeLinejoin="round">
-            {/* Sideburns (small tufts climbing up to the ears) */}
-            <path d="M30 60 Q 27 54 30 51 Q 33 53 33 58 Z" fill={c.main} stroke={c.dark} strokeWidth="0.5" />
-            <path d="M66 60 Q 69 54 66 51 Q 63 53 63 58 Z" fill={c.main} stroke={c.dark} strokeWidth="0.5" />
             {/* Moustache */}
-            <path d="M38 58.5 Q 48 56 58 58.5 Q 54 61 48 60.5 Q 42 61 38 58.5 Z"
-                fill={c.main} stroke={c.dark} strokeWidth="0.5" />
-            {/* Main bushy body */}
+            <path d="M38 57.5 Q 48 55.5 58 57.5 Q 54 60 48 59.5 Q 42 60 38 57.5 Z"
+                fill={c.main} stroke={c.dark} strokeWidth="0.6" />
+            {/* Main body — a jaw-hugging crescent that nests INSIDE the lower
+                sphere arc (bottom ~y80, narrows with the globe), with the
+                sideburns drawn as part of the same continuous fill so they
+                connect instead of floating as stray tufts. */}
             <path
-                d="M30 60 Q 24 70 30 80 Q 38 86 48 86 Q 58 86 66 80 Q 72 70 66 60 Q 62 64 58 62.5 Q 54 65 48 64 Q 42 65 38 62.5 Q 34 64 30 60 Z"
-                fill={c.main} stroke={c.dark} strokeWidth="0.6"
+                d="M31 58 Q 28 54 31 51 Q 33 55 35 58 Q 41 62 48 61.5 Q 55 62 61 58 Q 63 55 65 51 Q 68 54 65 58 Q 67 70 57 78 Q 48 81 39 78 Q 29 70 31 58 Z"
+                fill={c.main} stroke={c.dark} strokeWidth="0.7"
             />
-            {/* Fluff texture wisps */}
-            <g stroke={c.dark} strokeWidth="0.4" fill="none" opacity="0.45" strokeLinecap="round">
-                <path d="M34 70 Q 36 74 34 80" />
-                <path d="M42 72 Q 44 78 42 84" />
-                <path d="M54 72 Q 52 78 54 84" />
-                <path d="M62 70 Q 60 74 62 80" />
-            </g>
-            {/* Top sheen */}
-            <path d="M34 66 Q 48 64 62 66" stroke={c.accent} strokeWidth="0.5" fill="none" opacity="0.5" />
+            {/* Scalloped bottom edge — real notches read as fluff at thumbnail size */}
+            <path d="M39 77 Q 43 74.5 46 77 Q 48 75 50 77 Q 53 74.5 57 77" stroke={c.dark} strokeWidth="0.6" fill="none" opacity="0.5" />
+            {/* Bold upper sheen band */}
+            <path d="M35 63 Q 48 61 61 63" stroke={c.accent} strokeWidth="1.1" fill="none" opacity="0.5" />
         </g>
     ),
 
@@ -1104,37 +1131,44 @@ const MOUTH_SHAPES = {
     vikingBeard: (c) => (
         <g strokeLinejoin="round">
             {/* Moustache */}
-            <path d="M38 58.5 Q 48 56 58 58.5 Q 54 61 48 60.5 Q 42 61 38 58.5 Z"
-                fill={c.main} stroke={c.dark} strokeWidth="0.5" />
-            {/* Beard base (around the chin) */}
-            <path d="M34 60 Q 30 66 34 72 Q 42 76 48 76 Q 54 76 62 72 Q 66 66 62 60 Q 56 64 48 63 Q 40 64 34 60 Z"
+            <path d="M38 57.5 Q 48 55.5 58 57.5 Q 54 60 48 59.5 Q 42 60 38 57.5 Z"
                 fill={c.main} stroke={c.dark} strokeWidth="0.6" />
-            {/* Left braid */}
-            <path d="M40 74 Q 36 80 38 88 Q 40 90 43 88 Q 45 80 43 74 Z"
-                fill={c.main} stroke={c.dark} strokeWidth="0.5" />
-            {/* Right braid */}
-            <path d="M56 74 Q 60 80 58 88 Q 56 90 53 88 Q 51 80 53 74 Z"
-                fill={c.main} stroke={c.dark} strokeWidth="0.5" />
-            {/* Gold rings cinching the braids */}
-            <g stroke={c.dark} strokeWidth="0.4">
-                <ellipse cx="41" cy="80" rx="3" ry="1.2" fill={c.accent} />
-                <ellipse cx="41" cy="86" rx="2.4" ry="1" fill={c.accent} />
-                <ellipse cx="55" cy="80" rx="3" ry="1.2" fill={c.accent} />
-                <ellipse cx="55" cy="86" rx="2.4" ry="1" fill={c.accent} />
+            {/* Beard base — stays inside the lower sphere arc */}
+            <path d="M35 59 Q 31 65 35 71 Q 42 75 48 74.5 Q 54 75 61 71 Q 65 65 61 59 Q 55 63 48 62.5 Q 41 63 35 59 Z"
+                fill={c.main} stroke={c.dark} strokeWidth="0.7" />
+            {/* Two braids — pinched at each ring, tapering to fine points and
+                curving slightly inward so they don't read as rigid pegs. */}
+            <path d="M40 73 Q 37 78 39 82 Q 40 85 41.5 86 Q 43 85 43 82 Q 44 78 43 73 Z"
+                fill={c.main} stroke={c.dark} strokeWidth="0.6" />
+            <path d="M56 73 Q 59 78 57 82 Q 56 85 54.5 86 Q 53 85 53 82 Q 52 78 53 73 Z"
+                fill={c.main} stroke={c.dark} strokeWidth="0.6" />
+            {/* Braid weave — small chevrons between the rings */}
+            <g stroke={c.dark} strokeWidth="0.5" fill="none" opacity="0.6" strokeLinecap="round">
+                <path d="M40 76 Q 41.5 77 43 76" /><path d="M40.2 80 Q 41.5 81 42.8 80" />
+                <path d="M53 76 Q 54.5 77 56 76" /><path d="M53.2 80 Q 54.5 81 55.8 80" />
             </g>
-            {/* Ring highlights */}
-            <ellipse cx="40" cy="79.6" rx="1" ry="0.3" fill="#FFFFFF" opacity="0.75" />
-            <ellipse cx="54" cy="79.6" rx="1" ry="0.3" fill="#FFFFFF" opacity="0.75" />
+            {/* Gold cinch rings (pinch points) + highlights */}
+            <g stroke={c.dark} strokeWidth="0.4">
+                <ellipse cx="41.5" cy="78" rx="2.6" ry="1.1" fill={c.accent} />
+                <ellipse cx="42" cy="83.5" rx="2" ry="0.9" fill={c.accent} />
+                <ellipse cx="54.5" cy="78" rx="2.6" ry="1.1" fill={c.accent} />
+                <ellipse cx="54" cy="83.5" rx="2" ry="0.9" fill={c.accent} />
+            </g>
+            <ellipse cx="40.6" cy="77.6" rx="0.9" ry="0.3" fill="#FFFFFF" opacity="0.75" />
+            <ellipse cx="53.6" cy="77.6" rx="0.9" ry="0.3" fill="#FFFFFF" opacity="0.75" />
         </g>
     ),
 
     // Tiny chin tuft under the lower lip.
     soulPatch: (c) => (
         <g strokeLinejoin="round">
-            <path d="M46 64 L 50 64 L 51 68 Q 48 70 45 68 Z" fill={c.main} stroke={c.dark} strokeWidth="0.5" />
-            {/* A couple of stray hairs above */}
-            <line x1="46.5" y1="64" x2="46.5" y2="62.5" stroke={c.dark} strokeWidth="0.35" opacity="0.6" />
-            <line x1="49.5" y1="64" x2="49.5" y2="62.5" stroke={c.dark} strokeWidth="0.35" opacity="0.6" />
+            {/* Soft rounded tuft below the lip, with a full-opacity outline so it
+                reads on dark globes. */}
+            <path d="M45.4 63.5 Q 48 62.2 50.6 63.5 Q 51.2 67 48.4 69.6 Q 48 69.9 47.6 69.6 Q 44.8 67 45.4 63.5 Z"
+                fill={c.main} stroke={c.dark} strokeWidth="0.6" />
+            {/* Centre hair-part hint */}
+            <path d="M48 64 L 48 68" stroke={c.dark} strokeWidth="0.5" opacity="0.5" />
+            <path d="M46.4 64.5 Q 46 66.5 47 68.5" stroke={c.accent} strokeWidth="0.5" fill="none" opacity="0.5" />
         </g>
     ),
 
@@ -1142,40 +1176,44 @@ const MOUTH_SHAPES = {
     // Bold painted lips with a clean cupid's bow and a fuller lower lip.
     lipstick: (c) => (
         <g strokeLinejoin="round">
-            {/* Upper lip with proper cupid's bow (sharp dip at centre) */}
+            {/* Upper lip — a true cupid's bow: two clear peaks (y59) with a
+                sharp central notch (y58.8 valley between them). */}
             <path
-                d="M38 60.5 Q 41 57 44 58.5 Q 46 56.5 48 58.5 Q 50 56.5 52 58.5 Q 55 57 58 60.5 Q 54 61 48 60.5 Q 42 61 38 60.5 Z"
+                d="M37 61 Q 41 58.5 44.5 59.2 Q 46.6 56.4 48 58.8 Q 49.4 56.4 51.5 59.2 Q 55 58.5 59 61 Q 54 61.6 48 61 Q 42 61.6 37 61 Z"
                 fill={c.main} stroke={c.dark} strokeWidth="0.5"
             />
-            {/* Lower lip — pillowy curve */}
+            {/* Lower lip — fuller, pillowy pout */}
             <path
-                d="M38 60.5 Q 42 66 48 66.5 Q 54 66 58 60.5 Q 54 62.5 48 62 Q 42 62.5 38 60.5 Z"
+                d="M37 61 Q 42 67.5 48 68 Q 54 67.5 59 61 Q 54 63 48 62.4 Q 42 63 37 61 Z"
                 fill={c.main} stroke={c.dark} strokeWidth="0.5"
             />
-            {/* Centre lip line */}
-            <path d="M40 60.5 Q 48 61.5 56 60.5" stroke={c.dark} strokeWidth="0.35" fill="none" opacity="0.55" />
-            {/* Highlights on upper lip */}
-            <ellipse cx="45" cy="58.6" rx="1.4" ry="0.45" fill="#FFFFFF" opacity="0.8" />
-            <ellipse cx="51" cy="58.6" rx="1" ry="0.4" fill="#FFFFFF" opacity="0.7" />
-            {/* Sheen on lower */}
-            <path d="M44 64 Q 48 65 52 64" stroke="#FFFFFF" strokeWidth="0.45" fill="none" opacity="0.7" />
+            {/* Inner-lip tint (accent) + centre line for depth */}
+            <path d="M40 61 Q 48 62 56 61" stroke={c.accent} strokeWidth="0.7" fill="none" opacity="0.55" />
+            <path d="M40 61 Q 48 61.8 56 61" stroke={c.dark} strokeWidth="0.45" fill="none" opacity="0.5" />
+            {/* Symmetric upper-lip speculars + one centred lower sheen */}
+            <ellipse cx="44.5" cy="59.1" rx="1.2" ry="0.45" fill="#FFFFFF" opacity="0.8" />
+            <ellipse cx="51.5" cy="59.1" rx="1.2" ry="0.45" fill="#FFFFFF" opacity="0.8" />
+            <ellipse cx="48" cy="65" rx="2.4" ry="0.7" fill="#FFFFFF" opacity="0.5" />
         </g>
     ),
 
     // Tinted lips with prominent glass-like reflections.
     lipGloss: (c) => (
         <g strokeLinejoin="round">
-            {/* Single soft-tinted lip shape */}
+            {/* Two-lobe lip silhouette (like lipstick) so it reads as a mouth,
+                with a soft tint + dark rim that survives on light globes. */}
             <path
-                d="M38 60 Q 41 57.5 44 58.5 Q 46 56.5 48 58.5 Q 50 56.5 52 58.5 Q 55 57.5 58 60 Q 54 65 48 65 Q 42 65 38 60 Z"
-                fill={c.main} stroke={c.dark} strokeWidth="0.4" opacity="0.9"
+                d="M37 61 Q 41 58.5 44.5 59.2 Q 46.6 56.6 48 58.8 Q 49.4 56.6 51.5 59.2 Q 55 58.5 59 61 Q 54 61.6 48 61 Q 42 61.6 37 61 Z"
+                fill={c.main} stroke={c.dark} strokeWidth="0.5"
             />
+            <path d="M37 61 Q 42 67 48 67.5 Q 54 67 59 61 Q 54 63 48 62.4 Q 42 63 37 61 Z"
+                fill={c.main} stroke={c.dark} strokeWidth="0.5" />
             {/* Centre line */}
-            <path d="M40 60.5 Q 48 61.5 56 60.5" stroke={c.dark} strokeWidth="0.3" fill="none" opacity="0.4" />
-            {/* Big glassy highlight blob */}
-            <ellipse cx="45" cy="59.2" rx="3" ry="1.1" fill="#FFFFFF" opacity="0.9" />
-            <ellipse cx="51" cy="62.5" rx="1.5" ry="0.5" fill="#FFFFFF" opacity="0.75" />
-            <ellipse cx="42" cy="63" rx="0.8" ry="0.35" fill="#FFFFFF" opacity="0.6" />
+            <path d="M40 61 Q 48 61.8 56 61" stroke={c.dark} strokeWidth="0.4" fill="none" opacity="0.4" />
+            {/* Glassy gloss — symmetric upper speculars + a crisp lower sheen */}
+            <ellipse cx="44" cy="59.4" rx="1.6" ry="0.7" fill="#FFFFFF" opacity="0.9" />
+            <ellipse cx="52" cy="59.4" rx="1.6" ry="0.7" fill="#FFFFFF" opacity="0.9" />
+            <path d="M43 65 Q 48 66.2 53 65" stroke="#FFFFFF" strokeWidth="0.7" fill="none" opacity="0.8" />
         </g>
     ),
 
@@ -1183,21 +1221,23 @@ const MOUTH_SHAPES = {
     // Open grin + bright tongue lolling out the side.
     tongueOut: (c) => (
         <g strokeLinejoin="round">
-            {/* Wide grin (dark interior) */}
-            <path d="M40 58 Q 48 56 56 58 Q 56 64 48 64 Q 40 64 40 58 Z" fill="#1F1A3B" />
-            {/* Small teeth row at the top */}
-            <path d="M42 58 L 54 58 L 54 60 L 42 60 Z" fill="#FFFDF7" opacity="0.95" />
-            <g stroke="#1F1A3B" strokeWidth="0.3" opacity="0.6">
-                <line x1="46" y1="58" x2="46" y2="60" />
-                <line x1="50" y1="58" x2="50" y2="60" />
+            {/* Open smiling mouth (dark cavity) with a lip rim so it doesn't
+                float on the globe. */}
+            <path d="M38 57.5 Q 48 55.5 58 57.5 Q 58 65 48 65.5 Q 38 65 38 57.5 Z"
+                fill="#2A0E1A" stroke={c.dark} strokeWidth="0.5" />
+            {/* Individual upper teeth */}
+            <g fill="#FFFDF7">
+                <rect x="41.5" y="57.8" width="2.6" height="2.4" rx="0.5" />
+                <rect x="44.6" y="57.8" width="2.6" height="2.4" rx="0.5" />
+                <rect x="48.8" y="57.8" width="2.6" height="2.4" rx="0.5" />
+                <rect x="51.9" y="57.8" width="2.6" height="2.4" rx="0.5" />
             </g>
-            {/* Tongue — drops to the right with a soft curve */}
-            <path d="M44 62 Q 43 70 48 74 Q 53 70 52 62 Q 50 63.5 48 63.5 Q 46 63.5 44 62 Z"
-                fill={c.main} stroke={c.dark} strokeWidth="0.55" />
-            {/* Centre groove */}
-            <path d="M48 64 Q 48 68 48 72" stroke={c.dark} strokeWidth="0.4" fill="none" opacity="0.5" />
-            {/* Tongue highlight */}
-            <ellipse cx="46" cy="66" rx="0.8" ry="2" fill={c.accent} opacity="0.55" />
+            {/* Tongue — centred, with a big rounded bulb lolling down */}
+            <path d="M43 63 Q 42 71 48 75 Q 54 71 53 63 Q 50.5 64.8 48 64.8 Q 45.5 64.8 43 63 Z"
+                fill={c.main} stroke={c.dark} strokeWidth="0.6" />
+            {/* Centred groove + highlight */}
+            <path d="M48 65 L 48 72.5" stroke={c.dark} strokeWidth="0.45" fill="none" opacity="0.5" />
+            <ellipse cx="48" cy="68" rx="1" ry="2.4" fill={c.accent} opacity="0.5" />
         </g>
     ),
 
@@ -1205,28 +1245,33 @@ const MOUTH_SHAPES = {
     // where the bubble emerges from.
     bubblegum: (c) => (
         <g strokeLinejoin="round">
-            {/* Lips visible (parted O-shape) */}
-            <ellipse cx="48" cy="60" rx="4" ry="2" fill="#1F1A3B" />
-            <ellipse cx="48" cy="60" rx="3" ry="1.3" fill={c.main} />
-            {/* The bubble */}
-            <circle cx="64" cy="60" r="9" fill={c.main} stroke={c.dark} strokeWidth="0.8" opacity="0.95">
-                <animate attributeName="r" values="8;10;8" dur="3.4s" repeatCount="indefinite" />
+            {/* Parted lips */}
+            <path d="M40 59.5 Q 44 58 47 59 Q 46 61.5 43.5 61.5 Q 41 61.5 40 59.5 Z" fill="#2A0E1A" stroke={c.dark} strokeWidth="0.4" />
+            <ellipse cx="43.5" cy="60" rx="2" ry="1" fill={c.main} />
+            {/* Gum neck stretching from the lips into the bubble */}
+            <path d="M46 60 Q 51 59.4 55 60" stroke={c.main} strokeWidth="2" fill="none" strokeLinecap="round" />
+            {/* The bubble — centred over the face, inside the globe (no longer
+                a detached balloon off to the right) */}
+            <circle cx="58" cy="60" r="7" fill={c.main} stroke={c.dark} strokeWidth="0.8" opacity="0.95">
+                <animate attributeName="r" values="6.4;7.6;6.4" dur="3.4s" repeatCount="indefinite" />
             </circle>
-            {/* Big main highlight */}
-            <ellipse cx="60.5" cy="56.5" rx="2.6" ry="1.6" fill="#FFFFFF" opacity="0.9" />
-            {/* Secondary highlight */}
-            <circle cx="67" cy="63" r="0.9" fill="#FFFFFF" opacity="0.65" />
+            <ellipse cx="55" cy="57.5" rx="2.2" ry="1.4" fill="#FFFFFF" opacity="0.9" />
+            <circle cx="60.5" cy="62.5" r="0.8" fill="#FFFFFF" opacity="0.6" />
         </g>
     ),
 
     // Thin tapered toothpick poking out at a jaunty angle.
     toothpick: (c) => (
-        <g transform="rotate(-14 56 62)" strokeLinejoin="round">
-            {/* Tapered body — wider where it enters the mouth, pointy at the end */}
-            <path d="M46 61.5 L 50 61 L 70 60.5 L 72 61.4 L 70 62.2 L 50 62 L 46 62 Z"
-                fill={c.main} stroke={c.dark} strokeWidth="0.4" />
-            {/* Subtle grain line */}
-            <line x1="50" y1="61.5" x2="68" y2="61.3" stroke={c.dark} strokeWidth="0.25" opacity="0.4" />
+        <g strokeLinejoin="round">
+            {/* Mouth-corner clench so the pick reads as gripped, not stuck to the cheek */}
+            <path d="M43 60.5 Q 46 59.5 48 60.5 Q 46 62 43 61.2 Z" fill={c.dark} opacity="0.55" />
+            <g transform="rotate(-8 48 61)">
+                {/* Tapered body: thicker at the mouth, pointy at the (pulled-in) tip */}
+                <path d="M44 60 L 46 60.2 L 66 61.4 L 67.5 62 L 66 62.6 L 46 62 L 44 62 Z"
+                    fill={c.main} stroke={c.dark} strokeWidth="0.45" />
+                {/* Woody top highlight */}
+                <line x1="46" y1="60.6" x2="64" y2="61.6" stroke={c.accent} strokeWidth="0.4" opacity="0.7" />
+            </g>
         </g>
     ),
 
@@ -1591,10 +1636,11 @@ const EFFECT_SHAPES = {
     ),
     snow: () => (
         <g fill="#FFFFFF">
-            {[[24, 2, 3.4, 0], [40, 1.6, 4, 0.8], [56, 2.2, 3, 1.4], [70, 1.8, 3.8, 2.0]].map((s, i) => (
-                <circle key={i} cx={s[0]} cy="6" r={s[1]}>
-                    <animate attributeName="cy" values="6;86" dur={`${s[2]}s`} begin={`${s[3]}s`} repeatCount="indefinite" />
-                    <animate attributeName="opacity" values="0;0.95;0" dur={`${s[2]}s`} begin={`${s[3]}s`} repeatCount="indefinite" />
+            {[[16, 2.4, 5, 0], [26, 1.4, 3.5, 0.6], [36, 2, 4.5, 1.2], [46, 1.6, 4, 0.3], [56, 2.6, 5.5, 0.9], [64, 1.4, 3.8, 1.6], [72, 2, 4.2, 0.4], [80, 1.6, 4.8, 1.1], [30, 1, 3, 2], [60, 1.2, 3.4, 2.4]].map((s, i) => (
+                <circle key={i} cx={s[0]} cy="4" r={s[1]} opacity="0">
+                    <animate attributeName="cy" values="4;88" dur={`${s[2]}s`} begin={`${s[3]}s`} repeatCount="indefinite" />
+                    <animate attributeName="opacity" values="0;0.95;0.95;0" dur={`${s[2]}s`} begin={`${s[3]}s`} repeatCount="indefinite" />
+                    <animate attributeName="cx" values={`${s[0]};${s[0] + 3};${s[0] - 3};${s[0]}`} dur={`${s[2] * 0.6}s`} begin={`${s[3]}s`} repeatCount="indefinite" />
                 </circle>
             ))}
         </g>
@@ -1611,24 +1657,66 @@ const EFFECT_SHAPES = {
             ))}
         </g>
     ),
-    flames: () => (
-        <g>
-            {[[34, '#FF6A2E', 1.6], [48, '#FFC247', 1.2], [62, '#FF6A2E', 1.9]].map((f, i) => (
-                <path key={i} d={`M${f[0]} 86 q 4 -9 0 -16 q -4 7 0 16 Z`} fill={f[1]}>
-                    <animate attributeName="opacity" values="0.55;1;0.55" dur={`${f[2]}s`} repeatCount="indefinite" />
+    flames: () => {
+        // A fire AURA hugging the lower rim: layered tongues (dark→mid→core)
+        // that flicker in HEIGHT (scaleY about each tongue's base), a soft glow,
+        // and rising embers — instead of three static commas at the bottom edge.
+        const tongue = (x, baseY, h, dur, begin) => (
+            <g transform={`translate(${x} ${baseY})`}>
+                <g>
+                    <animateTransform attributeName="transform" type="scale" values="1 0.85;1 1.15;1 0.9;1 1" dur={dur} begin={begin} repeatCount="indefinite" />
+                    <path d={`M-4 0 Q-2 ${-h} 0 ${-h - 3} Q2 ${-h} 4 0 Q0 -2 -4 0 Z`} fill="#C2410C" />
+                    <path d={`M-3 0 Q-1.5 ${-h * 0.8} 0 ${-h - 1} Q1.5 ${-h * 0.8} 3 0 Q0 -1.5 -3 0 Z`} fill="#FF6A2E" />
+                    <path d={`M-1.6 0 Q-0.8 ${-h * 0.55} 0 ${-h * 0.7} Q0.8 ${-h * 0.55} 1.6 0 Z`} fill="#FFD86B" />
+                </g>
+            </g>
+        );
+        return (
+            <g>
+                <ellipse cx="48" cy="76" rx="34" ry="12" fill="#FF6A2E" opacity="0.18" />
+                {tongue(24, 74, 8, '0.7s', '0s')}
+                {tongue(34, 78, 12, '0.6s', '0.15s')}
+                {tongue(44, 80, 16, '0.55s', '0.3s')}
+                {tongue(54, 80, 15, '0.6s', '0.1s')}
+                {tongue(64, 78, 12, '0.5s', '0.25s')}
+                {tongue(74, 74, 8, '0.7s', '0.2s')}
+                {[[34, '1.8s', '0s'], [54, '2.1s', '0.5s'], [44, '1.6s', '1s']].map((e, i) => (
+                    <circle key={i} cx={e[0]} cy="74" r="1" fill="#FFD86B">
+                        <animate attributeName="cy" values="74;52" dur={e[1]} begin={e[2]} repeatCount="indefinite" />
+                        <animate attributeName="opacity" values="0;1;0" dur={e[1]} begin={e[2]} repeatCount="indefinite" />
+                    </circle>
+                ))}
+            </g>
+        );
+    },
+    electric: () => {
+        // Bolts anchored AROUND the rim that re-shape between two jagged states
+        // (real crackle), each a fat blurred halo under a hot white core, plus a
+        // pulsing electric ring.
+        const bolt = (variants, dur, begin) => (
+            <g strokeLinecap="round" strokeLinejoin="round" fill="none">
+                <path strokeWidth="4" stroke="#9AD0FF" opacity="0.5">
+                    <animate attributeName="d" values={variants.join(';')} dur={dur} begin={begin} repeatCount="indefinite" />
+                    <animate attributeName="opacity" values="0;0.5;0;0.3;0" dur={dur} begin={begin} repeatCount="indefinite" />
                 </path>
-            ))}
-        </g>
-    ),
-    electric: () => (
-        <g stroke="#9AD0FF" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
-            {['M16 40 L22 46 L18 50 L26 58', 'M80 38 L74 46 L78 50 L70 60'].map((d, i) => (
-                <path key={i} d={d}>
-                    <animate attributeName="opacity" values="0;1;0;0.2;0" dur="1.2s" begin={`${i * 0.4}s`} repeatCount="indefinite" />
+                <path strokeWidth="1.3" stroke="#FFFFFF">
+                    <animate attributeName="d" values={variants.join(';')} dur={dur} begin={begin} repeatCount="indefinite" />
+                    <animate attributeName="opacity" values="0;1;0;0.5;0" dur={dur} begin={begin} repeatCount="indefinite" />
                 </path>
-            ))}
-        </g>
-    ),
+            </g>
+        );
+        return (
+            <g>
+                <circle cx="48" cy="48" r="36" fill="none" stroke="#7FD0FF" strokeWidth="1" opacity="0">
+                    <animate attributeName="opacity" values="0;0.4;0" dur="1.1s" repeatCount="indefinite" />
+                </circle>
+                {bolt(['M18 38 L24 44 L20 48 L27 56', 'M18 38 L23 45 L19 49 L26 55'], '0.9s', '0s')}
+                {bolt(['M78 36 L72 44 L77 48 L69 58', 'M78 36 L73 43 L76 49 L70 57'], '0.9s', '0.3s')}
+                {bolt(['M40 14 L44 20 L40 23 L46 28', 'M40 14 L43 21 L39 24 L45 29'], '1.1s', '0.5s')}
+                {bolt(['M70 72 L66 78 L70 80 L64 86', 'M70 72 L67 79 L71 81 L65 85'], '1s', '0.15s')}
+            </g>
+        );
+    },
     confetti: () => (
         <g>
             {[['#FF5C6C', 26, 0, 3.2], ['#FFC247', 42, 0.6, 3.8], ['#19C37D', 58, 1.2, 3.0], ['#5B5BF6', 70, 1.8, 3.6]].map((c, i) => (

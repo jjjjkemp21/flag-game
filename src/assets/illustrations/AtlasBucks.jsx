@@ -4,10 +4,18 @@ import React, { useId } from 'react';
 // gradient + green continent dabs as Atlas's globe, so the currency reads as
 // "money made of the world". Used in the topbar, the shop, multiplayer ante,
 // and anywhere a bucks balance is shown.
-export default function AtlasBucksIcon({ size = 16, className = '' }) {
+//
+// Pass `labelled` where the icon is the ONLY unit indicator next to a number
+// (prices, balances) so screen readers announce "Atlas Bucks" instead of a
+// bare figure. Leave it decorative (default) where adjacent text already says
+// "Bucks".
+export default function AtlasBucksIcon({ size = 16, className = '', labelled = false }) {
     const uid = useId();
     const oceanId = `ab-ocean-${uid.replace(/:/g, '')}`;
     const mapId = `ab-map-${uid.replace(/:/g, '')}`;
+    const a11y = labelled
+        ? { role: 'img', 'aria-label': 'Atlas Bucks' }
+        : { 'aria-hidden': 'true' };
     return (
         <svg
             width={size}
@@ -15,7 +23,7 @@ export default function AtlasBucksIcon({ size = 16, className = '' }) {
             viewBox="0 0 24 24"
             className={`atlas-bucks-icon ${className}`.trim()}
             style={{ verticalAlign: '-3px' }}
-            aria-hidden="true"
+            {...a11y}
         >
             <defs>
                 <linearGradient id={oceanId} x1="0" y1="0" x2="0" y2="1">
