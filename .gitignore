@@ -28,6 +28,9 @@ yarn-error.log*
 *.db-shm
 *.db-wal
 
+# Production DB snapshots pulled from the Pi — NEVER commit user data
+db-snapshot/
+
 # Editor / OS
 .vscode/
 .idea/

@@ -54,6 +54,16 @@ function readPalette(rootEl) {
         ambLight:      hex('--globe-amb-light',     '#FFE9C2'),
         keyLight:      hex('--globe-key-light',     '#FFFFFF'),
         rimLight:      hex('--globe-rim-light',     '#8A8CFF'),
+        // Bodies-of-Water layer: idle tint for seas/lakes (waterBody) + rivers
+        // (river), and the vivid "this is the one to identify" highlight used by
+        // the water quiz. Highlight is violet so it pops on both blue ocean and
+        // gold land; correct/wrong reveals reuse the shared correct/wrong colours.
+        waterBody:     hex('--globe-water',         '#33A7C2'),
+        waterBodyEmit: hex('--globe-water-emit',    '#1C6E83'),
+        waterHi:       hex('--globe-water-hi',      '#7C5BFF'),
+        waterHiEmit:   hex('--globe-water-hi-emit', '#4B2FD6'),
+        river:         hex('--globe-river',         '#2FB6D9'),
+        riverHi:       hex('--globe-river-hi',      '#9B7BFF'),
     };
 }
 
@@ -128,7 +138,7 @@ function ringToPoints(ring, radius) {
     return ring.map(([lon, lat]) => llToVec3(lon, lat, radius));
 }
 
-function buildCountryGeometry(polygons, radius) {
+function buildCountryGeometry(polygons, radius, maxEdgeRad = Math.PI / 60) {
     const positions = [];
     const indices = [];
 
@@ -158,7 +168,7 @@ function buildCountryGeometry(polygons, radius) {
         for (const idx of tris) indices.push(idx + vertexOffset);
     }
 
-    const refined = subdivideToSphere(positions, indices, radius, Math.PI / 60);
+    const refined = subdivideToSphere(positions, indices, radius, maxEdgeRad);
 
     const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
@@ -259,6 +269,22 @@ class Globe {
         });
         this.matBorder = new THREE.LineBasicMaterial({ color: this.palette.border, transparent: true, opacity: 0.9 });
         this.matHighlight = new THREE.LineBasicMaterial({ color: this.palette.highlight });
+
+        // Bodies-of-Water layer (built only when opts.loadWater). Templates are
+        // cloned per-body so each can repaint independently. Transparent +
+        // depthWrite:false so seas/lakes blend over ocean/land without z-fighting.
+        this.matWaterAreaTemplate = new THREE.MeshPhongMaterial({
+            color: this.palette.waterBody, emissive: this.palette.waterBodyEmit,
+            shininess: 30, side: THREE.DoubleSide, transparent: true, opacity: 0.5, depthWrite: false,
+        });
+        this.matRiverTemplate = new THREE.LineBasicMaterial({
+            color: this.palette.river, transparent: true, opacity: 0.7,
+        });
+        this.waterGroups = [];          // [{ id, name, type, kind, meshes, lines, center, state }]
+        this.byWaterId = new Map();
+        this.currentWaterId = null;
+        this.waterReady = false;
+        this.waterLayerVisible = false; // idle water shown only when layer is active
 
         this.raycaster = new THREE.Raycaster();
         this.pointer = new THREE.Vector2();
@@ -445,6 +471,11 @@ class Globe {
                 m.material.emissive.copy(this.palette.landEmit);
             }
         }
+        // Re-tint the water layer (templates + every body's current state).
+        this.matWaterAreaTemplate.color.copy(this.palette.waterBody);
+        this.matWaterAreaTemplate.emissive.copy(this.palette.waterBodyEmit);
+        this.matRiverTemplate.color.copy(this.palette.river);
+        for (const g of this.waterGroups) this._styleWaterGroup(g);
     }
 
     async load() {
@@ -470,7 +501,69 @@ class Globe {
         }
         if (this.disposed) return;
         this._buildFeatures(features);
-        this.onReady({ countryCount: this.countryMeshes.length });
+        // Water layer is optional + non-fatal: country play works without it.
+        // Load it before onReady so the water quiz can read getAvailableWaterIds.
+        if (this.opts.loadWater) await this._loadWaterLayer();
+        if (this.disposed) return;
+        this.onReady({ countryCount: this.countryMeshes.length, waterCount: this.waterGroups.length });
+    }
+
+    async _loadWaterLayer() {
+        const url = this.opts.waterUrl || './data/waters.json';
+        let data;
+        try {
+            data = await fetch(url).then((r) => {
+                if (!r.ok) throw new Error('HTTP ' + r.status);
+                return r.json();
+            });
+        } catch (e) {
+            // Non-fatal — the quiz shows its own empty state if nothing loaded.
+            console.warn('Globe water layer failed to load', e);
+            return;
+        }
+        if (this.disposed || !Array.isArray(data)) return;
+
+        const areaLift = R * 1.012;  // above land (1.004) + borders (1.006)
+        const lineLift = R * 1.016;
+        for (const w of data) {
+            const group = { id: w.id, name: w.name, type: w.type, kind: w.kind, meshes: [], lines: [], center: null, state: null };
+            const sum = new THREE.Vector3();
+            let n = 0;
+
+            if (w.kind === 'area' && Array.isArray(w.polygons) && w.polygons.length) {
+                // One mesh per body. Coarser subdivision than countries — water
+                // bodies (esp. oceans) are large, and they don't need crisp edges.
+                const mesh = new THREE.Mesh(
+                    buildCountryGeometry(w.polygons, areaLift, Math.PI / 36),
+                    this.matWaterAreaTemplate.clone()
+                );
+                mesh.renderOrder = 2;
+                mesh.visible = false;
+                this.globeGroup.add(mesh);
+                group.meshes.push(mesh);
+                for (const polygon of w.polygons) for (const ring of polygon) for (const p of ring) { sum.add(llToVec3(p[0], p[1], 1)); n++; }
+            } else if (w.kind === 'line' && Array.isArray(w.lines) && w.lines.length) {
+                for (const line of w.lines) {
+                    const geo = new THREE.BufferGeometry().setFromPoints(ringToPoints(line, lineLift));
+                    const ln = new THREE.Line(geo, this.matRiverTemplate.clone());
+                    ln.renderOrder = 3;
+                    ln.visible = false;
+                    this.globeGroup.add(ln);
+                    group.lines.push(ln);
+                    for (const p of line) { sum.add(llToVec3(p[0], p[1], 1)); n++; }
+                }
+            }
+
+            if (!group.meshes.length && !group.lines.length) continue;
+            // Sphere-surface centroid (average the 3D directions, re-normalise) —
+            // correct even for bodies that straddle the antimeridian, unlike a
+            // raw lon/lat average.
+            if (n > 0) group.center = sum.multiplyScalar(1 / n).normalize().multiplyScalar(R);
+            else if (w.point) group.center = llToVec3(w.point[0], w.point[1], R);
+            this.waterGroups.push(group);
+            this.byWaterId.set(w.id, group);
+        }
+        this.waterReady = true;
     }
 
     _buildFeatures(features) {
@@ -654,6 +747,85 @@ class Globe {
         return [...this.byIso2.keys()];
     }
 
+    // ---- Bodies-of-Water layer (public API used by BodiesOfWaterQuiz) -------
+
+    getAvailableWaterIds() {
+        return [...this.byWaterId.keys()];
+    }
+
+    // Lightweight catalog so the quiz can build name options without re-fetching
+    // / re-parsing the geometry file.
+    getWaterCatalog() {
+        return this.waterGroups.map((g) => ({ id: g.id, name: g.name, type: g.type }));
+    }
+
+    // Repaint one water body's meshes/lines for its current state and apply
+    // visibility (highlighted bodies stay visible even when the layer is hidden).
+    _styleWaterGroup(g) {
+        const pal = this.palette;
+        const st = g.state;
+        const areaColor = st === 'correct' ? pal.correct : st === 'wrong' ? pal.wrong : st === 'ask' ? pal.waterHi : pal.waterBody;
+        const areaEmit = st === 'correct' ? pal.correctEmit : st === 'wrong' ? pal.wrongEmit : st === 'ask' ? pal.waterHiEmit : pal.waterBodyEmit;
+        const areaOpacity = st ? 0.92 : 0.5;
+        for (const m of g.meshes) {
+            m.material.color.copy(areaColor);
+            m.material.emissive.copy(areaEmit);
+            m.material.opacity = areaOpacity;
+        }
+        const lineColor = st === 'correct' ? pal.correct : st === 'wrong' ? pal.wrong : st === 'ask' ? pal.riverHi : pal.river;
+        const lineOpacity = st ? 1 : 0.7;
+        for (const l of g.lines) {
+            l.material.color.copy(lineColor);
+            l.material.opacity = lineOpacity;
+        }
+        const vis = this.waterLayerVisible || !!st;
+        for (const m of g.meshes) m.visible = vis;
+        for (const l of g.lines) l.visible = vis;
+    }
+
+    // Show/hide the idle water layer (the faint tint of every body). The current
+    // question's highlight is unaffected — it stays visible regardless.
+    setWaterLayerVisible(visible) {
+        this.waterLayerVisible = !!visible;
+        for (const g of this.waterGroups) this._styleWaterGroup(g);
+    }
+
+    // Mark one body as the question to identify (vivid violet). Clears any prior
+    // highlight first so only one body is ever "asked" at a time.
+    highlightWater(id) {
+        if (this.currentWaterId && this.currentWaterId !== id) {
+            const prev = this.byWaterId.get(this.currentWaterId);
+            if (prev) { prev.state = null; this._styleWaterGroup(prev); }
+        }
+        const g = this.byWaterId.get(id);
+        if (!g) return;
+        g.state = 'ask';
+        this.currentWaterId = id;
+        this._styleWaterGroup(g);
+    }
+
+    // Reveal the answer body in the correct/wrong colour after the player picks.
+    revealWater(id, correct = true) {
+        const g = this.byWaterId.get(id);
+        if (!g) return;
+        g.state = correct ? 'correct' : 'wrong';
+        this._styleWaterGroup(g);
+    }
+
+    clearWaterHighlight() {
+        if (!this.currentWaterId) return;
+        const g = this.byWaterId.get(this.currentWaterId);
+        if (g) { g.state = null; this._styleWaterGroup(g); }
+        this.currentWaterId = null;
+    }
+
+    // Fly so a water body's centroid faces the camera.
+    flyToWater(id, opts = {}) {
+        const g = this.byWaterId.get(id);
+        if (!g || !g.center) return;
+        this._flyToDirection(g.center.clone(), opts);
+    }
+
     dispose() {
         if (this.disposed) return;
         this.disposed = true;
@@ -675,6 +847,14 @@ class Globe {
         }
         this.countryMeshes = [];
         this.byIso2.clear();
+        for (const g of this.waterGroups) {
+            for (const m of g.meshes) { m.geometry.dispose(); m.material.dispose(); }
+            for (const l of g.lines) { l.geometry.dispose(); l.material.dispose(); }
+        }
+        this.waterGroups = [];
+        this.byWaterId.clear();
+        this.matWaterAreaTemplate.dispose();
+        this.matRiverTemplate.dispose();
         this.oceanMesh.geometry.dispose();
         this.oceanMat.dispose();
         this.atmosphereMesh.geometry.dispose();

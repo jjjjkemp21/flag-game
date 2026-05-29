@@ -48,6 +48,13 @@ import {
     flushBattlepass,
 } from './lib/battlepass';
 import { buildContext, evaluate } from './lib/achievements';
+import {
+    ensureWaterCatalog,
+    loadWaters,
+    resetWaters,
+    flushWaters,
+    setWatersAuthed,
+} from './lib/waters';
 import { variants } from './motion/index';
 
 // Heavy bonus modes — lazy-loaded
@@ -58,6 +65,8 @@ const LanguageQuiz     = lazy(() => import('./components/quizzes/LanguageQuiz'))
 const CapitalsQuiz     = lazy(() => import('./components/quizzes/CapitalsQuiz'));
 // Globe mode pulls in Three.js + earcut; keep it out of the main bundle.
 const GlobeQuiz        = lazy(() => import('./components/quizzes/GlobeQuiz'));
+// Bodies of Water shares the Three.js globe — lazy for the same reason.
+const BodiesOfWaterQuiz = lazy(() => import('./components/quizzes/BodiesOfWaterQuiz'));
 
 const DATA_URL = './data/flags.json';
 
@@ -188,6 +197,12 @@ function App() {
         loadData();
     }, [loadData]);
 
+    // Warm the Bodies-of-Water catalog (id/name/type only — no geometry) so the
+    // home-screen mastery badge can show "N/total" without mounting the globe.
+    useEffect(() => {
+        ensureWaterCatalog();
+    }, []);
+
     // Persist progress only for logged-in users; guests are intentionally
     // ephemeral. Guarded by progressReadyRef so we don't push before the
     // account's progress has finished loading on sign-in.
@@ -226,6 +241,7 @@ function App() {
             if (authedRef.current && progressReadyRef.current) flushStats(flagsDataRef.current);
             if (authedRef.current) flushBattlepass();
             if (authedRef.current) flushQuests();
+            if (authedRef.current) flushWaters();
         };
         const onVisibility = () => { if (document.visibilityState === 'hidden') flush(); };
         window.addEventListener('pagehide', flush);
@@ -317,6 +333,11 @@ function App() {
                     setBpAuthed(true);
                     try { await loadBattlepass(); } catch (_) { /* pass screen will lazy-retry */ }
                 }
+                // Bodies-of-Water mastery — its own per-body progress track.
+                if (!cancelled) {
+                    setWatersAuthed(true);
+                    try { const w = await api.get('/waters'); loadWaters(w.stats); } catch (_) { /* mode will lazy-retry */ }
+                }
                 // Recompute unlocked achievements from the just-loaded progress so the
                 // account's count + showcase are correct. Without this they stay at the
                 // load-time defaults (unlocked=[]) and a later cosmetic-only persist
@@ -355,6 +376,8 @@ function App() {
                 setQuestsAuthed(false);
                 resetQuests();
                 resetBattlepass();
+                setWatersAuthed(false);
+                resetWaters();
                 answerTotalsRef.current = { correct: 0, incorrect: 0 };
                 // Run/best streaks live in device-global localStorage; clear them
                 // on logout/guest so one account's streaks don't bleed into the
@@ -413,10 +436,14 @@ function App() {
                 const prof = await api.get('/profile');
                 loadProfile(prof);
             } catch (_) { resetProfile(); }
+            // Wipe water mastery too (the /stats/reset above already NULLs the
+            // column server-side; clear the in-memory store to match).
+            loadWaters({});
         } else {
             // Guests: clear the in-memory pet + profile (never persisted).
             resetPet();
             resetProfile();
+            resetWaters();
         }
         setView('menu');
     };
@@ -532,6 +559,12 @@ function App() {
                     </Suspense>
                 );
             }
+            case 'bodies-of-water':
+                return (
+                    <Suspense fallback={<LazyFallback label="Charting the waters…" />}>
+                        <BodiesOfWaterQuiz setView={setView} />
+                    </Suspense>
+                );
             case 'pixelated-quiz':
                 return (
                     <Suspense fallback={<LazyFallback label="Loading Pixelated…" />}>
