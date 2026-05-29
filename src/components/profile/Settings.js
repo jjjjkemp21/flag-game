@@ -7,7 +7,7 @@ import { useAuth } from '../../auth/AuthProvider';
 import { useProfile, setAllowSpectate } from '../../lib/profile';
 import { api } from '../../api/client';
 
-function Settings({ theme, setTheme, strictSpelling, setStrictSpelling, onResetStats, setView }) {
+function Settings({ theme, setTheme, strictSpelling, setStrictSpelling, onResetStats, onReplayTutorial, setView }) {
     const audio = useAudio();
     const toast = useToast();
     const { isAuthed, user, patchUser } = useAuth();
@@ -165,6 +165,23 @@ function Settings({ theme, setTheme, strictSpelling, setStrictSpelling, onResetS
                     </div>
                 </section>
             )}
+
+            <section className="settings-section">
+                <h3 className="settings-section-title">Getting started</h3>
+                <div className="setting-row">
+                    <div className="setting-row__label">
+                        <span className="setting-row__title">Replay tutorial</span>
+                        <span className="setting-row__desc">Walk through the basics and a couple of guided rounds again.</span>
+                    </div>
+                    <Button
+                        variant="secondary"
+                        icon="school"
+                        onClick={() => { audio.play('click'); onReplayTutorial?.(); }}
+                    >
+                        Replay
+                    </Button>
+                </div>
+            </section>
 
             <section className="settings-section">
                 <h3 className="settings-section-title">Data</h3>

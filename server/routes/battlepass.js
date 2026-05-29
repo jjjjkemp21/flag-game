@@ -21,11 +21,29 @@ const { MASTERY_STREAK } = require('../xp');
 const router = express.Router();
 router.use(requireAuth);
 
+// The Reptile Kingdom Pass stays locked until the player has mastered this many
+// flags. Mastery is the game's core learning loop, so the pass only appears once
+// they've demonstrably learned — keeping the first-run UI calm for newcomers.
+const MASTERY_GATE = 20;
+
+// Metrics whose challenge progress is an absolute lifetime total rather than a
+// "fresh since unlock" delta. Only flag mastery is absolute: the mastery
+// challenges (Master 25 / 100 flags) read as milestones and tie progression to
+// the very thing that unlocked the pass. Every other metric is baselined at
+// unlock (see ensureSeasonState) so the pass genuinely starts from zero — a
+// player can't bank low tiers from the play that got them to 20 mastery.
+const ABSOLUTE_METRICS = new Set(['mastered']);
+
 // Per-user battlepass state. Stored as a single JSON blob in users.battlepass_json.
 // `counters` holds client-driven cumulative numbers (e.g. mc_correct) merged
 // last-write-wins by max. Server-derived metrics (mastered, mp_wins, earned_xp,
 // best_streak_any, high_*) are recomputed from authoritative columns on every
 // read so the player can't fabricate stars by editing localStorage.
+//
+// `started` flips true the first time the player crosses MASTERY_GATE; at that
+// moment `baseline` snapshots every metric so post-unlock progress is measured
+// fresh from zero. `counters` always store the RAW cumulative value (the client
+// protocol depends on it) — baselining happens only when deriving stars.
 function emptyState() {
     return {
         season: SEASON_ID,
@@ -33,6 +51,9 @@ function emptyState() {
         claimed: [],
         claimedChallenges: [],
         counters: {},
+        started: false,
+        startedAt: 0,
+        baseline: {},
     };
 }
 
@@ -57,6 +78,9 @@ function loadState(userId) {
             ? parsed.claimedChallenges.filter((id) => typeof id === 'string')
             : [],
         counters: (parsed.counters && typeof parsed.counters === 'object') ? parsed.counters : {},
+        started: !!parsed.started,
+        startedAt: Math.max(0, Number(parsed.startedAt) || 0),
+        baseline: (parsed.baseline && typeof parsed.baseline === 'object') ? parsed.baseline : {},
     };
 }
 
@@ -100,19 +124,62 @@ function effectiveMetrics(userId, counters) {
     return merged;
 }
 
-// Star totals + per-challenge progress.
-function summary(userId) {
+// Load the season state and, the first time the player has crossed the mastery
+// gate, snapshot a baseline of every current metric and flip `started`. After
+// that snapshot, challenge progress is read as (current − baseline) so the pass
+// begins from zero the moment it unlocks. Idempotent (better-sqlite3 is
+// synchronous, so concurrent requests can't double-snapshot within a process).
+function ensureSeasonState(userId) {
     const state = loadState(userId);
+    if (state.started) return state;
+    const metrics = effectiveMetrics(userId, state.counters);
+    if ((Number(metrics.mastered) || 0) < MASTERY_GATE) return state;
+    const baseline = {};
+    for (const [k, v] of Object.entries(metrics)) {
+        baseline[k] = Math.max(0, Number(v) || 0);
+    }
+    const next = { ...state, started: true, startedAt: Date.now(), baseline };
+    saveState(userId, next);
+    return next;
+}
+
+// Fresh-since-unlock value for a metric: the raw cumulative total minus the
+// baseline captured at unlock, except absolute metrics (mastery) which keep the
+// lifetime total. Shared by summary() AND the claim path so the displayed "done"
+// state and the server-side claim gate can never disagree (an earlier version
+// drifted: the claim check read the raw value while the UI showed the baselined
+// one, letting a late-unlocking player claim challenges showing 0 progress).
+function effectiveValue(metrics, baseline, metric) {
+    const raw = Math.max(0, Number(metrics[metric]) || 0);
+    const base = ABSOLUTE_METRICS.has(metric) ? 0 : Math.max(0, Number((baseline || {})[metric]) || 0);
+    return Math.max(0, raw - base);
+}
+
+// Star totals + per-challenge progress. Until the pass is `started` (i.e. the
+// player has 20 mastered flags) it reports zero progress; after, each challenge
+// counts only what's been earned since the unlock baseline (except absolute
+// metrics like mastery). `raw` carries the true cumulative metric value so the
+// client's counter cache stays anchored to the server's real numbers — the
+// baseline subtraction is purely a derivation here, never a reset of counters.
+function summary(userId) {
+    const state = ensureSeasonState(userId);
+    const started = !!state.started;
+    const baseline = (state.baseline && typeof state.baseline === 'object') ? state.baseline : {};
     const metrics = effectiveMetrics(userId, state.counters);
     const claimedSet = new Set(state.claimedChallenges || []);
     let stars = 0;
     const challenges = CHALLENGES.map((c) => {
-        const cur = Math.max(0, Number(metrics[c.metric]) || 0);
-        const done = cur >= c.goal;
+        const raw = Math.max(0, Number(metrics[c.metric]) || 0);
+        const eff = started ? effectiveValue(metrics, baseline, c.metric) : 0;
+        const done = started && eff >= c.goal;
         if (done) stars += c.stars;
         return {
             id: c.id,
-            cur: Math.min(cur, c.goal),
+            cur: Math.min(eff, c.goal),
+            // Unclamped true cumulative value — the client seeds its counter
+            // cache from this so its max-merge pushes stay above the server's
+            // stored counter even after baselining reduces the displayed `cur`.
+            raw,
             goal: c.goal,
             done,
             stars: c.stars,
@@ -120,7 +187,7 @@ function summary(userId) {
             claimed: claimedSet.has(c.id),
         };
     });
-    const tier = tierFromStars(stars);
+    const tier = started ? tierFromStars(stars) : 0;
     return {
         season: SEASON_ID,
         seasonName: SEASON_NAME,
@@ -134,6 +201,11 @@ function summary(userId) {
         tierStarCost: TIER_STAR_COST,
         premiumPrice: PREMIUM_PRICE,
         challenges,
+        // Gate state for the client (the home-screen card uses its own live flag
+        // data, but the screen + defensive checks read these).
+        started,
+        mastered: Math.max(0, Number(metrics.mastered) || 0),
+        masteryGate: MASTERY_GATE,
     };
 }
 
@@ -166,8 +238,16 @@ router.post('/progress', (req, res) => {
     res.json(summary(req.user.id));
 });
 
+// Shared 403 for any mutation attempted before the pass has unlocked. The
+// client hides the entry point below the gate, so this only fires on a direct
+// API call — but the server is the source of truth, so we enforce it here too.
+function gateError(res) {
+    return res.status(403).json({ error: `Master ${MASTERY_GATE} flags to unlock the Reptile Kingdom Pass.` });
+}
+
 // Buy the premium track. Deducts PREMIUM_PRICE bucks once per season.
 router.post('/buy', (req, res) => {
+    if (!ensureSeasonState(req.user.id).started) return gateError(res);
     const tx = db.transaction(() => {
         const state = loadState(req.user.id);
         if (state.owned) return { error: 'already-owned' };
@@ -190,6 +270,7 @@ router.post('/buy', (req, res) => {
 // Claim a single tier reward. Body: { track: 'free' | 'prem', tier: number }.
 // Validates the tier is unlocked + not already claimed, then grants the reward.
 router.post('/claim', (req, res) => {
+    if (!ensureSeasonState(req.user.id).started) return gateError(res);
     const { track, tier } = req.body || {};
     if (track !== 'free' && track !== 'prem') {
         return res.status(400).json({ error: 'track must be "free" or "prem".' });
@@ -258,6 +339,7 @@ router.post('/claim', (req, res) => {
 // Server re-derives whether the challenge is done from authoritative metrics,
 // then grants the bucks and marks the id as claimed for this season.
 router.post('/claim-challenge', (req, res) => {
+    if (!ensureSeasonState(req.user.id).started) return gateError(res);
     const { id } = req.body || {};
     if (typeof id !== 'string' || !id) {
         return res.status(400).json({ error: 'challenge id required.' });
@@ -271,9 +353,12 @@ router.post('/claim-challenge', (req, res) => {
         if (already.has(id)) return { error: 'already-claimed' };
 
         // Re-derive done from authoritative metrics so a stale client can't
-        // claim a challenge they haven't actually finished.
+        // claim a challenge they haven't actually finished. Must use the SAME
+        // baselined value summary() shows — otherwise a late unlocker could claim
+        // challenges that display as 0/goal (the pre-unlock play was baselined out).
         const metrics = effectiveMetrics(req.user.id, state.counters);
-        const cur = Math.max(0, Number(metrics[def.metric]) || 0);
+        const baseline = (state.baseline && typeof state.baseline === 'object') ? state.baseline : {};
+        const cur = effectiveValue(metrics, baseline, def.metric);
         if (cur < def.goal) return { error: 'not-done' };
 
         const payout = challengeBucks(def);

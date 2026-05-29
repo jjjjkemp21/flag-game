@@ -23,7 +23,13 @@ const EMPTY = {
     totalStars: TOTAL_STARS,
     tier: 0,
     tierCount: TIER_COUNT,
-    challenges: [],       // [{ id, cur, goal, done, stars, bucks, claimed }]
+    challenges: [],       // [{ id, cur, raw, goal, done, stars, bucks, claimed }]
+    // Gate state: the pass only unlocks once `mastered` reaches `masteryGate`
+    // (20). The home-screen card uses live flag data for the same check; these
+    // mirror the server's view for the pass screen + any defensive guards.
+    started: false,
+    mastered: 0,
+    masteryGate: 20,
     loaded: false,
 };
 
@@ -40,11 +46,18 @@ const counterCache = {}; // metric -> last value we sent/got back
 function applySummary(s) {
     if (!s) return;
     const challenges = Array.isArray(s.challenges) ? s.challenges : [];
-    // Refresh the counter cache from the server's snapshot so future bumps
-    // know what the absolute high-water mark is for each metric.
+    // Refresh the counter cache from the server's snapshot so future bumps know
+    // the absolute high-water mark for each metric. We seed from `raw` (the true
+    // cumulative value), NOT the displayed `cur` — once the pass baselines a
+    // metric at unlock, `cur` is the reduced "since unlock" figure, and seeding
+    // from it would let the cache fall below the server's stored counter and
+    // wedge progress. `raw` keeps the max-merge push protocol anchored.
     for (const c of challenges) {
         const def = CHALLENGES_BY_ID[c.id];
-        if (def) counterCache[def.metric] = Math.max(counterCache[def.metric] || 0, c.cur || 0);
+        if (def) {
+            const anchor = c.raw != null ? c.raw : (c.cur || 0);
+            counterCache[def.metric] = Math.max(counterCache[def.metric] || 0, anchor);
+        }
     }
     setState({
         season: s.season || SEASON_ID,
@@ -56,6 +69,9 @@ function applySummary(s) {
         tier: Math.max(0, Number(s.tier) || 0),
         tierCount: Math.max(0, Number(s.tierCount) || TIER_COUNT),
         challenges,
+        started: !!s.started,
+        mastered: Math.max(0, Number(s.mastered) || 0),
+        masteryGate: Math.max(0, Number(s.masteryGate) || 20),
         loaded: true,
     });
 }

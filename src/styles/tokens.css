@@ -152,6 +152,7 @@
     --z-toast:       800;
     --z-overlay:     900;
     --z-modal:      1000;
+    --z-tutorial:   1100; /* first-run tour — sits above modals + the top bar */
 
     /* -------- Globe (Three.js surface palette + reveal colours) --------
        Read by src/lib/globe/Globe.js via getComputedStyle, so the 3D scene

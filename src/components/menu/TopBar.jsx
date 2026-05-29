@@ -40,7 +40,7 @@ function TopBar({ setView, view }) {
                     <Icon name="home" />
                 </button>
             )}
-            <div className="topbar__right">
+            <div className="topbar__right" data-tour="topbar">
                 {isAuthed && (
                     <button
                         className="ab-chip"

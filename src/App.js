@@ -23,12 +23,13 @@ import MultiplayerScreen from './components/social/MultiplayerScreen';
 import BattlepassScreen from './components/economy/BattlepassScreen';
 import SpectatorScreen from './components/social/SpectatorScreen';
 import TopBar from './components/menu/TopBar';
+import Onboarding from './components/onboarding/Onboarding';
 import Spinner from './assets/illustrations/Spinner';
 import { useAudio } from './audio/AudioProvider';
 import { useAuth } from './auth/AuthProvider';
 import { api } from './api/client';
 import { applyStatsToFlags, zeroFlagStats, pushStats, flushStats, updateMasteredCount } from './lib/syncStats';
-import { computeXp, readBonusScores } from './lib/xp';
+import { computeXp, readBonusScores, MASTERY_STREAK } from './lib/xp';
 import { setAuthed, loadBonus, resetBonus, loadEarnedXp, resetEarnedXp, getEarnedXp } from './lib/progress';
 import { loadPet, resetPet, recordCorrect, recordIncorrect, getPet } from './lib/pet';
 import { loadProfile, resetProfile, setAchievementsUnlocked } from './lib/profile';
@@ -59,6 +60,12 @@ const GlobeQuiz        = lazy(() => import('./components/quizzes/GlobeQuiz'));
 
 const DATA_URL = './data/flags.json';
 
+// First-run tour is shown once per device (brand-new accounts only).
+const TUTORIAL_SEEN_KEY = 'flagGameTutorialSeen';
+// Flags mastered before the Reptile Kingdom Pass becomes reachable. Mirrors
+// MASTERY_GATE in server/routes/battlepass.js and PASS_MASTERY_GATE in MainMenu.
+const PASS_MASTERY_GATE = 20;
+
 function sumAnswers(flags) {
     return (flags || []).reduce(
         (acc, f) => ({
@@ -83,6 +90,7 @@ function App() {
     const [view, setView] = useState('menu');
     const [quizMode, setQuizMode] = useState(null);
     const [quizCategory, setQuizCategory] = useState({ type: 'all', value: null });
+    const [tutorialActive, setTutorialActive] = useState(false);
     // Which friend the user is currently spectating. Set when an Eye icon is
     // clicked in the Friends list; consumed by the 'spectator' view case.
     const [spectateTarget, setSpectateTarget] = useState(null);
@@ -191,6 +199,16 @@ function App() {
         updateMasteredCount(flagsData);
     }, [flagsData]);
 
+    // Defense-in-depth gate: the Reptile Kingdom Pass card is hidden below the
+    // mastery gate, but the 'battlepass' view is still reachable programmatically.
+    // If anything routes there before the player has earned it, bounce home (the
+    // server also refuses every claim/buy below the gate).
+    useEffect(() => {
+        if (view !== 'battlepass') return;
+        const mastered = flagsData.filter(f => (f.streak || 0) > MASTERY_STREAK).length;
+        if (mastered < PASS_MASTERY_GATE) setView('menu');
+    }, [view, flagsData]);
+
     // Flush any pending progress when the tab is hidden or closed so a long
     // session's most recent answers / streak / XP aren't lost (a debounced push
     // would otherwise be dropped on unload, especially when backgrounded on mobile).
@@ -298,9 +316,27 @@ function App() {
                     const ctx = buildContext(loadedFlags, readBonusScores(), getPet().level, getEarnedXp());
                     setAchievementsUnlocked(evaluate(ctx));
                 }
+                // First-run interactive tour — only for a brand-new account (no XP
+                // earned and nothing ever answered), shown once per device. Computed
+                // from the just-loaded progress so it reflects real account state, not
+                // the zeroed defaults. Sending the player home guarantees the menu is
+                // mounted beneath the tour's home-screen coach-marks.
+                if (!cancelled && loadedFlags) {
+                    try {
+                        const ans = sumAnswers(loadedFlags);
+                        const brandNew = computeXp() === 0 && (ans.correct + ans.incorrect) === 0;
+                        if (brandNew && !localStorage.getItem(TUTORIAL_SEEN_KEY)) {
+                            setView('menu');
+                            setTutorialActive(true);
+                        }
+                    } catch (_) { /* localStorage blocked (private mode) — skip the tour */ }
+                }
             } else {
                 setAuthed(false);
                 setBpAuthed(false);
+                // The tour is for authed newcomers; never leave it hanging over a
+                // guest session (e.g. if they log out mid-tour).
+                setTutorialActive(false);
                 resetBonus();
                 resetEarnedXp();
                 resetPet();
@@ -375,6 +411,18 @@ function App() {
         }
         setView('menu');
     };
+
+    // Close the tour and remember it was seen (per device).
+    const dismissTutorial = useCallback(() => {
+        setTutorialActive(false);
+        try { localStorage.setItem(TUTORIAL_SEEN_KEY, '1'); } catch (_) { /* private mode */ }
+    }, []);
+
+    // Replay from Settings — go home so the home-screen coach-marks have targets.
+    const startTutorial = useCallback(() => {
+        setView('menu');
+        setTutorialActive(true);
+    }, []);
 
     if (isLoading) {
         return (
@@ -514,6 +562,7 @@ function App() {
                         strictSpelling={strictSpelling}
                         setStrictSpelling={setStrictSpelling}
                         onResetStats={handleResetStats}
+                        onReplayTutorial={startTutorial}
                         setView={setView}
                     />
                 );
@@ -544,6 +593,7 @@ function App() {
             <MigrationV2Modal />
             <LoginChestModal />
             <QuestCompleteModal />
+            {tutorialActive && <Onboarding onClose={dismissTutorial} />}
         </div>
     );
 }

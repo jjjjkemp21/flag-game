@@ -18,7 +18,14 @@ import { useProfile } from '../../lib/profile';
 import { useQuests, claimableCount } from '../../lib/quests';
 import { getStreak } from '../../lib/streak';
 import { GLOBE_RENDERABLE_ISO2 } from '../../lib/achievements';
+import { MASTERY_STREAK } from '../../lib/xp';
 import { springs } from '../../motion/index';
+
+// Flags a player must master before the Reptile Kingdom Pass appears on the home
+// screen — keeping the first-run UI calm and tying the pass to the learning loop.
+// Mirrors MASTERY_GATE in server/routes/battlepass.js (the server enforces it on
+// every claim/buy, so this is purely about when to surface the card).
+const PASS_MASTERY_GATE = 20;
 
 // Number of consecutive title taps that exposes the hidden admin password
 // prompt, and the no-tap window after which the counter resets so normal
@@ -92,12 +99,17 @@ function MainMenu({ setView, flagsData, setQuizMode }) {
     // Subscribe to quests so the "Quests" card shows a live claimable count.
     useQuests();
     const questsClaimable = claimableCount();
-    // Flag-recognition mastery (MC / FR / bonus modes share this streak).
-    const masteryHint = useMemo(() => {
-        if (!flagsData?.length) return null;
-        const mastered = flagsData.filter(f => f.streak > 5).length;
-        return `${mastered}/${flagsData.length} mastered`;
-    }, [flagsData]);
+    // Flag-recognition mastery (MC / FR / bonus modes share this streak). The
+    // raw count gates the Reptile Kingdom Pass card below; the hint string drives
+    // the hero pill + the per-mode card badges.
+    const masteredCount = useMemo(
+        () => (flagsData?.length ? flagsData.filter(f => (f.streak || 0) > MASTERY_STREAK).length : 0),
+        [flagsData]
+    );
+    const masteryHint = useMemo(
+        () => (flagsData?.length ? `${masteredCount}/${flagsData.length} mastered` : null),
+        [flagsData, masteredCount]
+    );
 
     // Geography mastery — Globe mode tracks its own per-flag streak and can
     // only ask about flags whose ISO-A2 has a Natural Earth polygon, so the
@@ -105,7 +117,7 @@ function MainMenu({ setView, flagsData, setQuizMode }) {
     const globeMasteryHint = useMemo(() => {
         if (!flagsData?.length) return null;
         const eligible = flagsData.filter(f => GLOBE_RENDERABLE_ISO2.has((f.code || '').toUpperCase()));
-        const mastered = eligible.filter(f => (f.geoStreak || 0) > 5).length;
+        const mastered = eligible.filter(f => (f.geoStreak || 0) > MASTERY_STREAK).length;
         return `${mastered}/${eligible.length} mastered`;
     }, [flagsData]);
 
@@ -226,13 +238,22 @@ function MainMenu({ setView, flagsData, setQuizMode }) {
 
             {/* Atlas Pass — hero card that spans the menu width via its own
                 .mode-card--xl rules. Lives in its own .mode-grid so it isn't
-                forced into a section column. */}
-            <div className="mode-grid">
-                <BattlepassCard onClick={() => setView('battlepass')} index={0} />
-            </div>
+                forced into a section column. Hidden until the player has mastered
+                PASS_MASTERY_GATE flags so newcomers aren't met with a wall of
+                progression UI before they've learned anything; the server also
+                refuses any claim/buy below the gate. */}
+            {masteredCount >= PASS_MASTERY_GATE && (
+                <div className="mode-grid">
+                    <BattlepassCard onClick={() => setView('battlepass')} index={0} />
+                </div>
+            )}
 
             {SECTIONS.map((section, sIdx) => (
-                <section key={section.key} className="menu-section">
+                <section
+                    key={section.key}
+                    className="menu-section"
+                    data-tour={section.key === 'play' ? 'modes' : undefined}
+                >
                     <h2 className="section-heading">{section.label}</h2>
                     <div className="mode-grid">
                         {section.modes.map((mode, i) => (
