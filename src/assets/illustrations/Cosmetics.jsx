@@ -183,34 +183,31 @@ const HAT_SHAPES = {
             </g>
         );
     },
+    // Devil/imp horns: a thick base tapering through a single outward curve to a
+    // SHARP point — no rounded tip cap (that read as a bunny ear). Layered
+    // dark→main→sheen to fake a gradient, with a couple of keratin bands and a
+    // gloss streak down the front instead of a tip jewel.
     horns: (c) => (
         <g strokeLinejoin="round">
-            {/* --- Left horn — curved, banded, with a glossy tip jewel --- */}
-            <path d="M30 22 Q 25 12 27 -6 Q 39 4 40 22 Z" fill={c.dark} />
-            <path d="M31 21 Q 27 12 29 -4 Q 37 5 38 21 Z" fill={c.main} stroke={c.dark} strokeWidth="0.8" />
-            <path d="M33 19 Q 30 11 32 -1 Q 35 6 36 19 Z" fill={c.accent} opacity="0.42" />
-            <g stroke={c.dark} strokeWidth="0.7" fill="none" strokeLinecap="round" opacity="0.85">
-                <path d="M30 14 Q 33 13 36 16" />
-                <path d="M29 7 Q 32 6 35 9" />
-                <path d="M28 1 Q 31 0 34 3" />
-                <path d="M28 -4 Q 31 -5 33 -3" />
+            {/* --- Left horn --- */}
+            <path d="M27 23 Q18 9 22 -4 Q31 8 41 23 Z" fill={c.dark} />
+            <path d="M28 22 Q20 9 23 -2 Q31 8 40 22 Z" fill={c.main} stroke={c.dark} strokeWidth="0.8" />
+            <path d="M32 20 Q28 11 26 4 Q29 10 35 20 Z" fill={c.accent} opacity="0.4" />
+            <g stroke={c.dark} strokeWidth="0.7" fill="none" strokeLinecap="round" opacity="0.75">
+                <path d="M29 16 Q32 15 35 17" />
+                <path d="M28 9 Q30 8.5 32 10" />
             </g>
-            {/* Pointed tip jewel + sparkle */}
-            <circle cx="28" cy="-5" r="1.4" fill={c.accent} stroke={c.dark} strokeWidth="0.4" />
-            <circle cx="27.6" cy="-5.4" r="0.5" fill="#FFFFFF" opacity="0.95" />
+            <path d="M24 0 Q28 7 33 14" stroke="#FFFFFF" strokeWidth="0.7" fill="none" strokeLinecap="round" opacity="0.5" />
 
-            {/* --- Right horn (mirrored) --- */}
-            <path d="M66 22 Q 71 12 69 -6 Q 57 4 56 22 Z" fill={c.dark} />
-            <path d="M65 21 Q 69 12 67 -4 Q 59 5 58 21 Z" fill={c.main} stroke={c.dark} strokeWidth="0.8" />
-            <path d="M63 19 Q 66 11 64 -1 Q 61 6 60 19 Z" fill={c.accent} opacity="0.42" />
-            <g stroke={c.dark} strokeWidth="0.7" fill="none" strokeLinecap="round" opacity="0.85">
-                <path d="M66 14 Q 63 13 60 16" />
-                <path d="M67 7 Q 64 6 61 9" />
-                <path d="M68 1 Q 65 0 62 3" />
-                <path d="M68 -4 Q 65 -5 63 -3" />
+            {/* --- Right horn (mirrored across x=48) --- */}
+            <path d="M69 23 Q78 9 74 -4 Q65 8 55 23 Z" fill={c.dark} />
+            <path d="M68 22 Q76 9 73 -2 Q65 8 56 22 Z" fill={c.main} stroke={c.dark} strokeWidth="0.8" />
+            <path d="M64 20 Q68 11 70 4 Q67 10 61 20 Z" fill={c.accent} opacity="0.4" />
+            <g stroke={c.dark} strokeWidth="0.7" fill="none" strokeLinecap="round" opacity="0.75">
+                <path d="M67 16 Q64 15 61 17" />
+                <path d="M68 9 Q66 8.5 64 10" />
             </g>
-            <circle cx="68" cy="-5" r="1.4" fill={c.accent} stroke={c.dark} strokeWidth="0.4" />
-            <circle cx="68.4" cy="-5.4" r="0.5" fill="#FFFFFF" opacity="0.95" />
+            <path d="M72 0 Q68 7 63 14" stroke="#FFFFFF" strokeWidth="0.7" fill="none" strokeLinecap="round" opacity="0.5" />
         </g>
     ),
     catEars: (c) => (
@@ -482,8 +479,8 @@ const HAT_SHAPES = {
     // ---- Reptile/dragon-themed hats (Atlas Pass exclusives) -----------------
     // dragonHorns: a pair of curved keratin horns sweeping up + out, layered
     // with a dark base + main body + lighter sheen to fake a gradient, plus
-    // banding rings and a jewel at the tip. A small diadem connects them at
-    // the brow for a regal feel.
+    // banding rings and a SHARP point at the tip (no jewel cap — that blunted
+    // the horn). A small diadem connects them at the brow for a regal feel.
     dragonHorns: (c) => (
         <g strokeLinejoin="round">
             {/* --- Left horn ----------------------------------------------- */}
@@ -500,9 +497,8 @@ const HAT_SHAPES = {
                 <path d="M16 -6 Q21 -8 25 -4" />
                 <path d="M12 -12 Q17 -13 21 -10" />
             </g>
-            {/* Tip jewel */}
-            <circle cx="9" cy="-14" r="1.8" fill={c.accent} stroke={c.dark} strokeWidth="0.5" />
-            <circle cx="8.4" cy="-14.6" r="0.5" fill="#FFFFFF" opacity="0.9" />
+            {/* Sharp-tip gloss (no jewel) */}
+            <circle cx="11" cy="-11" r="0.6" fill="#FFFFFF" opacity="0.85" />
 
             {/* --- Right horn (mirrored) ----------------------------------- */}
             <path d="M66 22 Q80 8 88 -14 Q74 -12 60 2 Q54 12 56 22 Z" fill={c.dark} />
@@ -514,8 +510,7 @@ const HAT_SHAPES = {
                 <path d="M80 -6 Q75 -8 71 -4" />
                 <path d="M84 -12 Q79 -13 75 -10" />
             </g>
-            <circle cx="87" cy="-14" r="1.8" fill={c.accent} stroke={c.dark} strokeWidth="0.5" />
-            <circle cx="87.6" cy="-14.6" r="0.5" fill="#FFFFFF" opacity="0.9" />
+            <circle cx="85" cy="-11" r="0.6" fill="#FFFFFF" opacity="0.85" />
 
             {/* --- Brow diadem connecting both horns ----------------------- */}
             <path d="M34 20 Q48 16 62 20" stroke={c.dark} strokeWidth="1.4" fill="none" strokeLinecap="round" />
@@ -1049,8 +1044,9 @@ const GLASS_SHAPES = {
 // ---- Mouth cosmetics -------------------------------------------------------
 // Drawn over the default mood mouth (which sits around y=58-66). Items that
 // fully cover or replace the mouth (lips, masks, fangs) set `hideMouth: true`
-// in their MOUTHS entry so Mascot skips the default mouth underneath. Accessory
-// items (beards, lollipops, straws, cigars, pacifier) leave the mood mouth
+// in their MOUTHS entry so Mascot skips the default mouth underneath (the
+// pacifier does this too — it draws its own puckered mouth around the teat).
+// Accessory items (beards, lollipops, straws, cigars) leave the mood mouth
 // visible so the expression still reads.
 // ---- Mouth helpers ---------------------------------------------------------
 // Atlas's mouth sits around (48, 60); eyes at y=46 with r=4.5 (bottom ~y=50.5),
@@ -1286,24 +1282,30 @@ const MOUTH_SHAPES = {
         </g>
     ),
 
-    // Classic baby pacifier: nipple (top, fleshy) → shield with face (middle) → ring (bottom).
+    // Classic baby pacifier, shown plugged INTO the mouth: the player's mouth
+    // becomes a small puckered ring gripping the teat (no nipple pokes out — a
+    // visible tip read as "not actually in the mouth"). Below the lips sit the
+    // shield (face plate) and the handle ring. The catalog marks this `hideMouth`
+    // so the mood mouth is suppressed and this puckered mouth is the only one.
     pacifier: (c) => (
         <g strokeLinejoin="round">
-            {/* Nipple (top, peach/skin) */}
-            <path d="M44 58 Q 44 53 48 53 Q 52 53 52 58 L 52 60.5 L 44 60.5 Z"
-                fill={c.accent} stroke={c.dark} strokeWidth="0.5" />
-            <ellipse cx="46.5" cy="55.5" rx="0.8" ry="1.3" fill="#FFFFFF" opacity="0.85" />
-            {/* Shield (oval plate covering the mouth) */}
-            <ellipse cx="48" cy="63" rx="8" ry="3.4" fill={c.main} stroke={c.dark} strokeWidth="0.6" />
+            {/* Puckered mouth gripping the teat — replaces the mood mouth. The
+                dark lip ring reads as the mouth wrapped around the pacifier. */}
+            <circle cx="48" cy="57.5" r="4.8" fill="#1F1A3B" />
+            {/* Teat seated inside the mouth — a small dome, no protruding tip */}
+            <circle cx="48" cy="57.5" r="2.7" fill={c.accent} stroke={c.dark} strokeWidth="0.4" />
+            <ellipse cx="46.9" cy="56.6" rx="0.7" ry="1" fill="#FFFFFF" opacity="0.85" />
+            {/* Shield (oval guard pressed against the lips) */}
+            <ellipse cx="48" cy="63.5" rx="8" ry="3.4" fill={c.main} stroke={c.dark} strokeWidth="0.6" />
             {/* Cute smiley face on the shield */}
-            <circle cx="45" cy="62.5" r="0.6" fill={c.dark} />
-            <circle cx="51" cy="62.5" r="0.6" fill={c.dark} />
-            <path d="M45.5 64 Q 48 65 50.5 64" stroke={c.dark} strokeWidth="0.5" fill="none" />
+            <circle cx="45" cy="63" r="0.6" fill={c.dark} />
+            <circle cx="51" cy="63" r="0.6" fill={c.dark} />
+            <path d="M45.5 64.5 Q 48 65.5 50.5 64.5" stroke={c.dark} strokeWidth="0.5" fill="none" />
             {/* Handle ring (hangs below) */}
-            <circle cx="48" cy="71" r="3.6" fill="none" stroke={c.main} strokeWidth="2" />
-            <circle cx="48" cy="71" r="3.6" fill="none" stroke={c.dark} strokeWidth="0.4" />
+            <circle cx="48" cy="71.5" r="3.6" fill="none" stroke={c.main} strokeWidth="2" />
+            <circle cx="48" cy="71.5" r="3.6" fill="none" stroke={c.dark} strokeWidth="0.4" />
             {/* Tiny shield highlight */}
-            <ellipse cx="44.5" cy="61.5" rx="1.4" ry="0.5" fill="#FFFFFF" opacity="0.55" />
+            <ellipse cx="44.5" cy="62" rx="1.4" ry="0.5" fill="#FFFFFF" opacity="0.55" />
         </g>
     ),
 
@@ -1610,6 +1612,26 @@ const spark = (cx, cy, r) =>
 const heartPath = (cx, cy, s) =>
     `M${cx} ${cy} C ${cx - s * 1.8} ${cy - s * 1.6}, ${cx - s * 1.8} ${cy - s * 3.4}, ${cx} ${cy - s * 2} C ${cx + s * 1.8} ${cy - s * 3.4}, ${cx + s * 1.8} ${cy - s * 1.6}, ${cx} ${cy} Z`;
 
+// Saturn-style planet rings. The loop is split into a FAR (back) arc and a NEAR
+// (front) arc so the mascot can occlude the back of the ring: the Mascot draws
+// the 'back' half *behind* the globe (so the globe body hides the middle of it,
+// leaving only the tips poking out the sides) and the 'front' half on top. Both
+// halves share the same rotate AND ride the same `placement` transform, so they
+// stay aligned and wrap correctly no matter how the player resizes/moves the
+// effect — the occlusion is the globe itself, not a fixed-radius mask.
+// `sweep` picks which arc of the ellipse: 1 = top (far), 0 = bottom (near).
+const ringsHalf = (half) => {
+    const sweep = half === 'back' ? 1 : 0;
+    return (
+        <g transform="rotate(-20 48 48)" fill="none">
+            <path d={`M1 48 A47 13 0 0 ${sweep} 95 48`} stroke="#FFD86B" strokeWidth="3" opacity="0.85">
+                <animate attributeName="opacity" values="0.5;0.95;0.5" dur="3s" repeatCount="indefinite" />
+            </path>
+            <path d={`M7 48 A41 10 0 0 ${sweep} 89 48`} stroke="#FFEFC2" strokeWidth="1.5" opacity="0.6" />
+        </g>
+    );
+};
+
 const EFFECT_SHAPES = {
     orbit: () => (
         <g>
@@ -1627,14 +1649,7 @@ const EFFECT_SHAPES = {
             ))}
         </g>
     ),
-    rings: () => (
-        <g transform="rotate(-20 48 48)" fill="none">
-            <ellipse cx="48" cy="48" rx="47" ry="13" stroke="#FFD86B" strokeWidth="3" opacity="0.85">
-                <animate attributeName="opacity" values="0.5;0.95;0.5" dur="3s" repeatCount="indefinite" />
-            </ellipse>
-            <ellipse cx="48" cy="48" rx="41" ry="10" stroke="#FFEFC2" strokeWidth="1.5" opacity="0.6" />
-        </g>
-    ),
+    rings: () => ringsHalf('front'),
     bubbles: () => (
         <g fill="none" stroke="#9AD0FF" strokeWidth="1.5">
             {[[30, 3.2, 2.6, 0], [50, 2.4, 3.2, 0.6], [66, 3, 2.2, 1.2], [40, 2, 3.6, 1.8]].map((b, i) => (
@@ -1928,6 +1943,17 @@ export function renderEffect(id) {
     if (!item || !item.kind || item.kind === 'spin') return null; // 'spin' handled in Mascot
     const draw = EFFECT_SHAPES[item.kind];
     return draw ? draw() : null;
+}
+
+// The far side of an effect that should render *behind* the globe so the mascot
+// occludes it. Only the planet rings need this (the back half of the loop); for
+// every other effect this is null and the whole thing draws on top via
+// renderEffect. Mascot wraps this in the same `placement` transform as the
+// front half so the two stay aligned.
+export function renderEffectBehind(id) {
+    const item = EFFECTS[id];
+    if (!item || item.kind !== 'rings') return null;
+    return ringsHalf('back');
 }
 
 export function renderHat(id) {

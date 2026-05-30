@@ -1,7 +1,7 @@
 import React, { useId } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { paletteFor, isEffectSizable } from '../../lib/cosmetics';
-import { renderHat, renderGlasses, renderEffect, renderMouth, mouthHidesMood, renderEmote } from './Cosmetics';
+import { renderHat, renderGlasses, renderEffect, renderEffectBehind, renderMouth, mouthHidesMood, renderEmote } from './Cosmetics';
 
 // Build an SVG <pattern> for an animal-skin palette. The pattern tiles across
 // the globe-disc bounding box; the disc itself clips it to a circle. Hand-
@@ -281,6 +281,7 @@ export default function Mascot({ size = 96, mood = 'idle', cosmetics, still = fa
     // idle bob (framer) respects `calm`/reduced-motion.
     const animate = !!anim;
     const effectEl = renderEffect(cos.effect);
+    const effectBehindEl = renderEffectBehind(cos.effect);
     const effectIsSizable = isEffectSizable(cos.effect);
     const spinning = cos.effect === 'spin';
     const stopVals = (i) => (anim ? [...anim.frames.map((f) => f[i]), anim.frames[0][i]].join(';') : '');
@@ -451,6 +452,15 @@ export default function Mascot({ size = 96, mood = 'idle', cosmetics, still = fa
                     <circle cx="48" cy="48" r="38" fill={glow.color} opacity="0.45" filter={`url(#${glowId})`}>
                         <animate attributeName="opacity" values="0.3;0.65;0.3" dur="2.4s" repeatCount="indefinite" />
                     </circle>
+                )}
+
+                {/* Far side of an effect that wraps around the globe (the back of
+                    the planet rings). Drawn BEFORE the globe so the globe body
+                    occludes its middle — only the ring tips poke out the sides —
+                    while the near side is drawn on top in the overlay below. It
+                    rides the same placement transform as the front half. */}
+                {effectBehindEl && (
+                    <g transform={placement(cos.effectPos, 48, 48)}>{effectBehindEl}</g>
                 )}
 
                 {/* Globe — solid pattern fill (with subtle gradient overlay for shading) or pure gradient */}
