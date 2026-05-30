@@ -18,12 +18,20 @@ if [ -f .env ]; then
     set +a
 fi
 
-# Stop and remove the old container
+# Build the NEW image FIRST, while the OLD container is still serving traffic.
+# The build (npm install + CRA build + native better-sqlite3 compile) is the
+# slow part on a Pi — minutes. Doing it before we stop anything means the site
+# stays up the whole time instead of returning a Cloudflare 502 for the entire
+# build. Bonus: with `set -e`, a failed build aborts HERE, before the old
+# container is touched, so a broken build no longer takes the site down.
+docker build -t flag-game .
+
+# Swap. This is now the ONLY window the site is briefly unreachable — just the
+# few seconds it takes to stop the old container and boot the new one, not the
+# whole build. (True zero-downtime would need a second container + a proxy
+# switch; this reorder removes ~all of the visible 502 for a one-line cost.)
 docker stop flag-game || true
 docker rm flag-game || true
-
-# Build the new Docker image
-docker build -t flag-game .
 
 # Run the new container on the shared proxy network.
 # - SQLite lives on a host volume so accounts/scores survive redeploys.
