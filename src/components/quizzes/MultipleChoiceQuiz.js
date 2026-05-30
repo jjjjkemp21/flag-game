@@ -83,7 +83,7 @@ function MultipleChoiceQuiz({
         // tri-state so the spectator's mascot can cheer on correct, frown on
         // wrong, and stay neutral while the player is still deciding.
         lastAnswerCorrect:
-            flashColor === 'correct' ? true : flashColor === 'wrong' ? false : null,
+            flashColor === 'correct' ? true : flashColor === 'incorrect' ? false : null,
         // Surface the choice texts so the spectator can see what the player
         // is picking between. Reverse mode shows flag images; we still send
         // the country names so the spectator UI can render either form.

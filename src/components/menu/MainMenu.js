@@ -178,8 +178,8 @@ function MainMenu({ setView, flagsData, setQuizMode }) {
         if (modeKey === 'multiple-choice' || modeKey === 'free-response' || modeKey === 'globe') {
             handleStartQuiz(modeKey);
         } else if (modeKey === 'capitals-quiz') {
-            // Standalone mode — straight into the quiz, no deck picker.
-            setView('capitals-quiz');
+            // Deck picker first (All / Needs Review / By Region), like the flag quizzes.
+            setView('capitals-menu');
         } else if (modeKey === 'multiplayer') {
             setView('multiplayer');
         } else if (modeKey === 'bonus') {

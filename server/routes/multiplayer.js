@@ -46,13 +46,16 @@ function normalizeConfig(c) {
     let mode = MODES[c.mode] ? c.mode : 'race';
     const content = c.content === 'languages' ? 'languages'
         : c.content === 'globe' ? 'globe'
+        : c.content === 'capitals' ? 'capitals'
         : 'flags';
     // Globe content is click-on-country only — Atlas Battle would feel awful
     // with a slow place-the-pin loop, so fall it back to race.
     if (content === 'globe' && mode === 'battle') mode = 'race';
     const questionType = c.questionType === 'text' ? 'text' : 'mc';
-    const scope = (content === 'flags' || content === 'globe')
-        && typeof c.scope === 'string' && c.scope
+    // Flags, Globe and Capitals all draw from the country pool, so they honour
+    // a region scope; Languages is always 'all'.
+    const scopedContent = content === 'flags' || content === 'globe' || content === 'capitals';
+    const scope = scopedContent && typeof c.scope === 'string' && c.scope
         ? c.scope.slice(0, 32)
         : 'all';
     let maxPlayers = clampInt(c.maxPlayers, 2, MODES[mode].players, MODES[mode].players);

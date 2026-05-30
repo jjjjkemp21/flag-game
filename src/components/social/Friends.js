@@ -16,6 +16,7 @@ const MODE_LABELS = {
     'frenzy-quiz':        'Frenzy',
     'longest-route-quiz': 'Longest Route',
     'language-quiz':      'Language',
+    'capitals-quiz':      'Capitals',
     'multiplayer':        'Multiplayer',
 };
 
@@ -169,29 +170,33 @@ function Friends({ setView, setSpectateTarget }) {
                     const playing = !!(p && p.mode);
                     return (
                         <div key={f.id} className={`friend-row ${playing ? 'friend-row--playing' : ''}`}>
-                            <span className="friend-name">
-                                {f.username}
+                            <div className="friend-row__info">
+                                <span className="friend-name">{f.username}</span>
+                                <span className="friend-meta">
+                                    <Pill tone="primary">{f.xp} XP</Pill>
+                                    <span className="friend-mastered">{f.masteredCount} mastered</span>
+                                    {playing && (
+                                        <span className="friend-presence-tag">
+                                            <Icon name="circle" /> Playing {MODE_LABELS[p.mode] || p.mode}
+                                        </span>
+                                    )}
+                                </span>
+                            </div>
+                            <div className="friend-row__actions">
                                 {playing && (
-                                    <span className="friend-presence-tag">
-                                        <Icon name="circle" /> Playing {MODE_LABELS[p.mode] || p.mode}
-                                    </span>
+                                    <button
+                                        className="friend-watch-btn"
+                                        aria-label={`Spectate ${f.username}`}
+                                        title={`Spectate ${f.username}`}
+                                        onClick={() => watch(f.id)}
+                                    >
+                                        <Icon name="visibility" /> Watch
+                                    </button>
                                 )}
-                            </span>
-                            <Pill tone="primary">{f.xp} XP</Pill>
-                            <span className="friend-mastered">{f.masteredCount} mastered</span>
-                            {playing && (
-                                <button
-                                    className="icon-button friend-watch-btn"
-                                    aria-label={`Spectate ${f.username}`}
-                                    title={`Spectate ${f.username}`}
-                                    onClick={() => watch(f.id)}
-                                >
-                                    <Icon name="visibility" />
+                                <button className="icon-button" aria-label={`Remove ${f.username}`} onClick={() => setPendingRemove(f)}>
+                                    <Icon name="person_remove" />
                                 </button>
-                            )}
-                            <button className="icon-button" aria-label={`Remove ${f.username}`} onClick={() => setPendingRemove(f)}>
-                                <Icon name="person_remove" />
-                            </button>
+                            </div>
                         </div>
                     );
                 })}

@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import Icon from '../common/Icon';
-import { Button, Pill } from '../ui/index';
+import { Button } from '../ui/index';
 import { useToast } from '../ui/Toast';
 import Mascot from '../../assets/illustrations/Mascot';
 import { spectate, useSpectatePoll } from '../../lib/spectate';
@@ -20,6 +20,7 @@ const MODE_LABELS = {
     'frenzy-quiz':        'Frenzy',
     'longest-route-quiz': 'Longest Route',
     'language-quiz':      'Language',
+    'capitals-quiz':      'Capitals',
     'multiplayer':        'Multiplayer',
 };
 
@@ -150,6 +151,7 @@ function SpectatorScreen({ targetId, setView }) {
     const promptFlag = gameState && gameState.promptFlagCode ? FLAG_FILE(gameState.promptFlagCode) : null;
     const promptCountry = gameState && gameState.promptCountry;
     const promptOptions = gameState && Array.isArray(gameState.options) ? gameState.options : null;
+    const isCapitalPrompt = !!(gameState && gameState.promptKind === 'capital');
     const modeLabel = (target && target.activeMode && MODE_LABELS[target.activeMode]) || 'Playing';
     const cooldownActive = Date.now() < reactCooldownUntil;
 
@@ -211,15 +213,12 @@ function SpectatorScreen({ targetId, setView }) {
 
     return (
         <div className={`quiz-box spectator-screen ${verdictFlash ? `spectator-screen--${verdictFlash}` : ''}`}>
-            <div className="quiz-topbar">
+            <div className="quiz-topbar spectator-topbar">
                 <button className="back-button" onClick={() => setView('friends')} aria-label="Back to friends">
                     <Icon name="arrow_back" />
                 </button>
-                <span className="spectator-watching-pill">
-                    <Icon name="visibility" />
-                    <span className="spectator-watching-pill__text">
-                        Watching {target ? target.username : '…'}
-                    </span>
+                <span className="spectator-live-tag" aria-label="Live">
+                    <span className="spectator-live-tag__dot" /> LIVE
                 </span>
                 {verdictFlash && (
                     <span className={`spectator-verdict-pill is-${verdictFlash}`} aria-live="polite">
@@ -230,15 +229,37 @@ function SpectatorScreen({ targetId, setView }) {
             </div>
 
             <div className="spectator-main">
-                <div className="spectator-mascot-wrap">
-                    <Mascot
-                        size={132}
-                        mood={mascotMood}
-                        cosmetics={target && target.cosmetics}
-                    />
-                    <span className="spectator-mode-pill">
-                        <Icon name="sports_esports" /> {modeLabel}
-                    </span>
+                {/* Hero — who you're watching, their mode, and their live score
+                    & streak gathered into one focal card. */}
+                <div className="spectator-hero">
+                    <div className="spectator-hero__avatar">
+                        <Mascot size={104} mood={mascotMood} cosmetics={target && target.cosmetics} />
+                    </div>
+                    <div className="spectator-hero__info">
+                        <span className="spectator-hero__name">{target ? target.username : '…'}</span>
+                        <span className="spectator-mode-pill">
+                            <Icon name="sports_esports" /> {modeLabel}
+                        </span>
+                        <div className="spectator-hero__stats">
+                            <span className="spectator-stat spectator-stat--score">
+                                <Icon name="star" />
+                                <span className="spectator-stat__value">{gameState ? (gameState.score ?? 0) : '–'}</span>
+                                <span className="spectator-stat__label">score</span>
+                            </span>
+                            <span className="spectator-stat spectator-stat--streak">
+                                <Icon name="local_fire_department" />
+                                <span className="spectator-stat__value">{gameState ? (gameState.streak ?? 0) : '–'}</span>
+                                <span className="spectator-stat__label">streak</span>
+                            </span>
+                            {gameState && gameState.bestStreak ? (
+                                <span className="spectator-stat spectator-stat--best">
+                                    <Icon name="military_tech" />
+                                    <span className="spectator-stat__value">{gameState.bestStreak}</span>
+                                    <span className="spectator-stat__label">best</span>
+                                </span>
+                            ) : null}
+                        </div>
+                    </div>
                 </div>
 
                 {showFinishBanner && (
@@ -265,48 +286,49 @@ function SpectatorScreen({ targetId, setView }) {
                     </div>
                 )}
 
-                {gameState && (
-                    <div className="spectator-stats">
-                        <Pill tone="primary"><Icon name="star" /> {gameState.score ?? 0}</Pill>
-                        <Pill tone="info"><Icon name="local_fire_department" /> {gameState.streak ?? 0}</Pill>
-                        {gameState.bestStreak ? (
-                            <Pill tone="neutral">Best {gameState.bestStreak}</Pill>
-                        ) : null}
-                    </div>
-                )}
-
                 {!gameState && (
                     <p className="auth-hint">Loading match…</p>
                 )}
 
-                {promptFlag && (
-                    <div className="spectator-prompt">
-                        <span className="spectator-prompt-label">Current flag</span>
-                        <img src={promptFlag} alt="" className="spectator-prompt-flag" />
-                    </div>
-                )}
-                {!promptFlag && promptCountry && (
-                    <div className="spectator-prompt">
-                        <span className="spectator-prompt-label">Current country</span>
-                        <span className="spectator-prompt-country">{promptCountry}</span>
-                    </div>
-                )}
+                {/* Live stage — the prompt the spectatee is looking at, plus the
+                    options they're choosing between. */}
+                {gameState && (promptFlag || promptCountry || (promptOptions && promptOptions.length > 0)) && (
+                    <div className="spectator-stage">
+                        {isCapitalPrompt ? (
+                            <div className="spectator-prompt">
+                                <span className="spectator-prompt-label">Naming the capital of</span>
+                                {promptFlag && <img src={promptFlag} alt="" className="spectator-prompt-flag" />}
+                                {promptCountry && <span className="spectator-prompt-country">{promptCountry}</span>}
+                            </div>
+                        ) : promptFlag ? (
+                            <div className="spectator-prompt">
+                                <span className="spectator-prompt-label">Current flag</span>
+                                <img src={promptFlag} alt="" className="spectator-prompt-flag" />
+                            </div>
+                        ) : promptCountry ? (
+                            <div className="spectator-prompt">
+                                <span className="spectator-prompt-label">Current country</span>
+                                <span className="spectator-prompt-country">{promptCountry}</span>
+                            </div>
+                        ) : null}
 
-                {promptOptions && promptOptions.length > 0 && (
-                    <div className="spectator-options" aria-label="Their answer choices">
-                        <span className="spectator-options__label">
-                            <Icon name="list_alt" /> Their choices
-                        </span>
-                        <div className="spectator-options__grid">
-                            {promptOptions.map((opt, i) => (
-                                <span key={`${opt}-${i}`} className="spectator-option-chip">
-                                    <span className="spectator-option-chip__letter">
-                                        {String.fromCharCode(65 + i)}
-                                    </span>
-                                    <span className="spectator-option-chip__text">{opt}</span>
+                        {promptOptions && promptOptions.length > 0 && (
+                            <div className="spectator-options" aria-label="Their answer choices">
+                                <span className="spectator-options__label">
+                                    <Icon name="list_alt" /> Their choices
                                 </span>
-                            ))}
-                        </div>
+                                <div className="spectator-options__grid">
+                                    {promptOptions.map((opt, i) => (
+                                        <span key={`${opt}-${i}`} className="spectator-option-chip">
+                                            <span className="spectator-option-chip__letter">
+                                                {String.fromCharCode(65 + i)}
+                                            </span>
+                                            <span className="spectator-option-chip__text">{opt}</span>
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                     </div>
                 )}
             </div>

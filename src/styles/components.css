@@ -1407,6 +1407,11 @@
     margin-bottom: var(--space-xs);
     flex-wrap: wrap;
     min-height: 44px;
+    /* Sit above the mastery meter / flag image (both z-index:1 quiz-box
+       children) so the SpectatorsBadge's reaction overlay, which floats down
+       out of the topbar, is never painted over by the meter below it. */
+    position: relative;
+    z-index: 30;
 }
 .quiz-topbar > * { flex: 0 0 auto; min-width: 0; }
 .quiz-topbar > .ui-score-bubble { margin-left: auto; }
@@ -2168,9 +2173,38 @@
     background: var(--color-bg-elev-2);
     border: 1px solid var(--color-border);
 }
-.friend-name { font-weight: 700; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.friend-mastered { font-size: var(--fs-xs); color: var(--color-ink-muted); }
+/* Name on top, a wrapping meta line (XP · mastered · presence) below it, so
+   nothing gets squeezed/truncated on a phone when a friend is playing and the
+   row also carries a Watch button. */
+.friend-row__info { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.friend-name { font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.friend-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; row-gap: 4px; }
+.friend-mastered { font-size: var(--fs-xs); color: var(--color-ink-muted); white-space: nowrap; }
+.friend-row__actions { display: flex; align-items: center; gap: 6px; flex: 0 0 auto; }
 .friend-actions { display: flex; gap: 6px; }
+/* The Watch button is the primary action on a playing friend's row — give it a
+   clear pill look instead of a bare icon so it reads as tappable on mobile. */
+.friend-watch-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    border: 1.5px solid color-mix(in srgb, var(--color-primary, #3F6FF6) 45%, transparent);
+    background: color-mix(in srgb, var(--color-primary, #3F6FF6) 12%, transparent);
+    color: var(--color-primary-deep, #2C4FD0);
+    font-weight: 700;
+    font-size: 0.82rem;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: transform 120ms ease, background 120ms ease;
+}
+.friend-watch-btn:hover,
+.friend-watch-btn:focus-visible {
+    transform: translateY(-1px);
+    background: color-mix(in srgb, var(--color-primary, #3F6FF6) 20%, transparent);
+}
+[data-theme='dark'] .friend-watch-btn { color: var(--color-primary, #6E8BFF); }
 .icon-button { border: none; background: transparent; color: var(--color-ink-soft); cursor: pointer; padding: 4px; border-radius: var(--radius-md); }
 .icon-button:hover { background: var(--color-bg-soft); color: var(--color-danger); }
 
@@ -2908,6 +2942,38 @@
    when there's something to claim so the badge isn't the only signal. */
 .quests-button.has-claims { color: var(--color-accent-deep, #ffb648); }
 .quests-button.has-claims:hover { background: var(--color-bg-soft); }
+
+/* FriendsButton — reuses .bell-button base. When friends are playing right now
+   the icon goes green and a live count badge pulses, so at a glance (e.g. the
+   moment you log in) you can see who's active and jump in to spectate. */
+.friends-button.is-active {
+    color: var(--color-success-deep, #19A36B);
+    border-color: color-mix(in srgb, var(--color-success-deep, #19A36B) 45%, var(--color-border));
+}
+.friends-button.is-active:hover { background: var(--color-bg-soft); }
+.friends-button__badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: var(--radius-pill);
+    background: var(--color-success-deep, #19A36B);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 0 2px var(--color-bg, #fff);
+    animation: friends-badge-pop 1.8s ease-in-out infinite;
+}
+@keyframes friends-badge-pop {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.14); }
+}
+[data-theme='dark'] .friends-button__badge { box-shadow: 0 0 0 2px var(--color-bg-elev-1, #1c1c2b); }
 
 /* Day-pip strip for the login chest — 7 pips, today highlighted, Day 7 sparkles. */
 .login-chest-pips { display: flex; gap: 6px; justify-content: center; }
@@ -3684,6 +3750,17 @@
 .mp-hud { display: flex; gap: var(--space-sm); flex-wrap: wrap; justify-content: center; }
 .mp-question { display: flex; flex-direction: column; align-items: center; gap: 6px; }
 .mp-game .flag-image { max-height: 180px; }
+/* Capitals content: flag + country name above the "what is its capital?" hint. */
+.mp-capital-prompt { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.mp-capital-prompt .flag-image { max-height: 150px; }
+.mp-capital-country {
+    margin: 0;
+    font-size: clamp(1.2rem, 4.5vw, 1.6rem);
+    font-weight: 800;
+    color: var(--color-ink);
+    text-align: center;
+    line-height: 1.15;
+}
 
 .mp-scoreboard { width: 100%; display: flex; flex-direction: column; gap: 5px; }
 .mp-score-row {
@@ -5266,11 +5343,11 @@
 }
 
 /* ==== Friends presence (Eye icon + "Playing X") ==== */
-.friend-row--playing .friend-name {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-xs);
-    flex-wrap: wrap;
+/* A playing friend's row gets a subtle primary-tinted border so active friends
+   stand out in the list at a glance. */
+.friend-row--playing {
+    border-color: color-mix(in srgb, var(--color-success-deep, #19A36B) 40%, var(--color-border));
+    background: color-mix(in srgb, var(--color-success-deep, #19A36B) 6%, var(--color-bg-elev-2));
 }
 .friend-presence-tag {
     display: inline-flex;
@@ -5293,13 +5370,6 @@
 @keyframes presence-pulse {
     0%, 100% { opacity: 1; }
     50% { opacity: 0.35; }
-}
-.friend-watch-btn {
-    color: var(--color-primary, #3F6FF6);
-}
-.friend-watch-btn:hover,
-.friend-watch-btn:focus-visible {
-    background: color-mix(in srgb, var(--color-primary, #3F6FF6) 16%, transparent);
 }
 
 /* ==== Spectators badge (target-side, in-game corner widget) ==== */
@@ -5328,6 +5398,40 @@
 }
 .spectators-badge-count {
     font-variant-numeric: tabular-nums;
+    font-weight: 800;
+}
+.spectators-badge-eye {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+/* Expanding ring behind the eye so "you're being watched" reads as live. */
+.spectators-badge-pulse {
+    position: absolute;
+    inset: -4px;
+    border-radius: 999px;
+    border: 2px solid color-mix(in srgb, var(--color-info, #3F6FF6) 60%, transparent);
+    animation: spectators-badge-ping 1.6s var(--ease-out-quart, ease-out) infinite;
+    pointer-events: none;
+}
+@keyframes spectators-badge-ping {
+    0%   { transform: scale(0.65); opacity: 0.9; }
+    70%  { opacity: 0; }
+    100% { transform: scale(1.7); opacity: 0; }
+}
+.spectators-badge-label {
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+@media (max-width: 480px) {
+    .spectators-badge-label { display: none; }
+    /* Give incoming emotes/messages more room on a phone so they read clearly
+       while the player is mid-answer. */
+    .spectators-badge-reactions { max-width: min(320px, 88vw); }
+    .spectators-badge-reaction { padding: 7px 11px 7px 7px; }
 }
 .spectators-badge-popover {
     position: absolute;
@@ -5482,12 +5586,123 @@
     text-overflow: ellipsis;
     white-space: nowrap;
 }
+/* Pulsing "LIVE" tag in the spectator topbar. */
+.spectator-live-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--color-danger, #E5414C) 16%, transparent);
+    color: var(--color-danger-deep, #C0303A);
+    font-weight: 800;
+    font-size: 0.78rem;
+    letter-spacing: 0.06em;
+}
+.spectator-live-tag__dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--color-danger, #E5414C);
+    animation: presence-pulse 1.4s ease-in-out infinite;
+}
+[data-theme='dark'] .spectator-live-tag { color: var(--color-danger, #FF6B74); }
+
 .spectator-main {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: var(--space-sm);
     width: 100%;
+}
+
+/* Hero — the focal card: who you're watching, their mode, and their live
+   score / streak gathered together. */
+.spectator-hero {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    width: 100%;
+    max-width: 460px;
+    padding: var(--space-md);
+    border-radius: var(--radius-lg);
+    background: linear-gradient(135deg,
+        color-mix(in srgb, var(--color-primary) 13%, var(--color-bg-elev-1)),
+        var(--color-bg-elev-1));
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-sm);
+}
+.spectator-hero__avatar {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.spectator-hero__info {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+}
+.spectator-hero__name {
+    font-size: clamp(1.1rem, 4.5vw, 1.4rem);
+    font-weight: 800;
+    color: var(--color-ink);
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.spectator-hero__stats {
+    display: flex;
+    align-items: stretch;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.spectator-stat {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 58px;
+    padding: 6px 12px;
+    border-radius: 12px;
+    background: var(--color-bg-elev-2);
+    border: 1px solid var(--color-border);
+}
+.spectator-stat .material-symbols-rounded { font-size: 18px; }
+.spectator-stat--score .material-symbols-rounded { color: var(--color-primary); }
+.spectator-stat--streak .material-symbols-rounded { color: var(--color-accent, #F5A524); }
+.spectator-stat--best .material-symbols-rounded { color: var(--color-success-deep, #19A36B); }
+.spectator-stat__value {
+    font-size: 1.15rem;
+    font-weight: 800;
+    line-height: 1.1;
+    color: var(--color-ink);
+    font-variant-numeric: tabular-nums;
+}
+.spectator-stat__label {
+    font-size: 0.6rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-ink-soft);
+}
+
+/* Stage — the panel holding the current prompt + the choices the spectatee is
+   weighing. */
+.spectator-stage {
+    width: 100%;
+    max-width: 460px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-md);
+    border-radius: var(--radius-lg);
+    background: var(--color-bg-elev-1);
+    border: 1px solid var(--color-border);
 }
 .spectator-mascot-wrap {
     display: flex;
@@ -5855,6 +6070,10 @@
 @media (max-width: 540px) {
     .spectator-screen { gap: var(--space-sm); }
     .spectator-watching-pill { padding: 3px 10px; font-size: 0.85rem; max-width: 50vw; }
+    .spectator-hero { padding: var(--space-sm); gap: var(--space-sm); }
+    .spectator-stage { padding: var(--space-sm); }
+    .spectator-stat { min-width: 50px; padding: 5px 9px; }
+    .spectator-stat__value { font-size: 1.05rem; }
     .spectator-mode-pill { font-size: 0.78rem; padding: 2px 8px; }
     .spectator-prompt-flag { width: clamp(110px, 32vw, 140px); }
     .spectator-options__grid { grid-template-columns: 1fr; }

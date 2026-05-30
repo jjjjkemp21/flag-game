@@ -62,7 +62,7 @@ function FreeResponseQuiz({
         promptFlagCode: currentFlag ? currentFlag.code : undefined,
         // tri-state for the spectator mascot's mood (cheer / sad / neutral).
         lastAnswerCorrect:
-            flashColor === 'correct' ? true : flashColor === 'wrong' ? false : null,
+            flashColor === 'correct' ? true : flashColor === 'incorrect' ? false : null,
     });
 
     const navigateBack = () => {

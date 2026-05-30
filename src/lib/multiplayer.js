@@ -92,13 +92,18 @@ function flagPool(flagsData, scope, territories = false) {
 // supported by the loaded 3D globe) so we only ask about countries the globe
 // can actually render. Until that's known the engine still builds — get(i) just
 // skips ineligible items.
-export function makeEngine({ config, seed, flagsData, languagesData, phrasesData, globeIso2 }) {
+// For `content: 'capitals'` the caller passes `capitalsData` (the raw
+// public/data/capitals.json array of { country, capital }); we join it against
+// flagsData for the flag image + region scoping.
+export function makeEngine({ config, seed, flagsData, languagesData, phrasesData, globeIso2, capitalsData }) {
     const FLAG_BASE = './assets/flags/';
     const isLang = config.content === 'languages';
     const isGlobe = config.content === 'globe';
+    const isCapitals = config.content === 'capitals';
     let pool;
     if (isLang) pool = languagesData || [];
     else if (isGlobe) pool = globePool(flagsData, config.scope, globeIso2, config.territories);
+    else if (isCapitals) pool = capitalsPool(flagsData, capitalsData, config.scope, config.territories);
     else pool = flagPool(flagsData, config.scope, config.territories);
     const n = pool.length;
     const orders = new Map();
@@ -124,6 +129,44 @@ export function makeEngine({ config, seed, flagsData, languagesData, phrasesData
                 options = shuffleArr([answer, ...distractors], qRng);
             }
             return { kind: 'language', phrase, answer, options };
+        }
+
+        if (isCapitals) {
+            // Prompt shows the flag + country name; the answer is the capital
+            // city. Distractors prefer same-region capitals (a harder, more
+            // plausible set), deduped by capital and country so two cities with
+            // the same name never collide. Seeded so every client sees the same
+            // four options in the same order.
+            const answer = item.capital;
+            let options = null;
+            if (config.questionType === 'mc') {
+                const sameRegion = [];
+                const otherRegion = [];
+                for (const c of pool) {
+                    if (c.capital === answer || c.country === item.country) continue;
+                    (c.region === item.region ? sameRegion : otherRegion).push(c);
+                }
+                const ordered = [...shuffleArr(sameRegion, qRng), ...shuffleArr(otherRegion, qRng)];
+                const usedCapitals = new Set([answer]);
+                const usedCountries = new Set([item.country]);
+                const distractors = [];
+                for (const c of ordered) {
+                    if (distractors.length >= 3) break;
+                    if (usedCapitals.has(c.capital) || usedCountries.has(c.country)) continue;
+                    usedCapitals.add(c.capital);
+                    usedCountries.add(c.country);
+                    distractors.push(c.capital);
+                }
+                options = shuffleArr([answer, ...distractors], qRng);
+            }
+            return {
+                kind: 'capital',
+                image: `${FLAG_BASE}${item.file}`,
+                country: item.country,
+                answer,
+                options,
+                aliases: [],
+            };
         }
 
         if (isGlobe) {
@@ -155,6 +198,41 @@ export function makeEngine({ config, seed, flagsData, languagesData, phrasesData
     };
 
     return { count: n, get };
+}
+
+// Capitals pool: join capitals.json (country -> capital) against flagsData for
+// the flag file + region tag, drop entries whose capital equals the country
+// (gives itself away — e.g. Singapore), then apply the same territory + region
+// scoping as the flag pool. Sorted by code so every client builds an identical
+// deterministic pool.
+function capitalsPool(flagsData, capitalsData, scope, territories = false) {
+    const byCountry = new Map();
+    for (const f of (flagsData || [])) {
+        if (f && f.code && f.file && f.country) byCountry.set(f.country, f);
+    }
+    let list = (capitalsData || [])
+        .filter((c) => c && c.capital && c.country && c.capital !== c.country)
+        .map((c) => {
+            const f = byCountry.get(c.country);
+            if (!f) return null;
+            const tag = (f.tags || []).find((t) => t.startsWith('region:'));
+            return {
+                code: f.code,
+                country: c.country,
+                capital: c.capital,
+                file: f.file,
+                region: tag ? tag.slice('region:'.length) : 'territory',
+                tags: f.tags || [],
+            };
+        })
+        .filter(Boolean);
+    if (!territories && scope !== 'territory') {
+        list = list.filter((e) => !e.tags.includes('region:territory'));
+    }
+    const scoped = scope && scope !== 'all'
+        ? list.filter((e) => e.tags.includes(`region:${scope}`))
+        : list;
+    return [...(scoped.length ? scoped : list)].sort((a, b) => a.code.localeCompare(b.code));
 }
 
 // Globe pool: same scoping as flags, then filter to entries whose ISO-A2 code

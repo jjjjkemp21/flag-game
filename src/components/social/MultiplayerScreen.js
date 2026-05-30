@@ -52,6 +52,8 @@ function ConfigEditor({ config, regions, disabled, onChange }) {
     };
 
     const isGlobe = config.content === 'globe';
+    const isCapitals = config.content === 'capitals';
+    const isCountryPool = config.content === 'flags' || isGlobe || isCapitals;
 
     return (
         <div className="mp-config">
@@ -89,8 +91,12 @@ function ConfigEditor({ config, regions, disabled, onChange }) {
                     <button type="button" disabled={disabled} className={`mp-chip ${config.content === 'globe' ? 'is-on' : ''}`} onClick={() => set({ content: 'globe' })}>
                         <Icon name="public" /> Globe
                     </button>
+                    <button type="button" disabled={disabled} className={`mp-chip ${config.content === 'capitals' ? 'is-on' : ''}`} onClick={() => set({ content: 'capitals' })}>
+                        <Icon name="location_city" /> Capitals
+                    </button>
                 </div>
                 {isGlobe && <span className="mp-field__hint">Find the flag's country on the 3D globe.</span>}
+                {isCapitals && <span className="mp-field__hint">See a flag &amp; country — name its capital city.</span>}
             </div>
 
             {!isGlobe && (
@@ -122,22 +128,22 @@ function ConfigEditor({ config, regions, disabled, onChange }) {
                 </div>
             )}
 
-            {(config.content === 'flags' || config.content === 'globe') && (
+            {isCountryPool && (
                 <div className="mp-field">
-                    <span className="mp-field__label">{isGlobe ? 'Which countries' : 'Which flags'}</span>
+                    <span className="mp-field__label">{config.content === 'flags' ? 'Which flags' : 'Which countries'}</span>
                     <select
                         className="auth-field__input"
                         value={config.scope}
                         disabled={disabled}
                         onChange={(e) => set({ scope: e.target.value })}
                     >
-                        <option value="all">{isGlobe ? 'All countries' : 'All flags'}</option>
+                        <option value="all">{config.content === 'flags' ? 'All flags' : 'All countries'}</option>
                         {regions.map((r) => <option key={r} value={r}>{titleCase(r)}</option>)}
                     </select>
                 </div>
             )}
 
-            {(config.content === 'flags' || config.content === 'globe') && config.scope === 'all' && (
+            {isCountryPool && config.scope === 'all' && (
                 <div className="mp-field">
                     <span className="mp-field__label">Territories</span>
                     <div className="mp-choices">
@@ -162,7 +168,9 @@ function ConfigEditor({ config, regions, disabled, onChange }) {
             ) : config.mode === 'race' ? (
                 <div className="mp-field">
                     <span className="mp-field__label">
-                        {config.content === 'languages' ? 'Languages' : config.content === 'globe' ? 'Countries' : 'Flags'} to win:
+                        {config.content === 'languages' ? 'Languages'
+                            : config.content === 'capitals' ? 'Capitals'
+                            : config.content === 'globe' ? 'Countries' : 'Flags'} to win:
                         {' '}<strong>{config.target}</strong>
                     </span>
                     <input type="range" min="5" max="100" step="5" value={config.target} disabled={disabled}
@@ -411,11 +419,15 @@ function LobbyRoom({ lobby, code, flagsData, onLeave, refresh, setState }) {
 function ConfigSummary({ config }) {
     const meta = modeMeta(config.mode);
     const isGlobe = config.content === 'globe';
-    const contentIcon = config.content === 'languages' ? 'translate' : isGlobe ? 'public' : 'flag';
+    const isCapitals = config.content === 'capitals';
+    const contentIcon = config.content === 'languages' ? 'translate'
+        : isGlobe ? 'public'
+        : isCapitals ? 'location_city'
+        : 'flag';
     const contentLabel = config.content === 'languages'
         ? 'Languages'
         : (config.scope === 'all'
-            ? (isGlobe ? 'All countries' : 'All flags')
+            ? (config.content === 'flags' ? 'All flags' : 'All countries')
             : titleCase(config.scope));
     return (
         <div className="mp-summary">
@@ -446,10 +458,13 @@ function Game({ lobby, code, flagsData, meId, watchers, lastReactionId }) {
     const audio = useAudio();
     const config = lobby.config;
     const isGlobe = config.content === 'globe';
+    const isCapitals = config.content === 'capitals';
     const [lang, setLang] = useState({ languages: null, phrases: null, loading: config.content === 'languages' });
     // Set of ISO-A2 codes the loaded globe can render. Until ready we can't
     // build a faithful pool, so the engine waits.
     const [globeIso2, setGlobeIso2] = useState(null);
+    // Raw capitals.json (country -> capital); joined to flagsData by the engine.
+    const [capitalsData, setCapitalsData] = useState(null);
 
     useEffect(() => {
         if (config.content !== 'languages') return;
@@ -468,18 +483,33 @@ function Game({ lobby, code, flagsData, meId, watchers, lastReactionId }) {
         return () => { cancelled = true; };
     }, [config.content]);
 
+    useEffect(() => {
+        if (config.content !== 'capitals') return undefined;
+        let cancelled = false;
+        (async () => {
+            try {
+                const c = await fetch('./data/capitals.json').then((r) => r.json());
+                if (!cancelled) setCapitalsData(Array.isArray(c) ? c : []);
+            } catch (_) {
+                if (!cancelled) setCapitalsData([]);
+            }
+        })();
+        return () => { cancelled = true; };
+    }, [config.content]);
+
     // Keyed on stable primitives (not the poll-fresh config object) so the engine
     // builds once per match rather than on every poll.
     const engine = useMemo(() => {
         if (config.content === 'languages' && lang.loading) return null;
         if (isGlobe && !globeIso2) return null;
+        if (isCapitals && !capitalsData) return null;
         return makeEngine({
             config, seed: lobby.seed, flagsData,
             languagesData: lang.languages, phrasesData: lang.phrases,
-            globeIso2,
+            globeIso2, capitalsData,
         });
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [config.content, config.scope, config.questionType, lobby.seed, flagsData, lang.loading, globeIso2]);
+    }, [config.content, config.scope, config.questionType, lobby.seed, flagsData, lang.loading, globeIso2, capitalsData]);
 
     const [qIndex, setQIndex] = useState(0);
     const [score, setScore] = useState(0);
@@ -742,6 +772,12 @@ function Game({ lobby, code, flagsData, meId, watchers, lastReactionId }) {
                     {question.kind === 'flag' ? (
                         <motion.img key={`${qIndex}-img`} src={question.image} alt="Flag" className="flag-image"
                             initial={{ opacity: 0, scale: 0.94 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.2 }} />
+                    ) : question.kind === 'capital' ? (
+                        <motion.div key={`${qIndex}-cap`} className="mp-capital-prompt"
+                            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
+                            <img src={question.image} alt="Flag" className="flag-image" />
+                            <h2 className="mp-capital-country">{question.country}</h2>
+                        </motion.div>
                     ) : (
                         <motion.h2 key={`${qIndex}-ph`} className="phrase-text"
                             initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
@@ -749,6 +785,7 @@ function Game({ lobby, code, flagsData, meId, watchers, lastReactionId }) {
                         </motion.h2>
                     )}
                     {question.kind === 'language' && <p className="menu-subtitle">Which language is this?</p>}
+                    {question.kind === 'capital' && <p className="menu-subtitle">What is its capital?</p>}
                 </div>
             )}
 

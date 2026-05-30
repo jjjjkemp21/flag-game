@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Icon from '../common/Icon';
 import { ChoiceCard, ScoreBubble } from '../ui/index';
@@ -30,6 +30,7 @@ import {
     selectNextCapital,
     capitalDistractors,
     availableCapitalCodes,
+    deckCapitalCodes,
 } from '../../lib/capitals';
 
 const IMAGE_BASE_URL = './assets/flags/';
@@ -41,9 +42,24 @@ const OPTIONS_PER_QUESTION = 4;
 // choices. Mastery is tracked per country in its own track (src/lib/capitals.js),
 // completely separate from flag-recognition mastery — exactly like Globe mode's
 // geography axis. Shares the standard XP / Bucks / streak / chest loop.
-function CapitalsQuiz({ setView, includeTerritories = false }) {
+function CapitalsQuiz({ setView, includeTerritories = false, deck = { type: 'all', value: null } }) {
     const capitalsState = useCapitals();
     const catalogReady = capitalsState.catalogLoaded;
+
+    // Question pool = the chosen deck, snapshotted once the catalog is ready so a
+    // "Needs Review" run keeps its codes for the whole session instead of
+    // shrinking as each one is answered (matches the flag quizzes). Distractors
+    // stay broad — every other available capital plus the deck itself — so a
+    // small region still yields four plausible options.
+    const questionCodes = useMemo(
+        () => (catalogReady ? deckCapitalCodes(deck, includeTerritories) : []),
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [catalogReady, deck.type, deck.value, includeTerritories]
+    );
+    const distractorCodes = useMemo(() => {
+        if (!catalogReady) return [];
+        return [...new Set([...availableCapitalCodes(includeTerritories), ...questionCodes])];
+    }, [catalogReady, includeTerritories, questionCodes]);
 
     const [current, setCurrent] = useState(null); // { code, country, capital, flagFile, region }
     const [options, setOptions] = useState([]);
@@ -64,12 +80,19 @@ function CapitalsQuiz({ setView, includeTerritories = false }) {
     const profile = useProfile();
     const recentRef = useRef([]);
 
-    // The prompt names the country, never its capital, so it's safe to share
-    // with spectators — but for parity with the other quizzes we only surface
-    // score + streak (no prompt payload).
+    // The prompt names the country (never its capital), so it's safe to share
+    // with spectators — surface the flag + country + the option set so a
+    // watching friend can follow along, plus a tri-state verdict for the
+    // glance-able correct/wrong flash (mirrors the flag MC quiz).
     const isPlaying = catalogReady && !!current;
     const { watchers, lastReactionId } = useQuizPresence(isPlaying ? 'capitals-quiz' : null, {
         score, streak,
+        promptKind: 'capital',
+        promptFlagCode: current ? current.code : undefined,
+        promptCountry: current ? current.country : undefined,
+        lastAnswerCorrect:
+            flashColor === 'correct' ? true : flashColor === 'incorrect' ? false : null,
+        options: options && options.length ? options : undefined,
     });
 
     // Warm the catalog (capitals.json joined to flags.json) on mount.
@@ -83,20 +106,19 @@ function CapitalsQuiz({ setView, includeTerritories = false }) {
         setXpGain(null);
         setShowConfetti(false);
 
-        const available = availableCapitalCodes(includeTerritories);
-        if (available.length < OPTIONS_PER_QUESTION) { setCurrent(null); return; }
+        if (!questionCodes.length || distractorCodes.length < OPTIONS_PER_QUESTION) { setCurrent(null); return; }
 
-        const code = selectNextCapital(available, recentRef.current);
+        const code = selectNextCapital(questionCodes, recentRef.current);
         const entry = getCapitalById(code);
         if (!entry) { setCurrent(null); return; }
         recentRef.current = [...recentRef.current.slice(-4), code];
 
-        const distractors = capitalDistractors(code, available, OPTIONS_PER_QUESTION - 1);
+        const distractors = capitalDistractors(code, distractorCodes, OPTIONS_PER_QUESTION - 1);
         const shuffled = [entry.capital, ...distractors].sort(() => Math.random() - 0.5);
         setCurrent(entry);
         setMasteryStreak(getCapitalStat(code).streak || 0);
         setOptions(shuffled);
-    }, [includeTerritories]);
+    }, [questionCodes, distractorCodes]);
 
     // Kick off the first question once the catalog is ready.
     useEffect(() => {
@@ -104,7 +126,7 @@ function CapitalsQuiz({ setView, includeTerritories = false }) {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [catalogReady]);
 
-    const navigateBack = () => setView('menu');
+    const navigateBack = () => setView('capitals-menu');
 
     // End-of-run path: roll a chest reflecting the session's accuracy + max
     // streak, and record the session's correct count as the Capitals high score
@@ -251,7 +273,9 @@ function CapitalsQuiz({ setView, includeTerritories = false }) {
                 <Mascot size={120} mood="cheer" cosmetics={profile.cosmetics} />
                 <h1 className="text-center">No capitals to show.</h1>
                 <p className="text-center" style={{ color: 'var(--color-ink-soft)' }}>
-                    Try enabling territories in Settings for more.
+                    {deck.type === 'review'
+                        ? 'Nothing due for review in this deck — come back later.'
+                        : 'Try enabling territories in Settings for more.'}
                 </p>
             </div>
         );

@@ -97,10 +97,54 @@ export function getCapitalById(code) { return state.catalog.find((c) => c.code =
 export function getCapitalName(code) { const c = getCapitalById(code); return c ? c.country : code; }
 
 // Codes the quiz may ask about, honouring the "include territories" toggle.
+// This is the broad pool used for distractors — question selection narrows it
+// further to the chosen deck (see deckCapitalCodes).
 export function availableCapitalCodes(includeTerritories = false) {
     return state.catalog
         .filter((c) => includeTerritories || c.region !== 'territory')
         .map((c) => c.code);
+}
+
+// Regions present in the catalog (sorted), honouring the territory toggle — the
+// "By Region" tiles in the Capitals deck picker.
+export function capitalRegions(includeTerritories = false) {
+    const set = new Set();
+    for (const c of state.catalog) {
+        if (!includeTerritories && c.region === 'territory') continue;
+        set.add(c.region);
+    }
+    return [...set].sort();
+}
+
+// Codes for a chosen deck: { type: 'all' | 'review' | 'region', value }.
+// 'all' / 'review' honour the territory toggle; an explicit region pick reads
+// that region in full (the player asked for it) — mirrors the flag QuizMenu.
+export function deckCapitalCodes(deck = { type: 'all' }, includeTerritories = false) {
+    const now = Date.now();
+    let pool;
+    if (deck && deck.type === 'region') {
+        pool = state.catalog.filter((c) => c.region === deck.value);
+    } else {
+        pool = state.catalog.filter((c) => includeTerritories || c.region !== 'territory');
+        if (deck && deck.type === 'review') {
+            pool = pool.filter((c) => { const nr = statOf(c.code).nextReview; return nr != null && nr <= now; });
+        }
+    }
+    return pool.map((c) => c.code).filter(Boolean);
+}
+
+// Per-deck mastery stats for the deck picker tiles: { mastered, total, needsReview }.
+export function capitalDeckStats(deck = { type: 'all' }, includeTerritories = false) {
+    const codes = deckCapitalCodes(deck, includeTerritories);
+    const now = Date.now();
+    let mastered = 0;
+    let needsReview = 0;
+    for (const code of codes) {
+        const s = statOf(code);
+        if ((s.streak || 0) > MASTERY_STREAK) mastered += 1;
+        if (s.nextReview != null && s.nextReview <= now) needsReview += 1;
+    }
+    return { mastered, total: codes.length, needsReview };
 }
 
 // ---- Load / reset ----------------------------------------------------------

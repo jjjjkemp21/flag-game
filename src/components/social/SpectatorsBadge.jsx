@@ -61,10 +61,14 @@ function SpectatorsBadge({ watchers, lastReactionId }) {
                 type="button"
                 className="spectators-badge-button"
                 onClick={() => setExpanded((v) => !v)}
-                aria-label={`${watchers} watching`}
+                aria-label={`${watchers} ${watchers === 1 ? 'friend' : 'friends'} watching`}
             >
-                <Icon name="visibility" />
+                <span className="spectators-badge-eye">
+                    <Icon name="visibility" />
+                    <span className="spectators-badge-pulse" aria-hidden="true" />
+                </span>
                 <span className="spectators-badge-count">{watchers}</span>
+                <span className="spectators-badge-label">watching</span>
             </button>
 
             {expanded && spectators.length > 0 && (

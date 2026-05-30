@@ -7,6 +7,7 @@ import MultipleChoiceQuiz from './components/quizzes/MultipleChoiceQuiz';
 import FreeResponseQuiz from './components/quizzes/FreeResponseQuiz';
 import Settings from './components/profile/Settings';
 import QuizMenu from './components/quizzes/QuizMenu';
+import CapitalsMenu from './components/quizzes/CapitalsMenu';
 import BonusMenu from './components/quizzes/BonusMenu';
 import AuthScreen from './components/profile/AuthScreen';
 import Leaderboard from './components/social/Leaderboard';
@@ -98,6 +99,7 @@ function App() {
     const [view, setView] = useState('menu');
     const [quizMode, setQuizMode] = useState(null);
     const [quizCategory, setQuizCategory] = useState({ type: 'all', value: null });
+    const [capitalsDeck, setCapitalsDeck] = useState({ type: 'all', value: null });
     const [tutorialActive, setTutorialActive] = useState(false);
     // Which friend the user is currently spectating. Set when an Eye icon is
     // clicked in the Friends list; consumed by the 'spectator' view case.
@@ -581,10 +583,18 @@ function App() {
                         <LanguageQuiz setView={setView} />
                     </Suspense>
                 );
+            case 'capitals-menu':
+                return (
+                    <CapitalsMenu
+                        setView={setView}
+                        setCapitalsDeck={setCapitalsDeck}
+                        includeTerritories={includeTerritories}
+                    />
+                );
             case 'capitals-quiz':
                 return (
                     <Suspense fallback={<LazyFallback label="Loading Capitals Quiz…" />}>
-                        <CapitalsQuiz setView={setView} includeTerritories={includeTerritories} />
+                        <CapitalsQuiz setView={setView} includeTerritories={includeTerritories} deck={capitalsDeck} />
                     </Suspense>
                 );
             case 'bonus-menu':

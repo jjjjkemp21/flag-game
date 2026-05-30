@@ -28,6 +28,7 @@ const HEARTBEAT_BODY_LIMIT = 4096; // body is already capped by express.json; th
 const VALID_MODES = new Set([
     'multiple-choice', 'free-response', 'mirror', 'flash', 'reverse-mc',
     'globe', 'pixelated-quiz', 'frenzy-quiz', 'longest-route-quiz', 'language-quiz',
+    'capitals-quiz',
     'multiplayer',
 ]);
 

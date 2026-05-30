@@ -13,9 +13,12 @@ export const spectate = {
     kick:  (userId, spectatorId) => api.post(`/spectate/${userId}/kick/${spectatorId}`),
 };
 
-// Tight enough that reactions and verdict pings feel near-real-time on
-// mobile, loose enough that the Pi isn't drowning in spectator polls.
-const POLL_MS = 800;
+// Fast enough that the spectatee's score / streak / current prompt and
+// incoming reactions feel near-real-time (the watched player heartbeats at
+// 0.1s while spectated, so this is the delivery half of that pipeline), while
+// still bounded so a handful of spectators don't drown the Pi. Only ever runs
+// while a spectate session is actually open, which is rare.
+const POLL_MS = 300;
 
 // Spectator-side poll hook. Returns the latest state, errors, and a `refresh`
 // for manual pulls. `since` is tracked internally so the caller doesn't have

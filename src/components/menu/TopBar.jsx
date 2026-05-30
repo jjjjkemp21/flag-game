@@ -8,6 +8,7 @@ import { ACHIEVEMENTS_BY_ID } from '../../lib/achievements';
 import AtlasBucksIcon from '../../assets/illustrations/AtlasBucks';
 import AchievementBadge from '../profile/AchievementBadge';
 import InboxButton from '../social/InboxButton';
+import FriendsButton from '../social/FriendsButton';
 import QuestsButton from '../economy/QuestsButton';
 
 function TopBar({ setView, view }) {
@@ -53,6 +54,8 @@ function TopBar({ setView, view }) {
                 )}
 
                 {isAuthed && <QuestsButton setView={setView} />}
+
+                {isAuthed && <FriendsButton setView={setView} />}
 
                 {isAuthed && <InboxButton />}
 
