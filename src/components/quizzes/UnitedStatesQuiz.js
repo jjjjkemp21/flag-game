@@ -28,21 +28,25 @@ import {
     recordUsStateAnswer,
     selectNextUsState,
     usCapitalDistractors,
+    usStateNameDistractors,
     availableUsStateCodes,
     deckUsStateCodes,
 } from '../../lib/usStates';
+
+const FLAG_IMAGE_BASE = './assets/state-flags/';
+const SUBMODE_CYCLE = ['map', 'capitals', 'flags'];
 
 const STREAK_KEY = 'us-states';
 const OPTIONS_PER_QUESTION = 4;
 
 // United States quiz screen — runs the same loop the other modes use (streak,
-// XP, Bucks, end-of-run chest), but the prompt swaps between two sub-modes
+// XP, Bucks, end-of-run chest), but the prompt swaps between three sub-modes
 // driven by the subMode prop:
 //   'map'      — state name shown, player clicks the right state on the SVG.
 //   'capitals' — state name shown, player picks its capital from four options.
-//   'mixed'    — alternates between map + capitals each question, weighting
-//                whichever sub-mode the player needs more practice on.
-// All three share one per-state mastery stat (so progress grows no matter the
+//   'flags'    — state flag shown, player picks the state name from four options.
+//   'mixed'    — cycles through map → capitals → flags each question.
+// All four share one per-state mastery stat (so progress grows no matter the
 // lens — same trick Globe's find/name pair uses).
 function UnitedStatesQuiz({ setView, subMode = 'map', deck = { type: 'all', value: null } }) {
     const usState = useUsStates();
@@ -85,9 +89,15 @@ function UnitedStatesQuiz({ setView, subMode = 'map', deck = { type: 'all', valu
     useEffect(() => { ensureUsStatesCatalog(); }, []);
 
     const isMap = activeMode === 'map';
+    const isFlags = activeMode === 'flags';
+    const isCapitals = activeMode === 'capitals';
     // The XP-mode key tells `awardForAnswer` / `penaltyForAnswer` which rate to
-    // use. The two US sub-modes map onto their server-side cousins.
-    const xpModeKey = isMap ? 'us-states-map' : 'us-states-capitals';
+    // use. The three US sub-modes map onto their server-side cousins.
+    const xpModeKey = isMap
+        ? 'us-states-map'
+        : isFlags
+            ? 'us-states-flags'
+            : 'us-states-capitals';
 
     const nextQuestion = useCallback(() => {
         setFlashColor(null);
@@ -106,9 +116,9 @@ function UnitedStatesQuiz({ setView, subMode = 'map', deck = { type: 'all', valu
         recentRef.current = [...recentRef.current.slice(-4), code];
 
         // Pick the lens for this question. Fixed sub-modes always use their own
-        // mode; 'mixed' alternates so the player gets a fair split.
+        // mode; 'mixed' cycles map → capitals → flags so each gets a fair share.
         let modeForThisQuestion = subMode === 'mixed'
-            ? (mixedTurnRef.current % 2 === 0 ? 'map' : 'capitals')
+            ? SUBMODE_CYCLE[mixedTurnRef.current % SUBMODE_CYCLE.length]
             : subMode;
         mixedTurnRef.current += 1;
         setActiveMode(modeForThisQuestion);
@@ -117,6 +127,11 @@ function UnitedStatesQuiz({ setView, subMode = 'map', deck = { type: 'all', valu
             if (distractorCodes.length < OPTIONS_PER_QUESTION) { setCurrent(null); return; }
             const distractors = usCapitalDistractors(code, distractorCodes, OPTIONS_PER_QUESTION - 1);
             const shuffled = [entry.capital, ...distractors].sort(() => Math.random() - 0.5);
+            setOptions(shuffled);
+        } else if (modeForThisQuestion === 'flags') {
+            if (distractorCodes.length < OPTIONS_PER_QUESTION) { setCurrent(null); return; }
+            const distractors = usStateNameDistractors(code, distractorCodes, OPTIONS_PER_QUESTION - 1);
+            const shuffled = [entry.name, ...distractors].sort(() => Math.random() - 0.5);
             setOptions(shuffled);
         } else {
             setOptions([]);
@@ -177,11 +192,9 @@ function UnitedStatesQuiz({ setView, subMode = 'map', deck = { type: 'all', valu
             bumpQuestMetric('capitals_play', 1);
             bumpQuestMetric('any_correct', 1);
             reportStreakHwm(next);
-            setFeedback({
-                text: isMap ? 'Correct! The state is:' : 'Correct! The capital is:',
-                answer: isMap ? current.name : current.capital,
-                tone: 'green',
-            });
+            const verb = isCapitals ? 'The capital is:' : 'The state is:';
+            const answerStr = isCapitals ? current.capital : current.name;
+            setFeedback({ text: `Correct! ${verb}`, answer: answerStr, tone: 'green' });
             setShowConfetti(true);
             if (before <= MASTERY_STREAK && after > MASTERY_STREAK) audio.play('levelUp');
         } else {
@@ -192,15 +205,13 @@ function UnitedStatesQuiz({ setView, subMode = 'map', deck = { type: 'all', valu
             const penalty = penaltyForAnswer(xpModeKey);
             addEarnedXp(-penalty);
             setXpGain({ amount: -penalty });
-            setFeedback({
-                text: isMap ? 'Incorrect. The state is:' : 'Incorrect. The capital is:',
-                answer: isMap ? current.name : current.capital,
-                tone: 'red',
-            });
+            const verb = isCapitals ? 'The capital is:' : 'The state is:';
+            const answerStr = isCapitals ? current.capital : current.name;
+            setFeedback({ text: `Incorrect. ${verb}`, answer: answerStr, tone: 'red' });
         }
 
         setTimeout(() => { nextQuestion(); }, 2000);
-    }, [current, answered, audio, streak, bestStreak, isMap, xpModeKey, nextQuestion]);
+    }, [current, answered, audio, streak, bestStreak, isCapitals, xpModeKey, nextQuestion]);
 
     const handleMapPick = (code) => {
         if (!current || answered) return;
@@ -208,10 +219,14 @@ function UnitedStatesQuiz({ setView, subMode = 'map', deck = { type: 'all', valu
         resolveAnswer(code === current.code, code);
     };
 
-    const handleCapitalsPick = (option) => {
+    // Used by both the capitals (text option = capital) and flags (text option =
+    // state name) sub-modes — only the option pool differs, the click handler
+    // is identical.
+    const handleOptionPick = (option) => {
         if (!current || answered) return;
+        const correctText = isCapitals ? current.capital : current.name;
         setChosenOption(option);
-        resolveAnswer(option === current.capital, option);
+        resolveAnswer(option === correctText, option);
     };
 
     const handleSkip = () => {
@@ -224,24 +239,24 @@ function UnitedStatesQuiz({ setView, subMode = 'map', deck = { type: 'all', valu
         setAnsweredTotal((n) => n + 1);
         const { after } = recordUsStateAnswer(current.code, false);
         setMasteryStreak(after);
-        setFeedback({
-            text: isMap ? 'Skipped. The state is:' : 'Skipped. The capital is:',
-            answer: isMap ? current.name : current.capital,
-            tone: 'red',
-        });
+        const verb = isCapitals ? 'The capital is:' : 'The state is:';
+        const answerStr = isCapitals ? current.capital : current.name;
+        setFeedback({ text: `Skipped. ${verb}`, answer: answerStr, tone: 'red' });
         setTimeout(() => { nextQuestion(); }, 2000);
     };
 
     const getChoiceState = (option) => {
         if (!answered || !current) return 'idle';
-        if (option === current.capital) return 'correct';
-        if (option === chosenOption && option !== current.capital) return 'incorrect';
+        const correctText = isCapitals ? current.capital : current.name;
+        if (option === correctText) return 'correct';
+        if (option === chosenOption && option !== correctText) return 'incorrect';
         return 'idle';
     };
 
-    // Keyboard support for capitals mode (1–4 / A–D).
+    // Keyboard support for the 4-option modes (capitals + flags). Map mode has
+    // no keyboard input — the player taps the SVG instead.
     const kbRef = useRef({});
-    kbRef.current = { answered, options, handleCapitalsPick, nextQuestion, hasQuestion: !!current, isMap };
+    kbRef.current = { answered, options, handleOptionPick, nextQuestion, hasQuestion: !!current, isMap };
     useEffect(() => {
         const onKey = (e) => {
             const st = kbRef.current;
@@ -257,7 +272,7 @@ function UnitedStatesQuiz({ setView, subMode = 'map', deck = { type: 'all', valu
                 }
                 if (idx >= 0 && idx < st.options.length) {
                     e.preventDefault();
-                    st.handleCapitalsPick(st.options[idx]);
+                    st.handleOptionPick(st.options[idx]);
                 }
             } else if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
@@ -313,8 +328,10 @@ function UnitedStatesQuiz({ setView, subMode = 'map', deck = { type: 'all', valu
                     {streak > 0 && <span className="streak-mult">×{streakMultiplier(streak).toFixed(1)}</span>}
                 </span>
                 <ScoreBubble score={score} icon="star" />
-                <span className="ui-pill ui-pill--accent" aria-label={`Sub-mode: ${isMap ? 'Map' : 'Capitals'}`}>
-                    <Icon name={isMap ? 'map' : 'location_city'} /> {isMap ? 'Map' : 'Capital'}
+                <span className="ui-pill ui-pill--accent" aria-label={`Sub-mode: ${activeMode}`}>
+                    <Icon name={isMap ? 'map' : isFlags ? 'flag' : 'location_city'} />
+                    {' '}
+                    {isMap ? 'Map' : isFlags ? 'Flag' : 'Capital'}
                 </span>
             </div>
 
@@ -330,10 +347,23 @@ function UnitedStatesQuiz({ setView, subMode = 'map', deck = { type: 'all', valu
                         exit={{ opacity: 0, y: -8 }}
                         transition={springs.gentle}
                     >
-                        <h2 className="capitals-country">{current.name}</h2>
-                        <p className="menu-subtitle capitals-subtitle">
-                            {isMap ? 'Tap this state on the map.' : "What is its capital?"}
-                        </p>
+                        {isFlags ? (
+                            <>
+                                <img
+                                    src={`${FLAG_IMAGE_BASE}${current.code}.svg`}
+                                    alt=""
+                                    className="flag-image us-state-flag"
+                                />
+                                <p className="menu-subtitle capitals-subtitle">Which state has this flag?</p>
+                            </>
+                        ) : (
+                            <>
+                                <h2 className="capitals-country">{current.name}</h2>
+                                <p className="menu-subtitle capitals-subtitle">
+                                    {isMap ? 'Tap this state on the map.' : "What is its capital?"}
+                                </p>
+                            </>
+                        )}
                     </motion.div>
                 </AnimatePresence>
                 <AnimatePresence>
@@ -417,22 +447,25 @@ function UnitedStatesQuiz({ setView, subMode = 'map', deck = { type: 'all', valu
                 </div>
             ) : (
                 <div className="options-box">
-                    {options.map((option, i) => (
-                        <div className="choice-wrap" key={`${current.code}-${option}`}>
-                            <ChoiceCard
-                                label={option}
-                                index={i}
-                                state={getChoiceState(option)}
-                                disabled={answered}
-                                onSelect={handleCapitalsPick}
-                            />
-                            <AnimatePresence>
-                                {showConfetti && option === current.capital && (
-                                    <Confetti pieces={16} radius={110} />
-                                )}
-                            </AnimatePresence>
-                        </div>
-                    ))}
+                    {options.map((option, i) => {
+                        const correctText = isCapitals ? current.capital : current.name;
+                        return (
+                            <div className="choice-wrap" key={`${current.code}-${option}`}>
+                                <ChoiceCard
+                                    label={option}
+                                    index={i}
+                                    state={getChoiceState(option)}
+                                    disabled={answered}
+                                    onSelect={handleOptionPick}
+                                />
+                                <AnimatePresence>
+                                    {showConfetti && option === correctText && (
+                                        <Confetti pieces={16} radius={110} />
+                                    )}
+                                </AnimatePresence>
+                            </div>
+                        );
+                    })}
                 </div>
             )}
 

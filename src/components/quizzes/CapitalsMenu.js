@@ -4,11 +4,6 @@ import Icon from '../common/Icon';
 import ScoringInfo from './ScoringInfo';
 import { useAudio } from '../../audio/AudioProvider';
 import { useCapitals, ensureCapitalsCatalog, capitalRegions, capitalDeckStats } from '../../lib/capitals';
-import {
-    useUsStates,
-    ensureUsStatesCatalog,
-    usStateDeckStats,
-} from '../../lib/usStates';
 import { springs } from '../../motion/index';
 
 const formatCategoryName = (name) =>
@@ -83,16 +78,9 @@ function CapitalsMenu({ setView, setCapitalsDeck, includeTerritories = false }) 
     // Subscribe so the per-deck mastery/review counts tick live as capitals are
     // learned (capitalDeckStats reads the live store).
     useCapitals();
-    // Same subscription for the US store so the United States card's mastery
-    // badge ticks up live as states get learned.
-    useUsStates();
     // Warm the catalog in case the player reached this screen before App's
     // mount-time warm finished (idempotent).
-    useEffect(() => {
-        ensureCapitalsCatalog();
-        ensureUsStatesCatalog();
-    }, []);
-    const usAllStats = usStateDeckStats({ type: 'all' });
+    useEffect(() => { ensureCapitalsCatalog(); }, []);
 
     const startQuiz = (type, value) => {
         setCapitalsDeck({ type, value });
@@ -140,29 +128,6 @@ function CapitalsMenu({ setView, setCapitalsDeck, includeTerritories = false }) 
                     index={1}
                     emptyHint="Nothing due — come back later"
                 />
-            </div>
-
-            <div className="mode-grid">
-                <motion.button
-                    className="mode-card tone-info"
-                    onClick={() => { audio.play('click'); setView('united-states-menu'); }}
-                    initial={{ opacity: 0, y: 16 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ ...springs.gentle, delay: 0.08 }}
-                    whileHover={{ y: -3 }}
-                    whileTap={{ scale: 0.97 }}
-                    aria-label="United States"
-                >
-                    {usAllStats.total > 0 && (
-                        <div className="mode-card__badge">
-                            {usAllStats.mastered}/{usAllStats.total} mastered
-                            {usAllStats.needsReview > 0 ? ` · ${usAllStats.needsReview} review` : ''}
-                        </div>
-                    )}
-                    <div className="mode-card__title">United States</div>
-                    <div className="mode-card__desc">All 50 states — map + capitals</div>
-                    <Icon name="flag" className="mode-card__icon" />
-                </motion.button>
             </div>
 
             <div className="category-section">

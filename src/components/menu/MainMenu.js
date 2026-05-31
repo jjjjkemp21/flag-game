@@ -18,6 +18,7 @@ import { useProfile } from '../../lib/profile';
 import { useQuests, claimableCount } from '../../lib/quests';
 import { getStreak } from '../../lib/streak';
 import { useCapitals, getCapitalMasteredCount, getCapitalTotal } from '../../lib/capitals';
+import { useUsStates, getUsStateMasteredCount, getUsStateTotal } from '../../lib/usStates';
 import { GLOBE_RENDERABLE_ISO2 } from '../../lib/achievements';
 import { MASTERY_STREAK } from '../../lib/xp';
 import { springs } from '../../motion/index';
@@ -43,6 +44,7 @@ const SECTIONS = [
             { key: 'free-response',   title: 'Free Response',   desc: 'Type the country name',          icon: 'edit_note',     tone: 'success' },
             { key: 'globe',           title: 'Globe',           desc: 'Find the country on a 3D globe', icon: 'public',        tone: 'info'    },
             { key: 'capitals-quiz',   title: 'Capitals',        desc: 'Name each country’s capital',    icon: 'location_city', tone: 'accent'  },
+            { key: 'united-states',   title: 'United States',   desc: 'All 50 states — map, capitals, flags', icon: 'flag',    tone: 'danger'  },
             { key: 'bonus',           title: 'Bonus Modes',     desc: 'Frenzy, Pixelated, Language…',   icon: 'rocket_launch', tone: 'purple'  },
         ],
     },
@@ -106,6 +108,11 @@ function MainMenu({ setView, flagsData, setQuizMode }) {
     useCapitals();
     const capitalTotal = getCapitalTotal();
     const capitalMasteryHint = capitalTotal > 0 ? `${getCapitalMasteredCount()}/${capitalTotal} mastered` : null;
+    // Same subscription for the United States store so the US card's badge
+    // ticks up live as states are mastered (any sub-mode contributes).
+    useUsStates();
+    const usTotal = getUsStateTotal();
+    const usMasteryHint = usTotal > 0 ? `${getUsStateMasteredCount()}/${usTotal} mastered` : null;
     // Flag-recognition mastery (MC / FR / bonus modes share this streak). The
     // raw count gates the Reptile Kingdom Pass card below; the hint string drives
     // the hero pill + the per-mode card badges.
@@ -180,6 +187,9 @@ function MainMenu({ setView, flagsData, setQuizMode }) {
         } else if (modeKey === 'capitals-quiz') {
             // Deck picker first (All / Needs Review / By Region), like the flag quizzes.
             setView('capitals-menu');
+        } else if (modeKey === 'united-states') {
+            // Sub-mode picker (Map / Capitals / Flags), then deck.
+            setView('united-states-menu');
         } else if (modeKey === 'multiplayer') {
             setView('multiplayer');
         } else if (modeKey === 'bonus') {
@@ -279,16 +289,20 @@ function MainMenu({ setView, flagsData, setQuizMode }) {
                                             ? globeMasteryHint
                                             : mode.key === 'capitals-quiz'
                                                 ? capitalMasteryHint
-                                                : mode.key === 'quests' && questsClaimable > 0
-                                                    ? `${questsClaimable} ready to claim`
-                                                    : null
+                                                : mode.key === 'united-states'
+                                                    ? usMasteryHint
+                                                    : mode.key === 'quests' && questsClaimable > 0
+                                                        ? `${questsClaimable} ready to claim`
+                                                        : null
                                 }
                                 streak={
                                     mode.key === 'capitals-quiz'
                                         ? getStreak('capitals')
-                                        : (mode.key === 'multiple-choice' || mode.key === 'free-response' || mode.key === 'globe')
-                                            ? getStreak(mode.key)
-                                            : 0
+                                        : mode.key === 'united-states'
+                                            ? getStreak('us-states')
+                                            : (mode.key === 'multiple-choice' || mode.key === 'free-response' || mode.key === 'globe')
+                                                ? getStreak(mode.key)
+                                                : 0
                                 }
                             />
                         ))}

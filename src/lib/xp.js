@@ -49,6 +49,7 @@ export const MODE_XP = {
     'capitals': 3,            // capital recall — its own mastery track
     'us-states-map': 3.5,     // tap-on-2D-map — same difficulty band as Globe find
     'us-states-capitals': 3,  // US state capitals — same band as world capitals
+    'us-states-flags': 2.5,   // state-flag recognition — between world MC (2) and FR (3)
 };
 
 // 1.0 at streak 0, ramping to the 2x cap at a 30-answer streak.

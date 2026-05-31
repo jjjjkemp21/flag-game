@@ -127,14 +127,23 @@ function UnitedStatesMenu({ setView, setUsDeck, setUsSubMode }) {
                     onClick={() => startQuiz('capitals', 'all', null)}
                     index={1}
                 />
+                <PrimaryDeckButton
+                    tone="primary"
+                    name="Flags"
+                    desc="Identify the state from its flag"
+                    stats={allStats}
+                    icon="flag"
+                    onClick={() => startQuiz('flags', 'all', null)}
+                    index={2}
+                />
             </div>
 
             {reviewStats.total > 0 && (
                 <div className="mode-grid">
                     <PrimaryDeckButton
-                        tone="primary"
+                        tone="success"
                         name="Needs Review"
-                        desc="Mixed map + capital prompts that are due"
+                        desc="Mixed map, capital, and flag prompts that are due"
                         stats={reviewStats}
                         icon="refresh"
                         onClick={() => startQuiz('mixed', 'review', null)}
@@ -167,6 +176,21 @@ function UnitedStatesMenu({ setView, setUsDeck, setUsSubMode }) {
                             name={formatRegion(region)}
                             stats={usStateDeckStats({ type: 'region', value: region })}
                             onClick={() => startQuiz('capitals', 'region', region)}
+                            index={i}
+                        />
+                    ))}
+                </div>
+            </div>
+
+            <div className="category-section">
+                <h3>Flags · By Region</h3>
+                <div className="category-grid">
+                    {regions.map((region, i) => (
+                        <GridButton
+                            key={`flag-${region}`}
+                            name={formatRegion(region)}
+                            stats={usStateDeckStats({ type: 'region', value: region })}
+                            onClick={() => startQuiz('flags', 'region', region)}
                             index={i}
                         />
                     ))}

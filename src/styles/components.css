@@ -1821,6 +1821,15 @@
     gap: var(--space-sm);
     width: 100%;
 }
+.us-state-flag {
+    max-width: 380px;
+    width: 70%;
+    height: auto;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-card);
+    background: var(--color-bg);
+}
 .us-map-wrap {
     width: 100%;
     max-width: 900px;
