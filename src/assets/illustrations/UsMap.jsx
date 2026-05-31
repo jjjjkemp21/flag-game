@@ -18,14 +18,19 @@ import {
 //   chosenCode           the state the player clicked (drives the red flash on miss)
 //   onPick(code)         click handler; receives the lowercase code
 //   disabled             ignore clicks (e.g. while a question is locked in)
-//   showLabels           overlay each state's 2-letter postal code (default true)
+//   showLabels           overlay every state's 2-letter postal code (default
+//                         FALSE — labels would give the quiz away)
+//   revealCode           label JUST this one state, regardless of showLabels.
+//                         Used by the quiz after the player has answered, so
+//                         the reveal also teaches the postal code.
 function UsMap({
     highlightedCode = null,
     answerCode = null,
     chosenCode = null,
     onPick,
     disabled = false,
-    showLabels = true,
+    showLabels = false,
+    revealCode = null,
     className = '',
     ariaLabel = 'Map of the United States',
 }) {
@@ -75,17 +80,20 @@ function UsMap({
                     );
                 })}
             </g>
-            {showLabels && (
+            {(showLabels || revealCode) && (
                 <g className="us-map__labels" aria-hidden="true">
                     {codes.map((code) => {
+                        // showLabels = every state; revealCode = just one.
+                        if (!showLabels && code !== revealCode) return null;
                         const c = LABEL_CENTERS[code];
                         if (!c) return null;
+                        const isReveal = code === revealCode;
                         return (
                             <text
                                 key={code}
                                 x={c.x}
                                 y={c.y}
-                                className="us-map__label"
+                                className={`us-map__label ${isReveal ? 'is-reveal' : ''}`}
                                 textAnchor="middle"
                             >
                                 {code.toUpperCase()}

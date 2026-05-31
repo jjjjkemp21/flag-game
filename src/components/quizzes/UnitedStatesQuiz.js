@@ -443,6 +443,7 @@ function UnitedStatesQuiz({ setView, subMode = 'map', deck = { type: 'all', valu
                         chosenCode={chosenCode}
                         onPick={handleMapPick}
                         disabled={answered}
+                        revealCode={answered ? current.code : null}
                     />
                 </div>
             ) : (
