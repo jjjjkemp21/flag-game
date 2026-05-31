@@ -55,8 +55,8 @@ function Achievements({ setView, flagsData }) {
     const nr = nextRank(ctx.mastered, ctx.total);
     // Chest-yield bonus is earned through flag mastery (see chestYieldMultFromMastery).
     const chestYieldPct = Math.round((chestYieldMultFromMastery(ctx.mastered, ctx.total) - 1) * 100);
-    const geoRank = geoMasteryRank(ctx.geoMastered, ctx.total);
-    const geoNr = nextGeoRank(ctx.geoMastered, ctx.total);
+    const geoRank = geoMasteryRank(ctx.geoMastered, ctx.geoEligibleTotal);
+    const geoNr = nextGeoRank(ctx.geoMastered, ctx.geoEligibleTotal);
     const selectedTitle = profile.selectedTitle || null;
 
     // Mastery ranks become unlockable display titles — each tier is "earned" once
@@ -96,8 +96,10 @@ function Achievements({ setView, flagsData }) {
             tier: 'legend',
             // Only the globe-renderable subset can ever be geo-mastered, so gate
             // on geoEligibleTotal (not the full catalog) or this is unreachable.
+            // The subset includes the 6 supported territories, so the goal is the
+            // full 174 — "every country and territory" — not the 168 sovereigns.
             unlocked: ctx.geoEligibleTotal > 0 && ctx.geoMastered >= ctx.geoEligibleTotal,
-            requirement: `Master every country on the globe${ctx.geoEligibleTotal ? ` (${ctx.geoEligibleTotal})` : ''}.`,
+            requirement: `Master every country and territory on the globe${ctx.geoEligibleTotal ? ` (${ctx.geoEligibleTotal})` : ''}.`,
         },
     ];
 
@@ -161,7 +163,7 @@ function Achievements({ setView, flagsData }) {
                     <TitleBadge scope="geo" tier={geoRank.tier} size={28} /> {geoRank.title}
                 </span>
                 <p className="rank-summary">
-                    <strong>{ctx.geoMastered}</strong> / {ctx.total} countries mastered on the globe
+                    <strong>{ctx.geoMastered}</strong> / {ctx.geoEligibleTotal} countries &amp; territories mastered on the globe
                 </p>
                 {geoNr && (
                     <p className="rank-next auth-hint">

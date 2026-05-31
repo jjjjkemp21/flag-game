@@ -65,10 +65,14 @@ export function buildContext(flagsData, bonus, petLevel, earnedXp) {
         if (isMastered) mastered += 1;
         geoTotalCorrect += Number(f.geoCorrect) || 0;
         const isGeoMastered = (Number(f.geoStreak) || 0) > MASTERY_STREAK;
-        if (isGeoMastered) geoMastered += 1;
         const code = (f.code || '').toUpperCase();
         const isGeoEligible = GLOBE_RENDERABLE_ISO2.has(code);
-        if (isGeoEligible) geoEligibleTotal += 1;
+        if (isGeoEligible) {
+            geoEligibleTotal += 1;
+            // Only globe-renderable flags count toward the geo-mastery meter, so
+            // its numerator can never exceed geoEligibleTotal (the "X / 174").
+            if (isGeoMastered) geoMastered += 1;
+        }
         const tags = f.tags || [];
         for (const c of CONTINENTS) {
             if (tags.includes(c.tag)) {
@@ -267,7 +271,7 @@ export const ACHIEVEMENTS = [
     geoCorrectMilestone(1000, 'Steady Compass',  'silver'),
     geoCorrectMilestone(5000, 'True North',      'gold'),
     ...geoContinentAchievements,
-    { id: 'geo_all_flags', group: 'Globe', name: 'Atlas Cartographer', desc: 'Place every country the globe can render', icon: 'public', tier: 'legend',
+    { id: 'geo_all_flags', group: 'Globe', name: 'Atlas Cartographer', desc: 'Master every country and territory the globe can render', icon: 'public', tier: 'legend',
         check: (x) => x.geoEligibleTotal > 0 && x.geoMastered >= x.geoEligibleTotal, progress: (x) => ({ cur: x.geoMastered, goal: x.geoEligibleTotal }) },
 
     // Capitals — name each country's capital. Its own per-capital mastery axis.
