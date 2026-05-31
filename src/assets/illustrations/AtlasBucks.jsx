@@ -39,8 +39,26 @@ export default function AtlasBucksIcon({ size = 16, className = '', labelled = f
                     <path d="M9 16 q5 -1 7 2 q-1 4 -5 3 q-4 -2 -2 -5 Z" fill="#19C37D" opacity="0.92" />
                 </pattern>
             </defs>
-            {/* Bold $ glyph: dark outline drawn first via paint-order so the
-                map-fill on top stays vivid even at tiny sizes. */}
+            {/* Base $ glyph: solid green fill + dark outline. This is the
+                fallback that paints when the pattern paint-server below fails
+                to resolve — which mobile WebKit does when the icon sits inside
+                a transformed/animated layer (e.g. the xp-gain popup on a
+                correct answer). Without it the glyph rendered dark (stroke
+                only). The gradient glyph is drawn on top and covers this where
+                paint-server references work (desktop + most contexts). */}
+            <text
+                x="12"
+                y="18.5"
+                textAnchor="middle"
+                fontFamily="Georgia, 'Times New Roman', serif"
+                fontWeight="900"
+                fontSize="20"
+                fill="#19C37D"
+                stroke="#1F1A3B"
+                strokeWidth="1.3"
+                paintOrder="stroke fill"
+            >$</text>
+            {/* Map-textured overlay: the vivid globe fill where it renders. */}
             <text
                 x="12"
                 y="18.5"
@@ -49,9 +67,6 @@ export default function AtlasBucksIcon({ size = 16, className = '', labelled = f
                 fontWeight="900"
                 fontSize="20"
                 fill={`url(#${mapId})`}
-                stroke="#1F1A3B"
-                strokeWidth="1.3"
-                paintOrder="stroke fill"
             >$</text>
         </svg>
     );
