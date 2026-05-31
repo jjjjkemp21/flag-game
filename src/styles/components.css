@@ -2893,14 +2893,17 @@
     font-size: var(--fs-lg);
     color: var(--color-ink);
 }
-.quest-complete__tier {
+/* Compound selector (.ach-badge.quest-complete__tier) so these win over the
+   base .ach-badge rules defined later in the file — otherwise the badge
+   collapses to the 22px circle and the label overflows onto the bar. */
+.ach-badge.quest-complete__tier {
     position: relative; z-index: 1;
     width: auto; height: auto; border-radius: var(--radius-pill);
     padding: 3px 10px; gap: 5px;
     font-size: var(--fs-xs); font-weight: 800; letter-spacing: 0.06em;
     text-transform: uppercase;
 }
-.quest-complete__tier .app-icon { font-size: 12px; }
+.ach-badge.quest-complete__tier .app-icon { font-size: 12px; }
 .quest-complete__bar {
     position: relative; z-index: 1;
     width: 100%;
