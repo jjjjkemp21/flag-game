@@ -362,16 +362,22 @@ const HAT_SHAPES = {
             </g>
         </g>
     ),
+    // A centre-line mohawk (front view): ONE connected crest of liberty spikes,
+    // tallest in the middle and fanning outward at the sides, clustered into a
+    // narrow central strip. (The old version spread separate spikes across the
+    // whole head on a wide wrap-around band, which read as a crown.)
     mohawk: (c) => (
-        <g>
-            {/* Base headband */}
-            <path d="M24 22 Q48 18 72 22 L70 26 Q48 23 26 26 Z" fill={c.dark} />
-            {/* Spikes — tall central tuft */}
-            <path d="M30 20 L 34 -4 L 38 20 Z" fill={c.main} stroke={c.dark} strokeWidth="0.6" />
-            <path d="M40 20 L 44 -10 L 48 20 Z" fill={c.main} stroke={c.dark} strokeWidth="0.6" />
-            <path d="M50 20 L 54 -8 L 58 20 Z" fill={c.main} stroke={c.dark} strokeWidth="0.6" />
-            <path d="M60 20 L 64 -2 L 68 20 Z" fill={c.main} stroke={c.dark} strokeWidth="0.6" />
-            <path d="M22 22 L 26 4 L 30 22 Z" fill={c.main} stroke={c.dark} strokeWidth="0.6" />
+        <g strokeLinejoin="round">
+            <path d="M35 20 L33 1 L39 15 L41 -9 L45 14 L48 -14 L51 14 L55 -9 L57 15 L63 1 L61 20 Q48 23 35 20 Z"
+                fill={c.main} stroke={c.dark} strokeWidth="0.8" />
+            {/* Glossy strand highlight up the centre of each spike */}
+            <g stroke={c.accent} strokeWidth="0.9" fill="none" strokeLinecap="round" opacity="0.55">
+                <path d="M35 12 L 33.7 2.5" />
+                <path d="M42 9 L 41 -7" />
+                <path d="M48 11 L 48 -12" />
+                <path d="M54 9 L 55 -7" />
+                <path d="M61 12 L 62.3 2.5" />
+            </g>
         </g>
     ),
     duck: (c) => (
