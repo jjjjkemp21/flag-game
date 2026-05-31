@@ -73,7 +73,8 @@ function GlobeQuiz({
 
     const containerRef = useRef(null);
     const globeRef = useRef(null);
-    const eligibleFlagsRef = useRef([]);          // quiz pool filtered to flags whose code maps to a globe country
+    const eligibleCodesRef = useRef(null);        // Set of in-deck codes that map to a globe country (fixed once loaded)
+    const quizFlagsRef = useRef(quizFlags);       // live deck mirror so each pick reads CURRENT geo stats, not a snapshot
     const currentFlagRef = useRef(null);          // mirror of `currentFlag` for callbacks
     const answeredRef = useRef(false);
     const nextTimerRef = useRef(null);
@@ -125,6 +126,7 @@ function GlobeQuiz({
 
     currentFlagRef.current = currentFlag;
     answeredRef.current = answered;
+    quizFlagsRef.current = quizFlags;             // keep the live deck in reach of the memoised picker
     // resolveAnswerRef is assigned below once resolveAnswer is defined.
 
     const navigateBack = useCallback(() => {
@@ -150,8 +152,15 @@ function GlobeQuiz({
     }, [chest, score, answeredTotal, bestStreak, subMode, navigateBack]);
 
     const pickNextQuestion = useCallback(() => {
-        const pool = eligibleFlagsRef.current;
-        if (!pool || pool.length === 0) {
+        // Build the pool fresh from the LIVE deck (restricted to globe-placeable
+        // codes) on every pick, so the selected flag — and its mastery meter —
+        // reflect this session's answers. Picking from a frozen snapshot made the
+        // per-flag geoStreak look stale and jump around between questions, and a
+        // country mastered mid-run kept resurfacing at its old count.
+        const codes = eligibleCodesRef.current;
+        const data = quizFlagsRef.current || [];
+        const pool = codes ? data.filter((f) => f && f.code && codes.has(f.code.toUpperCase())) : [];
+        if (pool.length === 0) {
             setCurrentFlag(null);
             return;
         }
@@ -333,10 +342,13 @@ function GlobeQuiz({
                 // Supranational entries (asean, arab, etc.) and tiny dependencies
                 // missing from Natural Earth's 110m fall out automatically.
                 const have = new Set(globeRef.current.getAvailableIso2());
-                const eligible = (quizFlags || []).filter(
+                // Which countries qualify (placeable on the globe AND in the deck)
+                // is fixed once the globe is loaded; their stats are not. Store just
+                // the codes — pickNextQuestion re-reads live stats via quizFlagsRef.
+                const eligible = (quizFlagsRef.current || []).filter(
                     (f) => f && f.code && have.has(f.code.toUpperCase())
                 );
-                eligibleFlagsRef.current = eligible;
+                eligibleCodesRef.current = new Set(eligible.map((f) => f.code.toUpperCase()));
                 setGlobeReady(true);
             },
             onError: (e) => {
@@ -448,7 +460,7 @@ function GlobeQuiz({
             ? 'var(--color-danger-deep)'
             : 'var(--color-ink-soft)';
 
-    const empty = globeReady && eligibleFlagsRef.current.length === 0;
+    const empty = globeReady && !!eligibleCodesRef.current && eligibleCodesRef.current.size === 0;
 
     return (
         <div className={`quiz-box globe-quiz ${flashColor ? `flash-${flashColor}` : ''}`}>
