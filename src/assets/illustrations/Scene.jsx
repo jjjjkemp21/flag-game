@@ -1401,218 +1401,525 @@ function Antarctica() {
 }
 
 // ---- Reptile Kingdom — Atlas Pass capstone --------------------------------
+// A moonlit jungle temple deep in the swamp: layered rainforest canopy, a
+// great overgrown stone ziggurat lit from within, and the kingdom's reptiles
+// — crocodile, serpent, gecko, tortoise (and a dragon crossing the moon) —
+// as crisp silhouettes with amber eye-glow against cool green moonlight.
 function Reptile() {
     return (
         <SceneWrap id="bp_reptile">
             <defs>
                 <linearGradient id="sc-rp-sky" x1="0" y1="0" x2="0" y2="1">
-                    <Stop offset="0%" color="#1A2F1A" />
-                    <Stop offset="50%" color="#0A1F12" />
-                    <Stop offset="100%" color="#0A0A05" />
+                    <Stop offset="0%" color="#15301F" />
+                    <Stop offset="38%" color="#0E2317" />
+                    <Stop offset="72%" color="#0A1A11" />
+                    <Stop offset="100%" color="#050E0A" />
                 </linearGradient>
-                <radialGradient id="sc-rp-moon" cx="50%" cy="50%" r="50%">
-                    <Stop offset="0%" color="#E8F4D8" />
-                    <Stop offset="60%" color="#A8D078" opacity="0.6" />
+                <radialGradient id="sc-rp-moonhalo" cx="50%" cy="50%" r="50%">
+                    <Stop offset="0%" color="#EAF6DC" opacity="0.85" />
+                    <Stop offset="45%" color="#A8D078" opacity="0.45" />
                     <Stop offset="100%" color="#19C37D" opacity="0" />
                 </radialGradient>
-                <radialGradient id="sc-rp-mist" cx="50%" cy="60%" r="60%">
-                    <Stop offset="0%" color="#19C37D" opacity="0.4" />
+                <radialGradient id="sc-rp-moonbody" cx="42%" cy="38%" r="62%">
+                    <Stop offset="0%" color="#F4FCE8" />
+                    <Stop offset="65%" color="#CFEDB4" />
+                    <Stop offset="100%" color="#97CB82" />
+                </radialGradient>
+                <radialGradient id="sc-rp-mist" cx="50%" cy="50%" r="50%">
+                    <Stop offset="0%" color="#3FD89A" opacity="0.5" />
                     <Stop offset="100%" color="#19C37D" opacity="0" />
                 </radialGradient>
+                <radialGradient id="sc-rp-doorglow" cx="50%" cy="50%" r="50%">
+                    <Stop offset="0%" color="#FFE2A0" />
+                    <Stop offset="55%" color="#FFB23F" opacity="0.7" />
+                    <Stop offset="100%" color="#FF8A1F" opacity="0" />
+                </radialGradient>
+                <linearGradient id="sc-rp-stone" x1="0" y1="0" x2="0" y2="1">
+                    <Stop offset="0%" color="#3C5240" />
+                    <Stop offset="55%" color="#26382B" />
+                    <Stop offset="100%" color="#15231A" />
+                </linearGradient>
+                <linearGradient id="sc-rp-stair" x1="0" y1="0" x2="0" y2="1">
+                    <Stop offset="0%" color="#46604A" />
+                    <Stop offset="100%" color="#1C2C20" />
+                </linearGradient>
                 <linearGradient id="sc-rp-water" x1="0" y1="0" x2="0" y2="1">
-                    <Stop offset="0%" color="#0F2A1F" />
-                    <Stop offset="100%" color="#040A08" />
+                    <Stop offset="0%" color="#123226" />
+                    <Stop offset="55%" color="#0A1C14" />
+                    <Stop offset="100%" color="#04100B" />
+                </linearGradient>
+                <linearGradient id="sc-rp-snake" x1="0" y1="0" x2="0" y2="1">
+                    <Stop offset="0%" color="#33824A" />
+                    <Stop offset="100%" color="#143A22" />
                 </linearGradient>
                 <filter id="sc-rp-glow" x="-50%" y="-50%" width="200%" height="200%">
-                    <feGaussianBlur stdDeviation="8" />
+                    <feGaussianBlur stdDeviation="7" />
                 </filter>
             </defs>
 
             <rect width="600" height="300" fill="url(#sc-rp-sky)" />
 
-            {/* Moon with bloom halo */}
-            <circle cx="480" cy="80" r="80" fill="url(#sc-rp-moon)" />
-            <circle cx="480" cy="80" r="42" fill="#A8D078" opacity="0.55" filter="url(#sc-rp-glow)" />
-            <circle cx="480" cy="80" r="34" fill="#E8F4D8" opacity="0.95">
-                <animate attributeName="opacity" values="0.9;1;0.9" dur="6s" repeatCount="indefinite" />
+            {/* Soft moonlight bloom into the sky */}
+            <circle cx="468" cy="92" r="150" fill="url(#sc-rp-mist)" opacity="0.55" />
+
+            {/* Star field — faint, a few twinkling */}
+            <g fill="#CFE8D8">
+                <circle cx="40" cy="34" r="1.1">
+                    <animate attributeName="opacity" values="1;0.3;1" dur="3.4s" repeatCount="indefinite" />
+                </circle>
+                <circle cx="96" cy="60" r="0.8" />
+                <circle cx="150" cy="30" r="1.3">
+                    <animate attributeName="opacity" values="1;0.4;1" dur="4s" repeatCount="indefinite" />
+                </circle>
+                <circle cx="208" cy="54" r="0.9" />
+                <circle cx="250" cy="32" r="1.1">
+                    <animate attributeName="opacity" values="1;0.45;1" dur="3.1s" repeatCount="indefinite" />
+                </circle>
+                <circle cx="120" cy="100" r="0.7" />
+                <circle cx="64" cy="120" r="0.9">
+                    <animate attributeName="opacity" values="1;0.4;1" dur="3.7s" repeatCount="indefinite" />
+                </circle>
+                <circle cx="200" cy="110" r="0.7" />
+                <circle cx="350" cy="40" r="0.9" />
+                <circle cx="392" cy="70" r="0.7" />
+                <circle cx="540" cy="30" r="1.1">
+                    <animate attributeName="opacity" values="1;0.35;1" dur="2.9s" repeatCount="indefinite" />
+                </circle>
+                <circle cx="584" cy="56" r="0.8" />
+            </g>
+
+            {/* Moon — bloom halo, soft glow, body + craters */}
+            <circle cx="468" cy="76" r="96" fill="url(#sc-rp-moonhalo)" />
+            <circle cx="468" cy="76" r="40" fill="#CDEBB2" opacity="0.55" filter="url(#sc-rp-glow)" />
+            <circle cx="468" cy="76" r="33" fill="url(#sc-rp-moonbody)">
+                <animate attributeName="opacity" values="0.92;1;0.92" dur="7s" repeatCount="indefinite" />
             </circle>
-            <circle cx="472" cy="74" r="32" fill="url(#sc-rp-sky)" opacity="0.5" />
-            {/* Craters */}
-            <circle cx="486" cy="76" r="3" fill="#1A2F1A" opacity="0.35" />
-            <circle cx="492" cy="86" r="2" fill="#1A2F1A" opacity="0.35" />
-            <circle cx="478" cy="92" r="2.5" fill="#1A2F1A" opacity="0.3" />
-
-            {/* Distant canopy ridge */}
-            <path d="M0,170 Q60,140 120,165 T240,160 T360,165 T480,155 T600,170 L600,210 L0,210 Z"
-                  fill="#0A1F12" opacity="0.95" />
-
-            {/* Stone idol ruins center */}
-            <g transform="translate(300,225)" fill="#1A2A1A">
-                <rect x="-22" y="-46" width="44" height="46" />
-                <rect x="-28" y="-50" width="56" height="6" />
-                <rect x="-24" y="-58" width="48" height="8" />
-                {/* Carved eyes */}
-                <ellipse cx="-10" cy="-32" rx="3" ry="2" fill="#FFC247">
-                    <animate attributeName="opacity" values="0.8;1;0.8" dur="3s" repeatCount="indefinite" />
-                </ellipse>
-                <ellipse cx="10" cy="-32" rx="3" ry="2" fill="#FFC247">
-                    <animate attributeName="opacity" values="0.8;1;0.8" dur="3.2s" repeatCount="indefinite" />
-                </ellipse>
-                {/* Mouth slot */}
-                <rect x="-8" y="-20" width="16" height="3" fill="#0A0A05" />
-                {/* Vines on idol */}
-                <path d="M-28,-50 Q-30,-40 -28,-30 Q-32,-22 -28,-14" stroke="#1F4A2A" strokeWidth="1.5" fill="none" />
-                <path d="M28,-50 Q30,-40 28,-30 Q32,-22 28,-14" stroke="#1F4A2A" strokeWidth="1.5" fill="none" />
+            <g fill="#8FBE79" opacity="0.45">
+                <circle cx="474" cy="70" r="4" />
+                <circle cx="483" cy="84" r="2.6" />
+                <circle cx="461" cy="86" r="3" />
+                <circle cx="458" cy="68" r="2" />
             </g>
 
-            {/* Swamp mist */}
-            <rect width="600" height="300" fill="url(#sc-rp-mist)" />
-
-            {/* Dragon silhouette flying across moon — clean readable shape */}
-            <g transform="translate(440,92)" fill="#040A05">
+            {/* Dragon crossing the moon */}
+            <g transform="translate(452,96)" fill="#05100A">
                 <animateTransform attributeName="transform" type="translate"
-                                  values="440,92; 440,88; 440,92" dur="4s" repeatCount="indefinite" />
-                {/* Tail trailing left, curving */}
-                <path d="M-20,2 Q-36,6 -50,14 Q-58,18 -64,24 Q-58,20 -52,18 Q-40,14 -28,8 Z" />
-                {/* Tail spade tip */}
-                <path d="M-64,24 L-72,20 L-66,26 L-72,30 L-64,28 L-62,34 L-58,28 Z" />
-                {/* Body */}
+                                  values="452,96; 430,86; 452,96" dur="9s" repeatCount="indefinite" />
+                <path d="M-22,2 Q-40,6 -54,16 Q-46,10 -30,6 Q-26,4 -22,0 Z" />
+                <path d="M-54,16 L-64,12 L-57,18 L-64,23 L-55,20 Z" />
                 <ellipse cx="0" cy="0" rx="22" ry="6" />
-                {/* Far wing (back) — partial */}
-                <path d="M-6,-3 Q-16,-18 -28,-24 Q-22,-18 -16,-12 Q-10,-6 -4,-4 Z" opacity="0.7" />
-                {/* Near wing — large arched membrane with finger-bone trailing edges */}
-                <path d="M-4,-2 Q-14,-22 -30,-30 Q-22,-22 -16,-14 L-22,-20 Q-12,-12 -6,-6 L-10,-14 Q-2,-8 2,-2 L-2,-10 Q4,-4 8,2 Z" />
-                {/* Subtle wing strut highlights */}
-                <line x1="-4" y1="-2" x2="-22" y2="-20" stroke="#1A2A1A" strokeWidth="0.5" opacity="0.6" />
-                <line x1="-4" y1="-2" x2="-14" y2="-16" stroke="#1A2A1A" strokeWidth="0.5" opacity="0.6" />
-                {/* Neck + head */}
-                <path d="M18,-3 Q28,-8 38,-10 Q46,-10 48,-6 Q44,-4 34,-3 Q26,0 20,3 Z" />
-                {/* Horns */}
-                <line x1="44" y1="-10" x2="48" y2="-16" stroke="#040A05" strokeWidth="1.5" strokeLinecap="round" />
-                <line x1="38" y1="-10" x2="40" y2="-15" stroke="#040A05" strokeWidth="1.2" strokeLinecap="round" />
-                {/* Lower jaw line */}
-                <path d="M42,-6 Q46,-3 38,-2" stroke="#040A05" strokeWidth="0.6" fill="none" />
-                {/* Glowing eye */}
-                <circle cx="42" cy="-8" r="1.2" fill="#FFC247">
-                    <animate attributeName="opacity" values="0.7;1;0.7" dur="3s" repeatCount="indefinite" />
+                <path d="M-6,-2 Q-18,-20 -32,-26 Q-24,-18 -16,-10 Q-10,-5 -4,-3 Z" opacity="0.7" />
+                <path d="M-2,-2 Q-14,-24 -32,-32 Q-22,-22 -14,-12 L-22,-20 Q-10,-10 -4,-4 L-9,-14 Q0,-6 6,0 Z" />
+                <path d="M18,-2 Q30,-7 40,-9 Q49,-9 51,-4 Q46,-2 36,-2 Q27,1 20,4 Z" />
+                <line x1="46" y1="-9" x2="51" y2="-16" stroke="#05100A" strokeWidth="1.6" strokeLinecap="round" />
+                <line x1="40" y1="-9" x2="42" y2="-15" stroke="#05100A" strokeWidth="1.2" strokeLinecap="round" />
+                <circle cx="44" cy="-7" r="1.2" fill="#FFC247">
+                    <animate attributeName="opacity" values="0.6;1;0.6" dur="3s" repeatCount="indefinite" />
                 </circle>
-                {/* Body-belly highlight (faint scale ridge) */}
-                <path d="M-16,4 Q0,7 16,4" stroke="#1A2A1A" strokeWidth="0.5" fill="none" opacity="0.6" />
             </g>
 
-            {/* Snake coiled on a vine */}
-            <g transform="translate(220,180)" fill="#1F4A2A">
-                <path d="M0,0 Q-6,-4 -4,-10 Q2,-12 6,-8 Q10,-2 6,4 Q0,8 -4,4 Q-8,0 -2,-2 Q4,-4 4,0 Z" />
-                <circle cx="-4" cy="2" r="0.6" fill="#FFC247">
-                    <animate attributeName="opacity" values="0.5;1;0.5" dur="2.4s" repeatCount="indefinite" />
-                </circle>
-                <circle cx="-2" cy="2" r="0.6" fill="#FFC247">
-                    <animate attributeName="opacity" values="0.5;1;0.5" dur="2.4s" repeatCount="indefinite" />
-                </circle>
-                {/* Forked tongue */}
-                <path d="M-4,2 L-8,4 M-4,2 L-8,1" stroke="#D02838" strokeWidth="0.6" />
+            {/* Far canopy ridges — distant haze */}
+            <path d="M0,158 Q80,138 160,154 T320,150 T480,152 T600,156 L600,210 L0,210 Z"
+                  fill="#0C2014" opacity="0.5" />
+            <path d="M0,172 Q70,150 150,166 T300,162 T450,166 T600,170 L600,210 L0,210 Z"
+                  fill="#0A1B11" opacity="0.85" />
+
+            {/* Mid canopy — bunched treetops with moonlit rim */}
+            <g fill="#0B2215">
+                <ellipse cx="30" cy="186" rx="80" ry="44" />
+                <ellipse cx="120" cy="178" rx="70" ry="46" />
+                <ellipse cx="210" cy="190" rx="66" ry="40" />
+                <ellipse cx="410" cy="188" rx="64" ry="40" />
+                <ellipse cx="500" cy="180" rx="84" ry="48" />
+                <ellipse cx="585" cy="186" rx="70" ry="46" />
+            </g>
+            <g fill="#2F7A4F" opacity="0.4">
+                <ellipse cx="510" cy="150" rx="40" ry="10" />
+                <ellipse cx="120" cy="150" rx="34" ry="9" />
+                <ellipse cx="420" cy="160" rx="30" ry="8" />
+            </g>
+            {/* Emergent trees poking above the canopy */}
+            <g fill="#081710">
+                <g transform="translate(70,165)">
+                    <rect x="-2" y="0" width="4" height="40" />
+                    <ellipse cx="0" cy="-6" rx="20" ry="16" />
+                    <ellipse cx="-12" cy="2" rx="12" ry="10" />
+                    <ellipse cx="12" cy="2" rx="12" ry="10" />
+                </g>
+                <g transform="translate(540,158)">
+                    <rect x="-2" y="0" width="4" height="48" />
+                    <ellipse cx="0" cy="-8" rx="22" ry="17" />
+                    <ellipse cx="-13" cy="2" rx="13" ry="10" />
+                    <ellipse cx="13" cy="2" rx="13" ry="10" />
+                </g>
             </g>
 
-            {/* Hanging vines from canopy */}
+            {/* Hanging vines framing the sides */}
             <g stroke="#0F2A18" strokeWidth="2" fill="none" strokeLinecap="round">
-                <path d="M60,170 Q58,200 62,235" />
-                <path d="M140,168 Q142,200 138,230" />
-                <path d="M380,170 Q382,200 378,236" />
-                <path d="M540,165 Q542,200 538,232" />
+                <path d="M40,150 Q38,185 44,220" />
+                <path d="M150,140 Q154,180 148,214" />
+                <path d="M470,150 Q472,185 466,222" />
+                <path d="M560,140 Q562,180 556,212" />
             </g>
-            {/* Vine leaves */}
             <g fill="#1F4A2A">
-                <ellipse cx="62" cy="200" rx="4" ry="2" />
-                <ellipse cx="140" cy="195" rx="4" ry="2" />
-                <ellipse cx="380" cy="205" rx="4" ry="2" />
-                <ellipse cx="540" cy="195" rx="4" ry="2" />
+                <ellipse cx="44" cy="192" rx="4" ry="2" />
+                <ellipse cx="41" cy="176" rx="3" ry="1.6" />
+                <ellipse cx="149" cy="186" rx="4" ry="2" />
+                <ellipse cx="467" cy="194" rx="4" ry="2" />
+                <ellipse cx="557" cy="184" rx="4" ry="2" />
+                <ellipse cx="560" cy="166" rx="3" ry="1.6" />
             </g>
 
-            {/* Glowing eyes lurking */}
-            <g fill="#FFC247">
-                <circle cx="80" cy="200" r="1.6">
-                    <animate attributeName="opacity" values="1;0.3;1" dur="3s" repeatCount="indefinite" />
+            {/* ===== Hero temple — overgrown stone ziggurat ===== */}
+            <g transform="translate(300,248)">
+                {/* warm sanctum glow behind the doorway */}
+                <ellipse cx="0" cy="-128" rx="46" ry="40" fill="url(#sc-rp-doorglow)">
+                    <animate attributeName="opacity" values="0.75;1;0.75" dur="4.5s" repeatCount="indefinite" />
+                </ellipse>
+
+                {/* stepped tiers */}
+                <g fill="url(#sc-rp-stone)">
+                    <polygon points="-94,0 94,0 80,-34 -80,-34" />
+                    <polygon points="-78,-34 78,-34 64,-66 -64,-66" />
+                    <polygon points="-62,-66 62,-66 48,-96 -48,-96" />
+                    <polygon points="-46,-96 46,-96 36,-120 -36,-120" />
+                </g>
+                {/* left faces in shadow */}
+                <g fill="#0C1812" opacity="0.4">
+                    <polygon points="-80,-34 -10,-34 -8,0 -94,0" />
+                    <polygon points="-64,-66 -8,-66 -8,-34 -78,-34" />
+                    <polygon points="-48,-96 -6,-96 -6,-66 -62,-66" />
+                    <polygon points="-36,-120 -4,-120 -4,-96 -46,-96" />
+                </g>
+                {/* moonlit right edges + lit top ledges */}
+                <g stroke="#5C7A5E" strokeWidth="1.2" opacity="0.5" fill="none" strokeLinecap="round">
+                    <path d="M94,0 L80,-34" />
+                    <path d="M78,-34 L64,-66" />
+                    <path d="M62,-66 L48,-96" />
+                    <path d="M46,-96 L36,-120" />
+                </g>
+                <g stroke="#4A6650" strokeWidth="1" opacity="0.45" fill="none">
+                    <path d="M-80,-34 L80,-34" />
+                    <path d="M-64,-66 L64,-66" />
+                    <path d="M-48,-96 L48,-96" />
+                </g>
+
+                {/* central staircase */}
+                <polygon points="-14,0 -11,-120 11,-120 14,0" fill="url(#sc-rp-stair)" />
+                <g stroke="#16241A" strokeWidth="1" opacity="0.7">
+                    <line x1="-13.4" y1="-12" x2="13.4" y2="-12" />
+                    <line x1="-12.8" y1="-24" x2="12.8" y2="-24" />
+                    <line x1="-12.2" y1="-36" x2="12.2" y2="-36" />
+                    <line x1="-11.6" y1="-48" x2="11.6" y2="-48" />
+                    <line x1="-11" y1="-60" x2="11" y2="-60" />
+                    <line x1="-10.4" y1="-72" x2="10.4" y2="-72" />
+                    <line x1="-9.8" y1="-84" x2="9.8" y2="-84" />
+                    <line x1="-9.2" y1="-96" x2="9.2" y2="-96" />
+                    <line x1="-8.6" y1="-108" x2="8.6" y2="-108" />
+                </g>
+
+                {/* serpent balustrades + carved heads at the foot */}
+                <g fill="#1B2C20">
+                    <path d="M-16,0 L-13,-120 L-9,-120 L-12,0 Z" />
+                    <path d="M16,0 L13,-120 L9,-120 L12,0 Z" />
+                </g>
+                <g fill="#26382B">
+                    <path d="M-16,0 Q-30,-2 -34,8 Q-30,12 -20,10 Q-14,8 -14,2 Z" />
+                    <path d="M16,0 Q30,-2 34,8 Q30,12 20,10 Q14,8 14,2 Z" />
+                </g>
+                <g fill="#FFC247">
+                    <circle cx="-27" cy="4" r="1.4">
+                        <animate attributeName="opacity" values="0.7;1;0.7" dur="3.2s" repeatCount="indefinite" />
+                    </circle>
+                    <circle cx="27" cy="4" r="1.4">
+                        <animate attributeName="opacity" values="0.7;1;0.7" dur="3.4s" repeatCount="indefinite" />
+                    </circle>
+                </g>
+
+                {/* shrine + glowing doorway */}
+                <rect x="-30" y="-150" width="60" height="30" fill="url(#sc-rp-stone)" />
+                <rect x="-30" y="-150" width="14" height="30" fill="#0C1812" opacity="0.4" />
+                <path d="M-12,-120 L-12,-142 Q-12,-148 -6,-148 L6,-148 Q12,-148 12,-142 L12,-120 Z" fill="#1A0E04" />
+                <path d="M-9,-120 L-9,-141 Q-9,-145 -5,-145 L5,-145 Q9,-145 9,-141 L9,-120 Z" fill="#FFC247">
+                    <animate attributeName="opacity" values="0.85;1;0.85" dur="4s" repeatCount="indefinite" />
+                </path>
+                <rect x="-4" y="-138" width="8" height="18" fill="#FFE9B0" opacity="0.9" />
+                {/* roof comb */}
+                <polygon points="-34,-150 34,-150 24,-162 -24,-162" fill="url(#sc-rp-stone)" />
+                <rect x="-6" y="-176" width="12" height="16" fill="#26382B" />
+                <polygon points="-10,-176 10,-176 0,-188" fill="#26382B" />
+                <circle cx="0" cy="-168" r="2.4" fill="#FFC247">
+                    <animate attributeName="opacity" values="0.6;1;0.6" dur="3.6s" repeatCount="indefinite" />
                 </circle>
-                <circle cx="88" cy="200" r="1.6">
-                    <animate attributeName="opacity" values="1;0.3;1" dur="3s" repeatCount="indefinite" />
-                </circle>
-                <circle cx="220" cy="190" r="1.4">
-                    <animate attributeName="opacity" values="1;0.4;1" dur="2.6s" repeatCount="indefinite" />
-                </circle>
-                <circle cx="226" cy="190" r="1.4">
-                    <animate attributeName="opacity" values="1;0.4;1" dur="2.6s" repeatCount="indefinite" />
-                </circle>
-                <circle cx="500" cy="195" r="1.4">
-                    <animate attributeName="opacity" values="1;0.3;1" dur="3.4s" repeatCount="indefinite" />
-                </circle>
-                <circle cx="506" cy="195" r="1.4">
-                    <animate attributeName="opacity" values="1;0.3;1" dur="3.4s" repeatCount="indefinite" />
-                </circle>
+
+                {/* carved glyph eyes */}
+                <g fill="#FFC247">
+                    <ellipse cx="-34" cy="-50" rx="2.6" ry="1.8">
+                        <animate attributeName="opacity" values="0.5;1;0.5" dur="3s" repeatCount="indefinite" />
+                    </ellipse>
+                    <ellipse cx="34" cy="-50" rx="2.6" ry="1.8">
+                        <animate attributeName="opacity" values="0.5;1;0.5" dur="3.4s" repeatCount="indefinite" />
+                    </ellipse>
+                    <ellipse cx="-26" cy="-80" rx="2.2" ry="1.6">
+                        <animate attributeName="opacity" values="0.6;1;0.6" dur="2.8s" repeatCount="indefinite" />
+                    </ellipse>
+                    <ellipse cx="26" cy="-80" rx="2.2" ry="1.6">
+                        <animate attributeName="opacity" values="0.6;1;0.6" dur="3.1s" repeatCount="indefinite" />
+                    </ellipse>
+                </g>
+
+                {/* vines overgrowing the stone */}
+                <g stroke="#1F4A2A" strokeWidth="1.6" fill="none" strokeLinecap="round" opacity="0.9">
+                    <path d="M-80,-34 Q-72,-20 -82,-2" />
+                    <path d="M70,-34 Q78,-18 70,0" />
+                    <path d="M-48,-96 Q-40,-86 -50,-70 Q-44,-58 -52,-44" />
+                    <path d="M44,-96 Q52,-82 44,-66" />
+                </g>
+                <g fill="#1F4A2A">
+                    <ellipse cx="-82" cy="-10" rx="3.5" ry="1.8" />
+                    <ellipse cx="72" cy="-12" rx="3.5" ry="1.8" />
+                    <ellipse cx="-51" cy="-52" rx="3" ry="1.6" />
+                    <ellipse cx="45" cy="-72" rx="3" ry="1.6" />
+                </g>
+
+                {/* gecko clinging to the right face */}
+                <g transform="translate(56,-74) scale(-0.85,0.85)" fill="#0A1810">
+                    <path d="M0,0 Q6,-3 12,-2 Q16,-1 18,2 Q14,3 10,2 Q4,3 0,2 Z" />
+                    <path d="M18,2 Q23,0 25,3 Q23,5 18,4 Z" />
+                    <path d="M0,1 Q-8,0 -12,5 Q-14,9 -11,11 Q-12,7 -8,5 Q-3,3 0,2 Z" />
+                    <path d="M4,1 L1,-4 M4,1 L0,-3" stroke="#0A1810" strokeWidth="1" strokeLinecap="round" />
+                    <path d="M4,2 L1,6 M4,2 L0,5" stroke="#0A1810" strokeWidth="1" strokeLinecap="round" />
+                    <path d="M14,1 L17,-3 M14,1 L18,-2" stroke="#0A1810" strokeWidth="1" strokeLinecap="round" />
+                    <path d="M14,2 L17,6 M14,2 L18,5" stroke="#0A1810" strokeWidth="1" strokeLinecap="round" />
+                    <circle cx="22" cy="2.5" r="0.9" fill="#FFC247" />
+                </g>
             </g>
 
-            {/* Fireflies */}
-            <g fill="#A8E5C8">
-                <circle cx="180" cy="120" r="1.5" opacity="0.9">
-                    <animate attributeName="opacity" values="0.2;1;0.2" dur="2.5s" repeatCount="indefinite" />
-                </circle>
-                <circle cx="320" cy="130" r="1.5" opacity="0.9">
-                    <animate attributeName="opacity" values="0.2;1;0.2" dur="3s" repeatCount="indefinite" />
-                </circle>
-                <circle cx="240" cy="150" r="1.2" opacity="0.9">
-                    <animate attributeName="opacity" values="0.2;1;0.2" dur="2.2s" repeatCount="indefinite" />
-                </circle>
-                <circle cx="120" cy="140" r="1.4" opacity="0.9">
-                    <animate attributeName="opacity" values="0.2;1;0.2" dur="2.8s" repeatCount="indefinite" />
-                </circle>
-                <circle cx="560" cy="140" r="1.5" opacity="0.9">
-                    <animate attributeName="opacity" values="0.2;1;0.2" dur="3.2s" repeatCount="indefinite" />
-                </circle>
+            {/* Drifting swamp mist */}
+            <g>
+                <ellipse cx="200" cy="232" rx="200" ry="20" fill="url(#sc-rp-mist)" opacity="0.5">
+                    <animate attributeName="cx" values="200;260;200" dur="22s" repeatCount="indefinite" />
+                    <animate attributeName="opacity" values="0.35;0.6;0.35" dur="11s" repeatCount="indefinite" />
+                </ellipse>
+                <ellipse cx="430" cy="244" rx="180" ry="16" fill="url(#sc-rp-mist)" opacity="0.45">
+                    <animate attributeName="cx" values="430;370;430" dur="26s" repeatCount="indefinite" />
+                    <animate attributeName="opacity" values="0.5;0.3;0.5" dur="13s" repeatCount="indefinite" />
+                </ellipse>
             </g>
 
-            {/* Swamp water foreground */}
+            {/* ===== Swamp water ===== */}
             <rect y="250" width="600" height="50" fill="url(#sc-rp-water)" />
+            <path d="M0,250 Q150,246 300,250 Q450,246 600,250 L600,256 L0,256 Z" fill="#0E2417" opacity="0.7" />
+            {/* moon reflection shimmer */}
+            <g fill="#CDEBB2" opacity="0.22">
+                <ellipse cx="468" cy="258" rx="26" ry="1.6">
+                    <animate attributeName="rx" values="22;30;22" dur="6s" repeatCount="indefinite" />
+                </ellipse>
+                <ellipse cx="468" cy="266" rx="34" ry="1.4">
+                    <animate attributeName="rx" values="38;28;38" dur="7s" repeatCount="indefinite" />
+                </ellipse>
+                <ellipse cx="468" cy="276" rx="44" ry="1.2">
+                    <animate attributeName="rx" values="40;50;40" dur="8s" repeatCount="indefinite" />
+                </ellipse>
+                <ellipse cx="468" cy="288" rx="56" ry="1">
+                    <animate attributeName="rx" values="60;48;60" dur="9s" repeatCount="indefinite" />
+                </ellipse>
+            </g>
+            {/* temple amber reflection */}
+            <g fill="#FFC247" opacity="0.14">
+                <ellipse cx="300" cy="260" rx="10" ry="1.4" />
+                <ellipse cx="300" cy="270" rx="16" ry="1.2" />
+                <ellipse cx="300" cy="282" rx="22" ry="1" />
+            </g>
+            {/* ripples */}
+            <g stroke="#2F7A4F" strokeWidth="1" opacity="0.45" fill="none">
+                <path d="M40,272 Q70,270 100,272">
+                    <animate attributeName="opacity" values="0.25;0.5;0.25" dur="5s" repeatCount="indefinite" />
+                </path>
+                <path d="M250,284 Q280,282 310,284">
+                    <animate attributeName="opacity" values="0.45;0.2;0.45" dur="6s" repeatCount="indefinite" />
+                </path>
+                <path d="M430,276 Q460,274 490,276">
+                    <animate attributeName="opacity" values="0.3;0.5;0.3" dur="5.5s" repeatCount="indefinite" />
+                </path>
+                <path d="M520,266 Q545,264 570,266">
+                    <animate attributeName="opacity" values="0.3;0.5;0.3" dur="4.8s" repeatCount="indefinite" />
+                </path>
+            </g>
+            {/* lily pads + night lotus */}
+            <g>
+                <ellipse cx="110" cy="276" rx="15" ry="5" fill="#16432A" />
+                <path d="M110,276 L101,272" stroke="#0A1810" strokeWidth="1" />
+                <circle cx="116" cy="273" r="2.4" fill="#FFB0D8" />
+                <circle cx="116" cy="273" r="1" fill="#FFF0C0" />
+                <ellipse cx="360" cy="286" rx="17" ry="6" fill="#16432A" />
+                <ellipse cx="180" cy="290" rx="13" ry="4.5" fill="#16432A" />
+                <circle cx="184" cy="288" r="2" fill="#A8E5C8" />
+            </g>
 
-            {/* Crocodile in water */}
-            <g transform="translate(160,265)" fill="#0A1810">
-                <ellipse cx="0" cy="0" rx="46" ry="3" />
-                <path d="M-32,-1 L-38,-3 L-28,-3 Z" />
-                <path d="M-22,-2 L-26,-4 L-16,-4 Z" />
-                <path d="M-8,-2 L-12,-4 L-2,-4 Z" />
-                <path d="M8,-2 L4,-4 L14,-4 Z" />
-                <path d="M22,-2 L18,-4 L28,-4 Z" />
-                <circle cx="34" cy="-2" r="1.4" fill="#FFC247">
-                    <animate attributeName="opacity" values="0.8;1;0.8" dur="2.4s" repeatCount="indefinite" />
+            {/* Tortoise on the left bank */}
+            <g transform="translate(72,249)" fill="#0A1810">
+                <path d="M-16,0 Q-16,-14 0,-15 Q16,-14 16,0 Z" />
+                <path d="M-17,0 Q0,3 17,0 L16,2 Q0,5 -16,2 Z" fill="#0E2417" />
+                <path d="M16,-4 Q24,-6 26,-2 Q24,1 16,-1 Z" />
+                <circle cx="23" cy="-3" r="0.8" fill="#FFC247" />
+                <rect x="-12" y="-2" width="5" height="5" />
+                <rect x="6" y="-2" width="5" height="5" />
+                <path d="M-16,-2 L-21,0 L-16,1 Z" />
+            </g>
+            <g transform="translate(72,249)" stroke="#2F7A4F" strokeWidth="0.7" opacity="0.4" fill="none">
+                <path d="M-10,-2 Q-10,-11 -8,-13" />
+                <path d="M0,-3 L0,-15" />
+                <path d="M10,-2 Q10,-11 8,-13" />
+                <path d="M-15,-1 Q0,-6 15,-1" />
+            </g>
+
+            {/* Crocodile — hero, half-submerged */}
+            <g transform="translate(152,260)">
+                <ellipse cx="0" cy="7" rx="72" ry="3.5" fill="#0A1810" opacity="0.45" />
+                <path d="M-78,-1 Q-96,-1 -112,3 Q-100,1 -82,0 Z" fill="#0B1A11" />
+                <path d="M-78,0 Q-80,-4 -70,-5 Q-30,-8 6,-8 Q40,-9 58,-7 Q72,-6 84,-6 Q92,-7 94,-3 Q90,-1 80,-1 Q40,0 0,0 Z" fill="#0B1A11" />
+                <g fill="#0B1A11">
+                    <path d="M-58,-6 L-52,-12 L-46,-6 Z" />
+                    <path d="M-44,-7 L-38,-13 L-32,-7 Z" />
+                    <path d="M-30,-7 L-24,-14 L-18,-7 Z" />
+                    <path d="M-16,-8 L-10,-14 L-4,-8 Z" />
+                    <path d="M-2,-8 L4,-14 L10,-8 Z" />
+                    <path d="M12,-8 L18,-13 L24,-8 Z" />
+                    <path d="M26,-8 L32,-12 L38,-8 Z" />
+                </g>
+                <path d="M60,-7 Q66,-12 72,-8 Z" fill="#0B1A11" />
+                <circle cx="66" cy="-8" r="2" fill="#FFC247">
+                    <animate attributeName="opacity" values="0.75;1;0.75" dur="2.6s" repeatCount="indefinite" />
                 </circle>
-                <circle cx="38" cy="-2" r="1.4" fill="#FFC247">
-                    <animate attributeName="opacity" values="0.8;1;0.8" dur="2.4s" repeatCount="indefinite" />
+                <circle cx="66.5" cy="-8.6" r="0.7" fill="#FFF0C0" />
+                <path d="M88,-6 Q94,-9 96,-5 Q92,-3 88,-4 Z" fill="#0B1A11" />
+                <circle cx="92" cy="-6" r="0.6" fill="#1F4A2A" />
+                <g stroke="#2F7A4F" strokeWidth="0.8" opacity="0.5" fill="none">
+                    <path d="M-90,1 Q-78,3 -66,1">
+                        <animate attributeName="opacity" values="0.2;0.5;0.2" dur="4s" repeatCount="indefinite" />
+                    </path>
+                    <path d="M70,1 Q84,3 98,1">
+                        <animate attributeName="opacity" values="0.4;0.15;0.4" dur="4.5s" repeatCount="indefinite" />
+                    </path>
+                </g>
+            </g>
+
+            {/* Lurking caiman — eyes + snout at the waterline */}
+            <path d="M428,270 Q440,267 452,270 Q440,272 428,270 Z" fill="#0A1810" />
+            <g fill="#FFC247">
+                <circle cx="436" cy="266" r="1.5">
+                    <animate attributeName="opacity" values="1;0.3;1" dur="3.3s" repeatCount="indefinite" />
+                </circle>
+                <circle cx="442" cy="266" r="1.5">
+                    <animate attributeName="opacity" values="1;0.3;1" dur="3.3s" repeatCount="indefinite" />
+                </circle>
+                {/* eyes lurking in the foliage */}
+                <circle cx="40" cy="184" r="1.4">
+                    <animate attributeName="opacity" values="1;0.35;1" dur="2.8s" repeatCount="indefinite" />
+                </circle>
+                <circle cx="46" cy="184" r="1.4">
+                    <animate attributeName="opacity" values="1;0.35;1" dur="2.8s" repeatCount="indefinite" />
+                </circle>
+                <circle cx="556" cy="182" r="1.4">
+                    <animate attributeName="opacity" values="1;0.3;1" dur="3.6s" repeatCount="indefinite" />
+                </circle>
+                <circle cx="562" cy="182" r="1.4">
+                    <animate attributeName="opacity" values="1;0.3;1" dur="3.6s" repeatCount="indefinite" />
                 </circle>
             </g>
 
-            {/* Ripples */}
-            <g stroke="#1F4A2A" strokeWidth="1" opacity="0.45" fill="none">
-                <path d="M40,275 Q60,273 80,275" />
-                <path d="M260,282 Q280,280 300,282" />
-                <path d="M420,272 Q440,270 460,272" />
-                <path d="M520,278 Q540,276 560,278" />
+            {/* Serpent draped on a branch — upper right */}
+            <path d="M600,136 Q535,140 466,156" stroke="#15281A" strokeWidth="6" fill="none" strokeLinecap="round" />
+            <g>
+                <path d="M560,150 Q540,142 520,150 Q500,158 484,150 Q470,144 462,152"
+                      fill="none" stroke="url(#sc-rp-snake)" strokeWidth="7" strokeLinecap="round" />
+                <path d="M462,152 Q452,150 446,140 Q442,132 448,126" fill="none" stroke="url(#sc-rp-snake)" strokeWidth="5.5" strokeLinecap="round" />
+                <path d="M448,126 Q442,121 449,118 Q455,116 458,121 Q458,126 452,127 Z" fill="#33824A" />
+                <circle cx="452" cy="122" r="1.2" fill="#FFC247">
+                    <animate attributeName="opacity" values="0.7;1;0.7" dur="2.4s" repeatCount="indefinite" />
+                </circle>
+                <g stroke="#E0384A" strokeWidth="0.9" strokeLinecap="round" fill="none">
+                    <path d="M457,120 L464,117 M457,120 L464,121">
+                        <animate attributeName="opacity" values="0;0;1;0;0;0;0" dur="3.2s" repeatCount="indefinite" />
+                    </path>
+                </g>
+                <g stroke="#9FD8AC" strokeWidth="0.8" opacity="0.45" strokeLinecap="round">
+                    <line x1="532" y1="148" x2="534" y2="151" />
+                    <line x1="510" y1="152" x2="512" y2="155" />
+                    <line x1="492" y1="150" x2="494" y2="153" />
+                    <line x1="470" y1="150" x2="472" y2="153" />
+                </g>
+            </g>
+
+            {/* Big foreground leaves framing the corners */}
+            <g transform="translate(0,300)">
+                <path d="M8,-2 C 6,-60 26,-100 70,-120 C 40,-66 28,-34 20,-2 Z" fill="#06120B" />
+                <path d="M0,-2 C 18,-46 56,-66 100,-74 C 60,-50 34,-26 14,2 Z" fill="#081710" />
+                <g stroke="#173E24" strokeWidth="1" fill="none" opacity="0.55">
+                    <path d="M12,-4 Q34,-66 66,-114" />
+                    <path d="M6,-4 Q44,-50 94,-70" />
+                </g>
+                <path d="M8,-2 C 6,-60 26,-100 70,-120" fill="none" stroke="#2F7A4F" strokeWidth="1" opacity="0.3" />
+            </g>
+            <g transform="translate(600,300) scale(-1,1)">
+                <path d="M8,-2 C 6,-60 26,-100 70,-120 C 40,-66 28,-34 20,-2 Z" fill="#06120B" />
+                <path d="M0,-2 C 18,-46 56,-66 100,-74 C 60,-50 34,-26 14,2 Z" fill="#081710" />
+                <g stroke="#173E24" strokeWidth="1" fill="none" opacity="0.55">
+                    <path d="M12,-4 Q34,-66 66,-114" />
+                    <path d="M6,-4 Q44,-50 94,-70" />
+                </g>
+                <path d="M8,-2 C 6,-60 26,-100 70,-120" fill="none" stroke="#2F7A4F" strokeWidth="1" opacity="0.3" />
             </g>
 
             {/* Foreground reeds */}
             <g stroke="#0A1810" strokeWidth="2" strokeLinecap="round" fill="none">
-                <path d="M30,295 Q32,260 28,232" />
-                <path d="M50,295 Q54,255 50,222" />
-                <path d="M70,295 Q72,265 68,238" />
-                <path d="M540,295 Q544,260 540,228" />
-                <path d="M560,295 Q562,265 558,238" />
-                <path d="M580,295 Q582,260 578,228" />
+                <path d="M24,300 Q28,262 22,232" />
+                <path d="M44,300 Q48,256 44,222" />
+                <path d="M64,300 Q66,266 60,238" />
+                <path d="M86,300 Q90,270 86,246" />
+                <path d="M540,300 Q544,260 540,228" />
+                <path d="M560,300 Q562,266 556,238" />
+                <path d="M580,300 Q584,260 580,226" />
             </g>
-            {/* Reed tips */}
             <g fill="#1F4A2A">
-                <ellipse cx="28" cy="232" rx="1.5" ry="3" />
-                <ellipse cx="50" cy="222" rx="1.5" ry="3" />
-                <ellipse cx="68" cy="238" rx="1.5" ry="3" />
-                <ellipse cx="540" cy="228" rx="1.5" ry="3" />
-                <ellipse cx="558" cy="238" rx="1.5" ry="3" />
-                <ellipse cx="578" cy="228" rx="1.5" ry="3" />
+                <ellipse cx="22" cy="232" rx="1.6" ry="4" />
+                <ellipse cx="44" cy="222" rx="1.6" ry="4" />
+                <ellipse cx="60" cy="238" rx="1.5" ry="3.5" />
+                <ellipse cx="86" cy="246" rx="1.5" ry="3.5" />
+                <ellipse cx="540" cy="228" rx="1.6" ry="4" />
+                <ellipse cx="556" cy="238" rx="1.5" ry="3.5" />
+                <ellipse cx="580" cy="226" rx="1.6" ry="4" />
+            </g>
+
+            {/* Fireflies + glowing spores */}
+            <g fill="#A8E5C8">
+                <circle cx="180" cy="118" r="1.6" opacity="0.9">
+                    <animate attributeName="opacity" values="0.2;1;0.2" dur="2.5s" repeatCount="indefinite" />
+                    <animate attributeName="cy" values="118;110;118" dur="9s" repeatCount="indefinite" />
+                </circle>
+                <circle cx="330" cy="132" r="1.5" opacity="0.9">
+                    <animate attributeName="opacity" values="0.2;1;0.2" dur="3s" repeatCount="indefinite" />
+                </circle>
+                <circle cx="250" cy="150" r="1.2" opacity="0.9">
+                    <animate attributeName="opacity" values="0.2;1;0.2" dur="2.2s" repeatCount="indefinite" />
+                    <animate attributeName="cx" values="250;262;250" dur="12s" repeatCount="indefinite" />
+                </circle>
+                <circle cx="120" cy="144" r="1.4" opacity="0.9">
+                    <animate attributeName="opacity" values="0.2;1;0.2" dur="2.8s" repeatCount="indefinite" />
+                </circle>
+                <circle cx="408" cy="138" r="1.2" opacity="0.9">
+                    <animate attributeName="opacity" values="0.2;1;0.2" dur="3.4s" repeatCount="indefinite" />
+                </circle>
+            </g>
+            <g fill="#FFE08A">
+                <circle cx="300" cy="170" r="1.3" opacity="0.85">
+                    <animate attributeName="opacity" values="0.15;0.9;0.15" dur="3.6s" repeatCount="indefinite" />
+                    <animate attributeName="cy" values="170;162;170" dur="10s" repeatCount="indefinite" />
+                </circle>
+                <circle cx="210" cy="128" r="1.1" opacity="0.85">
+                    <animate attributeName="opacity" values="0.15;0.9;0.15" dur="2.9s" repeatCount="indefinite" />
+                </circle>
             </g>
         </SceneWrap>
     );
