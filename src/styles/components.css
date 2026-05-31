@@ -1811,6 +1811,70 @@
 }
 .capitals-subtitle { margin: 0; }
 
+/* ==== United States mode ==== */
+/* Shares the .capitals-prompt headline + the .quiz-box flash layer with the
+   Capitals quiz. Adds the clickable 2D US map and a small sub-mode pill. */
+.us-states-prompt {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-sm);
+    width: 100%;
+}
+.us-map-wrap {
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: var(--space-md);
+    background: var(--color-bg-soft);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+}
+.us-map {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+.us-map__separator { stroke: var(--color-border-strong); stroke-width: 1.5; opacity: 0.5; }
+.us-map__state {
+    fill: var(--color-bg);
+    stroke: var(--color-border-strong);
+    stroke-width: 0.8;
+    transition: fill var(--dur-base), transform var(--dur-base);
+    cursor: pointer;
+    outline: none;
+}
+.us-map__state:hover { fill: var(--color-primary-soft, #cfe8ff); }
+.us-map__state:focus-visible { fill: var(--color-primary-soft, #cfe8ff); stroke: var(--color-primary); stroke-width: 1.5; }
+.us-map__state.is-prompt {
+    fill: var(--color-accent-soft, #ffd6a5);
+    stroke: var(--color-accent, #f59e0b);
+    stroke-width: 1.5;
+}
+.us-map__state.is-correct {
+    fill: var(--color-success, #34d399);
+    stroke: var(--color-success-deep, #047857);
+    stroke-width: 1.5;
+}
+.us-map__state.is-wrong {
+    fill: var(--color-danger, #f87171);
+    stroke: var(--color-danger-deep, #b91c1c);
+    stroke-width: 1.5;
+}
+.us-map__states.is-disabled .us-map__state { cursor: default; }
+.us-map__states.is-disabled .us-map__state:hover { fill: var(--color-bg); }
+.us-map__states.is-disabled .us-map__state.is-correct:hover { fill: var(--color-success, #34d399); }
+.us-map__states.is-disabled .us-map__state.is-wrong:hover { fill: var(--color-danger, #f87171); }
+.us-map__label {
+    font-family: var(--font-body);
+    font-size: 11px;
+    font-weight: 700;
+    fill: var(--color-ink-soft);
+    pointer-events: none;
+    user-select: none;
+}
+
 /* Settings panel (legacy class compat) */
 .settings-box .switch {
     position: relative;

@@ -56,6 +56,14 @@ import {
     flushCapitals,
     setCapitalsAuthed,
 } from './lib/capitals';
+import {
+    ensureUsStatesCatalog,
+    loadUsStates,
+    resetUsStates,
+    flushUsStates,
+    setUsStatesAuthed,
+} from './lib/usStates';
+import UnitedStatesMenu from './components/quizzes/UnitedStatesMenu';
 import { variants } from './motion/index';
 
 // Heavy bonus modes — lazy-loaded
@@ -64,6 +72,8 @@ const FrenzyQuiz       = lazy(() => import('./components/quizzes/FrenzyQuiz'));
 const LongestRouteQuiz = lazy(() => import('./components/quizzes/LongestRouteQuiz'));
 const LanguageQuiz     = lazy(() => import('./components/quizzes/LanguageQuiz'));
 const CapitalsQuiz     = lazy(() => import('./components/quizzes/CapitalsQuiz'));
+// US-states mode bakes in the full SVG path data — keep it out of the main bundle.
+const UnitedStatesQuiz = lazy(() => import('./components/quizzes/UnitedStatesQuiz'));
 // Globe mode pulls in Three.js + earcut; keep it out of the main bundle.
 const GlobeQuiz        = lazy(() => import('./components/quizzes/GlobeQuiz'));
 
@@ -100,6 +110,8 @@ function App() {
     const [quizMode, setQuizMode] = useState(null);
     const [quizCategory, setQuizCategory] = useState({ type: 'all', value: null });
     const [capitalsDeck, setCapitalsDeck] = useState({ type: 'all', value: null });
+    const [usDeck, setUsDeck] = useState({ type: 'all', value: null });
+    const [usSubMode, setUsSubMode] = useState('map'); // 'map' | 'capitals' | 'mixed'
     const [tutorialActive, setTutorialActive] = useState(false);
     // Which friend the user is currently spectating. Set when an Eye icon is
     // clicked in the Friends list; consumed by the 'spectator' view case.
@@ -201,6 +213,7 @@ function App() {
     // home-screen mastery badge can show "N/total" without mounting the quiz.
     useEffect(() => {
         ensureCapitalsCatalog();
+        ensureUsStatesCatalog();
     }, []);
 
     // Persist progress only for logged-in users; guests are intentionally
@@ -242,6 +255,7 @@ function App() {
             if (authedRef.current) flushBattlepass();
             if (authedRef.current) flushQuests();
             if (authedRef.current) flushCapitals();
+            if (authedRef.current) flushUsStates();
         };
         const onVisibility = () => { if (document.visibilityState === 'hidden') flush(); };
         window.addEventListener('pagehide', flush);
@@ -338,6 +352,11 @@ function App() {
                     setCapitalsAuthed(true);
                     try { const c = await api.get('/capitals'); loadCapitals(c.stats); } catch (_) { /* mode will lazy-retry */ }
                 }
+                // United States mastery — same shape as capitals, scoped to the 50 states.
+                if (!cancelled) {
+                    setUsStatesAuthed(true);
+                    try { const u = await api.get('/us-states'); loadUsStates(u.stats); } catch (_) { /* mode will lazy-retry */ }
+                }
                 // Recompute unlocked achievements from the just-loaded progress so the
                 // account's count + showcase are correct. Without this they stay at the
                 // load-time defaults (unlocked=[]) and a later cosmetic-only persist
@@ -378,6 +397,8 @@ function App() {
                 resetBattlepass();
                 setCapitalsAuthed(false);
                 resetCapitals();
+                setUsStatesAuthed(false);
+                resetUsStates();
                 answerTotalsRef.current = { correct: 0, incorrect: 0 };
                 // Run/best streaks live in device-global localStorage; clear them
                 // on logout/guest so one account's streaks don't bleed into the
@@ -439,11 +460,13 @@ function App() {
             // Wipe capital mastery too (the /stats/reset above already NULLs the
             // column server-side; clear the in-memory store to match).
             loadCapitals({});
+            loadUsStates({});
         } else {
             // Guests: clear the in-memory pet + profile (never persisted).
             resetPet();
             resetProfile();
             resetCapitals();
+            resetUsStates();
         }
         setView('menu');
     };
@@ -595,6 +618,20 @@ function App() {
                 return (
                     <Suspense fallback={<LazyFallback label="Loading Capitals Quiz…" />}>
                         <CapitalsQuiz setView={setView} includeTerritories={includeTerritories} deck={capitalsDeck} />
+                    </Suspense>
+                );
+            case 'united-states-menu':
+                return (
+                    <UnitedStatesMenu
+                        setView={setView}
+                        setUsDeck={setUsDeck}
+                        setUsSubMode={setUsSubMode}
+                    />
+                );
+            case 'united-states-quiz':
+                return (
+                    <Suspense fallback={<LazyFallback label="Loading United States…" />}>
+                        <UnitedStatesQuiz setView={setView} subMode={usSubMode} deck={usDeck} />
                     </Suspense>
                 );
             case 'bonus-menu':

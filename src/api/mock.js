@@ -186,6 +186,8 @@ const routes = [
         store.flagStats = null;
         store.bonusScores = null;
         store.bp.counters = {};
+        store.capitalStats = {};
+        store.usStateStats = {};
         save();
         return { ok: true };
     }},
@@ -384,6 +386,14 @@ const routes = [
     { m: 'POST', p: /^\/mp\//,            h: () => { const e = new Error('Multiplayer requires the live server'); e.status = 503; throw e; }},
     { m: 'GET',  p: /^\/mp\//,            h: () => { const e = new Error('Multiplayer requires the live server'); e.status = 503; throw e; }},
     { m: 'PUT',  p: /^\/mp\//,            h: () => { const e = new Error('Multiplayer requires the live server'); e.status = 503; throw e; }},
+
+    // ---- Capitals + United States mastery -----------------------------
+    // Both stores own their schedule client-side; the mock just persists the
+    // blob so it survives a reload during local dev.
+    { m: 'GET',  p: /^\/capitals$/,       h: () => ({ stats: store.capitalStats || {} }) },
+    { m: 'PUT',  p: /^\/capitals$/,       h: ({ body }) => { store.capitalStats = (body && body.stats) || {}; save(); return { ok: true, stats: store.capitalStats }; }},
+    { m: 'GET',  p: /^\/us-states$/,      h: () => ({ stats: store.usStateStats || {} }) },
+    { m: 'PUT',  p: /^\/us-states$/,      h: ({ body }) => { store.usStateStats = (body && body.stats) || {}; save(); return { ok: true, stats: store.usStateStats }; }},
 ];
 
 export function mockRequest(method, path, body) {

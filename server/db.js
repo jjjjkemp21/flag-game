@@ -156,6 +156,13 @@ if (!hasCol('battlepass_json')) db.exec('ALTER TABLE users ADD COLUMN battlepass
 // lastAnswered } }. Entirely separate from flag/geo mastery. See
 // server/routes/capitals.js and src/lib/capitals.js.
 if (!hasCol('capital_stats_json')) db.exec('ALTER TABLE users ADD COLUMN capital_stats_json TEXT');
+// ---- United States ----
+// Per-state mastery for the US sub-mode under Capital, keyed by the lowercase
+// two-letter postal code. Shape: { [code]: { correct, incorrect, streak,
+// nextReview, lastAnswered } }. Both sub-modes (map + capitals) share one
+// stat per state — like Globe's find/name pair. See server/routes/usStates.js
+// and src/lib/usStates.js.
+if (!hasCol('us_state_stats_json')) db.exec('ALTER TABLE users ADD COLUMN us_state_stats_json TEXT');
 // ---- XP Road (removed) ----
 // These two columns backed the now-removed XP Road feature. They're retained
 // rather than dropped — SQLite can't drop a column without a full table

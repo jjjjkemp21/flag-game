@@ -105,6 +105,17 @@ const INFO = {
             'Your best score is added to your total XP.',
         ],
     },
+    unitedStates: {
+        title: 'United States — scoring',
+        lines: [
+            'All 50 states, two ways to play, switchable from the menu.',
+            `Map: a state name is shown — tap that state on the 2D map. Pays a ${mult('us-states-map')} mode bonus.`,
+            `Capitals: a state name is shown — pick its capital from four options. Pays a ${mult('us-states-capitals')} mode bonus.`,
+            'Both sub-modes share one per-state mastery streak — getting a state right either way grows the same meter.',
+            'Wrong answers reset your run streak. A hot streak multiplies XP from 1× up to a 2× cap, reached at a 30-answer streak.',
+            'Master a state by answering it correctly 6 times in a row.',
+        ],
+    },
 };
 
 function ScoringInfo({ mode, className = '' }) {
