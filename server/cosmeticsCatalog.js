@@ -14,6 +14,8 @@ const COLORS = {
     bp_komodo: 999999, bp_anaconda: 999999, bp_basilisk: 999999, bp_chameleon: 999999,
     bp_dragon_fire: 999999, bp_frost_serpent: 999999, bp_cosmic_drake: 999999,
     bp_world_serpent: 999999, // S1 extension (tier 30)
+    // Pride collection.
+    pride_aurora: 3200,
 };
 
 const HATS = {
@@ -37,6 +39,8 @@ const HATS = {
     bp_frill_emerald: 999999, bp_frill_crimson: 999999, bp_frill_violet: 999999,
     bp_scale_helm: 999999,
     bp_wyvern_crown: 999999, // S1 extension (tier 26)
+    // Pride collection.
+    pride_sash: 1600,
 };
 
 const GLASSES = {
@@ -59,6 +63,8 @@ const GLASSES = {
     bp_snake_eyes: 999999, bp_serpent_eyes: 999999, bp_lizard_eyes: 999999,
     bp_dragon_gaze: 999999,
     bp_apex_visor: 999999, // S1 extension (tier 27)
+    // Pride collection.
+    pride_heart_shades: 1900,
 };
 
 const EFFECTS = {
@@ -67,6 +73,8 @@ const EFFECTS = {
     // Atlas Pass exclusives.
     bp_scales: 999999, bp_breath: 999999,
     bp_meteor: 999999, // S1 extension (tier 29)
+    // Pride collection.
+    pride_aurora_bands: 2800,
 };
 
 // Emotes. Same shape as everywhere else — id -> price. `wave` ships free
@@ -80,6 +88,8 @@ const EMOTES = {
     // Atlas Pass exclusives — gated by isBpOnly() below, not purchasable directly.
     bp_dragon_roar: 999999, bp_scale_flex: 999999, bp_serpent_coil: 999999,
     bp_wing_beat: 999999, // S1 extension (tier 28)
+    // Pride collection.
+    pride_flag_wave: 1200,
 };
 
 const MOUTHS = {
@@ -93,6 +103,8 @@ const MOUTHS = {
     lollipop_red: 660, lollipop_swirl: 940, whistle: 760, cigar: 820, pipe: 1080,
     vampire_fangs: 1280, grillz: 1450, surgeon_mask: 920, surgeon_mask_blk: 1100,
     pilot_mask: 1700, gas_mask: 2300,
+    // Pride collection.
+    pride_bubblegum: 700,
 };
 
 // Scenes — backgrounds for Atlas on the homepage hero. One per continent
@@ -103,6 +115,7 @@ const SCENES = {
     africa: 2000, asia: 2000, europe: 2000, north_america: 2000,
     south_america: 2000, oceania: 2000, antarctica: 2000,
     bp_reptile: 999999,
+    pride_parade: 2000,
 };
 
 const CATALOG = { color: COLORS, hat: HATS, glasses: GLASSES, mouth: MOUTHS, effect: EFFECTS, scene: SCENES, emote: EMOTES };

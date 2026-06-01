@@ -108,6 +108,22 @@ export const COLORS = {
         ] },
     },
 
+    // ---- Pride collection (one cosmetic per category, see HATS/GLASSES/etc.)
+    // Cycles the literal 6-stripe pride flag palette as the gradient stops, in
+    // sequence. Distinct from Rainbow Prism (which cycles a generic warm/cool
+    // mix) — this reads as deliberately "Pride." Mid-tier animated price band.
+    pride_aurora: {
+        name: 'Pride Aurora', xp: 3200, stroke: '#7A4FD0',
+        stops: ['#E40303', '#FFA52C', '#FFED00'],
+        anim: { dur: '8s', frames: [
+            ['#E40303', '#FFA52C', '#FFED00'],  // red → orange → yellow
+            ['#FFA52C', '#FFED00', '#008026'],  // orange → yellow → green
+            ['#FFED00', '#008026', '#004CFF'],  // yellow → green → blue
+            ['#008026', '#004CFF', '#732982'],  // green → blue → purple
+            ['#004CFF', '#732982', '#E40303'],  // blue → purple → back to red
+        ] },
+    },
+
     // ---- Animal patterns ------------------------------------------------
     // `pattern: { kind, base, accent, accent2? }` is honoured by Mascot.jsx —
     // it switches the globe fill to an SVG <pattern> built from the kind.
@@ -410,6 +426,11 @@ export const HATS = {
     // Season 1 extension (tier 26) — a wyvern-bone circlet of upswept scaled
     // spikes around a central gem; icy teal keratin with gold + frost accents.
     bp_wyvern_crown:   { name: 'Wyvern Crown',   xp: 999999, bpOnly: true, shape: 'wyvernCrown', c: hc('#2FA0C0', '#15506A', '#FFD86B', '#A8E8FF') },
+
+    // ---- Pride collection (member of the cross-category Pride set) ---------
+    // Diagonal sash across Atlas's globe, six rainbow stripes baked into the
+    // shape — the palette IS the design, so the colorway dict is unused.
+    pride_sash:        { name: 'Pride Sash',        xp: 1600, shape: 'prideSash', c: {} },
 };
 
 // ---- Glasses colorways -----------------------------------------------------
@@ -495,6 +516,11 @@ export const GLASSES = {
     // Season 1 extension (tier 27) — a single wraparound apex visor with twin
     // glowing slits and a crest ridge; dark-teal frame, glowing cyan lens.
     bp_apex_visor:    { name: 'Apex Visor',      xp: 999999, bpOnly: true, shape: 'apexVisor',  c: gc('#15506A', '#3FE0D0', '#FFD86B') },
+
+    // ---- Pride collection -------------------------------------------------
+    // Heart-shaped lenses, each filled with a vertical 6-stripe rainbow. Frame
+    // stays dark for contrast; the rainbow is the lens, not the rim.
+    pride_heart_shades: { name: 'Pride Heart Shades', xp: 1900, shape: 'prideHeartShades', c: gc('#1F1A3B', '#FFFFFF') },
 };
 
 // ---- Mouth colorways -------------------------------------------------------
@@ -562,6 +588,11 @@ export const MOUTHS = {
     surgeon_mask_blk:{ name: 'Black Mask',         xp: 1100, shape: 'surgeonMask', hideMouth: true, c: MASK_BLACK },
     pilot_mask:      { name: 'Pilot Oxygen Mask',  xp: 1700, shape: 'pilotMask',  hideMouth: true, c: hc('#1F2A40', '#0F1428', '#FFC247') },
     gas_mask:        { name: 'Gas Mask',           xp: 2300, shape: 'gasMask',    hideMouth: true, c: MASK_GREEN },
+
+    // ---- Pride collection -------------------------------------------------
+    // A rainbow-swirled bubblegum bubble — riff on the standard bubblegum
+    // shape but with the bubble's fill replaced by a 6-stripe radial swirl.
+    pride_bubblegum: { name: 'Pride Bubblegum', xp: 700, shape: 'prideBubblegum', c: hc('#FF5C6C', '#1F1A3B', '#FFFFFF') },
 };
 
 // ---- Effects ---------------------------------------------------------------
@@ -589,6 +620,11 @@ export const EFFECTS = {
     // Season 1 extension (tier 29) — meteors streaking down across the globe
     // with fiery trails + impact sparks. Fills the canvas, so not sizable.
     bp_meteor: { name: 'Meteor Storm',   xp: 999999, bpOnly: true, kind: 'meteorShower' },
+
+    // ---- Pride collection -------------------------------------------------
+    // Soft rainbow aurora bands drifting horizontally around Atlas — bands
+    // shift opacity + drift, leaving a gentle shimmer rather than a solid wash.
+    pride_aurora_bands: { name: 'Pride Aurora Bands', xp: 2800, kind: 'prideAuroraBands', sizable: true },
 };
 
 // Which effects support the player-controlled position/size transform.
@@ -631,6 +667,12 @@ export const EMOTES = {
     // Season 1 extension (tier 28) — Atlas unfurls a pair of dragon wings and
     // beats them, kicking up a wind gust + "SOAR!" banner.
     bp_wing_beat:    { name: 'Wing Beat',       xp: 999999, bpOnly: true, kind: 'wingBeat' },
+
+    // ---- Pride collection -------------------------------------------------
+    // Atlas raises a rainbow pride flag and waves it — riffs on the free
+    // `wave` emote's rocking motion with a 6-stripe pennant in place of the
+    // brand colors.
+    pride_flag_wave: { name: 'Pride Flag Wave', xp: 1200, kind: 'prideFlagWave' },
 };
 
 // Items that ship as free starters — owned without showing up in
@@ -661,6 +703,10 @@ export const SCENES = {
     oceania:       { name: 'Pacific Shores',      xp: 2000 },
     antarctica:    { name: 'Antarctic Aurora',    xp: 2000 },
     bp_reptile:    { name: 'Reptile Kingdom',     xp: 999999, bpOnly: true },
+
+    // Pride Parade — aurora-stripe sky with sweeping rainbow ribbons over a
+    // dusk silhouette skyline. Standard scene price (matches continent scenes).
+    pride_parade:  { name: 'Pride Parade',        xp: 2000 },
 };
 
 export const CATEGORIES = [

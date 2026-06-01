@@ -1925,6 +1925,92 @@ function Reptile() {
     );
 }
 
+// ---- Pride Parade ---------------------------------------------------------
+// Aurora-stripe sky over a dusk silhouette. Six soft rainbow ribbons sweep
+// horizontally across a deep purple-to-rose gradient, with a low confetti
+// drift + a distant city skyline at the bottom for grounding. Designed to
+// feel celebratory but not garish — long curves, low opacity, no hard edges.
+function PrideParade() {
+    return (
+        <SceneWrap id="pride-parade">
+            <defs>
+                <linearGradient id="sc-pp-sky" x1="0" y1="0" x2="0" y2="1">
+                    <Stop offset="0%" color="#241850" />
+                    <Stop offset="40%" color="#5B3FA0" />
+                    <Stop offset="78%" color="#C04F90" />
+                    <Stop offset="100%" color="#FF8A5B" />
+                </linearGradient>
+                <radialGradient id="sc-pp-glow" cx="50%" cy="80%" r="60%">
+                    <Stop offset="0%" color="#FFE3B0" opacity="0.55" />
+                    <Stop offset="100%" color="#FF8A5B" opacity="0" />
+                </radialGradient>
+                {/* One soft ribbon mask — every rainbow band reuses it for
+                    consistent feathering at the edges. */}
+                <linearGradient id="sc-pp-ribbon-fade" x1="0" y1="0" x2="1" y2="0">
+                    <Stop offset="0%" color="#FFFFFF" opacity="0" />
+                    <Stop offset="15%" color="#FFFFFF" opacity="1" />
+                    <Stop offset="85%" color="#FFFFFF" opacity="1" />
+                    <Stop offset="100%" color="#FFFFFF" opacity="0" />
+                </linearGradient>
+                <mask id="sc-pp-ribbon-mask">
+                    <rect width="600" height="300" fill="url(#sc-pp-ribbon-fade)" />
+                </mask>
+            </defs>
+
+            <rect width="600" height="300" fill="url(#sc-pp-sky)" />
+            <rect width="600" height="300" fill="url(#sc-pp-glow)" />
+
+            {/* Rainbow ribbons sweeping across the sky. Each ribbon is a wide
+                curved stroke at low opacity; the mask softens the entry/exit. */}
+            <g fill="none" strokeLinecap="round" mask="url(#sc-pp-ribbon-mask)">
+                {[
+                    { y: 50,  color: '#E40303', dur: '18s', amp: 8 },
+                    { y: 80,  color: '#FF8C00', dur: '17s', amp: 10 },
+                    { y: 110, color: '#FFED00', dur: '16s', amp: 9 },
+                    { y: 140, color: '#008026', dur: '15s', amp: 11 },
+                    { y: 170, color: '#004CFF', dur: '14s', amp: 10 },
+                    { y: 200, color: '#732982', dur: '13s', amp: 8 },
+                ].map((r, i) => (
+                    <path key={i} stroke={r.color} strokeWidth="14" opacity="0.55"
+                        d={`M-40 ${r.y} Q 150 ${r.y - r.amp} 300 ${r.y} T 640 ${r.y}`}>
+                        <animate attributeName="d"
+                            values={`M-40 ${r.y} Q 150 ${r.y - r.amp} 300 ${r.y} T 640 ${r.y};
+                                     M-40 ${r.y} Q 150 ${r.y + r.amp} 300 ${r.y} T 640 ${r.y};
+                                     M-40 ${r.y} Q 150 ${r.y - r.amp} 300 ${r.y} T 640 ${r.y}`}
+                            dur={r.dur} repeatCount="indefinite" />
+                        <animate attributeName="opacity" values="0.4;0.7;0.4" dur={r.dur} repeatCount="indefinite" />
+                    </path>
+                ))}
+            </g>
+
+            {/* Soft star/confetti drift in the upper sky. */}
+            <g fill="#FFE3B0" opacity="0.75">
+                {[[80, 30, '5s', 0], [220, 22, '6s', 1.2], [380, 36, '5.5s', 0.4], [520, 18, '6.5s', 2.1], [150, 60, '5s', 1.6], [460, 56, '6s', 0.9]].map(([cx, cy, dur, begin], i) => (
+                    <circle key={i} cx={cx} cy={cy} r="1.2">
+                        <animate attributeName="opacity" values="0.2;1;0.2" dur={dur} begin={`${begin}s`} repeatCount="indefinite" />
+                    </circle>
+                ))}
+            </g>
+
+            {/* Distant skyline silhouette — gives the sky something to sit
+                above, so the rainbow bands read as "over a parade" rather
+                than floating in space. */}
+            <g fill="#0F0820" opacity="0.92">
+                <path d="M0 240 L0 300 L600 300 L600 230 L568 220 L568 240 L540 240 L540 215 L510 205 L510 240 L478 240 L478 200 L450 188 L450 240 L416 240 L416 210 L392 200 L392 240 L356 240 L356 218 L330 208 L330 240 L300 240 L300 195 L268 185 L268 240 L236 240 L236 222 L210 212 L210 240 L180 240 L180 200 L152 192 L152 240 L120 240 L120 220 L94 212 L94 240 L62 240 L62 230 L34 222 L34 240 L0 230 Z" />
+            </g>
+
+            {/* A few golden confetti dots near the foreground catching light. */}
+            <g fill="#FFD86B">
+                {[[80, 250, '3s', 0], [220, 244, '3.5s', 1.0], [340, 252, '3s', 0.4], [460, 246, '4s', 1.6], [540, 254, '3.5s', 0.9]].map(([cx, cy, dur, begin], i) => (
+                    <circle key={i} cx={cx} cy={cy} r="2">
+                        <animate attributeName="opacity" values="0.3;0.95;0.3" dur={dur} begin={`${begin}s`} repeatCount="indefinite" />
+                    </circle>
+                ))}
+            </g>
+        </SceneWrap>
+    );
+}
+
 const SCENE_RENDERERS = {
     africa: Africa,
     asia: Asia,
@@ -1934,6 +2020,7 @@ const SCENE_RENDERERS = {
     oceania: Oceania,
     antarctica: Antarctica,
     bp_reptile: Reptile,
+    pride_parade: PrideParade,
 };
 
 // Render the equipped scene SVG. Returns null for `default` (or any unknown

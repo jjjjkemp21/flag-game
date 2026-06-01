@@ -5,6 +5,10 @@ import { HATS, GLASSES, MOUTHS, EFFECTS, EMOTES } from '../../lib/cosmetics';
 // Globe is centered at (48,48) with radius 34 (top edge ~y14); eyes sit at y46.
 // Each renderer takes a colorway object `c` so one shape yields many cosmetics.
 
+// Pride flag palette — Baker 6-stripe. Used as a baked-in colorway by every
+// Pride-collection shape so the whole set reads as a single coherent design.
+const PRIDE_STRIPES = ['#E40303', '#FF8C00', '#FFED00', '#008026', '#004CFF', '#732982'];
+
 const HAT_SHAPES = {
     party: (c) => (
         <g>
@@ -13,6 +17,42 @@ const HAT_SHAPES = {
             <circle cx="48" cy="-6" r="3.5" fill={c.accent} />
         </g>
     ),
+    // Pride collection — a rainbow ribbon wrapping the top of the globe. Six
+    // stripes drawn as a single clipped band so they curve with the globe
+    // silhouette, with the trailing tail of the sash dangling off the side. No
+    // colorway dict: the palette IS the design.
+    prideSash: () => {
+        const top = 6;       // band starts a hair above the head
+        const bandH = 18;    // total band height
+        const stripeH = bandH / 6;
+        return (
+            <g>
+                <defs>
+                    <clipPath id="pride-sash-clip">
+                        <path d="M22 18 Q48 4 74 18 Q48 26 22 18 Z" />
+                    </clipPath>
+                </defs>
+                {/* Six rainbow stripes painted across the band, clipped to the
+                    bandana silhouette so the edges curve naturally. */}
+                <g clipPath="url(#pride-sash-clip)">
+                    {PRIDE_STRIPES.map((color, i) => (
+                        <rect key={i} x="20" y={top + i * stripeH} width="56" height={stripeH + 0.4} fill={color} />
+                    ))}
+                </g>
+                {/* Soft outline + a thin highlight to fake the fabric fold. */}
+                <path d="M22 18 Q48 4 74 18 Q48 26 22 18 Z" fill="none" stroke="#1F1A3B" strokeWidth="1.2" />
+                <path d="M24 14 Q48 6 72 14" stroke="#FFFFFF" strokeWidth="0.7" fill="none" opacity="0.45" />
+                {/* Trailing tail at the left side — gives the sash motion. */}
+                <g>
+                    <path d="M22 18 L12 26 L20 28 L24 22 Z" fill="#FFFFFF" stroke="#1F1A3B" strokeWidth="1.1" />
+                    {PRIDE_STRIPES.map((color, i) => (
+                        <rect key={i} x="13.5" y={22 + i * 1.0} width="8" height="1.0" fill={color} opacity="0.95"
+                            transform={`rotate(-30 17 25)`} />
+                    ))}
+                </g>
+            </g>
+        );
+    },
     beanie: (c) => (
         <g>
             <path d="M22 22 Q48 -10 74 22 Z" fill={c.main} />
@@ -663,6 +703,41 @@ const HAT_SHAPES = {
 };
 
 const GLASS_SHAPES = {
+    // Pride collection — heart-shaped lenses each filled with horizontal
+    // pride stripes. Both hearts share a clipPath shape; the rainbow gets
+    // stamped through it so the stripes follow the heart silhouette. Frame
+    // stays dark for contrast (the rainbow is the lens, not the rim).
+    prideHeartShades: (c) => {
+        // Heart path coords match the existing `heart` shape; lens range Y 40-52.
+        const lensTop = 40;
+        const lensBot = 52;
+        const stripeH = (lensBot - lensTop) / 6;
+        const stripes = (clipId) => (
+            <g clipPath={`url(#${clipId})`}>
+                {PRIDE_STRIPES.map((color, i) => (
+                    <rect key={i} x="25" y={lensTop + i * stripeH} width="50" height={stripeH + 0.5} fill={color} />
+                ))}
+            </g>
+        );
+        return (
+            <g strokeLinejoin="round">
+                <defs>
+                    <clipPath id="pride-heart-l">
+                        <path d="M38 52 L31 45 a3.5 3.5 0 0 1 5 -4.6 l2 2 l2 -2 a3.5 3.5 0 0 1 5 4.6 Z" />
+                    </clipPath>
+                    <clipPath id="pride-heart-r">
+                        <path d="M58 52 L51 45 a3.5 3.5 0 0 1 5 -4.6 l2 2 l2 -2 a3.5 3.5 0 0 1 5 4.6 Z" />
+                    </clipPath>
+                </defs>
+                {stripes('pride-heart-l')}
+                {stripes('pride-heart-r')}
+                {/* Outline the hearts on top of the stripe fill. */}
+                <path d="M38 52 L31 45 a3.5 3.5 0 0 1 5 -4.6 l2 2 l2 -2 a3.5 3.5 0 0 1 5 4.6 Z" fill="none" stroke={c.frame || '#1F1A3B'} strokeWidth="1.5" />
+                <path d="M58 52 L51 45 a3.5 3.5 0 0 1 5 -4.6 l2 2 l2 -2 a3.5 3.5 0 0 1 5 4.6 Z" fill="none" stroke={c.frame || '#1F1A3B'} strokeWidth="1.5" />
+                <path d="M46 46 L50 46" stroke={c.frame || '#1F1A3B'} strokeWidth="2" />
+            </g>
+        );
+    },
     round: (c) => (
         <g stroke={c.frame} strokeWidth="2.5" fill={c.lens}>
             <circle cx="38" cy="46" r="8" />
@@ -1060,6 +1135,39 @@ const GLASS_SHAPES = {
 // mood mouth is just a thin stroke — every cosmetic below uses bold filled
 // shapes with dark outlines to match the mascot's chunky vector style.
 const MOUTH_SHAPES = {
+    // Pride collection — rainbow bubblegum bubble. Riffs on the standard
+    // bubblegum shape (parted lips + gum neck + round bubble) but the bubble
+    // itself is filled with 6 angled pride stripes clipped to the circle.
+    prideBubblegum: () => {
+        const cx = 62, cy = 56, r = 7;
+        // Stripes are diagonal so the rainbow reads even on a small circle.
+        // We rotate a square block of stripes and clip it to the bubble.
+        return (
+            <g strokeLinejoin="round">
+                {/* Parted lips */}
+                <path d="M40 59.5 Q 44 58 47 59 Q 46 61.5 43.5 61.5 Q 41 61.5 40 59.5 Z" fill="#2A0E1A" stroke="#1F1A3B" strokeWidth="0.4" />
+                <ellipse cx="43.5" cy="60" rx="2" ry="1" fill="#FF5C6C" />
+                {/* Gum neck stretching from the lips to the bubble */}
+                <path d="M46 60 Q 51 59.4 55 60" stroke="#FF5C6C" strokeWidth="2" fill="none" strokeLinecap="round" />
+                {/* The bubble: outline ring + rainbow stripes inside */}
+                <defs>
+                    <clipPath id="pride-bubble-clip">
+                        <circle cx={cx} cy={cy} r={r - 0.6} />
+                    </clipPath>
+                </defs>
+                <circle cx={cx} cy={cy} r={r} fill="#FFFFFF" />
+                <g clipPath="url(#pride-bubble-clip)" transform={`rotate(-30 ${cx} ${cy})`}>
+                    {PRIDE_STRIPES.map((color, i) => (
+                        <rect key={i} x={cx - r - 1} y={cy - r + i * (r * 2 / 6)} width={r * 2 + 2} height={(r * 2 / 6) + 0.4} fill={color} />
+                    ))}
+                </g>
+                <circle cx={cx} cy={cy} r={r} fill="none" stroke="#1F1A3B" strokeWidth="1.3" />
+                {/* Bubble highlight */}
+                <ellipse cx={cx - 2.5} cy={cy - 3} rx="1.4" ry="0.9" fill="#FFFFFF" opacity="0.85" />
+            </g>
+        );
+    },
+
     // ---- Beards & moustaches -----------------------------------------------
     // Classic flat-bar moustache with a centre dip and tapered tips. Reads as
     // a moustache from the silhouette alone.
@@ -1639,6 +1747,33 @@ const ringsHalf = (half) => {
 };
 
 const EFFECT_SHAPES = {
+    // Pride collection — soft horizontal rainbow aurora bands drifting around
+    // Atlas. Each band is a translucent ribbon with its own slow horizontal
+    // drift + opacity pulse, so the shimmer never settles into a flat wash.
+    prideAuroraBands: () => {
+        const band = (color, y, h, dur, begin) => (
+            <g opacity="0.55">
+                <animate attributeName="opacity" values="0.25;0.7;0.25" dur={`${dur}s`} begin={`${begin}s`} repeatCount="indefinite" />
+                <path d={`M-20 ${y} Q 24 ${y - 4} 48 ${y} T 116 ${y}`} stroke={color} strokeWidth={h} fill="none" strokeLinecap="round">
+                    <animate attributeName="d"
+                        values={`M-20 ${y} Q 24 ${y - 4} 48 ${y} T 116 ${y};
+                                 M-20 ${y} Q 24 ${y + 4} 48 ${y} T 116 ${y};
+                                 M-20 ${y} Q 24 ${y - 4} 48 ${y} T 116 ${y}`}
+                        dur={`${dur}s`} begin={`${begin}s`} repeatCount="indefinite" />
+                </path>
+            </g>
+        );
+        return (
+            <g>
+                {band(PRIDE_STRIPES[0], 16, 5, 7,   0)}
+                {band(PRIDE_STRIPES[1], 26, 4, 6,   0.4)}
+                {band(PRIDE_STRIPES[2], 36, 3, 5.5, 0.9)}
+                {band(PRIDE_STRIPES[3], 60, 3, 5.5, 0.2)}
+                {band(PRIDE_STRIPES[4], 70, 4, 6,   0.6)}
+                {band(PRIDE_STRIPES[5], 80, 5, 7,   1.0)}
+            </g>
+        );
+    },
     orbit: () => (
         <g>
             <animateTransform attributeName="transform" type="rotate" from="0 48 48" to="360 48 48" dur="6s" repeatCount="indefinite" />
@@ -1999,6 +2134,56 @@ export function mouthHidesMood(id) {
 // remounts the SVG and replays cleanly.
 const EMOTE_DUR = 2.0; // seconds — one-shot, then the overlay component unmounts
 const EMOTE_SHAPES = {
+    // Pride collection — Atlas raises a 6-stripe rainbow flag and waves it.
+    // Same rocking motion as `wave` (rotates the rig about the pole's base)
+    // but with a rectangular pride banner in place of the brand pennant. No
+    // speech bubble — the flag IS the message.
+    prideFlagWave: () => {
+        const baseX = 82, baseY = 58;
+        const top = 6, w = 28, h = 18;       // banner footprint
+        const stripeH = h / 6;
+        return (
+            <g>
+                <animateTransform attributeName="transform" type="rotate"
+                    values={`-14 ${baseX} ${baseY}; 14 ${baseX} ${baseY}; -12 ${baseX} ${baseY}; 12 ${baseX} ${baseY}; -6 ${baseX} ${baseY}; 4 ${baseX} ${baseY}; 0 ${baseX} ${baseY}`}
+                    keyTimes="0; 0.16; 0.32; 0.48; 0.64; 0.8; 1"
+                    dur={`${EMOTE_DUR}s`} repeatCount="1" fill="freeze" />
+                {/* Pole + gold finial — same scaffold as `wave` */}
+                <rect x={baseX - 1.4} y={top} width="2.8" height={baseY - top + 2} rx="1.2" fill="#8A5A30" stroke="#1F1A3B" strokeWidth="1.4" />
+                <circle cx={baseX} cy={top - 1} r="3" fill="#FFC247" stroke="#1F1A3B" strokeWidth="1.4" />
+                {/* Rainbow banner — six stripes stacked, clipped to a rounded
+                    rectangle. A subtle ripple animation rocks the bottom edge
+                    so the flag reads as cloth, not a printed sticker. */}
+                <defs>
+                    <clipPath id="pride-banner-clip">
+                        <path d={`M${baseX + 2} ${top + 1} L ${baseX + 2 + w} ${top + 1} L ${baseX + 2 + w} ${top + 1 + h} L ${baseX + 2} ${top + 1 + h} Z`} />
+                    </clipPath>
+                </defs>
+                <g clipPath="url(#pride-banner-clip)">
+                    {PRIDE_STRIPES.map((color, i) => (
+                        <rect key={i} x={baseX + 2} y={top + 1 + i * stripeH} width={w} height={stripeH + 0.4} fill={color} />
+                    ))}
+                </g>
+                <path d={`M${baseX + 2} ${top + 1} L ${baseX + 2 + w} ${top + 1} L ${baseX + 2 + w} ${top + 1 + h} L ${baseX + 2} ${top + 1 + h} Z`}
+                    fill="none" stroke="#1F1A3B" strokeWidth="1.4">
+                    <animate attributeName="d"
+                        values={`M${baseX + 2} ${top + 1} L ${baseX + 2 + w} ${top - 1} L ${baseX + 2 + w} ${top + 1 + h - 2} L ${baseX + 2} ${top + 1 + h} Z;
+                                 M${baseX + 2} ${top + 1} L ${baseX + 2 + w} ${top + 3} L ${baseX + 2 + w} ${top + 1 + h + 2} L ${baseX + 2} ${top + 1 + h} Z;
+                                 M${baseX + 2} ${top + 1} L ${baseX + 2 + w} ${top - 1} L ${baseX + 2 + w} ${top + 1 + h - 2} L ${baseX + 2} ${top + 1 + h} Z`}
+                        keyTimes="0; 0.5; 1" dur="0.7s" repeatCount="indefinite" />
+                </path>
+                {/* Friendship sparkles drifting up around the flag */}
+                {[[baseX + 6, 20, 0], [baseX - 6, 4, 0.2], [baseX + 12, 30, 0.35]].map(([cx, cy, begin], i) => (
+                    <g key={i} transform={`translate(${cx} ${cy})`}>
+                        <path d="M0 -6 L 1.6 -1.6 L 6 0 L 1.6 1.6 L 0 6 L -1.6 1.6 L -6 0 L -1.6 -1.6 Z" fill="#FFD86B" opacity="0">
+                            <animate attributeName="opacity" values="0; 1; 0" keyTimes="0; 0.4; 1" begin={`${begin}s`} dur="0.9s" repeatCount="1" fill="freeze" />
+                            <animateTransform attributeName="transform" type="translate" values="0 0; 0 -10" keyTimes="0; 1" begin={`${begin}s`} dur="0.9s" repeatCount="1" fill="freeze" />
+                        </path>
+                    </g>
+                ))}
+            </g>
+        );
+    },
     // Wave: a flagpole planted to the right of the mascot with a brightly
     // coloured flag that ripples nonstop. The whole pole rocks gently back
     // and forth (pivoting at the base) for the classic "wave" motion, and
