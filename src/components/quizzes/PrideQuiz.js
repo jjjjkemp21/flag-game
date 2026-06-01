@@ -22,6 +22,7 @@ import { springs } from '../../motion/index';
 import {
     usePride,
     ensurePrideCatalog,
+    getPrideCatalog,
     getPrideById,
     getPrideStat,
     recordPrideAnswer,
@@ -55,6 +56,16 @@ function PrideQuiz({ setView, deck = { type: 'all', value: null } }) {
         if (!catalogReady) return [];
         return [...new Set([...availablePrideSlugs(), ...questionSlugs])];
     }, [catalogReady, questionSlugs]);
+
+    // Name → short definition lookup. The teaching value of this quiz comes
+    // from seeing each option's one-line definition next to its name, so even
+    // a wrong guess leaves the player a bit more familiar with every term.
+    const descriptionByName = useMemo(() => {
+        if (!catalogReady) return new Map();
+        const map = new Map();
+        for (const entry of getPrideCatalog()) map.set(entry.name, entry.description);
+        return map;
+    }, [catalogReady]);
 
     const [current, setCurrent] = useState(null);
     const [options, setOptions] = useState([]);
@@ -353,11 +364,12 @@ function PrideQuiz({ setView, deck = { type: 'all', value: null } }) {
                 {feedback.answer && <span className="feedback-answer">{feedback.answer}</span>}
             </div>
 
-            <div className="options-box">
+            <div className="options-box options-box--pride">
                 {options.map((option, i) => (
                     <div className="choice-wrap" key={`${current.slug}-${option}`}>
                         <ChoiceCard
                             label={option}
+                            secondary={descriptionByName.get(option)}
                             index={i}
                             state={getChoiceState(option)}
                             disabled={answered}

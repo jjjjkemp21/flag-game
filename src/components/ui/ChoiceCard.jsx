@@ -10,6 +10,12 @@ import Icon from '../common/Icon';
  */
 export default function ChoiceCard({
     label,
+    // Optional muted second line rendered beneath the bolded label. Used by the
+    // Pride quiz to surface each identity's short definition next to its name so
+    // even a wrong guess teaches the player something. When absent the card
+    // renders exactly as before, so this is a safe additive prop for the other
+    // mastery quizzes.
+    secondary,
     state = 'idle',
     index = 0,
     onSelect,
@@ -54,7 +60,10 @@ export default function ChoiceCard({
                 style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-sm)', width: '100%' }}
             >
                 {showIndex && <span className="choice-card__index">{String.fromCharCode(65 + index)}</span>}
-                <span style={{ flex: 1 }}>{label}</span>
+                <span className={`choice-card__body ${secondary ? 'has-secondary' : ''}`} style={{ flex: 1 }}>
+                    <span className="choice-card__primary">{label}</span>
+                    {secondary && <span className="choice-card__secondary">{secondary}</span>}
+                </span>
                 {isCorrect && <Icon name="check_circle" variant="correct" />}
                 {isIncorrect && <Icon name="cancel" variant="incorrect" />}
             </motion.div>

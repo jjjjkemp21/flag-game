@@ -1852,6 +1852,37 @@
     background: var(--color-bg);
 }
 .pride-subtitle { margin: 0; }
+
+/* Pride answer-card layout: bolded identity name with its one-line definition
+   underneath as muted secondary text. All new rules are scoped under
+   .has-secondary so the other mastery quizzes (which don't pass `secondary` to
+   ChoiceCard) render pixel-identical to before. */
+.choice-card__body { min-width: 0; }
+.choice-card__body.has-secondary {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    align-items: flex-start;
+    text-align: left;
+}
+.choice-card__body.has-secondary .choice-card__primary {
+    font-weight: 700;
+    line-height: 1.25;
+}
+.choice-card__body.has-secondary .choice-card__secondary {
+    color: var(--color-ink-soft);
+    font-size: var(--fs-sm, 0.9rem);
+    font-weight: 400;
+    line-height: 1.35;
+    white-space: normal;
+}
+/* Pride uses a 1- or 2-column option stack (vs. the default MC grid) so each
+   card can breathe wide enough for two lines of definition without crowding. */
+.options-box--pride { grid-template-columns: 1fr; }
+@media (min-width: 720px) {
+    .options-box--pride { grid-template-columns: 1fr 1fr; }
+}
+.options-box--pride .choice-card { min-height: 72px; align-items: flex-start; }
 .us-map-wrap {
     width: 100%;
     max-width: 900px;
