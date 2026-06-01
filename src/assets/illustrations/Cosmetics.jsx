@@ -735,6 +735,9 @@ const GLASS_SHAPES = {
                 <path d="M38 52 L31 45 a3.5 3.5 0 0 1 5 -4.6 l2 2 l2 -2 a3.5 3.5 0 0 1 5 4.6 Z" fill="none" stroke={c.frame || '#1F1A3B'} strokeWidth="1.5" />
                 <path d="M58 52 L51 45 a3.5 3.5 0 0 1 5 -4.6 l2 2 l2 -2 a3.5 3.5 0 0 1 5 4.6 Z" fill="none" stroke={c.frame || '#1F1A3B'} strokeWidth="1.5" />
                 <path d="M46 46 L50 46" stroke={c.frame || '#1F1A3B'} strokeWidth="2" />
+                {/* Curved sheen following each heart's upper-left lobe */}
+                <path d="M33.5 42.6 Q 35.5 41.4 37 43" stroke="#FFFFFF" strokeWidth="0.9" fill="none" strokeLinecap="round" opacity="0.4" />
+                <path d="M53.5 42.6 Q 55.5 41.4 57 43" stroke="#FFFFFF" strokeWidth="0.9" fill="none" strokeLinecap="round" opacity="0.4" />
             </g>
         );
     },
@@ -745,6 +748,9 @@ const GLASS_SHAPES = {
             <path d="M46 46 L50 46" />
             <path d="M30 44 L24 42" />
             <path d="M66 44 L72 42" />
+            {/* Curved sliver of glass shine in the upper-left of each lens */}
+            <path d="M33 42 Q 35.5 40 38 41" stroke="#FFFFFF" strokeWidth="1" fill="none" strokeLinecap="round" opacity="0.4" />
+            <path d="M53 42 Q 55.5 40 58 41" stroke="#FFFFFF" strokeWidth="1" fill="none" strokeLinecap="round" opacity="0.4" />
         </g>
     ),
     shades: (c) => (
@@ -754,6 +760,9 @@ const GLASS_SHAPES = {
             <rect x="45" y="44" width="6" height="2.5" fill={c.frame} />
             <path d="M29 43 L23 41" stroke={c.frame} strokeWidth="2.5" />
             <path d="M67 43 L73 41" stroke={c.frame} strokeWidth="2.5" />
+            {/* Diagonal sheen across the upper-left of each rounded rect */}
+            <path d="M31 43 L 39 43 L 36 45 L 31 45 Z" fill="#FFFFFF" opacity="0.3" />
+            <path d="M52 43 L 60 43 L 57 45 L 52 45 Z" fill="#FFFFFF" opacity="0.3" />
         </g>
     ),
     heart: (c) => (
@@ -761,6 +770,9 @@ const GLASS_SHAPES = {
             <path d="M38 52 L31 45 a3.5 3.5 0 0 1 5 -4.6 l2 2 l2 -2 a3.5 3.5 0 0 1 5 4.6 Z" />
             <path d="M58 52 L51 45 a3.5 3.5 0 0 1 5 -4.6 l2 2 l2 -2 a3.5 3.5 0 0 1 5 4.6 Z" />
             <path d="M46 46 L50 46" stroke={c.frame} strokeWidth="2" />
+            {/* Curved sheen riding the upper-left lobe of each heart */}
+            <path d="M33.5 42.6 Q 35.5 41.4 37 43" stroke="#FFFFFF" strokeWidth="0.9" fill="none" strokeLinecap="round" opacity="0.4" />
+            <path d="M53.5 42.6 Q 55.5 41.4 57 43" stroke="#FFFFFF" strokeWidth="0.9" fill="none" strokeLinecap="round" opacity="0.4" />
         </g>
     ),
     square: (c) => (
@@ -770,6 +782,9 @@ const GLASS_SHAPES = {
             <path d="M45 45 L51 45" />
             <path d="M29 43 L23 41" />
             <path d="M67 43 L73 41" />
+            {/* Slim diagonal sheen in the upper-left of each square lens */}
+            <path d="M31 42 L 37 42 L 33 44 L 31 44 Z" fill="#FFFFFF" stroke="none" opacity="0.35" />
+            <path d="M53 42 L 59 42 L 55 44 L 53 44 Z" fill="#FFFFFF" stroke="none" opacity="0.35" />
         </g>
     ),
     cateye: (c) => (
@@ -816,6 +831,9 @@ const GLASS_SHAPES = {
                 <path d={starPath(38)} />
                 <path d={starPath(58)} />
                 <path d="M44 46 L52 46" stroke={c.frame} strokeWidth="2" />
+                {/* Inner glint on the upper-left ray of each star */}
+                <path d="M36 42 L 38 44" stroke="#FFFFFF" strokeWidth="0.8" strokeLinecap="round" fill="none" opacity="0.5" />
+                <path d="M56 42 L 58 44" stroke="#FFFFFF" strokeWidth="0.8" strokeLinecap="round" fill="none" opacity="0.5" />
             </g>
         );
     },
@@ -823,6 +841,8 @@ const GLASS_SHAPES = {
         <g stroke={c.frame} strokeWidth="2.5" fill={c.lens}>
             <circle cx="58" cy="46" r="9" />
             <path d="M58 55 Q56 64 50 68" fill="none" />
+            {/* Single curved sheen on the upper-left of the disc */}
+            <path d="M52 41 Q 55 39 58 40" stroke="#FFFFFF" strokeWidth="1.1" fill="none" strokeLinecap="round" opacity="0.4" />
         </g>
     ),
     nerd: (c) => (
@@ -833,12 +853,17 @@ const GLASS_SHAPES = {
                 <path d="M46 46 L50 46" />
             </g>
             <rect x="46" y="42" width="4" height="9" fill={c.accent} />
+            {/* Glass shine on the upper-left of each big round lens */}
+            <path d="M33 42 Q 35.5 40 38 41" stroke="#FFFFFF" strokeWidth="1" fill="none" strokeLinecap="round" opacity="0.4" />
+            <path d="M53 42 Q 55.5 40 58 41" stroke="#FFFFFF" strokeWidth="1" fill="none" strokeLinecap="round" opacity="0.4" />
         </g>
     ),
     visorBand: (c) => (
         <g>
             <rect x="26" y="42" width="44" height="9" rx="4.5" fill={c.lens} />
             <rect x="26" y="42" width="44" height="3" rx="1.5" fill={c.frame} opacity="0.5" />
+            {/* One long slim diagonal sheen sweeping the upper-left of the band */}
+            <path d="M30 43.5 L 45 43.5 L 41 45.5 L 30 45.5 Z" fill="#FFFFFF" stroke="none" opacity="0.3" />
         </g>
     ),
     pixel: (c) => (
@@ -848,6 +873,10 @@ const GLASS_SHAPES = {
             <rect x="46" y="44" width="4" height="3" fill={c.frame} />
             <rect x="24" y="44" width="4" height="3" fill={c.frame} />
             <rect x="68" y="44" width="4" height="3" fill={c.frame} />
+            {/* Pixelated highlight — single block in the upper-left of each lens
+                so the sheen matches the blocky aesthetic of the rest of the shape */}
+            <rect x="29" y="43" width="3" height="2" fill="#FFFFFF" opacity="0.45" />
+            <rect x="51" y="43" width="3" height="2" fill="#FFFFFF" opacity="0.45" />
         </g>
     ),
     goggles: (c) => (
@@ -856,6 +885,9 @@ const GLASS_SHAPES = {
             <rect x="31" y="42" width="34" height="10" rx="5" fill={c.lens} />
             <path d="M28 44 L20 44" stroke={c.frame} strokeWidth="3" />
             <path d="M68 44 L76 44" stroke={c.frame} strokeWidth="3" />
+            {/* Slim diagonal sheen in the upper-left of each ski-goggle lens */}
+            <path d="M33 43.5 L 41 43.5 L 37 45.5 L 33 45.5 Z" fill="#FFFFFF" opacity="0.32" />
+            <path d="M49 43.5 L 57 43.5 L 53 45.5 L 49 45.5 Z" fill="#FFFFFF" opacity="0.32" />
         </g>
     ),
     groucho: (c) => (
@@ -865,6 +897,9 @@ const GLASS_SHAPES = {
             <circle cx="38" cy="46" r="6" fill="none" stroke={c.frame} strokeWidth="2" />
             <circle cx="58" cy="46" r="6" fill="none" stroke={c.frame} strokeWidth="2" />
             <path d="M44 50 Q48 60 52 50 Q56 56 48 58 Q42 58 44 50 Z" fill={c.accent} />
+            {/* Lenses are frame-only — sheen rides the upper-left of the rim itself */}
+            <path d="M34 42.5 Q 36 41 38 41" stroke="#FFFFFF" strokeWidth="0.9" fill="none" strokeLinecap="round" opacity="0.5" />
+            <path d="M54 42.5 Q 56 41 58 41" stroke="#FFFFFF" strokeWidth="0.9" fill="none" strokeLinecap="round" opacity="0.5" />
         </g>
     ),
     halfmoon: (c) => (
@@ -874,6 +909,9 @@ const GLASS_SHAPES = {
             <path d="M46 47 L50 47" />
             <path d="M30 47 L24 45" />
             <path d="M66 47 L72 45" />
+            {/* Half-moon sheen sitting just inside the upper rim of each lens */}
+            <path d="M32 48.4 Q 36 51 42 48.4" stroke="#FFFFFF" strokeWidth="0.9" fill="none" strokeLinecap="round" opacity="0.4" />
+            <path d="M52 48.4 Q 56 51 62 48.4" stroke="#FFFFFF" strokeWidth="0.9" fill="none" strokeLinecap="round" opacity="0.4" />
         </g>
     ),
     rimless: (c) => (
@@ -899,6 +937,9 @@ const GLASS_SHAPES = {
             <rect x="29" y="42" width="17" height="10" rx="2" fill="#FF3B4E" opacity="0.72" />
             <rect x="50" y="42" width="17" height="10" rx="2" fill="#2EC4FF" opacity="0.72" />
             <rect x="27" y="40" width="42" height="3" fill="#1F1A3B" />
+            {/* Slim cellophane sheen in the upper-left of each tinted panel */}
+            <path d="M31 43.5 L 38 43.5 L 35 45 L 31 45 Z" fill="#FFFFFF" opacity="0.35" />
+            <path d="M52 43.5 L 59 43.5 L 56 45 L 52 45 Z" fill="#FFFFFF" opacity="0.35" />
         </g>
     ),
     mask: (c) => (
@@ -906,12 +947,17 @@ const GLASS_SHAPES = {
             <path d="M26 42 Q48 36 70 42 Q70 52 58 52 Q52 52 48 48 Q44 52 38 52 Q26 52 26 42 Z" fill={c.lens} />
             <ellipse cx="38" cy="46" rx="4" ry="3" fill="#FFFFFF" opacity="0.85" />
             <ellipse cx="58" cy="46" rx="4" ry="3" fill="#FFFFFF" opacity="0.85" />
+            {/* Tiny upper-left glints on the mask body itself, beside each eye-hole */}
+            <ellipse cx="32" cy="42" rx="1.6" ry="0.6" fill="#FFFFFF" opacity="0.35" />
+            <ellipse cx="52" cy="42" rx="1.6" ry="0.6" fill="#FFFFFF" opacity="0.35" />
         </g>
     ),
     eyepatch: (c) => (
         <g>
             <path d="M30 40 L66 36" stroke={c.frame} strokeWidth="2" />
             <ellipse cx="58" cy="46" rx="8" ry="9" fill={c.lens} />
+            {/* Small leather-shine arc in the upper-left of the patch */}
+            <path d="M53 42 Q 55.5 40 58 41" stroke="#FFFFFF" strokeWidth="0.9" fill="none" strokeLinecap="round" opacity="0.3" />
         </g>
     ),
 
@@ -929,6 +975,10 @@ const GLASS_SHAPES = {
             <path d="M45 45 L51 45" fill="none" />
             <path d="M29 43 L23 41" fill="none" />
             <path d="M67 43 L73 41" fill="none" />
+            {/* Sheen rides ABOVE the colour-cycle so it stays visible no matter
+                which rave colour the lens is currently flashing */}
+            <path d="M31 42 L 38 42 L 35 44 L 31 44 Z" fill="#FFFFFF" stroke="none" opacity="0.4" />
+            <path d="M53 42 L 60 42 L 57 44 L 53 44 Z" fill="#FFFFFF" stroke="none" opacity="0.4" />
         </g>
     ),
     nyan: (c) => (
@@ -947,6 +997,9 @@ const GLASS_SHAPES = {
                     <rect x="52" y={40.5 + i * 1.8} width="14" height="1.6" fill={color} />
                 </g>
             ))}
+            {/* Thin white sheen sitting on top of the rainbow bars in upper-left */}
+            <path d="M31 41 L 38 41 L 35 42.4 L 31 42.4 Z" fill="#FFFFFF" opacity="0.45" />
+            <path d="M53 41 L 60 41 L 57 42.4 L 53 42.4 Z" fill="#FFFFFF" opacity="0.45" />
         </g>
     ),
     kaleido: (c) => (
@@ -966,6 +1019,10 @@ const GLASS_SHAPES = {
                     })}
                 </g>
             ))}
+            {/* Static rim shine sits OUTSIDE the rotating colour swirl so the
+                glassy quality reads even as the inner pattern spins */}
+            <path d="M33 42.5 Q 35.5 40.5 38 41.5" stroke="#FFFFFF" strokeWidth="0.9" fill="none" strokeLinecap="round" opacity="0.45" />
+            <path d="M53 42.5 Q 55.5 40.5 58 41.5" stroke="#FFFFFF" strokeWidth="0.9" fill="none" strokeLinecap="round" opacity="0.45" />
         </g>
     ),
     vr: (c) => (
@@ -982,6 +1039,9 @@ const GLASS_SHAPES = {
             {/* Strap */}
             <path d="M24 46 L 18 44" stroke={c.frame} strokeWidth="2.5" />
             <path d="M72 46 L 78 44" stroke={c.frame} strokeWidth="2.5" />
+            {/* Slim diagonal screen-glare in the upper-left of each VR lens */}
+            <path d="M29 42.5 L 36 42.5 L 33 44.5 L 29 44.5 Z" fill="#FFFFFF" opacity="0.3" />
+            <path d="M53 42.5 L 60 42.5 L 57 44.5 L 53 44.5 Z" fill="#FFFFFF" opacity="0.3" />
         </g>
     ),
     swim: (c) => (
@@ -1009,6 +1069,9 @@ const GLASS_SHAPES = {
             <circle cx="36" cy="38" r="1.4" fill={c.accent} />
             <circle cx="60" cy="38" r="1.4" fill={c.accent} />
             <circle cx="48" cy="36" r="1.2" fill={c.accent} />
+            {/* Small diagonal sheen riding the upper-left facet of each hexagonal lens */}
+            <path d="M33 42.5 L 37 42.5 L 35 44 L 33 44 Z" fill="#FFFFFF" stroke="none" opacity="0.4" />
+            <path d="M57 42.5 L 61 42.5 L 59 44 L 57 44 Z" fill="#FFFFFF" stroke="none" opacity="0.4" />
         </g>
     ),
 
