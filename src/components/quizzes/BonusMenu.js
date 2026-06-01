@@ -7,6 +7,8 @@ import { useAudio } from '../../audio/AudioProvider';
 import { getBonus } from '../../lib/progress';
 import { getBestStreak } from '../../lib/streak';
 import { usePride, getPrideMasteredCount, getPrideTotal } from '../../lib/pride';
+import { usePet } from '../../lib/pet';
+import { useProfile } from '../../lib/profile';
 import { springs } from '../../motion/index';
 
 // `scoreKey` reads getBonus() (modes with a fixed-length / time-boxed score).
@@ -19,7 +21,7 @@ const MODES = [
     { key: 'frenzy-quiz',        title: 'Frenzy Mode',     desc: 'Race the clock on 4 flags',  icon: 'bolt',          tone: 'accent',   scoreKey: 'frenzy',        mood: 'cheer' },
     { key: 'longest-route-quiz', title: 'Longest Chain',   desc: 'Travel from country to country', icon: 'route',     tone: 'primary',  scoreKey: 'longestRoute',  mood: 'wave'  },
     { key: 'language-quiz',      title: 'Language Quiz',   desc: 'Match phrase to language',   icon: 'translate',     tone: 'purple',   scoreKey: 'language',      mood: 'idle'  },
-    { key: 'pride-menu',         title: 'Pride',           desc: '27 LGBTQ+ identity flags',   icon: 'flag',          tone: 'versus',   masteryKey: 'pride',       mood: 'cheer', infoKey: 'pride' },
+    { key: 'pride-menu',         title: 'Pride',           desc: '27 LGBTQ+ identity flags',   icon: 'flag',          tone: 'info',     masteryKey: 'pride',       mood: 'cheer', infoKey: 'pride' },
     { key: 'flash',              title: 'Flash Mode',      desc: 'See it for a second, then guess', icon: 'visibility_off', tone: 'danger', streakKey: 'flash',  mood: 'wave'  },
     { key: 'reverse-mc',         title: 'Country → Flag',  desc: 'Pick the flag for the country', icon: 'swap_horiz',  tone: 'versus',   streakKey: 'reverse-mc',   mood: 'idle'  },
 ];
@@ -30,6 +32,11 @@ function BonusMenu({ setView }) {
     const [scores, setScores] = useState({});
     // Live mastery tick for any mastery-style cards in this menu (Pride).
     usePride();
+    // Atlas needs the same live mood + cosmetics it gets on every other menu
+    // surface — otherwise a hardcoded mood here read as sad against the home
+    // screen's lively Atlas.
+    const pet = usePet();
+    const profile = useProfile();
 
     useEffect(() => {
         setScores(getBonus());
@@ -61,7 +68,7 @@ function BonusMenu({ setView }) {
                 flexWrap: 'wrap',
                 justifyContent: 'center'
             }}>
-                <Mascot size={64} mood="think" />
+                <Mascot size={64} mood={pet.mood} cosmetics={profile.cosmetics} chubby={pet.obese} bruised={pet.bruised} />
                 <h1 className="menu-title" style={{ margin: 0 }}>Bonus Modes</h1>
             </div>
             <p className="menu-subtitle">Try a fun challenge!</p>
