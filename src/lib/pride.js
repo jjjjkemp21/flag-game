@@ -196,6 +196,19 @@ export function getPrideMasteredCount() {
     return n;
 }
 export function getPrideTotal() { return state.catalog.length; }
+// Total lifetime correct Pride answers — drives the "First Pride" achievement.
+export function getPrideCorrectTotal() {
+    let n = 0;
+    for (const s of Object.values(state.stats)) n += s.correct || 0;
+    return n;
+}
+// Distinct slugs the player has correctly identified at least once — drives
+// the "Allied Knowledge" achievement (10 different flags learnt).
+export function getPrideIdentifiedCount() {
+    let n = 0;
+    for (const s of Object.values(state.stats)) if ((s.correct || 0) > 0) n += 1;
+    return n;
+}
 
 // ---- Question selection ----------------------------------------------------
 function weightOf(slug) {

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect } from 'react';
 import Icon from '../common/Icon';
 import AchievementIcon from './AchievementIcon';
 import TitleBadge from './TitleBadge';
@@ -9,6 +9,8 @@ import { usePet } from '../../lib/pet';
 import { useProfile, setShowcase, setSelectedTitle, setAchievementsUnlocked } from '../../lib/profile';
 import { getBonus, getEarnedXp } from '../../lib/progress';
 import { buildContext, evaluate, ACHIEVEMENTS, ACHIEVEMENT_GROUPS } from '../../lib/achievements';
+import { useCapitals } from '../../lib/capitals';
+import { usePride } from '../../lib/pride';
 import { masteryRank, nextRank, MASTERY_RANKS, geoMasteryRank, nextGeoRank, GEO_MASTERY_RANKS } from '../../lib/mastery';
 import { chestYieldMultFromMastery } from '../../lib/chest';
 
@@ -18,14 +20,21 @@ function Achievements({ setView, flagsData }) {
     const pet = usePet();
     const profile = useProfile();
     const { frenzy, pixelated, longestRoute, language } = getBonus();
+    // Subscribe to the per-axis mastery stores so a Capitals or Pride round
+    // resolution forces a re-render here — otherwise opening Achievements
+    // right after a Pride run would show stale counts until some other
+    // re-render fired. The store helpers inside buildContext below read the
+    // live state directly; these subscriptions just deliver the change ping.
+    useCapitals();
+    usePride();
 
     const earnedXp = getEarnedXp();
-    const ctx = useMemo(
-        () => buildContext(flagsData, { frenzy, pixelated, longestRoute, language }, pet.level, earnedXp),
-        [flagsData, pet.level, frenzy, pixelated, longestRoute, language, earnedXp]
-    );
-    const unlocked = useMemo(() => evaluate(ctx), [ctx]);
-    const unlockedSet = useMemo(() => new Set(unlocked), [unlocked]);
+    // buildContext walks ~250 flags + a handful of stat reads; well under a
+    // millisecond. Not worth memoising — re-rendering on every store change
+    // gives us automatic freshness without the lint dance.
+    const ctx = buildContext(flagsData, { frenzy, pixelated, longestRoute, language }, pet.level, earnedXp);
+    const unlocked = evaluate(ctx);
+    const unlockedSet = new Set(unlocked);
 
     // Keep the account's unlocked count + showcase reconciled with live progress.
     useEffect(() => {

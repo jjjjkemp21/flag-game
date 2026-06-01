@@ -4,6 +4,13 @@
 
 import { MASTERY_STREAK } from './xp';
 import { getCapitalMasteredCount, getCapitalTotal, getCapitalCorrectTotal } from './capitals';
+import {
+    getPrideMasteredCount,
+    getPrideTotal,
+    getPrideCorrectTotal,
+    getPrideIdentifiedCount,
+} from './pride';
+import { getBestStreak } from './streak';
 
 export const CONTINENTS = [
     { key: 'africa',        label: 'Africa',        tag: 'region:africa' },
@@ -108,6 +115,14 @@ export function buildContext(flagsData, bonus, petLevel, earnedXp) {
         capitalMastered: getCapitalMasteredCount(),
         capitalTotal: getCapitalTotal(),
         capitalCorrect: getCapitalCorrectTotal(),
+        // Pride mode — its own per-flag mastery track. Mirrors capitals: the
+        // catalog lives in src/lib/pride.js, the achievements that consume
+        // these are the "Pride" group below.
+        prideMastered: getPrideMasteredCount(),
+        prideTotal: getPrideTotal(),
+        prideCorrect: getPrideCorrectTotal(),
+        prideIdentified: getPrideIdentifiedCount(),
+        prideBestStreak: getBestStreak('pride'),
     };
 }
 
@@ -283,6 +298,42 @@ export const ACHIEVEMENTS = [
     capitalMasteryMilestone(100, 'Capital Authority', 'platinum'),
     { id: 'capital_all', group: 'Capitals', name: 'Capital of the World', desc: 'Master every capital', icon: 'public', tier: 'legend',
         check: (x) => x.capitalTotal > 0 && x.capitalMastered >= x.capitalTotal, progress: (x) => ({ cur: x.capitalMastered, goal: x.capitalTotal }) },
+
+    // ---- Pride mode -----------------------------------------------------
+    // Six milestones tracking the 27-flag Pride catalog. Mirrors the Capitals
+    // shape (first → distinct learnt → streak → mastery tiers → perfect run
+    // → fully mastered). Progress bars on locked entries surface what's
+    // needed so players can SEE there's something to chase.
+    { id: 'pride_first', group: 'Pride', name: 'First Pride',
+        desc: 'Correctly identify your first pride flag',
+        icon: 'flag', tier: 'stone',
+        check: (x) => x.prideCorrect >= 1,
+        progress: (x) => ({ cur: Math.min(x.prideCorrect, 1), goal: 1 }) },
+    { id: 'pride_identified_10', group: 'Pride', name: 'Allied Knowledge',
+        desc: 'Correctly identify 10 different pride flags',
+        icon: 'diversity_3', tier: 'bronze',
+        check: (x) => x.prideIdentified >= 10,
+        progress: (x) => ({ cur: x.prideIdentified, goal: 10 }) },
+    { id: 'pride_streak_15', group: 'Pride', name: 'Steady Ally',
+        desc: 'Reach a 15-answer streak in Pride',
+        icon: 'local_fire_department', tier: 'silver',
+        check: (x) => x.prideBestStreak >= 15,
+        progress: (x) => ({ cur: x.prideBestStreak, goal: 15 }) },
+    { id: 'pride_mastery_15', group: 'Pride', name: 'Spectrum Student',
+        desc: 'Master 15 pride flags',
+        icon: 'star', tier: 'gold',
+        check: (x) => x.prideMastered >= 15,
+        progress: (x) => ({ cur: x.prideMastered, goal: 15 }) },
+    { id: 'pride_perfect_run', group: 'Pride', name: 'Perfect Pride',
+        desc: 'Reach a 27-answer streak — a perfect lap through the full collection',
+        icon: 'workspace_premium', tier: 'gold',
+        check: (x) => x.prideBestStreak >= 27,
+        progress: (x) => ({ cur: x.prideBestStreak, goal: 27 }) },
+    { id: 'pride_mastered_all', group: 'Pride', name: 'Spectrum Scholar',
+        desc: 'Master every pride flag',
+        icon: 'auto_awesome', tier: 'legend',
+        check: (x) => x.prideTotal > 0 && x.prideMastered >= x.prideTotal,
+        progress: (x) => ({ cur: x.prideMastered, goal: x.prideTotal }) },
 ];
 
 export const ACHIEVEMENTS_BY_ID = Object.fromEntries(ACHIEVEMENTS.map((a) => [a.id, a]));
@@ -303,7 +354,7 @@ export function topAchievements(unlockedIds, n = 3) {
         .map((a) => a.id);
 }
 
-export const ACHIEVEMENT_GROUPS = ['Mastery', 'Continents', 'Accuracy', 'Globe', 'Capitals', 'Bonus Modes', 'Atlas'];
+export const ACHIEVEMENT_GROUPS = ['Mastery', 'Continents', 'Accuracy', 'Globe', 'Capitals', 'Pride', 'Bonus Modes', 'Atlas'];
 
 // Returns the array of unlocked achievement ids for a context.
 export function evaluate(ctx) {
