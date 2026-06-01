@@ -358,6 +358,18 @@ function UnitedStatesQuiz({ setView, subMode = 'map', deck = { type: 'all', valu
                             </>
                         ) : (
                             <>
+                                {/* Capitals sub-mode shows the state flag above the
+                                    name — same .flag-image element + styling the
+                                    country Capitals quiz uses, so it visually matches.
+                                    Map mode omits it on purpose: the silhouette IS the
+                                    prompt, and a flag would give it away. */}
+                                {isCapitals && (
+                                    <img
+                                        src={`${FLAG_IMAGE_BASE}${current.code}.svg`}
+                                        alt=""
+                                        className="flag-image"
+                                    />
+                                )}
                                 <h2 className="capitals-country">{current.name}</h2>
                                 <p className="menu-subtitle capitals-subtitle">
                                     {isMap ? 'Tap this state on the map.' : "What is its capital?"}
