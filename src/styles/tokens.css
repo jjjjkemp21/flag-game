@@ -179,6 +179,16 @@
     --globe-wrong:           #FF5C6C;
     --globe-wrong-emit:      #8E2230;
 
+    /* -------- Atlas Bucks brand-green (locked, NOT theme-scoped) --------
+       The currency icon and any matching accent (toast badges, chest reward
+       totals, etc.) read against this one mid-tone "money green" in both
+       light and dark themes — so the buck never changes identity with the
+       theme switch. Picked to sit cleanly on both a cream light bg and the
+       dark slate bg. Deeper than --color-success (which is brighter on dark)
+       so it doesn't get mistaken for a generic success accent. */
+    --brand-buck-green: #1FAE5F;
+    --brand-buck-stroke: #1F1A3B;
+
     color-scheme: light;
 }
 
