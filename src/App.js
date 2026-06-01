@@ -63,7 +63,15 @@ import {
     flushUsStates,
     setUsStatesAuthed,
 } from './lib/usStates';
+import {
+    ensurePrideCatalog,
+    loadPride,
+    resetPride,
+    flushPride,
+    setPrideAuthed,
+} from './lib/pride';
 import UnitedStatesMenu from './components/quizzes/UnitedStatesMenu';
+import PrideMenu from './components/quizzes/PrideMenu';
 import { variants } from './motion/index';
 
 // Heavy bonus modes — lazy-loaded
@@ -74,6 +82,9 @@ const LanguageQuiz     = lazy(() => import('./components/quizzes/LanguageQuiz'))
 const CapitalsQuiz     = lazy(() => import('./components/quizzes/CapitalsQuiz'));
 // US-states mode bakes in the full SVG path data — keep it out of the main bundle.
 const UnitedStatesQuiz = lazy(() => import('./components/quizzes/UnitedStatesQuiz'));
+// Pride mode — lazy so the catalog fetch + per-flag mastery wiring only loads
+// when the player actually opens it.
+const PrideQuiz        = lazy(() => import('./components/quizzes/PrideQuiz'));
 // Globe mode pulls in Three.js + earcut; keep it out of the main bundle.
 const GlobeQuiz        = lazy(() => import('./components/quizzes/GlobeQuiz'));
 
@@ -112,6 +123,7 @@ function App() {
     const [capitalsDeck, setCapitalsDeck] = useState({ type: 'all', value: null });
     const [usDeck, setUsDeck] = useState({ type: 'all', value: null });
     const [usSubMode, setUsSubMode] = useState('map'); // 'map' | 'capitals' | 'mixed'
+    const [prideDeck, setPrideDeck] = useState({ type: 'all', value: null });
     const [tutorialActive, setTutorialActive] = useState(false);
     // Which friend the user is currently spectating. Set when an Eye icon is
     // clicked in the Friends list; consumed by the 'spectator' view case.
@@ -214,6 +226,7 @@ function App() {
     useEffect(() => {
         ensureCapitalsCatalog();
         ensureUsStatesCatalog();
+        ensurePrideCatalog();
     }, []);
 
     // Persist progress only for logged-in users; guests are intentionally
@@ -256,6 +269,7 @@ function App() {
             if (authedRef.current) flushQuests();
             if (authedRef.current) flushCapitals();
             if (authedRef.current) flushUsStates();
+            if (authedRef.current) flushPride();
         };
         const onVisibility = () => { if (document.visibilityState === 'hidden') flush(); };
         window.addEventListener('pagehide', flush);
@@ -357,6 +371,11 @@ function App() {
                     setUsStatesAuthed(true);
                     try { const u = await api.get('/us-states'); loadUsStates(u.stats); } catch (_) { /* mode will lazy-retry */ }
                 }
+                // Pride mastery — same shape, scoped to the 27 pride flags.
+                if (!cancelled) {
+                    setPrideAuthed(true);
+                    try { const p = await api.get('/pride'); loadPride(p.stats); } catch (_) { /* mode will lazy-retry */ }
+                }
                 // Recompute unlocked achievements from the just-loaded progress so the
                 // account's count + showcase are correct. Without this they stay at the
                 // load-time defaults (unlocked=[]) and a later cosmetic-only persist
@@ -399,6 +418,8 @@ function App() {
                 resetCapitals();
                 setUsStatesAuthed(false);
                 resetUsStates();
+                setPrideAuthed(false);
+                resetPride();
                 answerTotalsRef.current = { correct: 0, incorrect: 0 };
                 // Run/best streaks live in device-global localStorage; clear them
                 // on logout/guest so one account's streaks don't bleed into the
@@ -461,12 +482,14 @@ function App() {
             // column server-side; clear the in-memory store to match).
             loadCapitals({});
             loadUsStates({});
+            loadPride({});
         } else {
             // Guests: clear the in-memory pet + profile (never persisted).
             resetPet();
             resetProfile();
             resetCapitals();
             resetUsStates();
+            resetPride();
         }
         setView('menu');
     };
@@ -632,6 +655,14 @@ function App() {
                 return (
                     <Suspense fallback={<LazyFallback label="Loading United States…" />}>
                         <UnitedStatesQuiz setView={setView} subMode={usSubMode} deck={usDeck} />
+                    </Suspense>
+                );
+            case 'pride-menu':
+                return <PrideMenu setView={setView} setPrideDeck={setPrideDeck} />;
+            case 'pride-quiz':
+                return (
+                    <Suspense fallback={<LazyFallback label="Loading Pride…" />}>
+                        <PrideQuiz setView={setView} deck={prideDeck} />
                     </Suspense>
                 );
             case 'bonus-menu':

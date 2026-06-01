@@ -188,6 +188,7 @@ const routes = [
         store.bp.counters = {};
         store.capitalStats = {};
         store.usStateStats = {};
+        store.prideStats = {};
         save();
         return { ok: true };
     }},
@@ -394,6 +395,8 @@ const routes = [
     { m: 'PUT',  p: /^\/capitals$/,       h: ({ body }) => { store.capitalStats = (body && body.stats) || {}; save(); return { ok: true, stats: store.capitalStats }; }},
     { m: 'GET',  p: /^\/us-states$/,      h: () => ({ stats: store.usStateStats || {} }) },
     { m: 'PUT',  p: /^\/us-states$/,      h: ({ body }) => { store.usStateStats = (body && body.stats) || {}; save(); return { ok: true, stats: store.usStateStats }; }},
+    { m: 'GET',  p: /^\/pride$/,          h: () => ({ stats: store.prideStats || {} }) },
+    { m: 'PUT',  p: /^\/pride$/,          h: ({ body }) => { store.prideStats = (body && body.stats) || {}; save(); return { ok: true, stats: store.prideStats }; }},
 ];
 
 export function mockRequest(method, path, body) {

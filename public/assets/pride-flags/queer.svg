@@ -1,0 +1,11 @@
+<svg version="1.2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 5000 3000" width="5000" height="3000">
+	<title>Queer flag</title>
+	<style>
+		.s0 { fill: #672974 } 
+		.s1 { fill: #fe78cf } 
+		.s2 { fill: #ffffff } 
+	</style>
+	<path id="purple" class="s0" d="m0 0h5000v3000h-5000z"/>
+	<path id="pink" class="s1" d="m0 0h5000v1500h-5000z"/>
+	<path id="white" class="s2" d="m0 1084h5000v832h-5000z"/>
+</svg>

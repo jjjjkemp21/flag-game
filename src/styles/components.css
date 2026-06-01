@@ -1830,6 +1830,28 @@
     box-shadow: var(--shadow-card);
     background: var(--color-bg);
 }
+
+/* ==== Pride bonus mode ==== */
+/* Shares the .quiz-box + .options-box + .flash-* layers with the other
+   mastery quizzes. The flag is the prompt, so display weight goes to the
+   image; .pride-flag bumps it bigger than the country .flag-image. */
+.pride-prompt {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-sm);
+    width: 100%;
+}
+.pride-flag {
+    max-width: 420px;
+    width: 75%;
+    height: auto;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-card);
+    background: var(--color-bg);
+}
+.pride-subtitle { margin: 0; }
 .us-map-wrap {
     width: 100%;
     max-width: 900px;

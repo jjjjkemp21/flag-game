@@ -163,6 +163,12 @@ if (!hasCol('capital_stats_json')) db.exec('ALTER TABLE users ADD COLUMN capital
 // stat per state — like Globe's find/name pair. See server/routes/usStates.js
 // and src/lib/usStates.js.
 if (!hasCol('us_state_stats_json')) db.exec('ALTER TABLE users ADD COLUMN us_state_stats_json TEXT');
+// ---- Pride ----
+// Per-flag mastery for the Pride bonus mode (27 LGBTQ+ identity flags), keyed
+// by lowercase slug (e.g. progress-pride, two-spirit). Shape: { [slug]: { correct,
+// incorrect, streak, nextReview, lastAnswered } }. See server/routes/pride.js
+// and src/lib/pride.js.
+if (!hasCol('pride_stats_json')) db.exec('ALTER TABLE users ADD COLUMN pride_stats_json TEXT');
 // ---- XP Road (removed) ----
 // These two columns backed the now-removed XP Road feature. They're retained
 // rather than dropped — SQLite can't drop a column without a full table

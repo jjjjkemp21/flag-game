@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1084.0275" height="711.09106">
+  <defs>
+    <clipPath id="a" clipPathUnits="userSpaceOnUse">
+      <path stroke="#fff" stroke-dashoffset="1" d="M-162.31427 287.16635h1084.0275v711.09106h-1084.0275z"/>
+    </clipPath>
+  </defs>
+  <g clip-path="url(#a)" transform="translate(162.31427 -287.16635)">
+    <path fill="#fff" stroke="#fff" stroke-dashoffset="1" d="M-165.71428 286.64789h365.71429v717.14288h-365.71429z"/>
+    <path fill="green" stroke="green" stroke-dashoffset="1" d="M197.14287 283.79074h365.71429v717.14288H197.14287z"/>
+    <path stroke="#000" stroke-dashoffset="1" d="M560 283.79074h365.71429v717.14288H560z"/>
+  </g>
+</svg>

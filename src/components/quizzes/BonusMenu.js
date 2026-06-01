@@ -6,16 +6,20 @@ import ScoringInfo from './ScoringInfo';
 import { useAudio } from '../../audio/AudioProvider';
 import { getBonus } from '../../lib/progress';
 import { getBestStreak } from '../../lib/streak';
+import { usePride, getPrideMasteredCount, getPrideTotal } from '../../lib/pride';
 import { springs } from '../../motion/index';
 
 // `scoreKey` reads getBonus() (modes with a fixed-length / time-boxed score).
 // `streakKey` reads getBestStreak() — for the MC variants which are infinite
 // runs and have no "high score" beyond best streak.
+// `masteryFn` returns { mastered, total } — for mastery-style modes that live
+// in the bonus menu (e.g. Pride) and want an "X/Y mastered" badge instead.
 const MODES = [
     { key: 'pixelated-quiz',     title: 'Pixelated Guess', desc: 'Reveal flags in stages',     icon: 'blur_on',       tone: 'success',  scoreKey: 'pixelated',     mood: 'think' },
     { key: 'frenzy-quiz',        title: 'Frenzy Mode',     desc: 'Race the clock on 4 flags',  icon: 'bolt',          tone: 'accent',   scoreKey: 'frenzy',        mood: 'cheer' },
     { key: 'longest-route-quiz', title: 'Longest Chain',   desc: 'Travel from country to country', icon: 'route',     tone: 'primary',  scoreKey: 'longestRoute',  mood: 'wave'  },
     { key: 'language-quiz',      title: 'Language Quiz',   desc: 'Match phrase to language',   icon: 'translate',     tone: 'purple',   scoreKey: 'language',      mood: 'idle'  },
+    { key: 'pride-menu',         title: 'Pride',           desc: '27 LGBTQ+ identity flags',   icon: 'flag',          tone: 'versus',   masteryKey: 'pride',       mood: 'cheer', infoKey: 'pride' },
     { key: 'flash',              title: 'Flash Mode',      desc: 'See it for a second, then guess', icon: 'visibility_off', tone: 'danger', streakKey: 'flash',  mood: 'wave'  },
     { key: 'reverse-mc',         title: 'Country → Flag',  desc: 'Pick the flag for the country', icon: 'swap_horiz',  tone: 'versus',   streakKey: 'reverse-mc',   mood: 'idle'  },
 ];
@@ -24,17 +28,23 @@ function BonusMenu({ setView }) {
     const audio = useAudio();
     const prefersReduced = useReducedMotion();
     const [scores, setScores] = useState({});
+    // Live mastery tick for any mastery-style cards in this menu (Pride).
+    usePride();
 
     useEffect(() => {
         setScores(getBonus());
     }, []);
 
-    const badgeValue = (mode) => {
-        if (mode.scoreKey) return scores[mode.scoreKey] || 0;
-        if (mode.streakKey) return getBestStreak(mode.streakKey);
-        return 0;
+    const renderBadge = (mode) => {
+        if (mode.masteryKey === 'pride') {
+            const total = getPrideTotal();
+            if (total === 0) return 'Mastery: 0/0';
+            return `Mastery: ${getPrideMasteredCount()}/${total}`;
+        }
+        if (mode.scoreKey) return `High Score: ${scores[mode.scoreKey] || 0}`;
+        if (mode.streakKey) return `Best Streak: ${getBestStreak(mode.streakKey)}`;
+        return '';
     };
-    const badgeLabel = (mode) => (mode.streakKey ? 'Best Streak' : 'High Score');
 
     return (
         <div className="bonus-menu-box">
@@ -66,14 +76,14 @@ function BonusMenu({ setView }) {
                             transition={{ ...springs.gentle, delay: 0.08 * i }}
                             whileHover={prefersReduced ? undefined : { y: -3 }}
                             whileTap={prefersReduced ? undefined : { scale: 0.97 }}
-                            aria-label={`${mode.title} — ${badgeLabel(mode)} ${badgeValue(mode)}`}
+                            aria-label={`${mode.title} — ${renderBadge(mode)}`}
                         >
-                            <div className="mode-card__badge">{badgeLabel(mode)}: {badgeValue(mode)}</div>
+                            <div className="mode-card__badge">{renderBadge(mode)}</div>
                             <div className="mode-card__title">{mode.title}</div>
                             <div className="mode-card__desc">{mode.desc}</div>
                             <Icon name={mode.icon} className="mode-card__icon" />
                         </motion.button>
-                        <ScoringInfo mode={mode.scoreKey || mode.key} className="mode-card__info" />
+                        <ScoringInfo mode={mode.infoKey || mode.scoreKey || mode.key} className="mode-card__info" />
                     </div>
                 ))}
             </div>

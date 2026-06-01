@@ -105,6 +105,17 @@ const INFO = {
             'Your best score is added to your total XP.',
         ],
     },
+    pride: {
+        title: 'Pride — scoring',
+        lines: [
+            'A pride flag is shown — pick the identity it represents from four options.',
+            `Pays a ${mult('pride-flags')} mode bonus per correct answer.`,
+            'Distractors lean toward the same category (umbrella / attraction / gender identity) so the choices stay plausible.',
+            'A hot streak multiplies XP from 1× up to a 2× cap, reached at a 30-answer streak. Wrong answers reset your run streak.',
+            'Master a flag by answering it correctly 6 times in a row.',
+            'Your run also earns Atlas Bucks and an end-of-run chest like every other mastery mode.',
+        ],
+    },
     unitedStates: {
         title: 'United States — scoring',
         lines: [

@@ -1,0 +1,31 @@
+[
+  { "slug": "rainbow",                           "name": "Rainbow Pride",                       "group": "umbrella",   "description": "The original 6-stripe LGBTQ+ pride flag — a Gilbert Baker design, the most widely recognised symbol of the movement." },
+  { "slug": "progress-pride",                    "name": "Progress Pride",                      "group": "umbrella",   "description": "Daniel Quasar's 2018 redesign — adds a chevron of black, brown, light blue, pink, and white to centre marginalised groups within the rainbow." },
+  { "slug": "intersex-inclusive-progress-pride", "name": "Intersex-Inclusive Progress Pride",   "group": "umbrella",   "description": "Valentino Vecchietti's 2021 update to the Progress flag — adds a purple ring on a yellow field to also include intersex people." },
+  { "slug": "queer",                             "name": "Queer",                               "group": "umbrella",   "description": "A pink-blue-lavender gradient used as a broad banner for queer identities outside or across the more specific labels." },
+
+  { "slug": "gay-men-mlm",                       "name": "Gay men (mlm)",                       "group": "attraction", "description": "Five-stripe blue-green-white-pink-purple — men loving men." },
+  { "slug": "lesbian",                           "name": "Lesbian",                             "group": "attraction", "description": "Seven-stripe sunset (Emily Gwen, 2018) — women loving women." },
+  { "slug": "bisexual",                          "name": "Bisexual",                            "group": "attraction", "description": "Magenta-purple-blue, Michael Page 1998 — attraction to two or more genders." },
+  { "slug": "pansexual",                         "name": "Pansexual",                           "group": "attraction", "description": "Pink-yellow-blue — attraction to people regardless of gender." },
+  { "slug": "polysexual",                        "name": "Polysexual",                          "group": "attraction", "description": "Pink-green-blue — attraction to many but not all genders." },
+  { "slug": "omnisexual",                        "name": "Omnisexual",                          "group": "attraction", "description": "Pink-magenta-black-blue-cyan — attraction to all genders, with gender still factoring into the attraction." },
+  { "slug": "asexual",                           "name": "Asexual",                             "group": "attraction", "description": "Black-grey-white-purple — little or no sexual attraction." },
+  { "slug": "graysexual",                        "name": "Graysexual",                          "group": "attraction", "description": "Grey-toned ace variant — occasional or low-intensity sexual attraction." },
+  { "slug": "demisexual",                        "name": "Demisexual",                          "group": "attraction", "description": "Black-grey-white-purple with a triangle — sexual attraction only after a deep emotional bond." },
+  { "slug": "aromantic",                         "name": "Aromantic",                           "group": "attraction", "description": "Green-light green-white-grey-black — little or no romantic attraction." },
+  { "slug": "demiromantic",                      "name": "Demiromantic",                        "group": "attraction", "description": "Aromantic-style stripes with a demi- triangle — romantic attraction only after a deep emotional bond." },
+  { "slug": "abrosexual",                        "name": "Abrosexual",                          "group": "attraction", "description": "Green-white-pink gradient — a sexuality that shifts over time between orientations." },
+  { "slug": "polyamory",                         "name": "Polyamory",                           "group": "attraction", "description": "Blue-red-black with a gold infinity-heart (Red Howell, 2022) — practising or open to multiple consensual loving relationships." },
+
+  { "slug": "transgender",                       "name": "Transgender",                         "group": "gender",     "description": "Light blue-pink-white stripes (Monica Helms, 1999) — gender identity differs from sex assigned at birth." },
+  { "slug": "nonbinary",                         "name": "Non-binary",                          "group": "gender",     "description": "Yellow-white-purple-black (Kye Rowan, 2014) — gender outside the binary of man/woman." },
+  { "slug": "genderqueer",                       "name": "Genderqueer",                         "group": "gender",     "description": "Lavender-white-green (Marilyn Roxie, 2011) — gender identity outside or across binary categories." },
+  { "slug": "genderfluid",                       "name": "Genderfluid",                         "group": "gender",     "description": "Pink-white-purple-black-blue — gender that shifts over time." },
+  { "slug": "agender",                           "name": "Agender",                             "group": "gender",     "description": "Black-grey-white-green stripes — without a gender, or gender-neutral." },
+  { "slug": "bigender",                          "name": "Bigender",                            "group": "gender",     "description": "Pink-purple-blue-white-blue-purple-pink — identifying as two genders, simultaneously or alternately." },
+  { "slug": "demigender",                        "name": "Demigender",                          "group": "gender",     "description": "Grey-yellow demi- pattern — a partial connection to one or more genders." },
+  { "slug": "neutrois",                          "name": "Neutrois",                            "group": "gender",     "description": "White-green-black — a gender-neutral or null gender identity." },
+  { "slug": "intersex",                          "name": "Intersex",                            "group": "gender",     "description": "Purple ring on yellow (Morgan Carpenter, 2013) — born with sex characteristics outside typical male/female categories." },
+  { "slug": "two-spirit",                        "name": "Two-Spirit",                          "group": "gender",     "description": "Rainbow flag with two feathers in a circle — an Indigenous North American umbrella term for gender-variant and LGBTQ+ identities rooted in tribal traditions." }
+]
