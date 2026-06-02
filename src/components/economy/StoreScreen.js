@@ -9,7 +9,7 @@ import { useAuth } from '../../auth/AuthProvider';
 import { usePet, setPetName } from '../../lib/pet';
 import { useProfile, setRegion, setCosmetic, setCosmeticPos, toggleEmoteInLoadout, setCompanionName, setCompanionTint } from '../../lib/profile';
 import { CATEGORIES, COMPANIONS, EMOTES, EMOTE_LOADOUT_SIZE, priceOf, isDefaultItem, isEffectSizable, DEFAULT_POS, companionNameFor, COMPANION_NAME_MAX, companionTintsFor, companionTintSwatch, companionTintFor } from '../../lib/cosmetics';
-import { EMOTE_DURATION_S } from '../../assets/illustrations/Cosmetics';
+import { EMOTE_DURATION_S, renderCompanion } from '../../assets/illustrations/Cosmetics';
 import { useCurrency, loadCurrency, buyCosmetic, isOwnedKey } from '../../lib/currency';
 
 // Auto-replay interval = animation length + a short idle gap so the burst
@@ -36,6 +36,28 @@ function EmoteCardPreview({ emoteId, cosmetics, size = 52 }) {
             still
             emotePlay={emoteId && emoteId !== 'none' ? { id: emoteId, playId } : null}
         />
+    );
+}
+
+// Companion cards preview the animal on its OWN — rendering a full Mascot just
+// to show the companion makes Atlas dominate the card and shrinks the companion
+// to an illegible speck. Companions are drawn in the lower-right of the mascot's
+// 0 0 96 96 space (anchored ~78,86), so we reuse that art via a tight viewBox
+// crop that fills the card with just the animal.
+function CompanionCardPreview({ id, tintId, size = 52 }) {
+    const el = renderCompanion(id, tintId);
+    if (!el) return null;
+    return (
+        <svg
+            width={size}
+            height={size}
+            viewBox="57 62 40 40"
+            overflow="visible"
+            style={{ overflow: 'visible' }}
+            xmlns="http://www.w3.org/2000/svg"
+        >
+            {el}
+        </svg>
     );
 }
 
@@ -586,6 +608,8 @@ function StoreScreen({ setView, flagsData }) {
                                         {cat.key === 'scene' && <Scene id={id} />}
                                         {cat.key === 'emote' ? (
                                             <EmoteCardPreview emoteId={id} cosmetics={profile.cosmetics} />
+                                        ) : cat.key === 'companion' ? (
+                                            <CompanionCardPreview id={id} tintId={(profile.cosmetics.companionTints || {})[id]} />
                                         ) : (
                                             <Mascot size={52} mood="idle" cosmetics={previewCos} still />
                                         )}
