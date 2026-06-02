@@ -36,15 +36,22 @@ function applyUpdate(userId, body) {
     if (!row) return { error: 'User not found.' };
 
     const storedStats = row.stats_json ? safeParse(row.stats_json, []) : [];
-    // Flag-answer counters only ever grow, so merge them monotonically: an
-    // incoming payload may RAISE a flag's correct/incorrect/lapses counts but
-    // never lower them. This makes a stale or zeroed client push (e.g. one fired
-    // before the account's progress finished loading) unable to erase real
-    // history — the failure mode that once wiped a player's stats to zero.
-    // Streaks legitimately reset on a wrong answer, so those still follow the
-    // client. The /stats/reset endpoint NULLs stats_json directly, so a real
-    // reset isn't blocked by this (there's no stored history left to preserve).
-    const MONO_FIELDS = ['correct', 'incorrect', 'lapses', 'geoCorrect', 'geoIncorrect', 'geoLapses'];
+    // Flag stats are merged monotonically: an incoming payload may RAISE a
+    // flag's counters but never lower them. This makes a stale or zeroed client
+    // push (e.g. one fired before the account's progress finished loading, or a
+    // second tab that loaded mid-wipe and keeps re-syncing zeros) unable to
+    // erase real history — the failure mode that repeatedly wiped a player's
+    // stats and un-mastered every flag.
+    //
+    // streak/geoStreak are INCLUDED here so MASTERY IS STICKY: once a flag is
+    // mastered (streak > MASTERY_STREAK) it can never be clawed back by a low
+    // re-sync. The trade-off is intentional — a wrong answer no longer lowers
+    // the *stored* streak (the client still resets it live during a run; the
+    // reset just isn't persisted downward). Mastery, mastery titles, the
+    // chest-yield bonus, and the streak-derived achievements therefore only ever
+    // grow. The /stats/reset endpoint NULLs stats_json directly, so a real reset
+    // isn't blocked by this (there's no stored history left to preserve).
+    const MONO_FIELDS = ['correct', 'incorrect', 'lapses', 'geoCorrect', 'geoIncorrect', 'geoLapses', 'streak', 'geoStreak'];
     let newFlagStats;
     if (Array.isArray(flagStats)) {
         const prevByCode = new Map(storedStats.map((s) => [s && s.code, s]));
