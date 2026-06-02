@@ -265,6 +265,7 @@ class Globe {
 
         // Pointer + rotation state
         this.isDown = false;
+        this.isDragging = false; // gated true only once a press moves past the tap threshold
         this.lastPointer = { x: 0, y: 0 };
         this.downPointer = null;
         this.downTime = 0;
@@ -289,9 +290,14 @@ class Globe {
             this.activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
             if (this.activePointers.size === 1) {
                 this.isDown = true;
+                this.isDragging = false;
                 this.downPointer = { x: e.clientX, y: e.clientY };
                 this.downTime = Date.now();
                 this.lastPointer = { x: e.clientX, y: e.clientY };
+                // A fresh press halts any in-flight inertial spin so the tap
+                // grabs the globe where it is instead of fighting the drift.
+                this.rotV.x = 0;
+                this.rotV.y = 0;
             } else if (this.activePointers.size === 2) {
                 const pts = [...this.activePointers.values()];
                 this.pinchStart = {
@@ -313,6 +319,23 @@ class Globe {
                 return;
             }
             if (!this.isDown) return;
+            // Tap-vs-drag gate: until the finger travels past the tap
+            // threshold, treat the gesture as a stationary tap and don't
+            // rotate at all. Without this a slight misclick near a country
+            // (or a tiny island, especially zoomed in) would nudge the globe
+            // and — via the inertia in _startLoop — fling it across the map.
+            if (!this.isDragging) {
+                const traveled = Math.hypot(
+                    e.clientX - this.downPointer.x,
+                    e.clientY - this.downPointer.y
+                );
+                if (traveled <= CLICK_MOVE_THRESHOLD) return;
+                // Crossing into a real drag: re-anchor to the current point so
+                // the accumulated threshold delta isn't applied in one jump.
+                this.isDragging = true;
+                this.lastPointer = { x: e.clientX, y: e.clientY };
+                return;
+            }
             const dx = e.clientX - this.lastPointer.x;
             const dy = e.clientY - this.lastPointer.y;
             this.lastPointer = { x: e.clientX, y: e.clientY };
