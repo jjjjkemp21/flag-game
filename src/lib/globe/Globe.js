@@ -370,8 +370,17 @@ class Globe {
             this.pointer.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
             this.pointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
             this.raycaster.setFromCamera(this.pointer, this.camera);
-            const hits = this.raycaster.intersectObjects(this.countryMeshes, false);
-            const hit = hits.length ? hits[0].object : null;
+            // Include the ocean sphere as an occluder. Country meshes render
+            // DoubleSide, so without it a ray through an ocean gap (e.g.
+            // between islands) punches clean through the globe and hits the
+            // BACK face of a country on the far side — tapping near the
+            // Solomon Islands would "teleport" to Sierra Leone on the
+            // antipode. The opaque ocean (radius R, just inside the lifted
+            // country shells at R*1.004) sits in front of any far-side back
+            // face, so if it's the nearest hit the tap landed on open water.
+            const hits = this.raycaster.intersectObjects([...this.countryMeshes, this.oceanMesh], false);
+            const firstObj = hits.length ? hits[0].object : null;
+            const hit = firstObj && firstObj !== this.oceanMesh ? firstObj : null;
             const now = Date.now();
             const isDoubleTap =
                 hit && this.lastTapTarget === hit && now - this.lastTapTime <= DOUBLE_TAP_MS;
