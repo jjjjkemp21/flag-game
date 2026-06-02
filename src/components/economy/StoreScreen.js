@@ -98,6 +98,11 @@ function StoreScreen({ setView, flagsData }) {
     const hasEffect = isEffectSizable(profile.cosmetics.effect);
     const hasCompanion = profile.cosmetics.companion && profile.cosmetics.companion !== 'none';
     const anyAdjustable = hasHat || hasGlasses || hasMouth || hasEffect || hasCompanion;
+    // Number of slot tabs shown, and how many columns to lay them out in so they
+    // stack into balanced rows instead of one wide row with a lonely orphan:
+    // 5 → 3+2, 4 → 2+2, 2-3 → a single row.
+    const adjustTabCount = (hasHat ? 1 : 0) + (hasGlasses ? 1 : 0) + (hasMouth ? 1 : 0) + (hasEffect ? 1 : 0) + (hasCompanion ? 1 : 0);
+    const adjustTabCols = adjustTabCount <= 3 ? adjustTabCount : (adjustTabCount === 4 ? 2 : 3);
     const slot = ['hat', 'glasses', 'mouth', 'effect', 'companion'].includes(adjust) ? adjust : 'hat';
 
     // Keep the active slot pointed at something that's actually equipped.
@@ -287,8 +292,8 @@ function StoreScreen({ setView, flagsData }) {
                         <div className="cosmetic-adjust__head">
                             <Icon name="open_with" /> Drag Atlas to move the {slot}
                         </div>
-                        {((hasHat ? 1 : 0) + (hasGlasses ? 1 : 0) + (hasMouth ? 1 : 0) + (hasEffect ? 1 : 0) + (hasCompanion ? 1 : 0)) >= 2 && (
-                            <div className="adjust-tabs">
+                        {adjustTabCount >= 2 && (
+                            <div className="adjust-tabs" style={{ gridTemplateColumns: `repeat(${adjustTabCols}, auto)` }}>
                                 {hasHat && (
                                     <button
                                         className={`adjust-tab ${slot === 'hat' ? 'is-active' : ''}`}
