@@ -1900,14 +1900,19 @@
 }
 .us-map__separator { stroke: var(--color-border-strong); stroke-width: 1.5; opacity: 0.5; }
 .us-map__state {
-    fill: var(--color-bg);
+    fill: var(--color-bg-elev-2);
     stroke: var(--color-border-strong);
     stroke-width: 0.8;
     transition: fill var(--dur-base), transform var(--dur-base);
     cursor: pointer;
     outline: none;
 }
-.us-map__state:hover { fill: var(--color-primary-soft, #cfe8ff); }
+/* Hover effects only on devices with a real pointer — on touch screens
+   :hover sticks to the last-tapped state and fires on fingers mid-pinch,
+   which made zooming highlight states at random. */
+@media (hover: hover) {
+    .us-map__state:hover { fill: var(--color-primary-soft, #cfe8ff); }
+}
 .us-map__state:focus-visible { fill: var(--color-primary-soft, #cfe8ff); stroke: var(--color-primary); stroke-width: 1.5; }
 .us-map__state.is-prompt {
     fill: var(--color-accent-soft, #ffd6a5);
@@ -1925,9 +1930,11 @@
     stroke-width: 1.5;
 }
 .us-map__states.is-disabled .us-map__state { cursor: default; }
-.us-map__states.is-disabled .us-map__state:hover { fill: var(--color-bg); }
-.us-map__states.is-disabled .us-map__state.is-correct:hover { fill: var(--color-success, #34d399); }
-.us-map__states.is-disabled .us-map__state.is-wrong:hover { fill: var(--color-danger, #f87171); }
+@media (hover: hover) {
+    .us-map__states.is-disabled .us-map__state:hover { fill: var(--color-bg-elev-2); }
+    .us-map__states.is-disabled .us-map__state.is-correct:hover { fill: var(--color-success, #34d399); }
+    .us-map__states.is-disabled .us-map__state.is-wrong:hover { fill: var(--color-danger, #f87171); }
+}
 .us-map__label {
     font-family: var(--font-body);
     font-size: 11px;
@@ -1937,11 +1944,14 @@
     user-select: none;
 }
 .us-map__label.is-reveal {
-    font-size: 16px;
+    font-size: 17px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
     fill: #fff;
     paint-order: stroke fill;
-    stroke: rgba(0, 0, 0, 0.55);
-    stroke-width: 3px;
+    stroke: var(--color-success-deep, #047857);
+    stroke-width: 3.5px;
+    stroke-linejoin: round;
 }
 
 /* Settings panel (legacy class compat) */
