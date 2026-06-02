@@ -80,12 +80,17 @@ function applyUpdate(userId, body) {
         ? Math.max(0, Math.round(Number(earnedXp)))
         : earnedBaseline(row);
 
-    // Floor earned XP at the legacy value implied by the (monotonic) flag stats.
-    // legacyBaseXp is always a lower bound on true earned XP — the per-answer
-    // formula pays strictly more than the old correct*10 + mastered*50 — so this
-    // never inflates a total; it only blocks a bad push from driving XP below
-    // what the player has provably earned. Defense-in-depth with the client fix.
-    const guardedEarned = Math.max(newEarned, legacyBaseXp(newFlagStats));
+    // Earned XP is a monotonic accumulator: it only ever grows through play, so
+    // an incoming value LOWER than what's stored always means a stale or zeroed
+    // client snapshot — never a legitimate decrease. Floor it at the stored
+    // earned_xp (via earnedBaseline, which falls back to the legacy formula for
+    // accounts whose earned_xp is still NULL) AND at the legacy value implied by
+    // the now-monotonic flag stats. This mirrors the protection already given to
+    // flag counters and bonus scores, and is what makes an admin/restore-set XP
+    // durable: a low re-sync from the player's browser can no longer claw it back
+    // down. (The old floor was legacyBaseXp alone — ~16k for Lee — which let his
+    // client overwrite a restored 135k right back down to that base.)
+    const guardedEarned = Math.max(newEarned, legacyBaseXp(newFlagStats), earnedBaseline(row));
 
     // Bucks earned lifetime is monotonic. The delta between incoming and stored
     // is credited to the spendable `bucks` balance (admin grants + purchases on

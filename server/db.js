@@ -349,4 +349,53 @@ if (!db.prepare('SELECT 1 FROM _meta WHERE key = ?').get(RESTORE_LEE_KEY)) {
     db.prepare('INSERT INTO _meta (key, value) VALUES (?, ?)').run(RESTORE_LEE_KEY, String(Date.now()));
 }
 
+// 2026-06-02b: the restore above turned out to be non-durable. earned_xp was a
+// last-write-wins accumulator floored only at legacyBaseXp (~16k for Lee), so
+// his browser re-synced its low local value straight back over the restored
+// ~135k; and per-flag streaks legitimately follow the client, so the wipe's
+// zeroed streaks un-mastered every flag again. The companion server fix
+// (routes/stats.js) now floors earned_xp at its STORED value too, making a set
+// XP monotonic and impossible to claw back down. This one-shot re-applies the
+// target one final time on top of that protection: it re-masters every flag
+// (recognition + Globe) and re-targets lifetime XP to 130k, while deliberately
+// leaving Capitals / Pride / US-state mode mastery untouched. Guarded by _meta
+// (runs once) AND only applied while still below target, so it can neither
+// downgrade a healthy account nor run twice.
+const RESTORE_LEE_KEY_2 = 'restore_lee_xp_2026_06_02b';
+if (!db.prepare('SELECT 1 FROM _meta WHERE key = ?').get(RESTORE_LEE_KEY_2)) {
+    try {
+        const TARGET_XP = 130000;
+        const MASTER = 6; // > MASTERY_STREAK (5) so a flag counts as mastered
+        const live = db
+            .prepare("SELECT id, earned_xp, bonus_scores_json, stats_json FROM users WHERE username = 'Lee' COLLATE NOCASE")
+            .get();
+        // Only act if still below target, so a re-deploy never downgrades a
+        // healthy account or stacks on top of legitimate later progress.
+        if (live && (Number(live.earned_xp) || 0) < TARGET_XP) {
+            let stats = [];
+            try { stats = JSON.parse(live.stats_json || '[]') || []; } catch (_) { stats = []; }
+            // Re-master every flag on both axes; keep all correct/incorrect/lapse
+            // history exactly as-is (never lower a counter).
+            const restored = (Array.isArray(stats) ? stats : []).map((f) => ({
+                ...f,
+                streak: Math.max(Number(f.streak) || 0, MASTER),
+                geoStreak: Math.max(Number(f.geoStreak) || 0, MASTER),
+            }));
+            let bonus = {};
+            try { bonus = JSON.parse(live.bonus_scores_json || '{}') || {}; } catch (_) { bonus = {}; }
+            const bonusTotal = ['frenzy', 'pixelated', 'longestRoute', 'language']
+                .reduce((s, k) => s + (Number(bonus[k]) || 0), 0);
+            const earned = Math.max(0, TARGET_XP - bonusTotal);
+            db.prepare('UPDATE users SET stats_json = ?, earned_xp = ?, xp = ? WHERE id = ?')
+                .run(JSON.stringify(restored), earned, earned + bonusTotal, live.id);
+            // eslint-disable-next-line no-console
+            console.log(`[restore] Lee (#${live.id}) XP re-restored & flags re-mastered (earned=${earned}, xp=${earned + bonusTotal}).`);
+        }
+    } catch (e) {
+        // eslint-disable-next-line no-console
+        console.error('[restore] Lee XP re-restore migration failed:', e && e.message);
+    }
+    db.prepare('INSERT INTO _meta (key, value) VALUES (?, ?)').run(RESTORE_LEE_KEY_2, String(Date.now()));
+}
+
 module.exports = db;
