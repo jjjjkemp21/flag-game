@@ -35,9 +35,32 @@ function applyUpdate(userId, body) {
         .get(userId);
     if (!row) return { error: 'User not found.' };
 
-    const newFlagStats = Array.isArray(flagStats)
-        ? flagStats
-        : (row.stats_json ? safeParse(row.stats_json, []) : []);
+    const storedStats = row.stats_json ? safeParse(row.stats_json, []) : [];
+    // Flag-answer counters only ever grow, so merge them monotonically: an
+    // incoming payload may RAISE a flag's correct/incorrect/lapses counts but
+    // never lower them. This makes a stale or zeroed client push (e.g. one fired
+    // before the account's progress finished loading) unable to erase real
+    // history — the failure mode that once wiped a player's stats to zero.
+    // Streaks legitimately reset on a wrong answer, so those still follow the
+    // client. The /stats/reset endpoint NULLs stats_json directly, so a real
+    // reset isn't blocked by this (there's no stored history left to preserve).
+    const MONO_FIELDS = ['correct', 'incorrect', 'lapses', 'geoCorrect', 'geoIncorrect', 'geoLapses'];
+    let newFlagStats;
+    if (Array.isArray(flagStats)) {
+        const prevByCode = new Map(storedStats.map((s) => [s && s.code, s]));
+        newFlagStats = flagStats.map((f) => {
+            const prev = prevByCode.get(f && f.code);
+            if (!prev) return f;
+            const merged = { ...f };
+            for (const k of MONO_FIELDS) merged[k] = Math.max(Number(f[k]) || 0, Number(prev[k]) || 0);
+            return merged;
+        });
+        // Keep any stored flags the client omitted so a partial push never drops history.
+        const incoming = new Set(flagStats.map((f) => f && f.code));
+        for (const s of storedStats) if (s && s.code && !incoming.has(s.code)) newFlagStats.push(s);
+    } else {
+        newFlagStats = storedStats;
+    }
     // Bonus high scores are a max-type metric (like streaks) — never let an
     // incoming value LOWER a stored best, and clamp each to a non-negative
     // integer. A plain last-write-wins here let a stale snapshot clobber a
@@ -57,6 +80,13 @@ function applyUpdate(userId, body) {
         ? Math.max(0, Math.round(Number(earnedXp)))
         : earnedBaseline(row);
 
+    // Floor earned XP at the legacy value implied by the (monotonic) flag stats.
+    // legacyBaseXp is always a lower bound on true earned XP — the per-answer
+    // formula pays strictly more than the old correct*10 + mastered*50 — so this
+    // never inflates a total; it only blocks a bad push from driving XP below
+    // what the player has provably earned. Defense-in-depth with the client fix.
+    const guardedEarned = Math.max(newEarned, legacyBaseXp(newFlagStats));
+
     // Bucks earned lifetime is monotonic. The delta between incoming and stored
     // is credited to the spendable `bucks` balance (admin grants + purchases on
     // the same balance are preserved because we only add the delta, never
@@ -73,20 +103,20 @@ function applyUpdate(userId, body) {
 
     // Total XP = earned XP + bonus high scores (the same quantity the client
     // displays). Recomputed here so the stored `xp` column stays authoritative.
-    const xp = totalXp(newEarned, newBonus);
+    const xp = totalXp(guardedEarned, newBonus);
 
     db.prepare(
         `UPDATE users SET stats_json = ?, bonus_scores_json = ?, earned_xp = ?, xp = ?, bucks = ?, bucks_earned_lifetime = ?
          WHERE id = ?`
     ).run(
-        JSON.stringify(newFlagStats), JSON.stringify(newBonus), newEarned, xp, nextBucks, newBucksLifetime,
+        JSON.stringify(newFlagStats), JSON.stringify(newBonus), guardedEarned, xp, nextBucks, newBucksLifetime,
         userId,
     );
 
     return {
         ok: true,
         xp,
-        earnedXp: newEarned,
+        earnedXp: guardedEarned,
         bucks: nextBucks,
         bucksEarnedLifetime: newBucksLifetime,
     };

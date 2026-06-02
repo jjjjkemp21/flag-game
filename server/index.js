@@ -1,6 +1,8 @@
 const path = require('path');
 const express = require('express');
 const rateLimit = require('express-rate-limit');
+const db = require('./db');
+const { scheduleBackups } = require('./backup');
 
 const app = express();
 app.set('trust proxy', 1); // behind the reverse proxy
@@ -49,4 +51,7 @@ const PORT = process.env.PORT || 80;
 app.listen(PORT, () => {
     // eslint-disable-next-line no-console
     console.log(`Flag Game server listening on :${PORT}`);
+    // Scheduled hot backups into the persistent /data volume.
+    const dataDir = path.dirname(process.env.DB_PATH || '/data/flagquest.db');
+    scheduleBackups(db, dataDir);
 });

@@ -281,4 +281,72 @@ if (!econV2LegacyDone) {
     db.prepare('INSERT INTO _meta (key, value) VALUES (?, ?)').run(ECON_V2_LEGACY_KEY, String(Date.now()));
 }
 
+// 2026-06-02: restore "Lee" (#3). A client persistence race (fixed in
+// src/App.js + server/routes/stats.js) let an empty local state overwrite his
+// server progress, zeroing every flag's correct/streak counts and his
+// earned_xp. Bonus scores, bucks, pet, cosmetics and title were untouched and
+// had advanced well past the last backup, so this rebuilds ONLY the wiped flag
+// stats: it takes his flag-answer history from the May 29 baseline backup that
+// ships in the /data volume, raises every flag to full Globe mastery, and
+// re-targets his lifetime XP to ~135k (his pre-wipe level). Achievements are
+// derived client-side, so they re-unlock from the restored stats on next load.
+// Guarded by _meta (runs once) AND only applied while the account is still in
+// the wiped state, so it can never downgrade a healthy account or run twice.
+const RESTORE_LEE_KEY = 'restore_lee_wipe_2026_06_02';
+if (!db.prepare('SELECT 1 FROM _meta WHERE key = ?').get(RESTORE_LEE_KEY)) {
+    try {
+        const TARGET_XP = 135000;
+        const GEO_MASTER = 6; // > MASTERY_STREAK (5) so every flag counts as Globe-mastered
+        const sumCorrect = (json) => {
+            try {
+                return (JSON.parse(json || '[]') || []).reduce((a, f) => a + (Number(f.correct) || 0), 0);
+            } catch (_) { return 0; }
+        };
+        const live = db
+            .prepare("SELECT id, earned_xp, bonus_scores_json, stats_json FROM users WHERE username = 'Lee' COLLATE NOCASE")
+            .get();
+        // Only act if still wiped: no earned XP and no flag-answer history.
+        if (live && (Number(live.earned_xp) || 0) === 0 && sumCorrect(live.stats_json) === 0) {
+            const backupPath = path.join(path.dirname(DB_PATH), 'flagquest.baseline-backup-1780042820.db');
+            let stats = [];
+            if (fs.existsSync(backupPath)) {
+                const bdb = new Database(backupPath, { readonly: true });
+                try {
+                    const brow = bdb
+                        .prepare("SELECT stats_json FROM users WHERE username = 'Lee' COLLATE NOCASE")
+                        .get();
+                    stats = JSON.parse((brow && brow.stats_json) || '[]') || [];
+                } finally {
+                    bdb.close();
+                }
+            }
+            if (Array.isArray(stats) && stats.length) {
+                // Backup already has full flag mastery; raise every flag to full
+                // Globe mastery too (he had all Globe placements before the wipe).
+                const restored = stats.map((f) => ({
+                    ...f,
+                    geoCorrect: Math.max(Number(f.geoCorrect) || 0, GEO_MASTER),
+                    geoStreak: Math.max(Number(f.geoStreak) || 0, GEO_MASTER),
+                }));
+                let bonus = {};
+                try { bonus = JSON.parse(live.bonus_scores_json || '{}') || {}; } catch (_) { bonus = {}; }
+                const bonusTotal = ['frenzy', 'pixelated', 'longestRoute', 'language']
+                    .reduce((s, k) => s + (Number(bonus[k]) || 0), 0);
+                const earned = Math.max(0, TARGET_XP - bonusTotal);
+                db.prepare('UPDATE users SET stats_json = ?, earned_xp = ?, xp = ? WHERE id = ?')
+                    .run(JSON.stringify(restored), earned, earned + bonusTotal, live.id);
+                // eslint-disable-next-line no-console
+                console.log(`[restore] Lee (#${live.id}) flag stats + XP restored (earned=${earned}, xp=${earned + bonusTotal}).`);
+            } else {
+                // eslint-disable-next-line no-console
+                console.warn('[restore] Lee backup stats unavailable; skipped (will not retry).');
+            }
+        }
+    } catch (e) {
+        // eslint-disable-next-line no-console
+        console.error('[restore] Lee restore migration failed:', e && e.message);
+    }
+    db.prepare('INSERT INTO _meta (key, value) VALUES (?, ?)').run(RESTORE_LEE_KEY, String(Date.now()));
+}
+
 module.exports = db;

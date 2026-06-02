@@ -308,9 +308,14 @@ function App() {
         let cancelled = false;
 
         (async () => {
+            // Tracks whether we loaded authoritative server progress this run.
+            // Persistence (the push effect + the unload beacon) is only enabled
+            // once this is non-null, so a failed /stats load can never let empty
+            // local state overwrite good server data — the bug that once wiped a
+            // player's flag stats and XP to zero.
+            let loadedFlags = null;
             if (isAuthed) {
                 setAuthed(true);
-                let loadedFlags = null;
                 try {
                     const remote = await api.get('/stats');
                     if (cancelled) return;
@@ -430,7 +435,11 @@ function App() {
                 } catch (_) { /* private mode etc. */ }
                 setFlagsData(prev => zeroFlagStats(prev));
             }
-            if (!cancelled) progressReadyRef.current = true;
+            // Guests can always persist (pushes are gated by authedRef anyway);
+            // authed sessions only after a successful stats load (loadedFlags set).
+            // If the load failed, leave persistence disabled so we never write
+            // empty local state over the account's real server progress.
+            if (!cancelled) progressReadyRef.current = isAuthed ? loadedFlags !== null : true;
         })();
 
         return () => { cancelled = true; };
