@@ -163,7 +163,7 @@ export function setCosmeticPos(slot, pos) {
         : slot === 'mouth' ? 'mouthPos'
         : slot === 'companion' ? 'companionPos'
         : 'effectPos';
-    state = { ...state, cosmetics: { ...state.cosmetics, [key]: clampPos(pos) } };
+    state = { ...state, cosmetics: { ...state.cosmetics, [key]: clampPos(pos, slot) } };
     notify();
     persist();
 }

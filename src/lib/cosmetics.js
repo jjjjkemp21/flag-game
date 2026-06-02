@@ -766,11 +766,20 @@ const clampNum = (v, min, max, d) => (Number.isFinite(+v) ? Math.min(max, Math.m
 
 // Clamp a stored placement to sane bounds so a cosmetic can't be dragged off
 // the canvas or scaled into nonsense.
-export function clampPos(p) {
+//
+// Bounds are relative to each slot's anchor. Most cosmetics are anchored near
+// the centre of the 96-unit viewBox, so a symmetric ±30/-38..28 window keeps
+// them on Atlas's face. The COMPANION, however, is anchored at Atlas's foot
+// (78, 86) in its renderer — a symmetric window would trap it in the
+// lower-right quadrant. It gets a wider, asymmetric window (offset from (78,86)
+// so the companion's centre can reach roughly -12..108 / -10..110) letting the
+// player park it anywhere in — or just off — the whole viewspace.
+export function clampPos(p, slot) {
     p = p || {};
+    const isCompanion = slot === 'companion';
     return {
-        x: clampNum(p.x, -30, 30, 0),
-        y: clampNum(p.y, -38, 28, 0),
+        x: clampNum(p.x, isCompanion ? -90 : -30, isCompanion ? 30 : 30, 0),
+        y: clampNum(p.y, isCompanion ? -96 : -38, isCompanion ? 24 : 28, 0),
         s: clampNum(p.s, 0.6, 1.7, 1),
     };
 }
@@ -835,6 +844,6 @@ export function normalizeCosmetics(c, ownedKey) {
         glassesPos: clampPos(c && c.glassesPos),
         mouthPos: clampPos(c && c.mouthPos),
         effectPos: clampPos(c && c.effectPos),
-        companionPos: clampPos(c && c.companionPos),
+        companionPos: clampPos(c && c.companionPos, 'companion'),
     };
 }

@@ -3274,30 +3274,29 @@ const COMPANION_SHAPES = {
             {/* Black socks */}
             <rect x="73" y="92" width="2.7" height="3" rx="1" fill="#352620" />
             <rect x="81" y="92" width="2.7" height="3" rx="1" fill="#352620" />
-            {/* Head */}
-            <circle cx="75" cy="84" r="5.4" fill="url(#comp-fox-b)" stroke="#1F1A3B" strokeWidth="1.2" />
-            {/* Pointed snout */}
-            <path d="M71 84 L 63.4 86.8 L 71 88.6 Q 73.2 86 71 84 Z" fill="url(#comp-fox-b)" stroke="#1F1A3B" strokeWidth="1.1" />
-            {/* Cream muzzle + cheek */}
-            <path d="M70 85.3 L 64 86.8 L 70 88.3 Q 71.6 86.6 70 85.3 Z" fill="#FBF1E7" />
-            <path d="M71 87 Q 74.2 87 75 89.2 Q 72 90.2 70 88.6 Z" fill="#FBF1E7" />
+            {/* Head — cranium */}
+            <circle cx="74.5" cy="82" r="5.4" fill="url(#comp-fox-b)" stroke="#1F1A3B" strokeWidth="1.2" />
             {/* Ears — near ear twitches. Pivot from the SMIL rotate's
                 (angle cx cy) args only; no CSS transform-origin (it
                 double-applied the pivot in some browsers — see the kitten tail). */}
             <g>
-                <animateTransform attributeName="transform" type="rotate" values="0 73 80;-13 73 80;0 73 80;0 73 80" keyTimes="0;0.05;0.11;1" dur="3.8s" repeatCount="indefinite" />
-                <path d="M70.5 80 L 70.5 72.5 L 76 78 Z" fill="url(#comp-fox-b)" stroke="#1F1A3B" strokeWidth="1" />
-                <path d="M71.4 78.6 L 71.6 74.5 L 74 77.6 Z" fill="#352620" />
+                <animateTransform attributeName="transform" type="rotate" values="0 72 79;-13 72 79;0 72 79;0 72 79" keyTimes="0;0.05;0.11;1" dur="3.8s" repeatCount="indefinite" />
+                <path d="M70 78.5 L 69 71.5 L 75 77 Z" fill="url(#comp-fox-b)" stroke="#1F1A3B" strokeWidth="1" />
+                <path d="M71 77.4 L 70.8 73.8 L 73.6 76.6 Z" fill="#352620" />
             </g>
-            <path d="M78 78.5 L 79.2 72.5 L 81.5 78 Z" fill="url(#comp-fox-b)" stroke="#1F1A3B" strokeWidth="1" />
-            <path d="M78.7 77.2 L 79.4 74.4 L 80.6 77.2 Z" fill="#352620" />
-            {/* Eyes with catchlight */}
-            <ellipse cx="73" cy="83" rx="1.1" ry="1.3" fill="#2A1B0E" />
-            <ellipse cx="77.4" cy="82.6" rx="1.1" ry="1.3" fill="#2A1B0E" />
-            <circle cx="73.3" cy="82.5" r="0.35" fill="#fff" />
-            <circle cx="77.7" cy="82.1" r="0.35" fill="#fff" />
+            <path d="M79 78 L 80.5 71.5 L 82 78 Z" fill="url(#comp-fox-b)" stroke="#1F1A3B" strokeWidth="1" />
+            <path d="M79.7 77 L 80.4 73.9 L 81.2 77 Z" fill="#352620" />
+            {/* Pointed snout — clean wedge off the lower-left of the cranium */}
+            <path d="M70.5 80.5 L 63.4 85 L 71 87 Q 73.6 83.6 70.5 80.5 Z" fill="url(#comp-fox-b)" stroke="#1F1A3B" strokeWidth="1.1" />
+            {/* Cream blaze running down the snout to the nose */}
+            <path d="M70.4 81 L 64 85 L 69.6 86.4 Q 71 83.8 70.4 81 Z" fill="#FBF1E7" />
             {/* Nose */}
-            <path d="M63.4 86.8 L 65.4 85.9 L 65.4 87.7 Z" fill="#241813" />
+            <path d="M63.4 85 L 65.5 84.2 L 65.4 86.1 Z" fill="#241813" />
+            {/* Eyes with catchlight */}
+            <ellipse cx="72.4" cy="81.4" rx="1.1" ry="1.3" fill="#2A1B0E" />
+            <ellipse cx="76.8" cy="81.1" rx="1.1" ry="1.3" fill="#2A1B0E" />
+            <circle cx="72.7" cy="80.9" r="0.35" fill="#fff" />
+            <circle cx="77.1" cy="80.6" r="0.35" fill="#fff" />
         </g>
     ),
 
@@ -3329,21 +3328,22 @@ const COMPANION_SHAPES = {
                 <path d="M71 88 Q 78 92 85 88" stroke="#1F1A3B" strokeWidth="1.2" fill="none" strokeLinecap="round" />
                 <path d="M73 89.6 Q 75 90.4 76.5 89.8" stroke="#FF8FB3" strokeWidth="0.7" fill="none" opacity="0.55" />
             </g>
-            {/* Eyes — bulging on top, blink */}
+            {/* Eyes — bulging atop the body (nestled low so they read attached),
+                with a slow blink */}
             <g>
-                <ellipse cx="73" cy="80" rx="2.8" ry="3" fill="url(#comp-frog-b)" stroke="#1F1A3B" strokeWidth="1.1" />
-                <ellipse cx="83" cy="80" rx="2.8" ry="3" fill="url(#comp-frog-b)" stroke="#1F1A3B" strokeWidth="1.1" />
-                <circle cx="73" cy="80" r="1.7" fill="#FCFCEF" />
-                <circle cx="83" cy="80" r="1.7" fill="#FCFCEF" />
-                <circle cx="73.4" cy="80.4" r="1" fill="#1F1A3B" />
-                <circle cx="83.4" cy="80.4" r="1" fill="#1F1A3B" />
-                <circle cx="73" cy="79.6" r="0.4" fill="#fff" />
-                <circle cx="83" cy="79.6" r="0.4" fill="#fff" />
+                <ellipse cx="73" cy="82" rx="2.8" ry="3" fill="url(#comp-frog-b)" stroke="#1F1A3B" strokeWidth="1.1" />
+                <ellipse cx="83" cy="82" rx="2.8" ry="3" fill="url(#comp-frog-b)" stroke="#1F1A3B" strokeWidth="1.1" />
+                <circle cx="73" cy="82" r="1.7" fill="#FCFCEF" />
+                <circle cx="83" cy="82" r="1.7" fill="#FCFCEF" />
+                <circle cx="73.4" cy="82.4" r="1" fill="#1F1A3B" />
+                <circle cx="83.4" cy="82.4" r="1" fill="#1F1A3B" />
+                <circle cx="73" cy="81.6" r="0.4" fill="#fff" />
+                <circle cx="83" cy="81.6" r="0.4" fill="#fff" />
                 {/* Blink lids */}
-                <rect x="70.2" y="77.2" width="5.6" height="0" rx="1" fill="#57AE52">
+                <rect x="70.2" y="79.2" width="5.6" height="0" rx="1" fill="#57AE52">
                     <animate attributeName="height" values="0;0;5.4;0;0" keyTimes="0;0.43;0.5;0.57;1" dur="3.8s" repeatCount="indefinite" />
                 </rect>
-                <rect x="80.2" y="77.2" width="5.6" height="0" rx="1" fill="#57AE52">
+                <rect x="80.2" y="79.2" width="5.6" height="0" rx="1" fill="#57AE52">
                     <animate attributeName="height" values="0;0;5.4;0;0" keyTimes="0;0.43;0.5;0.57;1" dur="3.8s" repeatCount="indefinite" />
                 </rect>
             </g>
