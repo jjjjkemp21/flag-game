@@ -2223,7 +2223,7 @@
     gap: var(--space-md);
 }
 .auth-tabs { display: flex; gap: var(--space-xs); background: var(--color-bg-soft); padding: 4px; border-radius: var(--radius-pill); }
-.auth-tab { flex: 1; border: none; background: transparent; padding: 8px 12px; border-radius: var(--radius-pill); font-weight: 700; color: var(--color-ink-soft); cursor: pointer; }
+.auth-tab { flex: 1; border: none; background: transparent; padding: 8px 12px; border-radius: var(--radius-pill); font-weight: 700; color: var(--color-ink-soft); cursor: pointer; white-space: nowrap; }
 .auth-tab.is-active { background: var(--color-bg-elev-1); color: var(--color-primary); box-shadow: var(--shadow-sm); }
 .auth-form { display: flex; flex-direction: column; gap: var(--space-md); }
 .auth-field { display: flex; flex-direction: column; gap: 6px; }
