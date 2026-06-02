@@ -3062,17 +3062,17 @@ const COMPANION_SHAPES = {
             <path d="M72 75 l 0.8 -2 M74 74.7 l 0 -2 M76 75 l -0.8 -2" stroke="#5B6470" strokeWidth="0.7" strokeLinecap="round" />
             {/* Eyes — light green, dark pupil, catchlight + blink */}
             <g>
-                <ellipse cx="71.6" cy="79" rx="1.5" ry="1.85" fill="#B7E4A0" stroke="#5B6470" strokeWidth="0.4" />
-                <ellipse cx="76.4" cy="79" rx="1.5" ry="1.85" fill="#B7E4A0" stroke="#5B6470" strokeWidth="0.4" />
-                <ellipse cx="71.6" cy="79.1" rx="0.7" ry="1.45" fill="#2B3A22" />
-                <ellipse cx="76.4" cy="79.1" rx="0.7" ry="1.45" fill="#2B3A22" />
-                <circle cx="72" cy="78.2" r="0.45" fill="#fff" />
-                <circle cx="76.8" cy="78.2" r="0.45" fill="#fff" />
-                <rect x="70.1" y="77.2" width="3" height="0" rx="0.6" fill="#AEB6C0">
-                    <animate attributeName="height" values="0;0;3.4;0;0" keyTimes="0;0.9;0.94;0.98;1" dur="4.6s" repeatCount="indefinite" />
+                <ellipse cx="71.6" cy="79" rx="1.25" ry="1.55" fill="#B7E4A0" stroke="#5B6470" strokeWidth="0.4" />
+                <ellipse cx="76.4" cy="79" rx="1.25" ry="1.55" fill="#B7E4A0" stroke="#5B6470" strokeWidth="0.4" />
+                <ellipse cx="71.6" cy="79.05" rx="0.6" ry="1.2" fill="#2B3A22" />
+                <ellipse cx="76.4" cy="79.05" rx="0.6" ry="1.2" fill="#2B3A22" />
+                <circle cx="71.95" cy="78.35" r="0.4" fill="#fff" />
+                <circle cx="76.75" cy="78.35" r="0.4" fill="#fff" />
+                <rect x="70.25" y="77.5" width="2.7" height="0" rx="0.6" fill="#AEB6C0">
+                    <animate attributeName="height" values="0;0;3;0;0" keyTimes="0;0.9;0.94;0.98;1" dur="4.6s" repeatCount="indefinite" />
                 </rect>
-                <rect x="74.9" y="77.2" width="3" height="0" rx="0.6" fill="#AEB6C0">
-                    <animate attributeName="height" values="0;0;3.4;0;0" keyTimes="0;0.9;0.94;0.98;1" dur="4.6s" repeatCount="indefinite" />
+                <rect x="75.05" y="77.5" width="2.7" height="0" rx="0.6" fill="#AEB6C0">
+                    <animate attributeName="height" values="0;0;3;0;0" keyTimes="0;0.9;0.94;0.98;1" dur="4.6s" repeatCount="indefinite" />
                 </rect>
             </g>
             {/* Nose + muzzle */}
@@ -3382,12 +3382,16 @@ const COMPANION_SHAPES = {
                 <ellipse cx="87.6" cy="71.1" rx="1" ry="0.55" fill="#CFE3FF" opacity="0.6" />
             </g>
             {/* Tongue — flicks out of the grin to the upper-right fly, then
-                retracts. Tip ball appears only while extended so the snatch reads. */}
-            <path fill="none" stroke="#E8638A" strokeWidth="1.7" strokeLinecap="round"
+                retracts. Hidden (opacity 0) except during the flick so no pink
+                stub shows at the mouth when idle; tip ball appears only while
+                extended so the snatch reads. */}
+            <path fill="none" stroke="#E8638A" strokeWidth="1.7" strokeLinecap="round" opacity="0"
                 d="M78 88.6 Q 78.4 88.9 78.8 89">
                 <animate attributeName="d"
                     values="M78 88.6 Q 78.4 88.9 78.8 89;M78 88.6 Q 78.4 88.9 78.8 89;M78 88.6 Q 83 80 87 72.4;M78 88.6 Q 83 80 87 72.4;M78 88.6 Q 78.4 88.9 78.8 89;M78 88.6 Q 78.4 88.9 78.8 89"
                     keyTimes="0;0.55;0.59;0.62;0.66;1" dur="6s" repeatCount="indefinite" />
+                <animate attributeName="opacity"
+                    values="0;0;1;1;0;0" keyTimes="0;0.55;0.59;0.62;0.66;1" dur="6s" repeatCount="indefinite" />
             </path>
             <circle cx="78" cy="88.6" r="1.3" fill="#E8638A" opacity="0">
                 <animate attributeName="cx" values="78;78;87;87;78;78" keyTimes="0;0.55;0.59;0.62;0.66;1" dur="6s" repeatCount="indefinite" />
