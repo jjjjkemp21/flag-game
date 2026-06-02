@@ -1,5 +1,5 @@
 import React from 'react';
-import { HATS, GLASSES, MOUTHS, EFFECTS, EMOTES } from '../../lib/cosmetics';
+import { HATS, GLASSES, MOUTHS, EFFECTS, EMOTES, COMPANIONS } from '../../lib/cosmetics';
 
 // SVG cosmetic overlays drawn in the Mascot's 96x96 viewBox.
 // Globe is centered at (48,48) with radius 34 (top edge ~y14); eyes sit at y46.
@@ -2944,6 +2944,271 @@ export function renderEmote(id) {
     const meta = EMOTES[id];
     const kind = (meta && meta.kind) || id;
     const draw = EMOTE_SHAPES[kind];
+    return draw ? draw() : null;
+}
+
+// ---- Companions ----------------------------------------------------------
+// Small animal characters that stand beside Atlas at the lower-right of the
+// 96x96 viewBox. Each renderer authors its SVG anchored around (78, 86) —
+// Atlas's "foot" — so the companion reads as part of his scene rather than a
+// floating attachment. They draw BEFORE the globe disc in Mascot.jsx, so any
+// part of the silhouette that crosses Atlas's body is automatically masked.
+//
+// Idle loops sit in the 1.8–3.6s band with staggered durations so two
+// companions sitting on different mascots in the same view don't lock into
+// a hypnotic uniform rhythm.
+const COMPANION_SHAPES = {
+    // Piglet: pink, with a curly tail and a wiggling snout.
+    piglet: () => (
+        <g strokeLinejoin="round">
+            {/* Hooves */}
+            <rect x="71" y="92" width="3" height="3" fill="#5B3F2E" />
+            <rect x="80" y="92" width="3" height="3" fill="#5B3F2E" />
+            {/* Body */}
+            <ellipse cx="78" cy="88" rx="10" ry="6.5" fill="#FFB0CB" stroke="#1F1A3B" strokeWidth="1.2" />
+            {/* Curly tail — animates a gentle bounce */}
+            <path d="M88 86 q 3 -1 3 -3 q -2 -1 -3 1" stroke="#1F1A3B" strokeWidth="1.2" fill="none" strokeLinecap="round">
+                <animate attributeName="d"
+                    values="M88 86 q 3 -1 3 -3 q -2 -1 -3 1;M88 86 q 4 0 3 -3 q -2 -1 -3 1;M88 86 q 3 -1 3 -3 q -2 -1 -3 1"
+                    dur="2.4s" repeatCount="indefinite" />
+            </path>
+            {/* Head */}
+            <circle cx="69" cy="83" r="6" fill="#FFB0CB" stroke="#1F1A3B" strokeWidth="1.2" />
+            {/* Ears */}
+            <path d="M64 79 L 66 75 L 68 78 Z" fill="#FF8AAE" stroke="#1F1A3B" strokeWidth="1" />
+            <path d="M71 78 L 74 75 L 74 79 Z" fill="#FF8AAE" stroke="#1F1A3B" strokeWidth="1" />
+            {/* Snout — gentle nose wiggle */}
+            <g>
+                <animateTransform attributeName="transform" type="translate" values="0 0;0.4 0;-0.4 0;0 0" dur="1.8s" repeatCount="indefinite" />
+                <ellipse cx="64" cy="84" rx="2.6" ry="2" fill="#FF8AAE" stroke="#1F1A3B" strokeWidth="1" />
+                <circle cx="63" cy="84" r="0.4" fill="#1F1A3B" />
+                <circle cx="65" cy="84" r="0.4" fill="#1F1A3B" />
+            </g>
+            {/* Eye */}
+            <circle cx="70" cy="81" r="0.9" fill="#1F1A3B" />
+        </g>
+    ),
+
+    // Kitten: orange tabby sitting, with a swishing tail.
+    kitten: () => (
+        <g strokeLinejoin="round">
+            {/* Tail — swishes around the body anchor (88, 88) */}
+            <g style={{ transformOrigin: '88px 88px' }}>
+                <animateTransform attributeName="transform" type="rotate" values="-12 88 88;14 88 88;-12 88 88" dur="3.2s" repeatCount="indefinite" />
+                <path d="M88 88 Q 94 84 92 78" stroke="#1F1A3B" strokeWidth="2.6" fill="none" strokeLinecap="round" />
+                <path d="M88 88 Q 94 84 92 78" stroke="#FFB861" strokeWidth="1.8" fill="none" strokeLinecap="round" />
+            </g>
+            {/* Body */}
+            <path d="M70 94 L 86 94 Q 90 94 88 86 Q 82 78 76 80 Q 70 84 70 94 Z" fill="#FFB861" stroke="#1F1A3B" strokeWidth="1.2" />
+            {/* Tabby stripes */}
+            <path d="M75 86 Q 78 84 81 86" stroke="#C26822" strokeWidth="0.9" fill="none" />
+            <path d="M76 90 Q 80 89 84 90" stroke="#C26822" strokeWidth="0.9" fill="none" />
+            {/* Head */}
+            <circle cx="75" cy="80" r="5.4" fill="#FFB861" stroke="#1F1A3B" strokeWidth="1.2" />
+            {/* Ears */}
+            <path d="M71 76 L 70 71 L 74 75 Z" fill="#FFB861" stroke="#1F1A3B" strokeWidth="1" />
+            <path d="M79 76 L 80 71 L 76 75 Z" fill="#FFB861" stroke="#1F1A3B" strokeWidth="1" />
+            <path d="M72 75 L 72 73 L 74 74.5 Z" fill="#FF8AAE" />
+            <path d="M78 75 L 78 73 L 76 74.5 Z" fill="#FF8AAE" />
+            {/* Eyes */}
+            <circle cx="73" cy="80" r="0.9" fill="#1F1A3B" />
+            <circle cx="77" cy="80" r="0.9" fill="#1F1A3B" />
+            {/* Nose + mouth */}
+            <path d="M75 82 L 74.4 83 M75 82 L 75.6 83" stroke="#1F1A3B" strokeWidth="0.7" strokeLinecap="round" />
+            <circle cx="75" cy="82" r="0.4" fill="#FF8AAE" />
+        </g>
+    ),
+
+    // Puppy: brown, floppy-eared. Tail wags; tongue lolls.
+    puppy: () => (
+        <g strokeLinejoin="round">
+            {/* Tail — wags */}
+            <g style={{ transformOrigin: '88px 86px' }}>
+                <animateTransform attributeName="transform" type="rotate" values="-20 88 86;20 88 86;-20 88 86" dur="0.9s" repeatCount="indefinite" />
+                <path d="M88 86 L 93 82 L 91 85 Z" fill="#9A6A3A" stroke="#1F1A3B" strokeWidth="1.2" />
+            </g>
+            {/* Body */}
+            <ellipse cx="80" cy="89" rx="8" ry="6" fill="#9A6A3A" stroke="#1F1A3B" strokeWidth="1.2" />
+            {/* Belly */}
+            <ellipse cx="80" cy="91" rx="5.5" ry="3" fill="#D9B287" />
+            {/* Head */}
+            <circle cx="73" cy="83" r="5.6" fill="#9A6A3A" stroke="#1F1A3B" strokeWidth="1.2" />
+            {/* Floppy ears */}
+            <path d="M68 80 Q 65 86 69 88 Q 71 86 70 80 Z" fill="#7A4F2E" stroke="#1F1A3B" strokeWidth="1" />
+            <path d="M78 80 Q 81 86 77 88 Q 75 86 76 80 Z" fill="#7A4F2E" stroke="#1F1A3B" strokeWidth="1" />
+            {/* Snout + nose */}
+            <ellipse cx="71" cy="85" rx="2.4" ry="1.6" fill="#D9B287" stroke="#1F1A3B" strokeWidth="0.8" />
+            <circle cx="69.5" cy="84" r="0.7" fill="#1F1A3B" />
+            {/* Tongue — gentle lolling motion */}
+            <path d="M70 87 Q 70 89 71 89 Q 72 89 72 87 Z" fill="#FF8AAE" stroke="#1F1A3B" strokeWidth="0.6">
+                <animate attributeName="d"
+                    values="M70 87 Q 70 89 71 89 Q 72 89 72 87 Z;M70 87 Q 70 89.6 71 89.6 Q 72 89.6 72 87 Z;M70 87 Q 70 89 71 89 Q 72 89 72 87 Z"
+                    dur="1.6s" repeatCount="indefinite" />
+            </path>
+            {/* Eyes */}
+            <circle cx="73" cy="82" r="0.9" fill="#1F1A3B" />
+            <circle cx="76" cy="82" r="0.9" fill="#1F1A3B" />
+        </g>
+    ),
+
+    // Turtle: green dome shell with hex pattern. Head bobs in/out.
+    turtle: () => (
+        <g strokeLinejoin="round">
+            {/* Legs (4) */}
+            <ellipse cx="69" cy="92" rx="2" ry="1.5" fill="#2F7D3F" stroke="#1F1A3B" strokeWidth="0.9" />
+            <ellipse cx="86" cy="92" rx="2" ry="1.5" fill="#2F7D3F" stroke="#1F1A3B" strokeWidth="0.9" />
+            <ellipse cx="74" cy="92.4" rx="1.8" ry="1.4" fill="#2F7D3F" stroke="#1F1A3B" strokeWidth="0.8" />
+            <ellipse cx="82" cy="92.4" rx="1.8" ry="1.4" fill="#2F7D3F" stroke="#1F1A3B" strokeWidth="0.8" />
+            {/* Shell — dome */}
+            <path d="M67 90 Q 67 78 78 78 Q 89 78 89 90 Z" fill="#5BAE5B" stroke="#1F1A3B" strokeWidth="1.3" />
+            {/* Hex pattern */}
+            <g stroke="#2F7D3F" strokeWidth="0.7" fill="none">
+                <path d="M73 82 L 76 80 L 79 82 L 79 86 L 76 88 L 73 86 Z" />
+                <path d="M80 84 L 83 82 L 85 84 L 85 87 L 83 88 L 80 87 Z" />
+            </g>
+            {/* Head — bobs in/out */}
+            <g>
+                <animateTransform attributeName="transform" type="translate" values="0 0;-1.5 0;0 0" dur="3.2s" repeatCount="indefinite" />
+                <ellipse cx="66" cy="86" rx="3.2" ry="2.5" fill="#5BAE5B" stroke="#1F1A3B" strokeWidth="1.1" />
+                <circle cx="64" cy="85" r="0.7" fill="#1F1A3B" />
+                {/* Single slow blink */}
+                <rect x="63.2" y="84.4" width="1.6" height="0.2" fill="#1F1A3B" opacity="0">
+                    <animate attributeName="opacity" values="0;0;1;0;0" keyTimes="0;0.45;0.5;0.55;1" dur="4.4s" repeatCount="indefinite" />
+                    <animate attributeName="height" values="0.2;0.2;1.4;0.2;0.2" keyTimes="0;0.45;0.5;0.55;1" dur="4.4s" repeatCount="indefinite" />
+                </rect>
+            </g>
+        </g>
+    ),
+
+    // Pirate Parrot: green-and-red parrot with a tiny tricorn. Head tilts.
+    pirateParrot: () => (
+        <g strokeLinejoin="round">
+            {/* Perch line (just below) */}
+            <path d="M72 95 L 86 95" stroke="#7A4F2E" strokeWidth="1.6" strokeLinecap="round" />
+            {/* Tail feathers — fan */}
+            <g>
+                <path d="M86 88 L 92 86 L 88 92 Z" fill="#E5414C" stroke="#1F1A3B" strokeWidth="0.9" />
+                <path d="M86 90 L 93 89 L 88 93 Z" fill="#FFC247" stroke="#1F1A3B" strokeWidth="0.9" />
+            </g>
+            {/* Body — green */}
+            <ellipse cx="79" cy="88" rx="6" ry="7" fill="#19A36B" stroke="#1F1A3B" strokeWidth="1.2" />
+            {/* Wing — red accent */}
+            <path d="M79 84 Q 83 85 83 90 Q 80 92 78 90 Z" fill="#E5414C" stroke="#1F1A3B" strokeWidth="1" />
+            {/* Head — green, tilts gently */}
+            <g style={{ transformOrigin: '76px 82px' }}>
+                <animateTransform attributeName="transform" type="rotate" values="-8 76 82;8 76 82;-8 76 82" dur="2.4s" repeatCount="indefinite" />
+                <circle cx="76" cy="82" r="4.6" fill="#19A36B" stroke="#1F1A3B" strokeWidth="1.2" />
+                {/* Tricorn hat */}
+                <path d="M70 78 L 82 78 L 80 76 L 76 74 L 72 76 Z" fill="#1F1A3B" />
+                <path d="M70 78 L 82 78" stroke="#FFC247" strokeWidth="0.8" />
+                {/* Beak — yellow triangle */}
+                <path d="M71 82 L 67 83 L 71 84 Z" fill="#FFC247" stroke="#1F1A3B" strokeWidth="0.9" />
+                {/* Eye */}
+                <circle cx="75" cy="81" r="0.9" fill="#1F1A3B" />
+                <circle cx="75.3" cy="80.7" r="0.3" fill="#fff" />
+            </g>
+        </g>
+    ),
+
+    // Fox kit: orange + white belly + bushy tail. Ear twitches.
+    foxKit: () => (
+        <g strokeLinejoin="round">
+            {/* Bushy tail with white tip */}
+            <path d="M86 88 Q 94 85 92 80 Q 90 79 87 82 Z" fill="#FF8A4B" stroke="#1F1A3B" strokeWidth="1.1" />
+            <path d="M92 80 Q 94 80 93 82" stroke="#FFFFFF" strokeWidth="2" fill="none" strokeLinecap="round" />
+            {/* Body */}
+            <path d="M70 94 L 86 94 Q 89 92 86 84 Q 78 80 73 84 Q 70 88 70 94 Z" fill="#FF8A4B" stroke="#1F1A3B" strokeWidth="1.2" />
+            {/* White belly */}
+            <path d="M73 94 L 84 94 Q 86 90 82 87 Q 76 87 73 92 Z" fill="#FCF0E5" />
+            {/* Head — pointed snout */}
+            <path d="M72 84 L 65 86 L 72 88 Q 78 88 78 82 Q 76 78 72 78 Z" fill="#FF8A4B" stroke="#1F1A3B" strokeWidth="1.2" />
+            {/* Cheek white */}
+            <path d="M68 86 L 72 86 L 70 88 Z" fill="#FCF0E5" />
+            {/* Ears — left ear twitches */}
+            <g style={{ transformOrigin: '73px 80px' }}>
+                <animateTransform attributeName="transform" type="rotate" values="0 73 80;-12 73 80;0 73 80;0 73 80" keyTimes="0;0.06;0.12;1" dur="3.6s" repeatCount="indefinite" />
+                <path d="M71 79 L 72 73 L 75 78 Z" fill="#FF8A4B" stroke="#1F1A3B" strokeWidth="1" />
+                <path d="M72 77 L 73 75 L 74 77 Z" fill="#1F1A3B" />
+            </g>
+            <path d="M77 78 L 78 73 L 79 78 Z" fill="#FF8A4B" stroke="#1F1A3B" strokeWidth="1" />
+            <path d="M77.5 77 L 78 75.5 L 78.5 77 Z" fill="#1F1A3B" />
+            {/* Eye */}
+            <circle cx="73" cy="82" r="0.9" fill="#1F1A3B" />
+            {/* Nose */}
+            <ellipse cx="66" cy="86" rx="0.8" ry="0.6" fill="#1F1A3B" />
+        </g>
+    ),
+
+    // Frog: green crouched, big eyes. Belly puffs; eyes blink.
+    frog: () => (
+        <g strokeLinejoin="round">
+            {/* Back legs */}
+            <ellipse cx="70" cy="92" rx="3" ry="1.8" fill="#5BAE5B" stroke="#1F1A3B" strokeWidth="1" />
+            <ellipse cx="86" cy="92" rx="3" ry="1.8" fill="#5BAE5B" stroke="#1F1A3B" strokeWidth="1" />
+            {/* Body — gentle scale-Y for breathing */}
+            <g style={{ transformOrigin: '78px 88px' }}>
+                <animateTransform attributeName="transform" type="scale" values="1 1;1 1.06;1 1" dur="2.6s" repeatCount="indefinite" additive="sum" />
+                <ellipse cx="78" cy="88" rx="9" ry="6" fill="#5BAE5B" stroke="#1F1A3B" strokeWidth="1.2" />
+                {/* Belly */}
+                <ellipse cx="78" cy="90" rx="6" ry="2.5" fill="#A8DEA0" />
+                {/* Wide mouth */}
+                <path d="M72 88 Q 78 91 84 88" stroke="#1F1A3B" strokeWidth="1.2" fill="none" strokeLinecap="round" />
+            </g>
+            {/* Eyes — bulging on top, blink */}
+            <g>
+                <circle cx="73" cy="80" r="2.6" fill="#5BAE5B" stroke="#1F1A3B" strokeWidth="1.1" />
+                <circle cx="83" cy="80" r="2.6" fill="#5BAE5B" stroke="#1F1A3B" strokeWidth="1.1" />
+                <circle cx="73" cy="80" r="1.5" fill="#FFFFFF" />
+                <circle cx="83" cy="80" r="1.5" fill="#FFFFFF" />
+                <circle cx="73.3" cy="80.3" r="0.8" fill="#1F1A3B" />
+                <circle cx="83.3" cy="80.3" r="0.8" fill="#1F1A3B" />
+                {/* Blink lids */}
+                <rect x="71" y="78.4" width="4.4" height="0" fill="#5BAE5B">
+                    <animate attributeName="height" values="0;0;3.2;0;0" keyTimes="0;0.43;0.5;0.57;1" dur="3.8s" repeatCount="indefinite" />
+                </rect>
+                <rect x="81" y="78.4" width="4.4" height="0" fill="#5BAE5B">
+                    <animate attributeName="height" values="0;0;3.2;0;0" keyTimes="0;0.43;0.5;0.57;1" dur="3.8s" repeatCount="indefinite" />
+                </rect>
+            </g>
+        </g>
+    ),
+
+    // Salamander: long orange with spots. Body undulates side-to-side gently.
+    salamander: () => (
+        <g strokeLinejoin="round">
+            {/* Legs (4 stubby) */}
+            <ellipse cx="69" cy="91" rx="1.6" ry="1.4" fill="#E5612E" stroke="#1F1A3B" strokeWidth="0.8" />
+            <ellipse cx="76" cy="92" rx="1.6" ry="1.4" fill="#E5612E" stroke="#1F1A3B" strokeWidth="0.8" />
+            <ellipse cx="84" cy="92" rx="1.6" ry="1.4" fill="#E5612E" stroke="#1F1A3B" strokeWidth="0.8" />
+            <ellipse cx="91" cy="91" rx="1.6" ry="1.4" fill="#E5612E" stroke="#1F1A3B" strokeWidth="0.8" />
+            {/* Body — three segments, each oscillating slightly out of phase */}
+            <g>
+                <animateTransform attributeName="transform" type="translate" values="0 0;0 -0.6;0 0;0 0.4;0 0" dur="2.8s" repeatCount="indefinite" />
+                <path d="M62 89 Q 68 84 78 86 Q 89 88 95 86 L 95 90 Q 89 92 78 90 Q 68 92 62 91 Z"
+                    fill="#FF8A3F" stroke="#1F1A3B" strokeWidth="1.2" />
+                {/* Spots */}
+                <circle cx="72" cy="87" r="0.9" fill="#FFC247" />
+                <circle cx="78" cy="89" r="1" fill="#FFC247" />
+                <circle cx="84" cy="87" r="0.9" fill="#FFC247" />
+                <circle cx="89" cy="89" r="0.8" fill="#FFC247" />
+            </g>
+            {/* Head end (left) — eye + curve */}
+            <circle cx="63.5" cy="88" r="0.6" fill="#1F1A3B" />
+            {/* Slow blink */}
+            <rect x="62.9" y="87.7" width="1.2" height="0" fill="#FF8A3F">
+                <animate attributeName="height" values="0;0;1.2;0;0" keyTimes="0;0.46;0.5;0.54;1" dur="3.4s" repeatCount="indefinite" />
+            </rect>
+        </g>
+    ),
+};
+
+export function renderCompanion(id) {
+    // Same dispatch shape as renderEmote: lookup metadata then resolve `kind`,
+    // so the BP-exclusive `bp_companion_salamander` maps to the `salamander`
+    // renderer without giving the kind away to the player.
+    const meta = COMPANIONS[id];
+    if (!meta || !meta.kind) return null;
+    const draw = COMPANION_SHAPES[meta.kind];
     return draw ? draw() : null;
 }
 

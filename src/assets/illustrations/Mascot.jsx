@@ -1,7 +1,7 @@
 import React, { useId } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { paletteFor, isEffectSizable } from '../../lib/cosmetics';
-import { renderHat, renderGlasses, renderEffect, renderEffectBehind, renderMouth, mouthHidesMood, renderEmote } from './Cosmetics';
+import { renderHat, renderGlasses, renderEffect, renderEffectBehind, renderMouth, mouthHidesMood, renderEmote, renderCompanion } from './Cosmetics';
 
 // Build an SVG <pattern> for an animal-skin palette. The pattern tiles across
 // the globe-disc bounding box; the disc itself clips it to a circle. Hand-
@@ -297,6 +297,7 @@ export default function Mascot({ size = 96, mood = 'idle', cosmetics, still = fa
     const glassesEl = renderGlasses(cos.glasses);
     const mouthEl = renderMouth(cos.mouth);
     const hideMoodMouth = mouthHidesMood(cos.mouth);
+    const companionEl = renderCompanion(cos.companion);
 
     const bobVariants = {
         idle:   { y: [0, -3, 0], transition: { duration: 3.2, repeat: Infinity, ease: 'easeInOut' } },
@@ -462,6 +463,13 @@ export default function Mascot({ size = 96, mood = 'idle', cosmetics, still = fa
                 {effectBehindEl && (
                     <g transform={placement(cos.effectPos, 48, 48)}>{effectBehindEl}</g>
                 )}
+
+                {/* Companion — small animal character that stands beside Atlas at
+                    his lower-right (anchored around 78,86 inside each renderer).
+                    Drawn here so any silhouette that crosses Atlas's body is
+                    automatically masked by the globe disc below — he stays the
+                    focal character. Mood/effects on Atlas don't propagate. */}
+                {companionEl && mood !== 'dead' && <g>{companionEl}</g>}
 
                 {/* Globe — solid pattern fill (with subtle gradient overlay for shading) or pure gradient */}
                 {pattern ? (

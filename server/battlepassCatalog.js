@@ -127,7 +127,8 @@ const TIERS = [
     // Tier 4 free: a starter emote on the free track so every player gets a
     // taste of the new system without needing to grind the prem-only ones.
     { tier: 4,  free: { type: 'cosmetic', cat: 'emote',   id: 'cheer' },  prem: { type: 'cosmetic', cat: 'glasses', id: 'bp_serpent_eyes' } },
-    { tier: 5,  free: { type: 'bucks', amount: 750 },    prem: { type: 'cosmetic', cat: 'hat',     id: 'bp_frill_emerald' } },
+    // Tier 5 free: the Salamander companion. Mirror of the client change.
+    { tier: 5,  free: { type: 'cosmetic', cat: 'companion', id: 'bp_companion_salamander' }, prem: { type: 'cosmetic', cat: 'hat',     id: 'bp_frill_emerald' } },
     // Tier 6 prem: the first BP-exclusive emote — Serpent Coil — matches the
     // atmospheric reptile theme that previously belonged to the Swamp Mist
     // effect this slot used to grant.

@@ -13,7 +13,7 @@
 
 import * as clientXp from '../lib/xp';
 import * as clientBp from '../lib/battlepassCatalog';
-import { COLORS, HATS, GLASSES, MOUTHS, EFFECTS, EMOTES } from '../lib/cosmetics';
+import { COLORS, HATS, GLASSES, MOUTHS, EFFECTS, EMOTES, COMPANIONS } from '../lib/cosmetics';
 
 const serverXp = require('../../server/xp');
 const serverBp = require('../../server/battlepassCatalog');
@@ -80,6 +80,7 @@ describe('cosmetic prices client/server sync', () => {
     const categories = [
         ['color', COLORS], ['hat', HATS], ['glasses', GLASSES],
         ['mouth', MOUTHS], ['effect', EFFECTS], ['emote', EMOTES],
+        ['companion', COMPANIONS],
     ];
     categories.forEach(([cat, clientMap]) => {
         test(`${cat}: every id's price matches server, and id sets agree`, () => {

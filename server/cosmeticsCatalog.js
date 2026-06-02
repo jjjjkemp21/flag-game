@@ -118,11 +118,23 @@ const SCENES = {
     pride_parade: 2000,
 };
 
-const CATALOG = { color: COLORS, hat: HATS, glasses: GLASSES, mouth: MOUTHS, effect: EFFECTS, scene: SCENES, emote: EMOTES };
+// ---- Companions ----
+// Animal characters standing beside Atlas in the scene, with subtle SMIL idles.
+// Same shop-vs-bp rules as the rest of the catalog: most are shop-with-Bucks,
+// the salamander is bp_ (granted from a battlepass tier reward).
+const COMPANIONS = {
+    none: 0,
+    piglet: 2000, kitten: 2200, puppy: 2400, turtle: 2600,
+    pirate_parrot: 2900, fox_kit: 3100, frog: 3300,
+    // Atlas Pass — Tier 5 free track (replaces the prior 750-Bucks reward).
+    bp_companion_salamander: 999999,
+};
+
+const CATALOG = { color: COLORS, hat: HATS, glasses: GLASSES, mouth: MOUTHS, effect: EFFECTS, scene: SCENES, emote: EMOTES, companion: COMPANIONS };
 
 // Items that are always considered owned (so a fresh account has a working
 // equip in every slot). Mirrors DEFAULT_COSMETICS on the client.
-const DEFAULTS = { color: 'teal', hat: 'none', glasses: 'none', mouth: 'none', effect: 'none', scene: 'default', emote: 'none' };
+const DEFAULTS = { color: 'teal', hat: 'none', glasses: 'none', mouth: 'none', effect: 'none', scene: 'default', emote: 'none', companion: 'none' };
 
 // Free starter items — owned without writing to owned_cosmetics_json. The
 // client mirrors this list in src/lib/cosmetics.js + src/lib/currency.js.

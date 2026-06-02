@@ -80,7 +80,10 @@ export const TIERS = [
     // Tier 4 free: a starter emote on the free track so every player gets a
     // taste of the new system without needing to grind the prem-only ones.
     { tier: 4,  free: { type: 'cosmetic', cat: 'emote',   id: 'cheer' },  prem: { type: 'cosmetic', cat: 'glasses', id: 'bp_serpent_eyes' } },
-    { tier: 5,  free: { type: 'bucks', amount: 750 },    prem: { type: 'cosmetic', cat: 'hat',     id: 'bp_frill_emerald' } },
+    // Tier 5 free: the Salamander companion. Replaces a 750-Bucks reward so
+    // every player who hits T5 (free or prem) gets the entry-tier Reptile
+    // Kingdom companion — first chance for a companion to show up beside Atlas.
+    { tier: 5,  free: { type: 'cosmetic', cat: 'companion', id: 'bp_companion_salamander' }, prem: { type: 'cosmetic', cat: 'hat',     id: 'bp_frill_emerald' } },
     // Tier 6 prem: first BP-exclusive emote — Serpent Coil — leans into the
     // atmospheric reptile theme that the Swamp Mist effect used to fill here.
     { tier: 6,  free: { type: 'bucks', amount: 300 },    prem: { type: 'cosmetic', cat: 'emote',   id: 'bp_serpent_coil' } },

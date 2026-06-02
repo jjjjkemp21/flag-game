@@ -709,14 +709,39 @@ export const SCENES = {
     pride_parade:  { name: 'Pride Parade',        xp: 2000 },
 };
 
+// ---- Companions -------------------------------------------------------------
+// Small animal characters that stand beside Atlas at his lower-right. Each has
+// a subtle SMIL idle (tail flick / nose wiggle / blink / ear twitch / belly
+// breathing). Rendered BEFORE the globe disc in Mascot, so any overlap with
+// Atlas's silhouette is automatically masked by his body — he stays the focal
+// character. Pricing band 2000–3300, sitting just above hats and well below
+// scenes (companions ship with the most authored geometry of any per-slot item).
+// `kind` selects an SVG renderer in assets/illustrations/Cosmetics.jsx.
+export const COMPANIONS = {
+    none:                     { name: 'None',         xp: 0 },
+    piglet:                   { name: 'Piglet',       xp: 2000, kind: 'piglet' },
+    kitten:                   { name: 'Kitten',       xp: 2200, kind: 'kitten' },
+    puppy:                    { name: 'Puppy',        xp: 2400, kind: 'puppy' },
+    turtle:                   { name: 'Turtle',       xp: 2600, kind: 'turtle' },
+    pirate_parrot:            { name: 'Pirate Parrot',xp: 2900, kind: 'pirateParrot' },
+    fox_kit:                  { name: 'Fox Kit',      xp: 3100, kind: 'foxKit' },
+    frog:                     { name: 'Frog',         xp: 3300, kind: 'frog' },
+
+    // ---- Reptile Kingdom companion (Atlas Pass exclusive) ------------------
+    // Awarded on the FREE track at Tier 5 (was previously 750 Bucks). bp_ prefix
+    // keeps it out of the shop the same way every other bp_* item is gated.
+    bp_companion_salamander:  { name: 'Salamander',   xp: 999999, bpOnly: true, kind: 'salamander' },
+};
+
 export const CATEGORIES = [
-    { key: 'color',   label: 'Globe Color', icon: 'palette',        items: COLORS },
-    { key: 'hat',     label: 'Hats',        icon: 'theater_comedy', items: HATS },
-    { key: 'glasses', label: 'Glasses',     icon: 'eyeglasses',     items: GLASSES },
-    { key: 'mouth',   label: 'Mouth',       icon: 'sentiment_satisfied', items: MOUTHS },
-    { key: 'effect',  label: 'Effects',     icon: 'auto_awesome',   items: EFFECTS },
-    { key: 'emote',   label: 'Emotes',      icon: 'sentiment_very_satisfied', items: EMOTES },
-    { key: 'scene',   label: 'Scenes',      icon: 'landscape',      items: SCENES },
+    { key: 'color',     label: 'Globe Color', icon: 'palette',        items: COLORS },
+    { key: 'hat',       label: 'Hats',        icon: 'theater_comedy', items: HATS },
+    { key: 'glasses',   label: 'Glasses',     icon: 'eyeglasses',     items: GLASSES },
+    { key: 'mouth',     label: 'Mouth',       icon: 'sentiment_satisfied', items: MOUTHS },
+    { key: 'effect',    label: 'Effects',     icon: 'auto_awesome',   items: EFFECTS },
+    { key: 'emote',     label: 'Emotes',      icon: 'sentiment_very_satisfied', items: EMOTES },
+    { key: 'companion', label: 'Companion',   icon: 'pets',           items: COMPANIONS },
+    { key: 'scene',     label: 'Scenes',      icon: 'landscape',      items: SCENES },
 ];
 
 // Per-slot placement: x/y offset (in the 96-unit viewBox) and a scale `s`,
@@ -730,6 +755,8 @@ export const DEFAULT_COSMETICS = {
     // `emoteLoadout` instead. Default loadout: wave in slot 0, rest empty.
     emote: 'none',
     emoteLoadout: ['wave', 'none', 'none', 'none'],
+    // Companion: animal character standing beside Atlas. No companion by default.
+    companion: 'none',
     hatPos: { ...DEFAULT_POS }, glassesPos: { ...DEFAULT_POS },
     mouthPos: { ...DEFAULT_POS }, effectPos: { ...DEFAULT_POS },
 };
@@ -758,7 +785,7 @@ export function priceOf(item) {
 // player gets them implicitly without needing to buy.
 const FREE_BY_DEFAULT = {
     color: 'teal', hat: 'none', glasses: 'none', mouth: 'none', effect: 'none',
-    scene: 'default', emote: 'none',
+    scene: 'default', emote: 'none', companion: 'none',
 };
 export function isDefaultItem(category, id) {
     return FREE_BY_DEFAULT[category] === id;
@@ -798,6 +825,9 @@ export function normalizeCosmetics(c, ownedKey) {
         effect: pick('effect', c && c.effect, EFFECTS),
         scene: pick('scene', c && c.scene, SCENES),
         emote: pick('emote', c && c.emote, EMOTES),
+        // Companion: no position picker — placement is fixed in the Mascot
+        // scene (lower-right, behind Atlas's silhouette on overlap).
+        companion: pick('companion', c && c.companion, COMPANIONS),
         emoteLoadout: loadout,
         hatPos: clampPos(c && c.hatPos),
         glassesPos: clampPos(c && c.glassesPos),
