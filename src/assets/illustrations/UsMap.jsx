@@ -80,20 +80,25 @@ function UsMap({
                     );
                 })}
             </g>
-            {(showLabels || revealCode) && (
+            {(showLabels || revealCode || chosenCode) && (
                 <g className="us-map__labels" aria-hidden="true">
                     {codes.map((code) => {
-                        // showLabels = every state; revealCode = just one.
-                        if (!showLabels && code !== revealCode) return null;
+                        const isCorrect = code === revealCode;
+                        const isWrong = code === chosenCode && code !== answerCode;
+                        // showLabels = every state; otherwise just the revealed
+                        // correct answer plus the player's wrong pick (if any).
+                        if (!showLabels && !isCorrect && !isWrong) return null;
                         const c = LABEL_CENTERS[code];
                         if (!c) return null;
-                        const isReveal = code === revealCode;
+                        let labelClass = 'us-map__label';
+                        if (isCorrect) labelClass += ' is-reveal is-correct';
+                        else if (isWrong) labelClass += ' is-reveal is-wrong';
                         return (
                             <text
                                 key={code}
                                 x={c.x}
                                 y={c.y}
-                                className={`us-map__label ${isReveal ? 'is-reveal' : ''}`}
+                                className={labelClass}
                                 textAnchor="middle"
                             >
                                 {code.toUpperCase()}

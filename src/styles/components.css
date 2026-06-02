@@ -1940,19 +1940,23 @@
     font-size: 11px;
     font-weight: 700;
     fill: var(--color-ink-soft);
+    dominant-baseline: central;
     pointer-events: none;
     user-select: none;
 }
+/* Revealed answer codes: bold, with a white halo so the green/red fill
+   stays legible on top of the coloured state. */
 .us-map__label.is-reveal {
     font-size: 17px;
     font-weight: 800;
     letter-spacing: 0.5px;
-    fill: #fff;
     paint-order: stroke fill;
-    stroke: var(--color-success-deep, #047857);
+    stroke: #fff;
     stroke-width: 3.5px;
     stroke-linejoin: round;
 }
+.us-map__label.is-reveal.is-correct { fill: var(--color-success-deep, #047857); }
+.us-map__label.is-reveal.is-wrong { fill: var(--color-danger-deep, #b91c1c); }
 
 /* Settings panel (legacy class compat) */
 .settings-box .switch {
