@@ -64,9 +64,6 @@ function TopBar({ setView, view }) {
                         <Icon name="account_circle" />
                         <span className="account-chip__name">
                             {user?.username}
-                            {selectedTitle && (
-                                <span className="account-chip__title">{selectedTitle}</span>
-                            )}
                         </span>
                         <Icon name="expand_more" className="account-chip__caret" />
                     </button>
