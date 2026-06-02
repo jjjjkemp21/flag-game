@@ -87,10 +87,14 @@ function ReptileEmblem() {
     );
 }
 
-// Olympus emblem — a marble temple on the right against a dawn sky, crowned by
-// a golden thunderbolt and laurel, with twinkling stars. The left fades out so
-// the card copy stays legible.
+// Olympus emblem — a marble temple on the right against a dawn sky textured with
+// a Greek-key meander band and god-rays, crowned by a golden thunderbolt held in
+// a full laurel wreath over a radiant halo, with twinkling stars. The left fades
+// out so the card copy stays legible. Detailed to match the season-1 emblem.
 function OlympusEmblem() {
+    // Laurel leaves sampled along each wreath arc, angled tangent to the ring so
+    // the sprigs read as a continuous wreath rather than scattered leaves.
+    const laurelLeft = [[110, 96, -52], [105, 80, -74], [106, 64, -98], [113, 49, -120], [124, 38, -142], [137, 31, -162]];
     return (
         <svg
             className="bp-card__art"
@@ -101,22 +105,39 @@ function OlympusEmblem() {
         >
             <defs>
                 <linearGradient id="bpOlSky" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#2A3F72" />
-                    <stop offset="55%" stopColor="#6E84BC" />
+                    <stop offset="0%" stopColor="#243A6E" />
+                    <stop offset="48%" stopColor="#6E84BC" />
                     <stop offset="100%" stopColor="#FFD89A" />
                 </linearGradient>
                 <linearGradient id="bpOlMarble" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor="#FBFCFE" />
-                    <stop offset="100%" stopColor="#C7CEDC" />
+                    <stop offset="100%" stopColor="#C2CAD9" />
                 </linearGradient>
                 <linearGradient id="bpOlGold" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#FFF1C2" />
-                    <stop offset="100%" stopColor="#E5A018" />
+                    <stop offset="0%" stopColor="#FFF6D6" />
+                    <stop offset="48%" stopColor="#FFD86B" />
+                    <stop offset="100%" stopColor="#C98A14" />
+                </linearGradient>
+                <linearGradient id="bpOlLeaf" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#FFE9A6" />
+                    <stop offset="100%" stopColor="#C49A3A" />
                 </linearGradient>
                 <radialGradient id="bpOlSun" cx="50%" cy="50%" r="50%">
-                    <stop offset="0%" stopColor="#FFFDEC" stopOpacity="0.9" />
+                    <stop offset="0%" stopColor="#FFFDEC" stopOpacity="0.95" />
                     <stop offset="100%" stopColor="#FFC247" stopOpacity="0" />
                 </radialGradient>
+                <radialGradient id="bpOlHalo" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" stopColor="#FFE9A0" stopOpacity="0.55" />
+                    <stop offset="60%" stopColor="#FFD86B" stopOpacity="0.18" />
+                    <stop offset="100%" stopColor="#FFD86B" stopOpacity="0" />
+                </radialGradient>
+                {/* Greek-key meander — the signature Hellenic border texture, the
+                    Olympus analogue of season 1's reptilian scale pattern. */}
+                <pattern id="bpOlMeander" patternUnits="userSpaceOnUse" width="20" height="20">
+                    <path d="M2 2 H14 V14 H6 V6 H10 V10"
+                          fill="none" stroke="#FFE9A6" strokeOpacity="0.5" strokeWidth="1.1"
+                          strokeLinecap="square" strokeLinejoin="miter" />
+                </pattern>
                 <linearGradient id="bpOlFade" x1="0" y1="0" x2="1" y2="0">
                     <stop offset="0%" stopColor="#000" />
                     <stop offset="38%" stopColor="#000" />
@@ -125,48 +146,102 @@ function OlympusEmblem() {
                 <mask id="bpOlFadeMask">
                     <rect x="0" y="0" width="280" height="200" fill="url(#bpOlFade)" />
                 </mask>
+                {/* A horizontal slab the meander band lives in, faded at the left. */}
+                <linearGradient id="bpOlBandFade" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0%" stopColor="#000" />
+                    <stop offset="45%" stopColor="#000" />
+                    <stop offset="70%" stopColor="#FFF" />
+                </linearGradient>
+                <mask id="bpOlBandMask">
+                    <rect x="0" y="0" width="280" height="200" fill="url(#bpOlBandFade)" />
+                </mask>
             </defs>
 
-            {/* Sky + sun glow only on the right (faded) */}
+            {/* Sky + sun glow + god-rays + temple, all faded toward the left */}
             <g mask="url(#bpOlFadeMask)">
                 <rect x="0" y="0" width="280" height="200" fill="url(#bpOlSky)" />
-                <circle cx="206" cy="150" r="90" fill="url(#bpOlSun)" />
-                {/* Distant peaks */}
-                <path d="M120,150 L160,108 L196,150 L232,104 L280,150 L280,200 L120,200 Z" fill="#4A5887" opacity="0.5" />
+                <circle cx="206" cy="158" r="100" fill="url(#bpOlSun)" />
+                {/* God-rays fanning up from the rising sun */}
+                <g fill="#FFFDEC" opacity="0.12">
+                    {[-34, -18, 0, 18, 34].map((a, i) => (
+                        <path key={i} d="M206 158 L200 40 L212 40 Z" transform={`rotate(${a} 206 158)`} />
+                    ))}
+                </g>
+                {/* Distant snow-capped peaks */}
+                <path d="M104,152 L150,104 L188,152 L224,98 L280,152 L280,200 L104,200 Z" fill="#46568A" opacity="0.55" />
+                <path d="M150,104 L160,116 L150,120 L140,116 Z M224,98 L235,112 L224,116 L213,112 Z" fill="#EAF0FA" opacity="0.7" />
+                {/* Soft clouds banking around the sanctuary */}
+                <g fill="#F4F7FC" opacity="0.55">
+                    <ellipse cx="172" cy="158" rx="22" ry="7" />
+                    <ellipse cx="252" cy="150" rx="26" ry="8" />
+                    <ellipse cx="210" cy="166" rx="34" ry="9" />
+                </g>
                 {/* Temple */}
                 <g>
-                    <rect x="170" y="150" width="86" height="6" fill="#D4DAE4" />
-                    <rect x="174" y="146" width="78" height="5" fill="#E8ECF3" />
-                    <g fill="url(#bpOlMarble)" stroke="#AEB6C6" strokeWidth="0.6">
+                    {/* Stepped stylobate */}
+                    <rect x="166" y="156" width="96" height="7" rx="1" fill="#C7CEDC" />
+                    <rect x="170" y="150" width="88" height="6" rx="1" fill="#DCE2EC" />
+                    <rect x="174" y="145" width="80" height="5" rx="1" fill="#EEF2F8" />
+                    {/* Fluted columns with shaded right edge */}
+                    <g>
                         {[178, 196, 214, 232].map((x, i) => (
-                            <rect key={i} x={x} y="118" width="8" height="30" rx="1" />
+                            <g key={i}>
+                                <rect x={x} y="116" width="9" height="29" rx="1" fill="url(#bpOlMarble)" stroke="#AEB6C6" strokeWidth="0.5" />
+                                <rect x={x + 6} y="116" width="3" height="29" fill="#AEB6C6" opacity="0.4" />
+                                <rect x={x + 2} y="116" width="1" height="29" fill="#FBFCFE" opacity="0.8" />
+                            </g>
                         ))}
                     </g>
-                    <rect x="172" y="110" width="82" height="8" rx="1" fill="#E8ECF3" stroke="#AEB6C6" strokeWidth="0.6" />
-                    <path d="M168,110 L213,88 L258,110 Z" fill="url(#bpOlMarble)" stroke="#AEB6C6" strokeWidth="0.6" />
+                    {/* Architrave + a tiny meander frieze */}
+                    <rect x="170" y="108" width="84" height="9" rx="1" fill="#EEF2F8" stroke="#AEB6C6" strokeWidth="0.5" />
+                    <g stroke="#C49A3A" strokeOpacity="0.7" strokeWidth="0.8" fill="none" strokeLinejoin="miter">
+                        {[176, 192, 208, 224, 240].map((x, i) => (
+                            <path key={i} d={`M${x} 115 v-5 h5 v3`} />
+                        ))}
+                    </g>
+                    {/* Pediment with shaded tympanum + acroteria finials */}
+                    <path d="M166,108 L212,84 L258,108 Z" fill="url(#bpOlMarble)" stroke="#AEB6C6" strokeWidth="0.6" strokeLinejoin="round" />
+                    <path d="M178,108 L212,90 L246,108 Z" fill="#C7CEDC" opacity="0.5" />
+                    <circle cx="212" cy="84" r="2.2" fill="#FFD86B" />
+                    <circle cx="166" cy="108" r="1.8" fill="#FFD86B" />
+                    <circle cx="258" cy="108" r="1.8" fill="#FFD86B" />
                 </g>
             </g>
 
-            {/* Golden thunderbolt + laurel crest, centred over the temple */}
+            {/* Greek-key meander band running across the scene as a textural ribbon */}
+            <g mask="url(#bpOlBandMask)">
+                <rect x="0" y="168" width="280" height="20" fill="url(#bpOlMeander)" />
+            </g>
+
+            {/* Radiant halo behind the crest */}
+            <circle cx="150" cy="74" r="62" fill="url(#bpOlHalo)" />
+
+            {/* Full laurel wreath encircling the bolt */}
+            <g fill="url(#bpOlLeaf)" stroke="#7A5210" strokeWidth="0.5">
+                {laurelLeft.map(([x, y, r], i) => (
+                    <ellipse key={`l${i}`} cx={x} cy={y} rx="5" ry="2.1" transform={`rotate(${r} ${x} ${y})`} />
+                ))}
+                {laurelLeft.map(([x, y, r], i) => (
+                    <ellipse key={`r${i}`} cx={300 - x} cy={y} rx="5" ry="2.1" transform={`rotate(${-r} ${300 - x} ${y})`} />
+                ))}
+                {/* Berries where the sprigs cross at the base */}
+                <circle cx="146" cy="116" r="2" />
+                <circle cx="154" cy="116" r="2" />
+            </g>
+
+            {/* Golden thunderbolt — glow underlay then the crisp bolt on top */}
             <g>
-                <path d="M150 36 L132 84 L150 80 L138 120 L172 70 L152 74 Z"
+                <path d="M159 44 L139 78 L151 75 L141 106 L168 66 L155 69 Z"
+                      fill="#FFE9A0" opacity="0.5" transform="scale(1.06) translate(-9 -4.5)" />
+                <path d="M159 44 L139 78 L151 75 L141 106 L168 66 L155 69 Z"
                       fill="url(#bpOlGold)" stroke="#7A5210" strokeWidth="1.6" strokeLinejoin="round" />
-                {/* Laurel sprigs flanking the bolt */}
-                <g stroke="#C49A3A" strokeWidth="1.4" fill="none" strokeLinecap="round">
-                    <path d="M120 110 Q 116 86 134 72" />
-                    <path d="M186 110 Q 190 86 172 72" />
-                </g>
-                <g fill="url(#bpOlGold)" stroke="#7A5210" strokeWidth="0.5">
-                    {[[120, 104], [122, 94], [128, 84], [186, 104], [184, 94], [178, 84]].map(([x, y], i) => (
-                        <ellipse key={i} cx={x} cy={y} rx="3.2" ry="1.6" transform={`rotate(${x < 153 ? -40 : 40} ${x} ${y})`} />
-                    ))}
-                </g>
+                <path d="M153 52 L145 76 L154 73" fill="none" stroke="#FFF6D6" strokeWidth="1.1" strokeLinecap="round" opacity="0.85" />
             </g>
 
             {/* Twinkling stars */}
             <g fill="#FFFDF7">
-                {[[24, 30], [60, 56], [250, 28], [236, 172]].map(([x, y], i) => (
-                    <path key={i} d={`M${x} ${y - 4} l 1 3 l 3 1 l -3 1 l -1 3 l -1 -3 l -3 -1 l 3 -1 Z`}>
+                {[[26, 30], [58, 54], [250, 26], [232, 170], [88, 28]].map(([x, y], i) => (
+                    <path key={i} d={`M${x} ${y - 4.5} l 1.1 3.4 l 3.4 1.1 l -3.4 1.1 l -1.1 3.4 l -1.1 -3.4 l -3.4 -1.1 l 3.4 -1.1 Z`}>
                         <animate attributeName="opacity" values="0.2;1;0.2" dur="2.6s" begin={`${i * 0.5}s`} repeatCount="indefinite" />
                     </path>
                 ))}

@@ -15,7 +15,7 @@ import {
     progressWithinTier, getSeason,
 } from '../../lib/battlepass';
 import { PREMIUM_PRICE } from '../../lib/battlepassCatalog';
-import { COLORS, HATS, GLASSES, MOUTHS, EFFECTS, SCENES, EMOTES, DEFAULT_COSMETICS } from '../../lib/cosmetics';
+import { COLORS, HATS, GLASSES, MOUTHS, EFFECTS, SCENES, EMOTES, COMPANIONS, DEFAULT_COSMETICS } from '../../lib/cosmetics';
 import { EMOTE_DURATION_S } from '../../assets/illustrations/Cosmetics';
 import { springs } from '../../motion/index';
 
@@ -26,7 +26,7 @@ const EMOTE_REPLAY_MS = Math.round(EMOTE_DURATION_S * 1000) + 500;
 
 // Catalog lookup so reward tiles can label the cosmetic without re-implementing
 // the cosmetics catalog inline.
-const CAT_TABLE = { color: COLORS, hat: HATS, glasses: GLASSES, mouth: MOUTHS, effect: EFFECTS, scene: SCENES, emote: EMOTES };
+const CAT_TABLE = { color: COLORS, hat: HATS, glasses: GLASSES, mouth: MOUTHS, effect: EFFECTS, scene: SCENES, emote: EMOTES, companion: COMPANIONS };
 function cosmeticName(cat, id) {
     return (CAT_TABLE[cat] && CAT_TABLE[cat][id] && CAT_TABLE[cat][id].name) || id;
 }
