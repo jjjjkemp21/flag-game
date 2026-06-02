@@ -712,9 +712,9 @@ export const SCENES = {
 // ---- Companions -------------------------------------------------------------
 // Small animal characters that stand beside Atlas at his lower-right. Each has
 // a subtle SMIL idle (tail flick / nose wiggle / blink / ear twitch / belly
-// breathing). Rendered BEFORE the globe disc in Mascot, so any overlap with
-// Atlas's silhouette is automatically masked by his body — he stays the focal
-// character. Pricing band 2000–3300, sitting just above hats and well below
+// breathing). Rendered LAST in Mascot (topmost layer), so the companion always
+// reads in front of Atlas and his cosmetics — even when the player drags it
+// across his body. Pricing band 2000–3300, sitting just above hats and well below
 // scenes (companions ship with the most authored geometry of any per-slot item).
 // `kind` selects an SVG renderer in assets/illustrations/Cosmetics.jsx.
 export const COMPANIONS = {

@@ -464,17 +464,6 @@ export default function Mascot({ size = 96, mood = 'idle', cosmetics, still = fa
                     <g transform={placement(cos.effectPos, 48, 48)}>{effectBehindEl}</g>
                 )}
 
-                {/* Companion — small animal character that stands beside Atlas at
-                    his lower-right (anchored around 78,86 inside each renderer).
-                    Drawn here so any silhouette that crosses Atlas's body is
-                    automatically masked by the globe disc below — he stays the
-                    focal character. Mood/effects on Atlas don't propagate. Rides
-                    the player's move/scale transform (companionPos), anchored on
-                    the companion's centre so scaling grows it in place. */}
-                {companionEl && mood !== 'dead' && (
-                    <g transform={placement(cos.companionPos, 78, 86)}>{companionEl}</g>
-                )}
-
                 {/* Globe — solid pattern fill (with subtle gradient overlay for shading) or pure gradient */}
                 {pattern ? (
                     <>
@@ -645,6 +634,17 @@ export default function Mascot({ size = 96, mood = 'idle', cosmetics, still = fa
                     <g key={emotePlay.playId || emotePlay.id}>
                         {renderEmote(emotePlay.id)}
                     </g>
+                )}
+
+                {/* Companion — small animal character that stands beside Atlas at
+                    his lower-right (anchored around 78,86 inside each renderer).
+                    Drawn LAST so it is the topmost layer in the scene: it always
+                    reads in front of Atlas and all of his cosmetics, even when
+                    the player drags it across his body via the move/scale
+                    transform (companionPos), which is anchored on the
+                    companion's centre so scaling grows it in place. */}
+                {companionEl && mood !== 'dead' && (
+                    <g transform={placement(cos.companionPos, 78, 86)}>{companionEl}</g>
                 )}
             </svg>
         </motion.div>
