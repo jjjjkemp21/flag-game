@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useMemo, useRef, useState, useEffect } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import Icon from '../common/Icon';
 import Logo from '../../assets/illustrations/Logo';
@@ -210,6 +210,24 @@ function MainMenu({ setView, flagsData, setQuizMode }) {
     const sceneId = profile.cosmetics?.scene || 'default';
     const hasScene = isCustomScene(sceneId);
 
+    // On phones Atlas (and the companion rendered inside his SVG) reads as the
+    // centrepiece of the hero scene, so he renders at roughly twice the desktop
+    // size. He stays a normal flex item in the hero-band column, so the gap to
+    // the surrounding UI is preserved — only the figure grows.
+    const [heroMascotSize, setHeroMascotSize] = useState(() =>
+        typeof window !== 'undefined' && window.matchMedia
+            ? (window.matchMedia('(max-width: 560px)').matches ? 184 : 92)
+            : 92
+    );
+    useEffect(() => {
+        if (typeof window === 'undefined' || !window.matchMedia) return undefined;
+        const mq = window.matchMedia('(max-width: 560px)');
+        const onChange = () => setHeroMascotSize(mq.matches ? 184 : 92);
+        onChange();
+        mq.addEventListener('change', onChange);
+        return () => mq.removeEventListener('change', onChange);
+    }, []);
+
     return (
         <div className="main-menu-box">
             <section
@@ -243,7 +261,7 @@ function MainMenu({ setView, flagsData, setQuizMode }) {
                     Master 200+ world flags with spaced repetition, frenzy challenges, and pixel reveals.
                 </p>
                 <div style={{ position: 'relative', zIndex: 2, marginTop: 'var(--space-xs)' }}>
-                    <Mascot size={92} mood={pet.mood} cosmetics={profile.cosmetics} chubby={pet.obese} bruised={pet.bruised} />
+                    <Mascot size={heroMascotSize} mood={pet.mood} cosmetics={profile.cosmetics} chubby={pet.obese} bruised={pet.bruised} />
                 </div>
                 {masteryHint && (
                     <div className="knowledge-stats" style={{ position: 'relative', zIndex: 2 }}>
