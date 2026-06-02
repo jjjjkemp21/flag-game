@@ -47,6 +47,7 @@ function gateCosmetics(userId, c) {
         effect: gate('effect', c.effect),
         scene: gate('scene', c.scene),
         emote: gate('emote', c.emote),
+        companion: gate('companion', c.companion),
         emoteLoadout: loadout,
     };
 }

@@ -3405,72 +3405,6 @@
 /* Pill variant used in the multiplayer HUD for the active pot. */
 .ab-pill { display: inline-flex; align-items: center; gap: 4px; }
 
-/* Store wallet block — balance + XP trade-in. */
-.ab-wallet {
-    width: 100%;
-    margin-top: var(--space-sm);
-    padding: var(--space-sm) var(--space-md);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    background: var(--color-bg-elev-2);
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-.ab-wallet__balance {
-    display: flex; align-items: center; gap: 8px;
-    font-family: var(--font-display);
-}
-.ab-wallet__num {
-    font-size: var(--fs-xl);
-    font-weight: 900;
-    color: var(--color-ink);
-}
-.ab-wallet__label { font-size: var(--fs-sm); color: var(--color-ink-soft); font-weight: 700; }
-.ab-wallet__trade {
-    display: flex; align-items: center; justify-content: space-between;
-    gap: var(--space-sm);
-    flex-wrap: wrap;
-}
-.ab-wallet__xp { font-weight: 800; color: var(--color-ink-soft); font-size: var(--fs-sm); }
-.ab-wallet__claimable { color: var(--color-ink-muted); font-weight: 600; }
-.ab-wallet__trade-input {
-    display: inline-flex; align-items: center; gap: 6px;
-    flex-wrap: wrap;
-}
-.ab-wallet__amount {
-    width: 92px;
-    padding: 6px 8px;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    background: var(--color-bg-elev-1);
-    color: var(--color-ink);
-    font-weight: 700;
-    font-size: var(--fs-sm);
-    text-align: right;
-    -moz-appearance: textfield;
-}
-.ab-wallet__amount::-webkit-outer-spin-button,
-.ab-wallet__amount::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-.ab-wallet__amount:disabled { opacity: 0.55; cursor: not-allowed; }
-.ab-wallet__max {
-    border: 1px solid var(--color-border);
-    background: var(--color-bg-elev-1);
-    color: var(--color-ink);
-    font-weight: 700;
-    font-size: var(--fs-xs);
-    padding: 5px 10px;
-    border-radius: var(--radius-pill);
-    cursor: pointer;
-}
-.ab-wallet__max:hover:not(:disabled) { background: var(--color-bg-soft); }
-.ab-wallet__max:disabled { opacity: 0.55; cursor: not-allowed; }
-.ab-wallet__hint {
-    margin: 0;
-    font-size: var(--fs-xs);
-    color: var(--color-ink-muted);
-}
-
 /* Multiplayer wallet chip (in the host/join hub). */
 .mp-wallet-chip {
     align-self: center;
@@ -3842,12 +3776,14 @@
     text-shadow: 0 2px 6px rgba(0, 0, 0, 0.75), 0 1px 2px rgba(0, 0, 0, 0.55);
 }
 .cosmetic-adjust {
-    width: 100%; max-width: 340px; display: flex; flex-direction: column; align-items: center; gap: var(--space-xs);
-    margin-top: var(--space-xs); padding: var(--space-sm); border: 1px solid var(--color-border);
+    width: 100%; max-width: 460px; display: flex; flex-direction: column; align-items: center; gap: var(--space-sm);
+    margin-top: var(--space-xs); padding: var(--space-sm) var(--space-md); border: 1px solid var(--color-border);
     border-radius: var(--radius-md); background: var(--color-bg-elev-1);
 }
 .cosmetic-adjust__head { display: inline-flex; align-items: center; gap: 6px; font-size: var(--fs-xs); font-weight: 700; color: var(--color-ink-soft); }
-.adjust-tabs { display: inline-flex; gap: 6px; }
+/* Slot tabs wrap so the row (now up to five: hat / glasses / mouth / effect /
+   companion) reflows onto two lines on narrow phones instead of overflowing. */
+.adjust-tabs { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; width: 100%; }
 .adjust-tab {
     display: inline-flex; align-items: center; gap: 4px; cursor: pointer;
     padding: 4px 12px; border-radius: var(--radius-pill); font-size: var(--fs-xs); font-weight: 700;
@@ -3855,7 +3791,7 @@
 }
 .adjust-tab.is-active { border-color: var(--color-primary); background: color-mix(in srgb, var(--color-primary) 14%, transparent); color: var(--color-primary-deep); }
 .adjust-size { display: inline-flex; align-items: center; gap: 8px; width: 100%; font-size: var(--fs-xs); font-weight: 700; color: var(--color-ink-soft); }
-.adjust-size input[type="range"] { flex: 1; }
+.adjust-size input[type="range"] { flex: 1; accent-color: var(--color-primary); }
 
 /* =================================================================
    Multiplayer (lobbies, live race, results)

@@ -40,7 +40,7 @@ function EmoteCardPreview({ emoteId, cosmetics, size = 52 }) {
 }
 
 function StoreScreen({ setView, flagsData }) {
-    const { isAuthed, user, patchUser } = useAuth();
+    const { isAuthed, patchUser } = useAuth();
     const toast = useToast();
     const pet = usePet();
     const profile = useProfile();
@@ -51,7 +51,6 @@ function StoreScreen({ setView, flagsData }) {
     // 'Atlas' if the store mounts before the account's pet finishes loading
     // (and pressing Rename would re-save the stale name).
     useEffect(() => { setNameDraft(pet.name); }, [pet.name]);
-    const xp = user?.xp || 0;
     const bucks = currency.bucks;
 
     const countries = useMemo(
@@ -97,19 +96,18 @@ function StoreScreen({ setView, flagsData }) {
     const hasGlasses = profile.cosmetics.glasses && profile.cosmetics.glasses !== 'none';
     const hasMouth = profile.cosmetics.mouth && profile.cosmetics.mouth !== 'none';
     const hasEffect = isEffectSizable(profile.cosmetics.effect);
-    const slot = adjust === 'glasses' ? 'glasses'
-        : adjust === 'mouth' ? 'mouth'
-        : adjust === 'effect' ? 'effect'
-        : 'hat';
+    const hasCompanion = profile.cosmetics.companion && profile.cosmetics.companion !== 'none';
+    const anyAdjustable = hasHat || hasGlasses || hasMouth || hasEffect || hasCompanion;
+    const slot = ['hat', 'glasses', 'mouth', 'effect', 'companion'].includes(adjust) ? adjust : 'hat';
 
     // Keep the active slot pointed at something that's actually equipped.
     useEffect(() => {
-        const equipped = { hat: hasHat, glasses: hasGlasses, mouth: hasMouth, effect: hasEffect };
+        const equipped = { hat: hasHat, glasses: hasGlasses, mouth: hasMouth, effect: hasEffect, companion: hasCompanion };
         if (!equipped[adjust]) {
-            const next = ['hat', 'glasses', 'mouth', 'effect'].find((k) => equipped[k]);
+            const next = ['hat', 'glasses', 'mouth', 'effect', 'companion'].find((k) => equipped[k]);
             if (next) setAdjust(next);
         }
-    }, [adjust, hasHat, hasGlasses, hasMouth, hasEffect]);
+    }, [adjust, hasHat, hasGlasses, hasMouth, hasEffect, hasCompanion]);
 
     // Pull the latest currency summary on mount so the trade-in shows the
     // accurate `claimable` even if the shop is opened before App's post-login
@@ -208,13 +206,14 @@ function StoreScreen({ setView, flagsData }) {
         s === 'hat' ? profile.cosmetics.hatPos
         : s === 'glasses' ? profile.cosmetics.glassesPos
         : s === 'mouth' ? profile.cosmetics.mouthPos
+        : s === 'companion' ? profile.cosmetics.companionPos
         : profile.cosmetics.effectPos
     ) || DEFAULT_POS;
 
     // Pointer drag over the preview maps movement (px) to viewBox units
     // (viewBox 96 rendered at 120px → 0.8 units per px).
     const onPointerDown = (e) => {
-        if (!hasHat && !hasGlasses && !hasMouth && !hasEffect) return;
+        if (!anyAdjustable) return;
         const base = posOf(slot);
         dragRef.current = { sx: e.clientX, sy: e.clientY, bx: base.x || 0, by: base.y || 0, s: base.s == null ? 1 : base.s };
         e.currentTarget.setPointerCapture(e.pointerId);
@@ -230,7 +229,6 @@ function StoreScreen({ setView, flagsData }) {
         const base = posOf(slot);
         setCosmeticPos(slot, { x: base.x || 0, y: base.y || 0, s: parseFloat(e.target.value) });
     };
-    const onResetPos = () => setCosmeticPos(slot, { ...DEFAULT_POS });
 
     const isItemOwned = (categoryKey, id) => isDefaultItem(categoryKey, id) || isOwnedKey(categoryKey, id);
 
@@ -251,7 +249,7 @@ function StoreScreen({ setView, flagsData }) {
                     onPointerMove={onPointerMove}
                     onPointerUp={onPointerUp}
                     onPointerCancel={onPointerUp}
-                    style={{ touchAction: 'none', cursor: (hasHat || hasGlasses || hasMouth || hasEffect) ? 'grab' : 'default' }}
+                    style={{ touchAction: 'none', cursor: anyAdjustable ? 'grab' : 'default' }}
                 >
                     <Scene id={displayCosmetics?.scene} />
                     <Mascot
@@ -284,25 +282,12 @@ function StoreScreen({ setView, flagsData }) {
                     </div>
                 )}
 
-                {/* Wallet: just the bucks balance. Economy v2 — Bucks land
-                    directly during play; no trade-in widget anymore. */}
-                <div className="ab-wallet">
-                    <div className="ab-wallet__balance" aria-label="Atlas Bucks balance">
-                        <AtlasBucksIcon size={26} />
-                        <span className="ab-wallet__num">{bucks.toLocaleString()}</span>
-                        <span className="ab-wallet__label">Atlas Bucks</span>
-                    </div>
-                    <p className="ab-wallet__hint">
-                        {xp.toLocaleString()} XP · Bucks land as you play.
-                    </p>
-                </div>
-
-                {(hasHat || hasGlasses || hasMouth || hasEffect) && (
+                {anyAdjustable && (
                     <div className="cosmetic-adjust">
                         <div className="cosmetic-adjust__head">
                             <Icon name="open_with" /> Drag Atlas to move the {slot}
                         </div>
-                        {((hasHat ? 1 : 0) + (hasGlasses ? 1 : 0) + (hasMouth ? 1 : 0) + (hasEffect ? 1 : 0)) >= 2 && (
+                        {((hasHat ? 1 : 0) + (hasGlasses ? 1 : 0) + (hasMouth ? 1 : 0) + (hasEffect ? 1 : 0) + (hasCompanion ? 1 : 0)) >= 2 && (
                             <div className="adjust-tabs">
                                 {hasHat && (
                                     <button
@@ -336,6 +321,14 @@ function StoreScreen({ setView, flagsData }) {
                                         <Icon name="auto_awesome" /> Effect
                                     </button>
                                 )}
+                                {hasCompanion && (
+                                    <button
+                                        className={`adjust-tab ${slot === 'companion' ? 'is-active' : ''}`}
+                                        onClick={() => setAdjust('companion')}
+                                    >
+                                        <Icon name="pets" /> Companion
+                                    </button>
+                                )}
                             </div>
                         )}
                         <label className="adjust-size">
@@ -349,9 +342,6 @@ function StoreScreen({ setView, flagsData }) {
                                 onChange={onSize}
                             />
                         </label>
-                        <Button variant="ghost" size="sm" icon="restart_alt" onClick={onResetPos}>
-                            Reset position
-                        </Button>
                     </div>
                 )}
             </div>

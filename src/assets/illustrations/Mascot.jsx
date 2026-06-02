@@ -468,8 +468,12 @@ export default function Mascot({ size = 96, mood = 'idle', cosmetics, still = fa
                     his lower-right (anchored around 78,86 inside each renderer).
                     Drawn here so any silhouette that crosses Atlas's body is
                     automatically masked by the globe disc below — he stays the
-                    focal character. Mood/effects on Atlas don't propagate. */}
-                {companionEl && mood !== 'dead' && <g>{companionEl}</g>}
+                    focal character. Mood/effects on Atlas don't propagate. Rides
+                    the player's move/scale transform (companionPos), anchored on
+                    the companion's centre so scaling grows it in place. */}
+                {companionEl && mood !== 'dead' && (
+                    <g transform={placement(cos.companionPos, 78, 86)}>{companionEl}</g>
+                )}
 
                 {/* Globe — solid pattern fill (with subtle gradient overlay for shading) or pure gradient */}
                 {pattern ? (

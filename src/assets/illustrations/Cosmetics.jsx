@@ -2992,8 +2992,12 @@ const COMPANION_SHAPES = {
     // Kitten: orange tabby sitting, with a swishing tail.
     kitten: () => (
         <g strokeLinejoin="round">
-            {/* Tail — swishes around the body anchor (88, 88) */}
-            <g style={{ transformOrigin: '88px 88px' }}>
+            {/* Tail — swishes around the body anchor (88, 88). The SMIL
+                rotate's 3-arg form (angle cx cy) IS the pivot; a CSS
+                `transform-origin` alongside it double-applied the offset in
+                some browsers, swinging the tail in a wide arc off the body
+                (same bug fixed on the pirate parrot head), so it's omitted. */}
+            <g>
                 <animateTransform attributeName="transform" type="rotate" values="-12 88 88;14 88 88;-12 88 88" dur="3.2s" repeatCount="indefinite" />
                 <path d="M88 88 Q 94 84 92 78" stroke="#1F1A3B" strokeWidth="2.6" fill="none" strokeLinecap="round" />
                 <path d="M88 88 Q 94 84 92 78" stroke="#FFB861" strokeWidth="1.8" fill="none" strokeLinecap="round" />
@@ -3022,8 +3026,10 @@ const COMPANION_SHAPES = {
     // Puppy: brown, floppy-eared. Tail wags; tongue lolls.
     puppy: () => (
         <g strokeLinejoin="round">
-            {/* Tail — wags */}
-            <g style={{ transformOrigin: '88px 86px' }}>
+            {/* Tail — wags. Pivot pinned via the SMIL rotate's (angle cx cy)
+                args only; no CSS transform-origin (it double-applied the pivot
+                in some browsers — see the kitten tail). */}
+            <g>
                 <animateTransform attributeName="transform" type="rotate" values="-20 88 86;20 88 86;-20 88 86" dur="0.9s" repeatCount="indefinite" />
                 <path d="M88 86 L 93 82 L 91 85 Z" fill="#9A6A3A" stroke="#1F1A3B" strokeWidth="1.2" />
             </g>
@@ -3134,8 +3140,10 @@ const COMPANION_SHAPES = {
             <path d="M72 84 L 65 86 L 72 88 Q 78 88 78 82 Q 76 78 72 78 Z" fill="#FF8A4B" stroke="#1F1A3B" strokeWidth="1.2" />
             {/* Cheek white */}
             <path d="M68 86 L 72 86 L 70 88 Z" fill="#FCF0E5" />
-            {/* Ears — left ear twitches */}
-            <g style={{ transformOrigin: '73px 80px' }}>
+            {/* Ears — left ear twitches. Pivot from the SMIL rotate's
+                (angle cx cy) args only; no CSS transform-origin (it
+                double-applied the pivot in some browsers — see the kitten tail). */}
+            <g>
                 <animateTransform attributeName="transform" type="rotate" values="0 73 80;-12 73 80;0 73 80;0 73 80" keyTimes="0;0.06;0.12;1" dur="3.6s" repeatCount="indefinite" />
                 <path d="M71 79 L 72 73 L 75 78 Z" fill="#FF8A4B" stroke="#1F1A3B" strokeWidth="1" />
                 <path d="M72 77 L 73 75 L 74 77 Z" fill="#1F1A3B" />

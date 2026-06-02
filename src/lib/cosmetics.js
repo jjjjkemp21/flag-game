@@ -759,6 +759,7 @@ export const DEFAULT_COSMETICS = {
     companion: 'none',
     hatPos: { ...DEFAULT_POS }, glassesPos: { ...DEFAULT_POS },
     mouthPos: { ...DEFAULT_POS }, effectPos: { ...DEFAULT_POS },
+    companionPos: { ...DEFAULT_POS },
 };
 
 const clampNum = (v, min, max, d) => (Number.isFinite(+v) ? Math.min(max, Math.max(min, +v)) : d);
@@ -825,13 +826,15 @@ export function normalizeCosmetics(c, ownedKey) {
         effect: pick('effect', c && c.effect, EFFECTS),
         scene: pick('scene', c && c.scene, SCENES),
         emote: pick('emote', c && c.emote, EMOTES),
-        // Companion: no position picker — placement is fixed in the Mascot
-        // scene (lower-right, behind Atlas's silhouette on overlap).
+        // Companion: animal character standing at Atlas's lower-right, behind
+        // his silhouette on overlap. Has its own move/scale placement like the
+        // other slots (companionPos).
         companion: pick('companion', c && c.companion, COMPANIONS),
         emoteLoadout: loadout,
         hatPos: clampPos(c && c.hatPos),
         glassesPos: clampPos(c && c.glassesPos),
         mouthPos: clampPos(c && c.mouthPos),
         effectPos: clampPos(c && c.effectPos),
+        companionPos: clampPos(c && c.companionPos),
     };
 }

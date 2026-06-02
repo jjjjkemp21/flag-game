@@ -155,13 +155,26 @@ export function toggleEmoteInLoadout(id) {
     persist();
 }
 
-// Move/scale a cosmetic slot ('hat' | 'glasses' | 'mouth' | 'effect'). Clamped to canvas bounds.
+// Move/scale a cosmetic slot ('hat' | 'glasses' | 'mouth' | 'effect' |
+// 'companion'). Clamped to canvas bounds.
 export function setCosmeticPos(slot, pos) {
     const key = slot === 'hat' ? 'hatPos'
         : slot === 'glasses' ? 'glassesPos'
         : slot === 'mouth' ? 'mouthPos'
+        : slot === 'companion' ? 'companionPos'
         : 'effectPos';
     state = { ...state, cosmetics: { ...state.cosmetics, [key]: clampPos(pos) } };
+    notify();
+    persist();
+}
+
+// Strip every equipped cosmetic back to its slot default (teal globe, no hat /
+// glasses / mouth / effect / companion / scene, default emote loadout) and
+// reset all placement transforms. Owned items are untouched — this only clears
+// what's currently equipped, so everything stays available to re-equip in the
+// shop. Surfaced from Settings behind a confirmation dialog.
+export function unequipAllCosmetics() {
+    state = { ...state, cosmetics: { ...DEFAULT_COSMETICS } };
     notify();
     persist();
 }

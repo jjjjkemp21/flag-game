@@ -4,7 +4,7 @@ import { Toggle, Modal, Button } from '../ui/index';
 import { useToast } from '../ui/Toast';
 import { useAudio } from '../../audio/AudioProvider';
 import { useAuth } from '../../auth/AuthProvider';
-import { useProfile, setAllowSpectate } from '../../lib/profile';
+import { useProfile, setAllowSpectate, unequipAllCosmetics } from '../../lib/profile';
 import { api } from '../../api/client';
 
 function Settings({ theme, setTheme, strictSpelling, setStrictSpelling, includeTerritories, setIncludeTerritories, onResetStats, onReplayTutorial, setView }) {
@@ -13,6 +13,7 @@ function Settings({ theme, setTheme, strictSpelling, setStrictSpelling, includeT
     const { isAuthed, user, patchUser } = useAuth();
     const profile = useProfile();
     const [resetOpen, setResetOpen] = useState(false);
+    const [unequipOpen, setUnequipOpen] = useState(false);
     const [nameDraft, setNameDraft] = useState(user?.username || '');
     const [savingName, setSavingName] = useState(false);
 
@@ -177,6 +178,28 @@ function Settings({ theme, setTheme, strictSpelling, setStrictSpelling, includeT
                 </section>
             )}
 
+            {isAuthed && (
+                <section className="settings-section">
+                    <h3 className="settings-section-title">Cosmetics</h3>
+                    <div className="setting-row">
+                        <div className="setting-row__label">
+                            <span className="setting-row__title">Unequip all cosmetics</span>
+                            <span className="setting-row__desc">
+                                Strip Atlas back to the default look. Your owned items aren't
+                                deleted — you can re-equip them anytime from the shop.
+                            </span>
+                        </div>
+                        <Button
+                            variant="secondary"
+                            icon="layers_clear"
+                            onClick={() => { audio.play('click'); setUnequipOpen(true); }}
+                        >
+                            Unequip all
+                        </Button>
+                    </div>
+                </section>
+            )}
+
             <section className="settings-section">
                 <h3 className="settings-section-title">Getting started</h3>
                 <div className="setting-row">
@@ -203,6 +226,32 @@ function Settings({ theme, setTheme, strictSpelling, setStrictSpelling, includeT
                     <Icon name="restart_alt" /> Reset All Progress
                 </button>
             </section>
+
+            <Modal open={unequipOpen} onClose={() => setUnequipOpen(false)} title="Unequip all cosmetics?">
+                <p style={{ color: 'var(--color-ink-soft)' }}>
+                    This removes every equipped cosmetic — hat, glasses, mouth, effect,
+                    companion, scene, and globe color — and resets their positions. Your
+                    owned items stay in your collection, so you can re-equip them anytime.
+                </p>
+                <div style={{ display: 'flex', gap: 'var(--space-md)', justifyContent: 'flex-end' }}>
+                    <button
+                        className="ui-button ui-button--secondary ui-button--md"
+                        onClick={() => setUnequipOpen(false)}
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        className="ui-button ui-button--danger ui-button--md"
+                        onClick={() => {
+                            setUnequipOpen(false);
+                            unequipAllCosmetics();
+                            toast.success('Unequipped all cosmetics.');
+                        }}
+                    >
+                        <Icon name="layers_clear" /> Unequip all
+                    </button>
+                </div>
+            </Modal>
 
             <Modal open={resetOpen} onClose={() => setResetOpen(false)} title="Reset all progress?">
                 <p style={{ color: 'var(--color-ink-soft)' }}>
