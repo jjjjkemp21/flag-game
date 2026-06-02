@@ -3094,9 +3094,19 @@ const COMPANION_SHAPES = {
             <ellipse cx="79" cy="88" rx="6" ry="7" fill="#19A36B" stroke="#1F1A3B" strokeWidth="1.2" />
             {/* Wing — red accent */}
             <path d="M79 84 Q 83 85 83 90 Q 80 92 78 90 Z" fill="#E5414C" stroke="#1F1A3B" strokeWidth="1" />
-            {/* Head — green, tilts gently */}
-            <g style={{ transformOrigin: '76px 82px' }}>
-                <animateTransform attributeName="transform" type="rotate" values="-8 76 82;8 76 82;-8 76 82" dur="2.4s" repeatCount="indefinite" />
+            {/* Head — green, tilts gently. Pivot is pinned at (76, 85) — the
+                BASE OF THE NECK, where the head plugs into the body — via the
+                SMIL `rotate(angle cx cy)` 3-arg form. Rotating around the
+                head's centre (76, 82) instead orbited the hat in a wide arc
+                that read as the head flying off at small sizes. The CSS
+                `style.transform-origin` was redundant alongside SMIL's own
+                pivot args and conflicted in some browsers, so it's gone too.
+                Geometry: hat top (76, 74) is 11 units above pivot → ±8° gives
+                ~1.5-unit horizontal sweep (nice nod); head bottom (76, 86.6)
+                is 1.6 units below → ~0.22-unit sweep, staying flush with body. */}
+            <g>
+                <animateTransform attributeName="transform" type="rotate"
+                    values="-8 76 85; 8 76 85; -8 76 85" dur="2.4s" repeatCount="indefinite" />
                 <circle cx="76" cy="82" r="4.6" fill="#19A36B" stroke="#1F1A3B" strokeWidth="1.2" />
                 {/* Tricorn hat */}
                 <path d="M70 78 L 82 78 L 80 76 L 76 74 L 72 76 Z" fill="#1F1A3B" />
