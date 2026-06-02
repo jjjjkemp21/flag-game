@@ -316,6 +316,150 @@ export const COLORS = {
         ] },
         glow: { color: '#3FE0D0' },
     },
+
+    // ---- Olympus Ascendant (Season 2 · Atlas Pass exclusives) ----------------
+    // Greek-mythology globe skins. Static marble/terracotta/bronze starter
+    // hides ramp up to animated showpieces (Ambrosia, Celestial Bronze, the
+    // Golden Touch + Olympian Glory capstones). Same bpOnly gating as Season 1.
+    bp_marble: {
+        // Parian marble — cool white stone with faint grey veining.
+        name: 'Parian Marble', xp: 999999, bpOnly: true, stroke: '#8A93A0',
+        stops: ['#FBFCFE', '#DDE3EA', '#A9B4C2'],
+        pattern: { kind: 'cow', base: '#F2F5F9', accent: '#C2CAD6' },
+    },
+    bp_terracotta: {
+        // Terracotta — warm fired clay, the colour of a Greek amphora.
+        name: 'Terracotta', xp: 999999, bpOnly: true, stroke: '#7A3318',
+        stops: ['#F0C49A', '#C8682E', '#7A3318'],
+        pattern: { kind: 'scales', base: '#B5531F', accent: '#C8682E', accent2: '#F0C49A' },
+    },
+    bp_black_figure: {
+        // Black-figure vase — terracotta ground with black serpentine figures.
+        name: 'Black-Figure Vase', xp: 999999, bpOnly: true, stroke: '#1A0E08',
+        stops: ['#E8B488', '#B5531F', '#5A2410'],
+        pattern: { kind: 'serpent', base: '#C8682E', accent: '#1A0E08', accent2: '#F0C49A' },
+    },
+    bp_olive: {
+        // Olive grove — muted silvery green of an olive tree's leaves.
+        name: 'Olive Grove', xp: 999999, bpOnly: true, stroke: '#3F4A1F',
+        stops: ['#DCE6B5', '#8A9A4F', '#3F4A1F'],
+        pattern: { kind: 'scales', base: '#6F7F3F', accent: '#8A9A4F', accent2: '#DCE6B5' },
+    },
+    bp_sea_foam: {
+        // Nereid foam — pale sea-green crests over Aegean teal.
+        name: 'Nereid Foam', xp: 999999, bpOnly: true, stroke: '#1F6A6A',
+        stops: ['#E0F7F2', '#5BD0C0', '#1F8A8A'],
+        pattern: { kind: 'jewelScales', base: '#1F8A8A', accent: '#5BD0C0', accent2: '#FFFFFF' },
+    },
+    bp_aegean: {
+        // Aegean sea — deep Mediterranean blue jewel scales.
+        name: 'Aegean Sea', xp: 999999, bpOnly: true, stroke: '#103A6A',
+        stops: ['#B5D8F5', '#2E7AD3', '#103A6A'],
+        pattern: { kind: 'jewelScales', base: '#103A6A', accent: '#2E7AD3', accent2: '#CFE6FF' },
+    },
+    bp_bronze: {
+        // Hoplite bronze — burnished war-shield metal.
+        name: 'Hoplite Bronze', xp: 999999, bpOnly: true, stroke: '#5A360F',
+        stops: ['#F0D8A0', '#C28A3F', '#7A4E1A'],
+        pattern: { kind: 'scales', base: '#A8702F', accent: '#C28A3F', accent2: '#F5E5B5' },
+    },
+    bp_wine: {
+        // Wine-dark sea — Homer's oinops pontos, deep blood-purple swell.
+        name: 'Wine-Dark Sea', xp: 999999, bpOnly: true, stroke: '#3A0F2A',
+        stops: ['#C87A9A', '#7A1F4A', '#3A0F2A'],
+        pattern: { kind: 'serpent', base: '#7A1F4A', accent: '#C04F80', accent2: '#3A0F2A' },
+    },
+    bp_chiton: {
+        // Royal chiton — Tyrian-purple cloth, the dye of kings.
+        name: 'Royal Chiton', xp: 999999, bpOnly: true, stroke: '#3A1A5A',
+        stops: ['#D8C0F0', '#7A4FD0', '#3A1A5A'],
+        pattern: { kind: 'scales', base: '#5B3FA0', accent: '#7A4FD0', accent2: '#E8D8FF' },
+    },
+    bp_storm: {
+        // Storm of Zeus — thunderhead grey shot through with electric blue.
+        name: 'Storm of Zeus', xp: 999999, bpOnly: true, stroke: '#2A3344',
+        stops: ['#C7D2E0', '#5B6A82', '#2A3344'],
+        pattern: { kind: 'jewelScales', base: '#3F4A60', accent: '#5BB0FF', accent2: '#E0ECFF' },
+        glow: { color: '#5BB0FF' },
+    },
+    bp_underworld: {
+        // Underworld — Hades' realm: violet gloom with a cold starfield.
+        name: 'Underworld', xp: 999999, bpOnly: true, stroke: '#1A1030', overlay: 'stars',
+        stops: ['#9A7FD0', '#4A2A7A', '#1A1030'],
+        pattern: { kind: 'jewelScales', base: '#1A1030', accent: '#7A4FD0', accent2: '#3FE0A8' },
+        glow: { color: '#7A4FD0' },
+    },
+    bp_nectar: {
+        // Nectar — the amber drink of the gods, slowly swirling.
+        name: 'Nectar', xp: 999999, bpOnly: true, stroke: '#8A5A0F',
+        stops: ['#FFE8A8', '#FFB23F', '#A0681A'],
+        anim: { dur: '6s', frames: [
+            ['#FFE8A8', '#FFB23F', '#A0681A'],
+            ['#FFF1C2', '#FFC247', '#B5841A'],
+            ['#FFE08A', '#FF9A2E', '#8A5A0F'],
+        ] },
+        glow: { color: '#FFD86B' },
+    },
+    bp_ambrosia: {
+        // Ambrosia — food of immortals: gold cycling into rose and violet.
+        name: 'Ambrosia', xp: 999999, bpOnly: true, stroke: '#7A3F5A',
+        stops: ['#FFE8C2', '#FFB0C0', '#C04F80'],
+        pattern: { kind: 'jewelScales', base: '#C04F80', accent: '#FFB0C0', accent2: '#FFE8C2' },
+        anim: { dur: '5s', frames: [
+            ['#FFE8C2', '#FFB0C0', '#C04F80'],
+            ['#FFF1C2', '#FFD86B', '#C28A3F'],
+            ['#F0D0FF', '#B070FF', '#5B3FA0'],
+        ] },
+        glow: { color: '#FFC0D8' },
+    },
+    bp_celestial: {
+        // Celestial bronze — mythic metal that shimmers between bronze and gold.
+        name: 'Celestial Bronze', xp: 999999, bpOnly: true, stroke: '#5A360F', overlay: 'stars',
+        stops: ['#FFE8A8', '#C28A3F', '#5A360F'],
+        pattern: { kind: 'jewelScales', base: '#7A4E1A', accent: '#C28A3F', accent2: '#FFF1C2' },
+        anim: { dur: '6s', frames: [
+            ['#FFE8A8', '#C28A3F', '#5A360F'],
+            ['#FFF6D0', '#E5B25B', '#7A4E1A'],
+            ['#FFE0A8', '#D89A3F', '#6A3E12'],
+        ] },
+        glow: { color: '#FFD86B' },
+    },
+    bp_aether: {
+        // Aether — the bright upper air of the heavens, a drifting cosmos.
+        name: 'Aether', xp: 999999, bpOnly: true, stroke: '#1A2A5A', overlay: 'stars',
+        stops: ['#CFE6FF', '#5B7BE0', '#1A2A5A'],
+        anim: { dur: '8s', frames: [
+            ['#CFE6FF', '#5B7BE0', '#1A2A5A'],
+            ['#E0D0FF', '#8A6FD0', '#2A1A5A'],
+            ['#CFF5EC', '#3FB0C0', '#0F3A4A'],
+        ] },
+        glow: { color: '#9DB8FF' },
+    },
+    bp_midas: {
+        // Tier 25 capstone — the Golden Touch: molten gold with ember sparks.
+        name: 'Golden Touch', xp: 999999, bpOnly: true, stroke: '#7A5210', overlay: 'embers',
+        stops: ['#FFF6D0', '#FFC247', '#A0681A'],
+        pattern: { kind: 'jewelScales', base: '#A0681A', accent: '#FFC247', accent2: '#FFF6D0' },
+        anim: { dur: '4s', frames: [
+            ['#FFF6D0', '#FFC247', '#A0681A'],
+            ['#FFFDF0', '#FFD86B', '#C28A3F'],
+            ['#FFEFA8', '#FFB23F', '#8A5A0F'],
+        ] },
+        glow: { color: '#FFD86B' },
+    },
+    bp_olympus_eternal: {
+        // Tier 30 capstone — Olympian Glory: gold, sky-blue and white cycling
+        // over a starfield with a divine glow. The richest skin of the pass.
+        name: 'Olympian Glory', xp: 999999, bpOnly: true, stroke: '#1F3A6A', overlay: 'stars',
+        stops: ['#FFF6D0', '#FFC247', '#2E7AD3'],
+        pattern: { kind: 'jewelScales', base: '#1F3A6A', accent: '#FFC247', accent2: '#FFFFFF' },
+        anim: { dur: '6s', frames: [
+            ['#FFF6D0', '#FFC247', '#2E7AD3'],
+            ['#FFFFFF', '#9DB8FF', '#1F3A6A'],
+            ['#FFF1C2', '#FFD86B', '#C28A3F'],
+        ] },
+        glow: { color: '#FFE8A8' },
+    },
 };
 
 // ---- Hat colorways ---------------------------------------------------------
@@ -427,6 +571,17 @@ export const HATS = {
     // spikes around a central gem; icy teal keratin with gold + frost accents.
     bp_wyvern_crown:   { name: 'Wyvern Crown',   xp: 999999, bpOnly: true, shape: 'wyvernCrown', c: hc('#2FA0C0', '#15506A', '#FFD86B', '#A8E8FF') },
 
+    // ---- Olympus Ascendant hats (Season 2 · Atlas Pass exclusives) ---------
+    // corinthianHelm carries a horsehair crest in its `trim`; oliveWreath uses
+    // `main`/`dark` for the leaves and `accent` for the berries; wingedHelm uses
+    // `main`/`dark` for the cap and `accent` for the feathered wings.
+    bp_helm_bronze:    { name: 'Hoplite Helm',     xp: 999999, bpOnly: true, shape: 'corinthianHelm', c: hc('#C28A3F', '#7A4E1A', '#F5E5B5', '#C8322A') },
+    bp_helm_gold:      { name: 'Golden War Helm',  xp: 999999, bpOnly: true, shape: 'corinthianHelm', c: hc('#FFD86B', '#A07A1A', '#FFF1C2', '#F2F4F8') },
+    bp_helm_obsidian:  { name: 'Iron War Helm',    xp: 999999, bpOnly: true, shape: 'corinthianHelm', c: hc('#5A6170', '#2A3040', '#A9B4C2', '#7A4FD0') },
+    bp_olive_wreath:   { name: 'Olive Wreath',     xp: 999999, bpOnly: true, shape: 'oliveWreath',    c: hc('#8A9A4F', '#3F4A1F', '#E8EFC2') },
+    bp_laurel_victor:  { name: "Victor's Laurel",  xp: 999999, bpOnly: true, shape: 'oliveWreath',    c: hc('#FFD86B', '#A07A1A', '#FFF1C2') },
+    bp_winged_helm:    { name: 'Winged Helm',      xp: 999999, bpOnly: true, shape: 'wingedHelm',     c: hc('#FFD86B', '#A07A1A', '#FFFDF7') },
+
     // ---- Pride collection (member of the cross-category Pride set) ---------
     // Diagonal sash across Atlas's globe, six rainbow stripes baked into the
     // shape — the palette IS the design, so the colorway dict is unused.
@@ -516,6 +671,16 @@ export const GLASSES = {
     // Season 1 extension (tier 27) — a single wraparound apex visor with twin
     // glowing slits and a crest ridge; dark-teal frame, glowing cyan lens.
     bp_apex_visor:    { name: 'Apex Visor',      xp: 999999, bpOnly: true, shape: 'apexVisor',  c: gc('#15506A', '#3FE0D0', '#FFD86B') },
+
+    // ---- Olympus Ascendant glasses (Season 2 · Atlas Pass exclusives) ------
+    // helmSlits: the T-shaped eye slit of a Corinthian war helm lowered over
+    // the eyes (frame = metal, lens = the dark slit, accent = rivets).
+    // oracleEyes: glowing oracle eyes wreathed in mystic vapour (frame = lid,
+    // lens = the glow colour, accent = the rising vapour).
+    bp_helm_slits:        { name: 'War Visor',     xp: 999999, bpOnly: true, shape: 'helmSlits', c: gc('#C28A3F', '#1A130A', '#F5E5B5') },
+    bp_helm_slits_gold:   { name: 'Golden Visor',  xp: 999999, bpOnly: true, shape: 'helmSlits', c: gc('#FFD86B', '#2A1E08', '#FFF1C2') },
+    bp_oracle_eyes:       { name: "Oracle's Sight", xp: 999999, bpOnly: true, shape: 'oracleEyes', c: gc('#7A4E1A', '#FFE08A', '#FFD86B') },
+    bp_oracle_eyes_violet:{ name: "Seer's Trance",  xp: 999999, bpOnly: true, shape: 'oracleEyes', c: gc('#3F1F8A', '#C89AFF', '#9A6FE0') },
 
     // ---- Pride collection -------------------------------------------------
     // Heart-shaped lenses, each filled with a vertical 6-stripe rainbow. Frame
@@ -621,6 +786,12 @@ export const EFFECTS = {
     // with fiery trails + impact sparks. Fills the canvas, so not sizable.
     bp_meteor: { name: 'Meteor Storm',   xp: 999999, bpOnly: true, kind: 'meteorShower' },
 
+    // ---- Olympus Ascendant effects (Season 2 · Atlas Pass exclusives) ------
+    // lightning: Zeus's bolts crackle down across the globe with a flash.
+    // oliveLeaves: olive + laurel leaves drift down in a gentle victory shower.
+    bp_lightning:   { name: "Zeus's Wrath",  xp: 999999, bpOnly: true, kind: 'lightning' },
+    bp_laurel_fall: { name: 'Laurel Shower',  xp: 999999, bpOnly: true, kind: 'oliveLeaves' },
+
     // ---- Pride collection -------------------------------------------------
     // Soft rainbow aurora bands drifting horizontally around Atlas — bands
     // shift opacity + drift, leaving a gentle shimmer rather than a solid wash.
@@ -668,6 +839,10 @@ export const EMOTES = {
     // beats them, kicking up a wind gust + "SOAR!" banner.
     bp_wing_beat:    { name: 'Wing Beat',       xp: 999999, bpOnly: true, kind: 'wingBeat' },
 
+    // ---- Olympus Ascendant emote (Season 2 · Atlas Pass exclusive) --------
+    // Atlas hurls a crackling thunderbolt — flash, bolt and a "ZEUS!" banner.
+    bp_thunderbolt:  { name: 'Thunderbolt',     xp: 999999, bpOnly: true, kind: 'thunderbolt' },
+
     // ---- Pride collection -------------------------------------------------
     // Atlas raises a rainbow pride flag and waves it — riffs on the free
     // `wave` emote's rocking motion with a 6-stripe pennant in place of the
@@ -703,6 +878,7 @@ export const SCENES = {
     oceania:       { name: 'Pacific Shores',      xp: 2000 },
     antarctica:    { name: 'Antarctic Aurora',    xp: 2000 },
     bp_reptile:    { name: 'Reptile Kingdom',     xp: 999999, bpOnly: true },
+    bp_olympus:    { name: 'Mount Olympus',       xp: 999999, bpOnly: true },
 
     // Pride Parade — aurora-stripe sky with sweeping rainbow ribbons over a
     // dusk silhouette skyline. Standard scene price (matches continent scenes).
@@ -731,6 +907,10 @@ export const COMPANIONS = {
     // Awarded on the FREE track at Tier 5 (was previously 750 Bucks). bp_ prefix
     // keeps it out of the shop the same way every other bp_* item is gated.
     bp_companion_salamander:  { name: 'Salamander',   xp: 999999, bpOnly: true, kind: 'salamander' },
+
+    // ---- Olympus Ascendant companion (Season 2 · Atlas Pass exclusive) -----
+    // Athena's owl — wise little companion awarded on the FREE track at Tier 5.
+    bp_companion_owl:         { name: "Athena's Owl",  xp: 999999, bpOnly: true, kind: 'owl' },
 };
 
 // ---- Companion colour variants (tints) -------------------------------------
@@ -840,6 +1020,11 @@ export const COMPANION_TINTS = {
         { id: 'classic', name: 'Fire Orange', p: { g0: '#FFB07A', g1: '#FF8A3F', g2: '#E2611F', spot: '#FFD24B' } },
         { id: 'axolotl', name: 'Axolotl',     t: { h: 335, sSet: 0.5, lAdd: 0.1 } },
         { id: 'cobalt',  name: 'Cobalt',      t: { dh: 185 } },
+    ],
+    owl: [
+        { id: 'classic', name: 'Tawny',   p: { g0: '#D9B488', g1: '#A87C4E', g2: '#7A5430', belly: '#F3E4C8', face: '#EAD6B2', tuft: '#8A5E36' } },
+        { id: 'snowy',   name: 'Snowy',   t: { sMul: 0.18, lAdd: 0.26 } },
+        { id: 'dusk',    name: 'Dusk',    t: { dh: 200, sMul: 0.7 } },
     ],
 };
 

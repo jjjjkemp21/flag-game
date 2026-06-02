@@ -14,6 +14,12 @@ const COLORS = {
     bp_komodo: 999999, bp_anaconda: 999999, bp_basilisk: 999999, bp_chameleon: 999999,
     bp_dragon_fire: 999999, bp_frost_serpent: 999999, bp_cosmic_drake: 999999,
     bp_world_serpent: 999999, // S1 extension (tier 30)
+    // Olympus Ascendant (Season 2) exclusives.
+    bp_marble: 999999, bp_terracotta: 999999, bp_black_figure: 999999, bp_olive: 999999,
+    bp_sea_foam: 999999, bp_aegean: 999999, bp_bronze: 999999, bp_wine: 999999,
+    bp_chiton: 999999, bp_storm: 999999, bp_underworld: 999999, bp_nectar: 999999,
+    bp_ambrosia: 999999, bp_celestial: 999999, bp_aether: 999999, bp_midas: 999999,
+    bp_olympus_eternal: 999999,
     // Pride collection.
     pride_aurora: 3200,
 };
@@ -39,6 +45,9 @@ const HATS = {
     bp_frill_emerald: 999999, bp_frill_crimson: 999999, bp_frill_violet: 999999,
     bp_scale_helm: 999999,
     bp_wyvern_crown: 999999, // S1 extension (tier 26)
+    // Olympus Ascendant (Season 2) exclusives.
+    bp_helm_bronze: 999999, bp_helm_gold: 999999, bp_helm_obsidian: 999999,
+    bp_olive_wreath: 999999, bp_laurel_victor: 999999, bp_winged_helm: 999999,
     // Pride collection.
     pride_sash: 1600,
 };
@@ -63,6 +72,9 @@ const GLASSES = {
     bp_snake_eyes: 999999, bp_serpent_eyes: 999999, bp_lizard_eyes: 999999,
     bp_dragon_gaze: 999999,
     bp_apex_visor: 999999, // S1 extension (tier 27)
+    // Olympus Ascendant (Season 2) exclusives.
+    bp_helm_slits: 999999, bp_helm_slits_gold: 999999,
+    bp_oracle_eyes: 999999, bp_oracle_eyes_violet: 999999,
     // Pride collection.
     pride_heart_shades: 1900,
 };
@@ -73,6 +85,8 @@ const EFFECTS = {
     // Atlas Pass exclusives.
     bp_scales: 999999, bp_breath: 999999,
     bp_meteor: 999999, // S1 extension (tier 29)
+    // Olympus Ascendant (Season 2) exclusives.
+    bp_lightning: 999999, bp_laurel_fall: 999999,
     // Pride collection.
     pride_aurora_bands: 2800,
 };
@@ -88,6 +102,8 @@ const EMOTES = {
     // Atlas Pass exclusives — gated by isBpOnly() below, not purchasable directly.
     bp_dragon_roar: 999999, bp_scale_flex: 999999, bp_serpent_coil: 999999,
     bp_wing_beat: 999999, // S1 extension (tier 28)
+    // Olympus Ascendant (Season 2) exclusive.
+    bp_thunderbolt: 999999,
     // Pride collection.
     pride_flag_wave: 1200,
 };
@@ -115,6 +131,7 @@ const SCENES = {
     africa: 2000, asia: 2000, europe: 2000, north_america: 2000,
     south_america: 2000, oceania: 2000, antarctica: 2000,
     bp_reptile: 999999,
+    bp_olympus: 999999,
     pride_parade: 2000,
 };
 
@@ -128,6 +145,8 @@ const COMPANIONS = {
     pirate_parrot: 2900, fox_kit: 3100, frog: 3300,
     // Atlas Pass — Tier 5 free track (replaces the prior 750-Bucks reward).
     bp_companion_salamander: 999999,
+    // Olympus Ascendant (Season 2) — Tier 5 free track.
+    bp_companion_owl: 999999,
 };
 
 const CATALOG = { color: COLORS, hat: HATS, glasses: GLASSES, mouth: MOUTHS, effect: EFFECTS, scene: SCENES, emote: EMOTES, companion: COMPANIONS };

@@ -13,7 +13,7 @@
 
 import * as clientXp from '../lib/xp';
 import * as clientBp from '../lib/battlepassCatalog';
-import { COLORS, HATS, GLASSES, MOUTHS, EFFECTS, EMOTES, COMPANIONS } from '../lib/cosmetics';
+import { COLORS, HATS, GLASSES, MOUTHS, EFFECTS, EMOTES, COMPANIONS, SCENES } from '../lib/cosmetics';
 
 const serverXp = require('../../server/xp');
 const serverBp = require('../../server/battlepassCatalog');
@@ -46,33 +46,81 @@ describe('xp.js client/server sync', () => {
 });
 
 describe('battlepass catalog client/server sync', () => {
-    test('season + price constants match', () => {
+    test('shared + active-season constants match', () => {
         expect(clientBp.SEASON_ID).toBe(serverBp.SEASON_ID);
         expect(clientBp.SEASON_NAME).toBe(serverBp.SEASON_NAME);
         expect(clientBp.PREMIUM_PRICE).toBe(serverBp.PREMIUM_PRICE);
         expect(clientBp.TIER_COUNT).toBe(serverBp.TIER_COUNT);
         expect(clientBp.TOTAL_STARS).toBe(serverBp.TOTAL_STARS);
         expect(clientBp.TIER_STAR_COST).toEqual(serverBp.TIER_STAR_COST);
+        expect(clientBp.ACTIVE_SEASON_ID).toBe(serverBp.ACTIVE_SEASON_ID);
+        expect(clientBp.SEASON_ORDER).toEqual(serverBp.SEASON_ORDER);
+        expect(clientBp.SEASON_ENDS_AT).toBe(serverBp.SEASON_ENDS_AT);
     });
 
-    test('challenges match (id → metric/goal/stars)', () => {
+    test('season ids, names + tier curves match', () => {
+        expect(Object.keys(clientBp.SEASONS).sort()).toEqual(Object.keys(serverBp.SEASONS).sort());
+        clientBp.SEASON_ORDER.forEach((id) => {
+            expect(clientBp.SEASONS[id].name).toBe(serverBp.SEASONS[id].name);
+            expect(clientBp.SEASONS[id].tierCount).toBe(serverBp.SEASONS[id].tierCount);
+            expect(clientBp.SEASONS[id].totalStars).toBe(serverBp.SEASONS[id].totalStars);
+            expect(clientBp.SEASONS[id].tierStarCost).toEqual(serverBp.SEASONS[id].tierStarCost);
+        });
+    });
+
+    test('challenges match per season (id → metric/goal/stars)', () => {
         const norm = (list) => list
             .map((c) => ({ id: c.id, metric: c.metric, goal: c.goal, stars: c.stars }))
             .sort((a, b) => a.id.localeCompare(b.id));
-        expect(norm(clientBp.CHALLENGES)).toEqual(norm(serverBp.CHALLENGES));
+        clientBp.SEASON_ORDER.forEach((id) => {
+            expect(norm(clientBp.SEASONS[id].challenges)).toEqual(norm(serverBp.SEASONS[id].challenges));
+        });
     });
 
-    test('tiers match (tier → free/prem rewards)', () => {
+    test('tiers match per season (tier → free/prem rewards)', () => {
         const norm = (list) => list
             .map((t) => ({ tier: t.tier, free: t.free, prem: t.prem }))
             .sort((a, b) => a.tier - b.tier);
-        expect(norm(clientBp.TIERS)).toEqual(norm(serverBp.TIERS));
+        clientBp.SEASON_ORDER.forEach((id) => {
+            expect(norm(clientBp.SEASONS[id].tiers)).toEqual(norm(serverBp.SEASONS[id].tiers));
+        });
     });
 
     test('tierFromStars agrees across the star range', () => {
         for (let s = 0; s <= clientBp.TOTAL_STARS; s += 25) {
             expect(clientBp.tierFromStars(s)).toBe(serverBp.tierFromStars(s));
         }
+    });
+});
+
+describe('battlepass catalog integrity', () => {
+    const CAT = { color: COLORS, hat: HATS, glasses: GLASSES, mouth: MOUTHS, effect: EFFECTS, emote: EMOTES, companion: COMPANIONS, scene: SCENES };
+
+    test('every tier cosmetic reward resolves to a real cosmetic id', () => {
+        clientBp.SEASON_ORDER.forEach((id) => {
+            clientBp.SEASONS[id].tiers.forEach((t) => {
+                [t.free, t.prem].forEach((r) => {
+                    if (r && r.type === 'cosmetic') {
+                        expect(CAT[r.cat] && CAT[r.cat][r.id]).toBeTruthy();
+                    }
+                });
+            });
+        });
+    });
+
+    test('challenge id sets are unique within each season', () => {
+        clientBp.SEASON_ORDER.forEach((id) => {
+            const ids = clientBp.SEASONS[id].challenges.map((c) => c.id);
+            expect(new Set(ids).size).toBe(ids.length);
+        });
+    });
+
+    test('obtainable challenge stars can reach the capstone in every season', () => {
+        clientBp.SEASON_ORDER.forEach((id) => {
+            const season = clientBp.SEASONS[id];
+            const sum = season.challenges.reduce((a, c) => a + c.stars, 0);
+            expect(sum).toBeGreaterThanOrEqual(season.totalStars);
+        });
     });
 });
 

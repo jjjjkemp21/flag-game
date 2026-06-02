@@ -11,10 +11,10 @@ import { useAuth } from '../../auth/AuthProvider';
 import { useCurrency, setBucksLocal, applyOwnedAndBucks } from '../../lib/currency';
 import { useProfile, toggleEmoteInLoadout } from '../../lib/profile';
 import {
-    useBattlepass, loadBattlepass, buyPremium, claimReward, claimChallenge, isClaimed,
-    CHALLENGES_BY_ID, TIERS_BY_NUM, progressWithinTier,
+    useBattlepass, loadBattlepass, selectSeason, buyPremium, claimReward, claimChallenge, isClaimed,
+    progressWithinTier, getSeason,
 } from '../../lib/battlepass';
-import { PREMIUM_PRICE, SEASON_NAME, TIER_COUNT } from '../../lib/battlepassCatalog';
+import { PREMIUM_PRICE } from '../../lib/battlepassCatalog';
 import { COLORS, HATS, GLASSES, MOUTHS, EFFECTS, SCENES, EMOTES, DEFAULT_COSMETICS } from '../../lib/cosmetics';
 import { EMOTE_DURATION_S } from '../../assets/illustrations/Cosmetics';
 import { springs } from '../../motion/index';
@@ -231,11 +231,11 @@ function RewardTile({ track, preview, state, claiming, onClaim, onPreview, rarit
 
 // A single column on the trophy road: free tile up top, tier node in the
 // middle (with the connecting rail running through it), premium tile below.
-function TierColumn({ tier, def, currentTier, ownsPass, onClaim, onPreview, claimingKey, fallbackCos }) {
+function TierColumn({ tier, def, currentTier, ownsPass, onClaim, onPreview, claimingKey, fallbackCos, tierCount }) {
     const prefersReduced = useReducedMotion();
     const unlocked = tier <= currentTier;
     const isCurrent = tier === currentTier + 1; // the tier the player is actively grinding toward
-    const isMax = currentTier >= TIER_COUNT && tier === TIER_COUNT;
+    const isMax = currentTier >= tierCount && tier === tierCount;
     const rarity = rarityOf(tier);
     const isCapstone = tier === 5 || tier === 10 || tier === 15 || tier === 20 || tier === 25;
     const hue = RARITY_HUE[rarity] || RARITY_HUE.common;
@@ -290,7 +290,7 @@ function TierColumn({ tier, def, currentTier, ownsPass, onClaim, onPreview, clai
                     <span className="bp-node__num">{tier}</span>
                     {isCapstone && <span className="bp-node__star" aria-hidden="true">★</span>}
                 </div>
-                <span className={`bp-rail__seg bp-rail__seg--r ${rightFilled ? 'is-filled' : ''} ${tier === TIER_COUNT ? 'is-edge' : ''}`} aria-hidden="true" />
+                <span className={`bp-rail__seg bp-rail__seg--r ${rightFilled ? 'is-filled' : ''} ${tier === tierCount ? 'is-edge' : ''}`} aria-hidden="true" />
             </div>
 
             <RewardTile
@@ -376,6 +376,7 @@ function BattlepassScreen({ setView }) {
     // Bumped by the modal's Replay button to re-trigger emote one-shots
     // without remounting the Mascot. Reset whenever a different tile is opened.
     const [emoteBump, setEmoteBump] = useState(0);
+    const [switching, setSwitching] = useState(false);
     const roadRef = useRef(null);
     const prefersReduced = useReducedMotion();
 
@@ -401,13 +402,28 @@ function BattlepassScreen({ setView }) {
         }
     }, [bp.loaded, prefersReduced]);
 
-    const tierProgress = useMemo(() => progressWithinTier(bp.stars), [bp.stars]);
+    // Catalog for the season currently being viewed (may differ from the live
+    // season when the player browses a past pass via the dropdown).
+    const seasonCat = getSeason(bp.season);
+    const theme = bp.theme || seasonCat.theme;
+    const tiersByNum = seasonCat.tiersByNum;
+    const challengesById = seasonCat.challengesById;
+    const tierCount = bp.tierCount || seasonCat.tierCount;
+    const isActiveSeason = bp.season === bp.activeSeason;
+
+    const tierProgress = useMemo(() => progressWithinTier(bp.stars, bp.season), [bp.stars, bp.season]);
     const challengesWithDef = useMemo(
         () => (bp.challenges || [])
-            .map((c) => ({ challenge: c, def: CHALLENGES_BY_ID[c.id] }))
+            .map((c) => ({ challenge: c, def: challengesById[c.id] }))
             .filter((x) => x.def),
-        [bp.challenges]
+        [bp.challenges, challengesById]
     );
+
+    const onSeasonChange = async (id) => {
+        if (!id || id === bp.season || switching) return;
+        setSwitching(true);
+        try { await selectSeason(id); } catch (_) { /* keep current view */ } finally { setSwitching(false); }
+    };
 
     // Preview every reward layered onto the player's currently equipped skin,
     // so the cosmetic shows how it'd look on THEIR Atlas — same pattern the
@@ -436,7 +452,7 @@ function BattlepassScreen({ setView }) {
                 <div className="signin-prompt">
                     <Icon name="workspace_premium" size="xl" />
                     <h2>Atlas Pass</h2>
-                    <p>Log in to grind challenges, unlock reptile cosmetics, and grab exclusive premium rewards.</p>
+                    <p>Log in to grind challenges, unlock exclusive cosmetics, and grab premium rewards.</p>
                     <Button variant="primary" icon="login" onClick={() => setView('login')}>Log in or sign up</Button>
                 </div>
             </div>
@@ -532,28 +548,47 @@ function BattlepassScreen({ setView }) {
     const pct = bp.totalStars > 0 ? Math.min(1, bp.stars / bp.totalStars) : 0;
 
     return (
-        <div className="quiz-box bp-box">
+        <div className={`quiz-box bp-box bp-box--${theme.key}`}>
             <div className="quiz-topbar">
                 <button className="back-button" onClick={() => setView('menu')} aria-label="Back">
                     <Icon name="arrow_back" /> Back
                 </button>
+                {(bp.seasons || []).length > 0 && (
+                    <label className="bp-season-select" aria-label="Select season">
+                        <Icon name="workspace_premium" />
+                        <select
+                            value={bp.season}
+                            onChange={(e) => onSeasonChange(e.target.value)}
+                            disabled={switching}
+                        >
+                            {bp.seasons.map((s) => (
+                                <option key={s.id} value={s.id}>{s.name}</option>
+                            ))}
+                        </select>
+                        <Icon name="expand_more" />
+                    </label>
+                )}
             </div>
 
-            <div className="bp-hero">
+            <div className={`bp-hero bp-hero--${theme.key}`}>
                 <div className="bp-hero__bg" aria-hidden="true" />
                 <div className="bp-hero__scales" aria-hidden="true" />
                 <div className="bp-hero__inner">
                     <span className="bp-hero__badge">
-                        <Icon name="workspace_premium" /> Reptile Kingdom · Season 1
+                        <Icon name="workspace_premium" /> {theme.badge}
                     </span>
-                    <h2 className="bp-hero__title">{SEASON_NAME}</h2>
-                    <p className="bp-hero__sub">
-                        25 tiers of dragon-themed cosmetics. Complete challenges across every mode to climb.
-                    </p>
+                    <h2 className="bp-hero__title">{seasonCat.name}</h2>
+                    <p className="bp-hero__sub">{theme.subtitle}</p>
+                    <span className="bp-hero__countdown">
+                        <Icon name="schedule" />
+                        {isActiveSeason
+                            ? `${bp.daysLeft != null ? bp.daysLeft : 30} days until the next battlepass`
+                            : 'Previous season · rewards you earned are still claimable'}
+                    </span>
 
                     <div className="bp-stats">
                         <div className="bp-stat">
-                            <span className="bp-stat__num">{bp.tier}/{TIER_COUNT}</span>
+                            <span className="bp-stat__num">{bp.tier}/{tierCount}</span>
                             <span className="bp-stat__label">Tier</span>
                         </div>
                         <div className="bp-stat">
@@ -562,14 +597,14 @@ function BattlepassScreen({ setView }) {
                         </div>
                     </div>
 
-                    <div className="bp-tier-bar" aria-label={`Tier ${bp.tier} of ${TIER_COUNT}`}>
+                    <div className="bp-tier-bar" aria-label={`Tier ${bp.tier} of ${tierCount}`}>
                         <div className="bp-tier-bar__fill" style={{ width: `${Math.round(pct * 100)}%` }} />
-                        {tierProgress.span > 0 && bp.tier < TIER_COUNT && (
+                        {tierProgress.span > 0 && bp.tier < tierCount && (
                             <span className="bp-tier-bar__hint">
                                 {tierProgress.into.toLocaleString()} / {tierProgress.span.toLocaleString()} stars to tier {bp.tier + 1}
                             </span>
                         )}
-                        {bp.tier >= TIER_COUNT && (
+                        {bp.tier >= tierCount && (
                             <span className="bp-tier-bar__hint">Max tier reached — all rewards available.</span>
                         )}
                     </div>
@@ -580,7 +615,7 @@ function BattlepassScreen({ setView }) {
                                 Unlock Premium · {PREMIUM_PRICE.toLocaleString()} Bucks
                             </Button>
                             <span className="bp-buy__hint">
-                                Free tier rewards are always claimable. Premium adds a reptile cosmetic at every tier.
+                                Free tier rewards are always claimable. Premium adds an exclusive cosmetic at every tier.
                             </span>
                         </div>
                     ) : (
@@ -624,22 +659,23 @@ function BattlepassScreen({ setView }) {
                             </span>
                         </div>
                         <div className="bp-road" ref={roadRef}>
-                            {Array.from({ length: TIER_COUNT }, (_, i) => i + 1).map((tier) => (
+                            {Array.from({ length: tierCount }, (_, i) => i + 1).map((tier) => (
                                 <TierColumn
                                     key={tier}
                                     tier={tier}
-                                    def={TIERS_BY_NUM[tier]}
+                                    def={tiersByNum[tier]}
                                     currentTier={bp.tier}
                                     ownsPass={bp.owned}
                                     onClaim={onClaim}
                                     onPreview={onPreview}
                                     claimingKey={claimingKey}
                                     fallbackCos={fallbackCos}
+                                    tierCount={tierCount}
                                 />
                             ))}
                         </div>
                         <div className="bp-rewards__hint">
-                            <Icon name="swipe" /> Swipe along the road — 25 tiers all the way to Dragon Fire.
+                            <Icon name="swipe" /> Swipe along the road — {tierCount} tiers of {theme.title} rewards.
                         </div>
                     </motion.div>
                 ) : (
@@ -761,11 +797,11 @@ function BattlepassScreen({ setView }) {
 
             <Modal open={buyOpen} onClose={() => setBuyOpen(false)} title="Unlock Atlas Pass Premium">
                 <p className="auth-hint">
-                    Premium adds an exclusive reptile cosmetic at every one of {TIER_COUNT} tiers — dragon
-                    horns, scaled hoods, animated colour palettes. Your free tier rewards stay available either way.
+                    Premium adds an exclusive {theme.title} cosmetic at every one of {tierCount} tiers —
+                    helms, wreaths, animated colour palettes and more. Your free tier rewards stay available either way.
                 </p>
                 <div className="bp-buy-summary">
-                    <span><Icon name="workspace_premium" /> Reptile Kingdom · Season pass</span>
+                    <span><Icon name="workspace_premium" /> {seasonCat.name}</span>
                     <span className="bp-buy-summary__price">
                         <AtlasBucksIcon size={18} /> {PREMIUM_PRICE.toLocaleString()}
                     </span>

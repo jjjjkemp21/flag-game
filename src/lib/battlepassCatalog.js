@@ -1,11 +1,18 @@
 // Client mirror of server/battlepassCatalog.js. Keep these two in lock-step —
 // the server validates claims against its copy, the client uses this one to
 // render the pass UI and to know which metric a challenge tracks.
+//
+// The Atlas Pass now runs MULTIPLE seasons. Each season is a self-contained
+// catalog (its own challenges + tier rewards); a player keeps independent
+// progress in each. `ACTIVE_SEASON_ID` is the live season new progress flows
+// into; older seasons stay selectable from the pass screen's season dropdown
+// (and drive the home-screen pass card skin) so nobody loses what they earned.
 
-export const SEASON_ID = 'atlas-pass-reptile-1';
-export const SEASON_NAME = 'Reptile Kingdom · Season 1';
 export const PREMIUM_PRICE = 10000;
 
+// Stars required to reach each tier from the previous tier. Shared by every
+// season (30 tiers, mild curve so the back half feels weightier without being
+// grindy). Tier N unlocks when cumulative stars >= the prefix sum up to N.
 export const TIER_STAR_COST = [
     600, 700, 800, 900, 1000,
     1100, 1200, 1300, 1400, 1500,
@@ -15,14 +22,10 @@ export const TIER_STAR_COST = [
     3700, 3900, 4100, 4300, 4500,
 ];
 
-export const TIER_COUNT = TIER_STAR_COST.length;
-export const CUMULATIVE_STARS = TIER_STAR_COST.reduce((acc, n) => {
-    acc.push((acc[acc.length - 1] || 0) + n);
-    return acc;
-}, []);
-export const TOTAL_STARS = CUMULATIVE_STARS[CUMULATIVE_STARS.length - 1];
-
-export const CHALLENGES = [
+// ===========================================================================
+// Season 1 — Reptile Kingdom
+// ===========================================================================
+const REPTILE_CHALLENGES = [
     { id: 'mc_50',     metric: 'mc_correct',       goal: 50,     stars: 500,  mode: 'multiple-choice', title: 'Warm-Up Round',    desc: 'Get 50 correct in Multiple Choice', icon: 'quiz' },
     { id: 'mc_200',    metric: 'mc_correct',       goal: 200,    stars: 1200, mode: 'multiple-choice', title: 'Quiz Regular',     desc: 'Get 200 correct in Multiple Choice', icon: 'quiz' },
     { id: 'mc_500',    metric: 'mc_correct',       goal: 500,    stars: 2200, mode: 'multiple-choice', title: 'Quiz Champion',    desc: 'Get 500 correct in Multiple Choice', icon: 'quiz' },
@@ -55,11 +58,6 @@ export const CHALLENGES = [
     { id: 'master_100',metric: 'mastered',         goal: 100,    stars: 2500, mode: 'mastery',         title: 'Atlas Pro',        desc: 'Master 100 flags', icon: 'school' },
     { id: 'xp_5k',     metric: 'earned_xp',        goal: 5000,   stars: 1000, mode: 'any',             title: 'Earner',           desc: 'Earn 5,000 lifetime XP', icon: 'star' },
     { id: 'xp_25k',    metric: 'earned_xp',        goal: 25000,  stars: 2500, mode: 'any',             title: 'XP Tycoon',        desc: 'Earn 25,000 lifetime XP', icon: 'star' },
-
-    // Season 1 finale — extended-pass stretch goals added alongside tiers
-    // 26-30. They lift the obtainable-star pool above the new TOTAL_STARS so a
-    // completionist can actually reach the new capstone; higher bars on the
-    // already-established modes (the new Capitals mode is covered by cap_* above).
     { id: 'mc_1000',   metric: 'mc_correct',       goal: 1000,   stars: 3400, mode: 'multiple-choice', title: 'Quiz Legend',      desc: 'Get 1,000 correct in Multiple Choice', icon: 'quiz' },
     { id: 'fr_600',    metric: 'fr_correct',       goal: 600,    stars: 3400, mode: 'free-response',   title: 'Atlas Laureate',   desc: 'Type 600 country names correctly', icon: 'edit_note' },
     { id: 'globe_300', metric: 'globe_correct',    goal: 300,    stars: 3600, mode: 'globe',           title: 'Globe Conqueror',  desc: 'Place 300 countries on the globe', icon: 'public' },
@@ -69,86 +67,235 @@ export const CHALLENGES = [
     { id: 'xp_60k',    metric: 'earned_xp',        goal: 60000,  stars: 3400, mode: 'any',             title: 'XP Magnate',       desc: 'Earn 60,000 lifetime XP', icon: 'star' },
 ];
 
-export const CHALLENGES_BY_ID = Object.fromEntries(CHALLENGES.map((c) => [c.id, c]));
-
-// Season 1 — Reptile Kingdom. Premium gets the showpiece dragons/animated
-// colours; the free track is mostly bucks plus a few starter reptile pieces.
-export const TIERS = [
+const REPTILE_TIERS = [
     { tier: 1,  free: { type: 'bucks', amount: 250 },    prem: { type: 'cosmetic', cat: 'glasses', id: 'bp_snake_eyes' } },
     { tier: 2,  free: { type: 'bucks', amount: 200 },    prem: { type: 'cosmetic', cat: 'hat',     id: 'bp_horns_jade' } },
     { tier: 3,  free: { type: 'cosmetic', cat: 'glasses', id: 'bp_lizard_eyes' }, prem: { type: 'cosmetic', cat: 'color',   id: 'bp_iguana' } },
-    // Tier 4 free: a starter emote on the free track so every player gets a
-    // taste of the new system without needing to grind the prem-only ones.
     { tier: 4,  free: { type: 'cosmetic', cat: 'emote',   id: 'cheer' },  prem: { type: 'cosmetic', cat: 'glasses', id: 'bp_serpent_eyes' } },
-    // Tier 5 free: the Salamander companion. Replaces a 750-Bucks reward so
-    // every player who hits T5 (free or prem) gets the entry-tier Reptile
-    // Kingdom companion — first chance for a companion to show up beside Atlas.
     { tier: 5,  free: { type: 'cosmetic', cat: 'companion', id: 'bp_companion_salamander' }, prem: { type: 'cosmetic', cat: 'hat',     id: 'bp_frill_emerald' } },
-    // Tier 6 prem: first BP-exclusive emote — Serpent Coil — leans into the
-    // atmospheric reptile theme that the Swamp Mist effect used to fill here.
     { tier: 6,  free: { type: 'bucks', amount: 300 },    prem: { type: 'cosmetic', cat: 'emote',   id: 'bp_serpent_coil' } },
     { tier: 7,  free: { type: 'cosmetic', cat: 'hat',    id: 'bp_horns_obsidian' }, prem: { type: 'cosmetic', cat: 'color',   id: 'bp_gecko' } },
     { tier: 8,  free: { type: 'bucks', amount: 400 },    prem: { type: 'cosmetic', cat: 'hat',     id: 'bp_scale_helm' } },
     { tier: 9,  free: { type: 'bucks', amount: 400 },    prem: { type: 'cosmetic', cat: 'color',   id: 'bp_jade' } },
     { tier: 10, free: { type: 'bucks', amount: 1000 },   prem: { type: 'cosmetic', cat: 'color',   id: 'bp_python' } },
-    // Tier 11 free: a mid-tier emote on the free track.
     { tier: 11, free: { type: 'cosmetic', cat: 'emote',  id: 'laugh' },   prem: { type: 'cosmetic', cat: 'glasses', id: 'bp_dragon_gaze' } },
     { tier: 12, free: { type: 'cosmetic', cat: 'effect', id: 'bp_scales' }, prem: { type: 'cosmetic', cat: 'color',   id: 'bp_komodo' } },
     { tier: 13, free: { type: 'bucks', amount: 600 },    prem: { type: 'cosmetic', cat: 'hat',     id: 'bp_frill_crimson' } },
     { tier: 14, free: { type: 'bucks', amount: 600 },    prem: { type: 'cosmetic', cat: 'color',   id: 'bp_anaconda' } },
     { tier: 15, free: { type: 'bucks', amount: 1500 },   prem: { type: 'cosmetic', cat: 'hat',     id: 'bp_horns_fire' } },
-    // Tier 16 prem: BP-exclusive Scale Flex (mid-high showpiece emote).
     { tier: 16, free: { type: 'bucks', amount: 700 },    prem: { type: 'cosmetic', cat: 'emote',   id: 'bp_scale_flex' } },
-    // Tier 17 free: an upper-mid emote on the free track.
     { tier: 17, free: { type: 'cosmetic', cat: 'emote',  id: 'heart' },   prem: { type: 'cosmetic', cat: 'hat',     id: 'bp_frill_violet' } },
     { tier: 18, free: { type: 'bucks', amount: 800 },    prem: { type: 'cosmetic', cat: 'color',   id: 'bp_frost_serpent' } },
     { tier: 19, free: { type: 'bucks', amount: 900 },    prem: { type: 'cosmetic', cat: 'effect',  id: 'bp_breath' } },
     { tier: 20, free: { type: 'bucks', amount: 2000 },   prem: { type: 'cosmetic', cat: 'color',   id: 'bp_basilisk' } },
     { tier: 21, free: { type: 'bucks', amount: 1000 },   prem: { type: 'cosmetic', cat: 'hat',     id: 'bp_horns_gold' } },
-    // Tier 22 prem: the marquee BP-exclusive Dragon's Roar — a high-tier
-    // capstone emote ahead of the season finale.
     { tier: 22, free: { type: 'bucks', amount: 1100 },   prem: { type: 'cosmetic', cat: 'emote',   id: 'bp_dragon_roar' } },
     { tier: 23, free: { type: 'bucks', amount: 1300 },   prem: { type: 'cosmetic', cat: 'color',   id: 'bp_cosmic_drake' } },
     { tier: 24, free: { type: 'bucks', amount: 1600 },   prem: { type: 'cosmetic', cat: 'color',   id: 'bp_chameleon' } },
     { tier: 25, free: { type: 'cosmetic', cat: 'scene', id: 'bp_reptile' }, prem: { type: 'cosmetic', cat: 'color',   id: 'bp_dragon_fire' } },
-
-    // ---- Season 1 extension: tiers 26-30 ("Apex" finale) -------------------
-    // Five more levels past the original capstone. New BP-exclusive cosmetics
-    // (Wyvern Crown hat, Apex Visor glasses, Wing Beat emote, Meteor Storm
-    // effect, World Serpent colour) reward the deepest grinders.
     { tier: 26, free: { type: 'bucks', amount: 1200 },   prem: { type: 'cosmetic', cat: 'hat',     id: 'bp_wyvern_crown' } },
     { tier: 27, free: { type: 'bucks', amount: 1400 },   prem: { type: 'cosmetic', cat: 'glasses', id: 'bp_apex_visor' } },
-    // Tier 28 free: Fireworks emote on the free track; prem: the new Wing Beat emote.
     { tier: 28, free: { type: 'cosmetic', cat: 'emote',  id: 'fireworks' }, prem: { type: 'cosmetic', cat: 'emote',  id: 'bp_wing_beat' } },
     { tier: 29, free: { type: 'bucks', amount: 1800 },   prem: { type: 'cosmetic', cat: 'effect',  id: 'bp_meteor' } },
-    // Tier 30 — extended-season capstone. World Serpent: animated jewel-scale
-    // colour with glow + starfield overlay, the showpiece of the whole pass.
     { tier: 30, free: { type: 'bucks', amount: 3000 },   prem: { type: 'cosmetic', cat: 'color',   id: 'bp_world_serpent' } },
 ];
 
-export const TIERS_BY_NUM = Object.fromEntries(TIERS.map((t) => [t.tier, t]));
+// ===========================================================================
+// Season 2 — Olympus Ascendant (Greek mythology). 40 challenges with gentler
+// goals than Season 1, including the newer Capitals mode. Premium track is all
+// Greek bp_* exclusives; the free track is bucks plus a few starter emotes, the
+// owl companion (T5) and the Mount Olympus backdrop (T25).
+// ===========================================================================
+const OLYMPUS_CHALLENGES = [
+    { id: 'o_mc_30',   metric: 'mc_correct',       goal: 30,     stars: 550,  mode: 'multiple-choice', title: 'First Trial',      desc: 'Get 30 correct in Multiple Choice', icon: 'quiz' },
+    { id: 'o_mc_100',  metric: 'mc_correct',       goal: 100,    stars: 1300, mode: 'multiple-choice', title: 'Quiz Adept',       desc: 'Get 100 correct in Multiple Choice', icon: 'quiz' },
+    { id: 'o_mc_180',  metric: 'mc_correct',       goal: 180,    stars: 2000, mode: 'multiple-choice', title: 'Quiz Hero',        desc: 'Get 180 correct in Multiple Choice', icon: 'quiz' },
+    { id: 'o_mc_250',  metric: 'mc_correct',       goal: 250,    stars: 2700, mode: 'multiple-choice', title: 'Quiz Champion',    desc: 'Get 250 correct in Multiple Choice', icon: 'quiz' },
+    { id: 'o_fr_15',   metric: 'fr_correct',       goal: 15,     stars: 650,  mode: 'free-response',   title: "Scribe's Start",   desc: 'Type 15 country names correctly', icon: 'edit_note' },
+    { id: 'o_fr_60',   metric: 'fr_correct',       goal: 60,     stars: 1400, mode: 'free-response',   title: 'Scribe',           desc: 'Type 60 country names correctly', icon: 'edit_note' },
+    { id: 'o_fr_100',  metric: 'fr_correct',       goal: 100,    stars: 2000, mode: 'free-response',   title: 'Loremaster',       desc: 'Type 100 country names correctly', icon: 'edit_note' },
+    { id: 'o_fr_150',  metric: 'fr_correct',       goal: 150,    stars: 2800, mode: 'free-response',   title: 'Oracle of Names',  desc: 'Type 150 country names correctly', icon: 'edit_note' },
+    { id: 'o_globe_10',  metric: 'globe_correct',  goal: 10,     stars: 650,  mode: 'globe',           title: 'Pin Drop',         desc: 'Place 10 countries on the globe', icon: 'public' },
+    { id: 'o_globe_50',  metric: 'globe_correct',  goal: 50,     stars: 1500, mode: 'globe',           title: 'Pathfinder',       desc: 'Place 50 countries on the globe', icon: 'public' },
+    { id: 'o_globe_80',  metric: 'globe_correct',  goal: 80,     stars: 2100, mode: 'globe',           title: 'Cartographer',     desc: 'Place 80 countries on the globe', icon: 'public' },
+    { id: 'o_globe_120', metric: 'globe_correct',  goal: 120,    stars: 3000, mode: 'globe',           title: 'World Walker',     desc: 'Place 120 countries on the globe', icon: 'public' },
+    { id: 'o_globename_10',  metric: 'globe_name_correct', goal: 10,  stars: 750,  mode: 'globe',      title: 'Outline Reader',   desc: 'Name 10 countries from the globe', icon: 'edit_location_alt' },
+    { id: 'o_globename_50',  metric: 'globe_name_correct', goal: 50,  stars: 1600, mode: 'globe',      title: 'Shape Seer',       desc: 'Name 50 countries from the globe', icon: 'edit_location_alt' },
+    { id: 'o_globename_120', metric: 'globe_name_correct', goal: 120, stars: 3100, mode: 'globe',      title: 'Atlas Mind',       desc: 'Name 120 countries from the globe', icon: 'edit_location_alt' },
+    { id: 'o_cap_20',  metric: 'high_capitals',    goal: 20,     stars: 700,  mode: 'capitals',        title: 'City Scout',       desc: 'Reach 20 score in Capitals Quiz', icon: 'location_city' },
+    { id: 'o_cap_60',  metric: 'high_capitals',    goal: 60,     stars: 1600, mode: 'capitals',        title: 'Capital Keeper',   desc: 'Reach 60 score in Capitals Quiz', icon: 'location_city' },
+    { id: 'o_cap_120', metric: 'high_capitals',    goal: 120,    stars: 3000, mode: 'capitals',        title: 'Capital Sage',     desc: 'Reach 120 score in Capitals Quiz', icon: 'location_city' },
+    { id: 'o_frenzy_30',  metric: 'high_frenzy',   goal: 30,     stars: 750,  mode: 'frenzy',          title: 'Frenzy Rookie',    desc: 'Reach 30 score in Frenzy', icon: 'bolt' },
+    { id: 'o_frenzy_150', metric: 'high_frenzy',   goal: 150,    stars: 2100, mode: 'frenzy',          title: 'Frenzy Pro',       desc: 'Reach 150 score in Frenzy', icon: 'bolt' },
+    { id: 'o_pix_20',  metric: 'high_pixelated',   goal: 20,     stars: 750,  mode: 'pixelated',       title: 'Pixel Eye',        desc: 'Reach 20 score in Pixelated', icon: 'grid_view' },
+    { id: 'o_pix_60',  metric: 'high_pixelated',   goal: 60,     stars: 2100, mode: 'pixelated',       title: 'Pixel Master',     desc: 'Reach 60 score in Pixelated', icon: 'grid_view' },
+    { id: 'o_lr_8',    metric: 'high_longestRoute', goal: 8,     stars: 750,  mode: 'longest-route',   title: 'Route Hunter',     desc: 'Reach 8 score in Longest Route', icon: 'route' },
+    { id: 'o_lr_20',   metric: 'high_longestRoute', goal: 20,    stars: 2100, mode: 'longest-route',   title: 'Route Master',     desc: 'Reach 20 score in Longest Route', icon: 'route' },
+    { id: 'o_lang_20', metric: 'high_language',    goal: 20,     stars: 750,  mode: 'language',        title: 'Polyglot',         desc: 'Reach 20 score in Language Quiz', icon: 'translate' },
+    { id: 'o_lang_60', metric: 'high_language',    goal: 60,     stars: 1700, mode: 'language',        title: 'Linguist',         desc: 'Reach 60 score in Language Quiz', icon: 'translate' },
+    { id: 'o_lang_120',metric: 'high_language',    goal: 120,    stars: 2900, mode: 'language',        title: 'Babel Sage',       desc: 'Reach 120 score in Language Quiz', icon: 'translate' },
+    { id: 'o_streak_8',  metric: 'best_streak_any', goal: 8,     stars: 550,  mode: 'any',             title: 'Heating Up',       desc: 'Hit an 8-answer streak in any mode', icon: 'local_fire_department' },
+    { id: 'o_streak_20', metric: 'best_streak_any', goal: 20,    stars: 1500, mode: 'any',             title: 'On Fire',          desc: 'Hit a 20-answer streak in any mode', icon: 'local_fire_department' },
+    { id: 'o_streak_40', metric: 'best_streak_any', goal: 40,    stars: 3100, mode: 'any',             title: 'Inferno',          desc: 'Hit a 40-answer streak in any mode', icon: 'local_fire_department' },
+    { id: 'o_mp_2',    metric: 'mp_wins',          goal: 2,      stars: 850,  mode: 'multiplayer',     title: 'First Duel',       desc: 'Win 2 multiplayer matches', icon: 'sports_esports' },
+    { id: 'o_mp_8',    metric: 'mp_wins',          goal: 8,      stars: 2500, mode: 'multiplayer',     title: 'Arena Champion',   desc: 'Win 8 multiplayer matches', icon: 'sports_esports' },
+    { id: 'o_master_25', metric: 'mastered',       goal: 25,     stars: 1300, mode: 'mastery',         title: 'Pupil of Athena',  desc: 'Master 25 flags', icon: 'school' },
+    { id: 'o_master_75', metric: 'mastered',       goal: 75,     stars: 3000, mode: 'mastery',         title: 'Master of Flags',  desc: 'Master 75 flags', icon: 'school' },
+    { id: 'o_xp_3k',   metric: 'earned_xp',        goal: 3000,   stars: 950,  mode: 'any',             title: 'Earner',           desc: 'Earn 3,000 lifetime XP', icon: 'star' },
+    { id: 'o_xp_15k',  metric: 'earned_xp',        goal: 15000,  stars: 2200, mode: 'any',             title: 'XP Adept',         desc: 'Earn 15,000 lifetime XP', icon: 'star' },
+    { id: 'o_xp_25k',  metric: 'earned_xp',        goal: 25000,  stars: 3000, mode: 'any',             title: 'XP Tycoon',        desc: 'Earn 25,000 lifetime XP', icon: 'star' },
+    { id: 'o_xp_40k',  metric: 'earned_xp',        goal: 40000,  stars: 4200, mode: 'any',             title: 'XP Magnate',       desc: 'Earn 40,000 lifetime XP', icon: 'star' },
+    { id: 'o_frenzy_300', metric: 'high_frenzy',   goal: 300,    stars: 3200, mode: 'frenzy',          title: 'Frenzy Legend',    desc: 'Reach 300 score in Frenzy', icon: 'bolt' },
+    { id: 'o_cap_180', metric: 'high_capitals',    goal: 180,    stars: 3600, mode: 'capitals',        title: 'Capital Oracle',   desc: 'Reach 180 score in Capitals Quiz', icon: 'location_city' },
+];
+
+const OLYMPUS_TIERS = [
+    { tier: 1,  free: { type: 'bucks', amount: 250 },    prem: { type: 'cosmetic', cat: 'glasses', id: 'bp_helm_slits' } },
+    { tier: 2,  free: { type: 'bucks', amount: 200 },    prem: { type: 'cosmetic', cat: 'hat',     id: 'bp_helm_bronze' } },
+    { tier: 3,  free: { type: 'cosmetic', cat: 'emote',  id: 'cheer' },  prem: { type: 'cosmetic', cat: 'color',   id: 'bp_marble' } },
+    { tier: 4,  free: { type: 'bucks', amount: 300 },    prem: { type: 'cosmetic', cat: 'color',   id: 'bp_terracotta' } },
+    { tier: 5,  free: { type: 'cosmetic', cat: 'companion', id: 'bp_companion_owl' }, prem: { type: 'cosmetic', cat: 'hat', id: 'bp_olive_wreath' } },
+    { tier: 6,  free: { type: 'bucks', amount: 300 },    prem: { type: 'cosmetic', cat: 'color',   id: 'bp_sea_foam' } },
+    { tier: 7,  free: { type: 'bucks', amount: 350 },    prem: { type: 'cosmetic', cat: 'glasses', id: 'bp_oracle_eyes' } },
+    { tier: 8,  free: { type: 'cosmetic', cat: 'emote',  id: 'laugh' },  prem: { type: 'cosmetic', cat: 'color',   id: 'bp_olive' } },
+    { tier: 9,  free: { type: 'bucks', amount: 400 },    prem: { type: 'cosmetic', cat: 'color',   id: 'bp_aegean' } },
+    { tier: 10, free: { type: 'bucks', amount: 1000 },   prem: { type: 'cosmetic', cat: 'color',   id: 'bp_bronze' } },
+    { tier: 11, free: { type: 'bucks', amount: 500 },    prem: { type: 'cosmetic', cat: 'hat',     id: 'bp_winged_helm' } },
+    { tier: 12, free: { type: 'bucks', amount: 550 },    prem: { type: 'cosmetic', cat: 'color',   id: 'bp_black_figure' } },
+    { tier: 13, free: { type: 'bucks', amount: 600 },    prem: { type: 'cosmetic', cat: 'color',   id: 'bp_wine' } },
+    { tier: 14, free: { type: 'bucks', amount: 650 },    prem: { type: 'cosmetic', cat: 'color',   id: 'bp_chiton' } },
+    { tier: 15, free: { type: 'bucks', amount: 1500 },   prem: { type: 'cosmetic', cat: 'effect',  id: 'bp_lightning' } },
+    { tier: 16, free: { type: 'bucks', amount: 700 },    prem: { type: 'cosmetic', cat: 'glasses', id: 'bp_helm_slits_gold' } },
+    { tier: 17, free: { type: 'cosmetic', cat: 'emote',  id: 'heart' },  prem: { type: 'cosmetic', cat: 'hat',     id: 'bp_laurel_victor' } },
+    { tier: 18, free: { type: 'bucks', amount: 800 },    prem: { type: 'cosmetic', cat: 'color',   id: 'bp_storm' } },
+    { tier: 19, free: { type: 'bucks', amount: 850 },    prem: { type: 'cosmetic', cat: 'color',   id: 'bp_underworld' } },
+    { tier: 20, free: { type: 'bucks', amount: 2000 },   prem: { type: 'cosmetic', cat: 'color',   id: 'bp_nectar' } },
+    { tier: 21, free: { type: 'bucks', amount: 1000 },   prem: { type: 'cosmetic', cat: 'hat',     id: 'bp_helm_gold' } },
+    { tier: 22, free: { type: 'bucks', amount: 1100 },   prem: { type: 'cosmetic', cat: 'emote',   id: 'bp_thunderbolt' } },
+    { tier: 23, free: { type: 'bucks', amount: 1300 },   prem: { type: 'cosmetic', cat: 'color',   id: 'bp_ambrosia' } },
+    { tier: 24, free: { type: 'bucks', amount: 1600 },   prem: { type: 'cosmetic', cat: 'color',   id: 'bp_celestial' } },
+    { tier: 25, free: { type: 'cosmetic', cat: 'scene', id: 'bp_olympus' }, prem: { type: 'cosmetic', cat: 'color',   id: 'bp_midas' } },
+    { tier: 26, free: { type: 'bucks', amount: 1200 },   prem: { type: 'cosmetic', cat: 'hat',     id: 'bp_helm_obsidian' } },
+    { tier: 27, free: { type: 'bucks', amount: 1400 },   prem: { type: 'cosmetic', cat: 'glasses', id: 'bp_oracle_eyes_violet' } },
+    { tier: 28, free: { type: 'cosmetic', cat: 'emote',  id: 'fireworks' }, prem: { type: 'cosmetic', cat: 'color',   id: 'bp_aether' } },
+    { tier: 29, free: { type: 'bucks', amount: 1800 },   prem: { type: 'cosmetic', cat: 'effect',  id: 'bp_laurel_fall' } },
+    { tier: 30, free: { type: 'bucks', amount: 3000 },   prem: { type: 'cosmetic', cat: 'color',   id: 'bp_olympus_eternal' } },
+];
+
+// ---- Season assembly -------------------------------------------------------
+function buildSeason(def) {
+    const tierStarCost = def.tierStarCost || TIER_STAR_COST;
+    const cumulative = tierStarCost.reduce((acc, n) => {
+        acc.push((acc[acc.length - 1] || 0) + n);
+        return acc;
+    }, []);
+    return {
+        id: def.id,
+        name: def.name,
+        theme: def.theme,
+        premiumPrice: def.premiumPrice || PREMIUM_PRICE,
+        tierStarCost,
+        cumulative,
+        totalStars: cumulative[cumulative.length - 1],
+        tierCount: tierStarCost.length,
+        challenges: def.challenges,
+        challengesById: Object.fromEntries(def.challenges.map((c) => [c.id, c])),
+        tiers: def.tiers,
+        tiersByNum: Object.fromEntries(def.tiers.map((t) => [t.tier, t])),
+    };
+}
+
+export const SEASONS = {
+    'atlas-pass-reptile-1': buildSeason({
+        id: 'atlas-pass-reptile-1',
+        name: 'Reptile Kingdom · Season 1',
+        challenges: REPTILE_CHALLENGES,
+        tiers: REPTILE_TIERS,
+        theme: {
+            key: 'reptile',
+            badge: 'Reptile Kingdom · Season 1',
+            title: 'Reptile Kingdom',
+            subtitle: '30 tiers of dragon-themed cosmetics. Complete challenges across every mode to climb.',
+            cardSub: '30 tiers of dragon-themed cosmetics. Every mode counts.',
+        },
+    }),
+    'atlas-pass-olympus-2': buildSeason({
+        id: 'atlas-pass-olympus-2',
+        name: 'Olympus Ascendant · Season 2',
+        challenges: OLYMPUS_CHALLENGES,
+        tiers: OLYMPUS_TIERS,
+        theme: {
+            key: 'olympus',
+            badge: 'Olympus Ascendant · Season 2',
+            title: 'Olympus Ascendant',
+            subtitle: '30 tiers of Greek-mythology cosmetics. Conquer 40 challenges across every mode to ascend Olympus.',
+            cardSub: '30 tiers of Greek-myth cosmetics. Ascend Mount Olympus.',
+        },
+    }),
+};
+
+// Live season (new progress flows here); the rest stay selectable. Listed
+// active-first for the season dropdown.
+export const ACTIVE_SEASON_ID = 'atlas-pass-olympus-2';
+export const SEASON_ORDER = ['atlas-pass-olympus-2', 'atlas-pass-reptile-1'];
+
+// When the live season ends (and the next pass begins). Drives the "X days
+// until the next battlepass" countdown shown on the card + pass hero.
+export const SEASON_ENDS_AT = Date.parse('2026-07-02T00:00:00Z');
+
+export function daysUntilSeasonEnd(now = Date.now()) {
+    const ms = SEASON_ENDS_AT - now;
+    return Math.max(0, Math.ceil(ms / 86400000));
+}
+
+export function getSeason(id) {
+    return SEASONS[id] || SEASONS[ACTIVE_SEASON_ID];
+}
+
+// Lightweight list for the season dropdown.
+export function seasonList() {
+    return SEASON_ORDER.map((id) => ({ id, name: SEASONS[id].name, theme: SEASONS[id].theme }));
+}
+
+// ---- Active-season convenience exports (backward compatible) ---------------
+const ACTIVE = SEASONS[ACTIVE_SEASON_ID];
+export const SEASON_ID = ACTIVE.id;
+export const SEASON_NAME = ACTIVE.name;
+export const TIER_COUNT = ACTIVE.tierCount;
+export const CUMULATIVE_STARS = ACTIVE.cumulative;
+export const TOTAL_STARS = ACTIVE.totalStars;
+export const CHALLENGES = ACTIVE.challenges;
+export const CHALLENGES_BY_ID = ACTIVE.challengesById;
+export const TIERS = ACTIVE.tiers;
+export const TIERS_BY_NUM = ACTIVE.tiersByNum;
 
 export function rewardKey(track, tier) {
     return `${track}:${tier}`;
 }
 
-// Tier the player is currently on. Tier 0 means "no tier reached yet".
-export function tierFromStars(stars) {
+// Tier the player is currently on, given cumulative stars. Tier 0 = none yet.
+// All seasons share TIER_STAR_COST, so the seasonId arg is accepted for clarity
+// but the result is identical across seasons.
+export function tierFromStars(stars, seasonId = ACTIVE_SEASON_ID) {
+    const cumulative = getSeason(seasonId).cumulative;
     const s = Math.max(0, Math.floor(Number(stars) || 0));
     let tier = 0;
-    for (let i = 0; i < CUMULATIVE_STARS.length; i++) {
-        if (s >= CUMULATIVE_STARS[i]) tier = i + 1;
+    for (let i = 0; i < cumulative.length; i++) {
+        if (s >= cumulative[i]) tier = i + 1;
         else break;
     }
     return tier;
 }
 
 // How many stars between the just-finished tier and the next one (0 if maxed).
-export function progressWithinTier(stars) {
-    const t = tierFromStars(stars);
-    if (t >= TIER_COUNT) return { tier: t, into: 0, span: 0, pct: 1 };
-    const prev = t === 0 ? 0 : CUMULATIVE_STARS[t - 1];
-    const next = CUMULATIVE_STARS[t];
+export function progressWithinTier(stars, seasonId = ACTIVE_SEASON_ID) {
+    const season = getSeason(seasonId);
+    const cumulative = season.cumulative;
+    const tierCount = season.tierCount;
+    const t = tierFromStars(stars, seasonId);
+    if (t >= tierCount) return { tier: t, into: 0, span: 0, pct: 1 };
+    const prev = t === 0 ? 0 : cumulative[t - 1];
+    const next = cumulative[t];
     const span = next - prev;
     const into = stars - prev;
     return { tier: t, into, span, pct: span > 0 ? Math.min(1, into / span) : 0 };

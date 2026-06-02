@@ -2011,6 +2011,131 @@ function PrideParade() {
     );
 }
 
+// ---- Mount Olympus — Atlas Pass Season 2 capstone -------------------------
+// Dawn over the home of the gods: a deep-to-gold sky, a radiant sun, a marble
+// temple of columns crowning the summit above a sea of clouds, distant peaks,
+// a gliding eagle and drifting motes of golden light.
+function Olympus() {
+    return (
+        <SceneWrap id="bp_olympus">
+            <defs>
+                <linearGradient id="sc-ol-sky" x1="0" y1="0" x2="0" y2="1">
+                    <Stop offset="0%" color="#243A6A" />
+                    <Stop offset="32%" color="#4A6AA8" />
+                    <Stop offset="60%" color="#9AB0D8" />
+                    <Stop offset="82%" color="#FFD89A" />
+                    <Stop offset="100%" color="#FFEFC2" />
+                </linearGradient>
+                <radialGradient id="sc-ol-sun" cx="50%" cy="50%" r="50%">
+                    <Stop offset="0%" color="#FFFDEC" />
+                    <Stop offset="38%" color="#FFE6A8" opacity="0.9" />
+                    <Stop offset="100%" color="#FFC247" opacity="0" />
+                </radialGradient>
+                <linearGradient id="sc-ol-marble" x1="0" y1="0" x2="0" y2="1">
+                    <Stop offset="0%" color="#FBFCFE" />
+                    <Stop offset="60%" color="#E4E9F0" />
+                    <Stop offset="100%" color="#C0C8D6" />
+                </linearGradient>
+                <linearGradient id="sc-ol-peak" x1="0" y1="0" x2="0" y2="1">
+                    <Stop offset="0%" color="#7E8AA8" />
+                    <Stop offset="55%" color="#566187" />
+                    <Stop offset="100%" color="#39426A" />
+                </linearGradient>
+                <linearGradient id="sc-ol-cloud" x1="0" y1="0" x2="0" y2="1">
+                    <Stop offset="0%" color="#FFFFFF" />
+                    <Stop offset="100%" color="#E0D2F0" />
+                </linearGradient>
+                <filter id="sc-ol-glow" x="-50%" y="-50%" width="200%" height="200%">
+                    <feGaussianBlur stdDeviation="6" />
+                </filter>
+            </defs>
+
+            <rect width="600" height="300" fill="url(#sc-ol-sky)" />
+
+            {/* Sun + radiant halo low on the horizon */}
+            <circle cx="300" cy="196" r="150" fill="url(#sc-ol-sun)">
+                <animate attributeName="r" values="150;168;150" dur="7s" repeatCount="indefinite" />
+            </circle>
+            <circle cx="300" cy="196" r="40" fill="#FFFBE6" filter="url(#sc-ol-glow)" opacity="0.85" />
+            <circle cx="300" cy="196" r="28" fill="#FFF6D0">
+                <animate attributeName="opacity" values="0.9;1;0.9" dur="4s" repeatCount="indefinite" />
+            </circle>
+
+            {/* Twinkling stars in the deep upper sky */}
+            <g fill="#FFFDF7">
+                {[[60, 36], [130, 60], [220, 28], [380, 40], [470, 64], [540, 32], [500, 100]].map(([x, y], i) => (
+                    <circle key={i} cx={x} cy={y} r="1.4">
+                        <animate attributeName="opacity" values="0.2;1;0.2" dur={`${2.4 + (i % 3)}s`} begin={`${i * 0.4}s`} repeatCount="indefinite" />
+                    </circle>
+                ))}
+            </g>
+
+            {/* Gliding eagle */}
+            <g fill="none" stroke="#2A2440" strokeWidth="2.2" strokeLinecap="round" opacity="0.8">
+                <path d="M120,96 Q132,86 144,96 Q156,86 168,96">
+                    <animateTransform attributeName="transform" type="translate" values="0 0; 320 -16; 0 0" dur="22s" repeatCount="indefinite" />
+                    <animate attributeName="d"
+                        values="M120,96 Q132,86 144,96 Q156,86 168,96;
+                                M120,94 Q132,98 144,92 Q156,98 168,94;
+                                M120,96 Q132,86 144,96 Q156,86 168,96"
+                        dur="2.4s" repeatCount="indefinite" />
+                </path>
+            </g>
+
+            {/* Distant peaks behind the cloud sea */}
+            <path d="M0,210 L80,150 L150,205 L230,140 L300,205 L370,150 L450,205 L520,150 L600,205 L600,300 L0,300 Z"
+                  fill="url(#sc-ol-peak)" opacity="0.55" />
+
+            {/* The summit — a broad marble plateau */}
+            <path d="M150,300 L150,232 Q300,210 450,232 L450,300 Z" fill="url(#sc-ol-peak)" />
+            <path d="M170,238 Q300,220 430,238 L430,250 Q300,232 170,250 Z" fill="url(#sc-ol-marble)" opacity="0.9" />
+
+            {/* Marble temple — pediment on a colonnade of fluted columns */}
+            <g>
+                {/* Stylobate (base steps) */}
+                <rect x="206" y="226" width="188" height="8" fill="#D4DAE4" />
+                <rect x="212" y="220" width="176" height="7" fill="#E8ECF3" />
+                {/* Columns */}
+                <g fill="url(#sc-ol-marble)" stroke="#AEB6C6" strokeWidth="0.8">
+                    {[222, 246, 270, 294, 318, 342, 366].map((x, i) => (
+                        <g key={i}>
+                            <rect x={x} y="182" width="11" height="40" rx="1.5" />
+                            <rect x={x - 1.5} y="180" width="14" height="4" rx="1" fill="#EFF2F7" />
+                            <rect x={x - 1.5} y="220" width="14" height="3.5" rx="1" fill="#CDD4E0" />
+                        </g>
+                    ))}
+                </g>
+                {/* Architrave + pediment */}
+                <rect x="210" y="170" width="180" height="11" rx="1.5" fill="#E8ECF3" stroke="#AEB6C6" strokeWidth="0.8" />
+                <path d="M204,170 L300,142 L396,170 Z" fill="url(#sc-ol-marble)" stroke="#AEB6C6" strokeWidth="0.8" />
+                <path d="M222,168 L300,150 L378,168 Z" fill="#D8DEE8" opacity="0.7" />
+                {/* Acroterion finial */}
+                <circle cx="300" cy="140" r="3.2" fill="#FFD86B" />
+            </g>
+
+            {/* Cloud sea rolling across the base of the summit */}
+            <g fill="url(#sc-ol-cloud)">
+                {[[120, 252, 60, 18, 0], [300, 262, 90, 22, -20], [470, 254, 70, 18, 0], [40, 268, 70, 20, 0], [560, 266, 64, 18, -10]].map(([cx, cy, rx, ry, dx], i) => (
+                    <ellipse key={i} cx={cx} cy={cy} rx={rx} ry={ry} opacity="0.92">
+                        <animateTransform attributeName="transform" type="translate" values={`0 0; ${dx} 0; 0 0`} dur={`${14 + i * 3}s`} repeatCount="indefinite" />
+                    </ellipse>
+                ))}
+            </g>
+            <rect x="0" y="250" width="600" height="50" fill="url(#sc-ol-cloud)" opacity="0.5" />
+
+            {/* Golden motes of light drifting up */}
+            <g fill="#FFE8A8">
+                {[[180, 200, 0], [360, 210, 0.6], [260, 190, 1.2], [420, 196, 1.8]].map(([x, y, b], i) => (
+                    <circle key={i} cx={x} cy={y} r="1.6" opacity="0">
+                        <animate attributeName="opacity" values="0;0.9;0" dur="3.4s" begin={`${b}s`} repeatCount="indefinite" />
+                        <animateTransform attributeName="transform" type="translate" values="0 0; -6 -22" dur="3.4s" begin={`${b}s`} repeatCount="indefinite" />
+                    </circle>
+                ))}
+            </g>
+        </SceneWrap>
+    );
+}
+
 const SCENE_RENDERERS = {
     africa: Africa,
     asia: Asia,
@@ -2020,6 +2145,7 @@ const SCENE_RENDERERS = {
     oceania: Oceania,
     antarctica: Antarctica,
     bp_reptile: Reptile,
+    bp_olympus: Olympus,
     pride_parade: PrideParade,
 };
 

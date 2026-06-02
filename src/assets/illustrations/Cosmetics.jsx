@@ -700,6 +700,120 @@ const HAT_SHAPES = {
             </g>
         );
     },
+
+    // ---- Olympus Ascendant hats (Atlas Pass Season 2) -----------------------
+    // corinthianHelm: a domed bronze war-helm with a transverse horsehair crest
+    // arching over the crown and a nose-guard dropping to the brow. `trim` tints
+    // the crest, `main`/`dark` the metal, `accent` the rim highlight.
+    corinthianHelm: (c) => {
+        const crest = c.trim || c.accent;
+        return (
+            <g strokeLinejoin="round">
+                {/* Transverse crest — a fan of horsehair arching side to side over
+                    the dome. Dark underside first, then the bright body, then a
+                    few strands for texture. */}
+                <path d="M24 14 Q48 -22 72 14 Q60 6 48 6 Q36 6 24 14 Z" fill={c.dark} opacity="0.9" />
+                <path d="M27 13 Q48 -18 69 13 Q58 7 48 7 Q38 7 27 13 Z" fill={crest} stroke={c.dark} strokeWidth="0.8" />
+                <g stroke={c.dark} strokeWidth="0.7" fill="none" opacity="0.5" strokeLinecap="round">
+                    <path d="M34 11 Q40 -6 47 -10" />
+                    <path d="M44 9 Q48 -10 49 -12" />
+                    <path d="M62 11 Q56 -6 49 -10" />
+                </g>
+                {/* Crest holder block at the dome's peak */}
+                <rect x="45" y="8" width="6" height="6" rx="1.4" fill={c.main} stroke={c.dark} strokeWidth="0.7" />
+
+                {/* Dome — bronze cap over the crown */}
+                <path d="M22 24 Q22 8 48 8 Q74 8 74 24 L 74 25 L 22 25 Z" fill={c.main} stroke={c.dark} strokeWidth="1" />
+                {/* Top-light sheen down the centre */}
+                <path d="M30 11 Q48 9 66 11 Q58 17 48 17 Q38 17 30 11 Z" fill={c.accent} opacity="0.4" />
+                {/* Brow band */}
+                <path d="M22 23 Q48 19 74 23 L 74 25.5 Q48 22 22 25.5 Z" fill={c.dark} />
+                <path d="M26 22.4 Q48 19.6 70 22.4" stroke={c.accent} strokeWidth="0.7" fill="none" opacity="0.55" />
+                {/* Nose guard dropping from the brow between the eyes */}
+                <path d="M45.4 24 Q45 33 48 37 Q51 33 50.6 24 Z" fill={c.main} stroke={c.dark} strokeWidth="0.9" />
+                <path d="M47.6 25 Q47.4 32 48 35" stroke={c.accent} strokeWidth="0.6" fill="none" opacity="0.6" />
+                {/* Rivets */}
+                <circle cx="28" cy="22.6" r="1" fill={c.accent} stroke={c.dark} strokeWidth="0.4" />
+                <circle cx="68" cy="22.6" r="1" fill={c.accent} stroke={c.dark} strokeWidth="0.4" />
+            </g>
+        );
+    },
+
+    // wingedHelm: Hermes' talaria as headgear — a close skullcap with a pair of
+    // feathered wings sweeping up-and-back from the temples. `accent` = feathers.
+    wingedHelm: (c) => {
+        const feather = c.accent || '#FFFDF7';
+        // One wing: three stacked feathers fanning outward from a base point.
+        const wing = (sx, dir) => (
+            <g>
+                <path d={`M${sx} 18 q ${10 * dir} -3 ${17 * dir} -1 q ${-6 * dir} 3 ${-15 * dir} 4 Z`} fill={feather} stroke={c.dark} strokeWidth="0.7" />
+                <path d={`M${sx} 15 q ${9 * dir} -4 ${15 * dir} -3 q ${-5 * dir} 3 ${-13 * dir} 4 Z`} fill={feather} stroke={c.dark} strokeWidth="0.7" />
+                <path d={`M${sx} 12 q ${7 * dir} -4 ${12 * dir} -4 q ${-4 * dir} 3 ${-10 * dir} 4 Z`} fill={feather} stroke={c.dark} strokeWidth="0.7" />
+                {/* feather mid-ribs */}
+                <g stroke={c.dark} strokeWidth="0.5" fill="none" opacity="0.5">
+                    <path d={`M${sx} 18 q ${8 * dir} -2 ${15 * dir} 0`} />
+                    <path d={`M${sx} 15 q ${7 * dir} -2 ${13 * dir} 0`} />
+                </g>
+            </g>
+        );
+        return (
+            <g strokeLinejoin="round">
+                {/* Wings behind the cap */}
+                {wing(30, -1)}
+                {wing(66, 1)}
+                {/* Skullcap */}
+                <path d="M28 22 Q28 6 48 6 Q68 6 68 22 L 68 23 L 28 23 Z" fill={c.main} stroke={c.dark} strokeWidth="1" />
+                {/* Sheen */}
+                <path d="M34 9 Q48 7 62 9 Q56 14 48 14 Q40 14 34 9 Z" fill={feather} opacity="0.35" />
+                {/* Band */}
+                <path d="M28 21 Q48 17.6 68 21 L 68 23.4 Q48 20 28 23.4 Z" fill={c.dark} />
+                <ellipse cx="48" cy="9" rx="2" ry="1.4" fill={c.accent} stroke={c.dark} strokeWidth="0.5" />
+            </g>
+        );
+    },
+
+    // oliveWreath: an open laurel/olive crown — two leafy branches rising from
+    // the temples and almost meeting at the brow, with paired leaves and berries.
+    // `main` = leaf, `dark` = leaf shadow/stem, `accent` = berries.
+    oliveWreath: (c) => {
+        // A single leaf as a small pointed ellipse rotated along the branch.
+        const leaf = (x, y, rot, s = 1) => (
+            <path
+                d={`M${x} ${y} q ${2.2 * s} ${-3 * s} ${0} ${-6 * s} q ${-2.2 * s} ${3 * s} ${0} ${6 * s} Z`}
+                fill={c.main} stroke={c.dark} strokeWidth="0.5"
+                transform={`rotate(${rot} ${x} ${y})`}
+            />
+        );
+        return (
+            <g strokeLinejoin="round">
+                {/* Left branch stem arcing from temple up toward the brow */}
+                <path d="M22 30 Q20 14 40 8" stroke={c.dark} strokeWidth="1.4" fill="none" strokeLinecap="round" />
+                {/* Right branch stem (mirror) */}
+                <path d="M74 30 Q76 14 56 8" stroke={c.dark} strokeWidth="1.4" fill="none" strokeLinecap="round" />
+                {/* Left leaves */}
+                {leaf(22, 28, -50)}
+                {leaf(21, 22, -35)}
+                {leaf(23, 16, -18)}
+                {leaf(28, 11, 0)}
+                {leaf(35, 8, 18)}
+                {/* Right leaves (mirror) */}
+                {leaf(74, 28, 50)}
+                {leaf(75, 22, 35)}
+                {leaf(73, 16, 18)}
+                {leaf(68, 11, 0)}
+                {leaf(61, 8, -18)}
+                {/* Berries clustered near the temples and brow */}
+                <g fill={c.accent} stroke={c.dark} strokeWidth="0.4">
+                    <circle cx="24" cy="25" r="1.1" />
+                    <circle cx="26" cy="19" r="1" />
+                    <circle cx="72" cy="25" r="1.1" />
+                    <circle cx="70" cy="19" r="1" />
+                    <circle cx="44" cy="7.5" r="1" />
+                    <circle cx="52" cy="7.5" r="1" />
+                </g>
+            </g>
+        );
+    },
 };
 
 const GLASS_SHAPES = {
@@ -1183,6 +1297,78 @@ const GLASS_SHAPES = {
             <path d="M26 44 Q48 40 70 44" stroke="#FFFFFF" strokeWidth="0.6" fill="none" opacity="0.45" />
         </g>
     ),
+
+    // ---- Olympus Ascendant glasses (Atlas Pass Season 2) --------------------
+    // helmSlits: the lowered face-guard of a Corinthian helm — a metal band
+    // across the eyes with two almond eye-slits and a central nasal bar.
+    // `frame` = metal, `lens` = the dark slit, `accent` = rim highlight/rivets.
+    helmSlits: (c) => {
+        const slit = (cx) => (
+            <g>
+                {/* dark almond slit */}
+                <path d={`M${cx - 6} 46 Q ${cx} 42.4 ${cx + 6} 46 Q ${cx} 49.6 ${cx - 6} 46 Z`} fill={c.lens} />
+                {/* faint eye-glint inside the slit */}
+                <ellipse cx={cx} cy="46" rx="1.4" ry="1" fill={c.accent} opacity="0.5" />
+            </g>
+        );
+        return (
+            <g strokeLinejoin="round">
+                {/* Metal guard band (outer) */}
+                <path d="M22 40 Q48 36 74 40 L 74 53 Q48 57 22 53 Z" fill={c.frame} stroke="#1F1A3B" strokeWidth="0.8" />
+                {/* Top + bottom rim highlights */}
+                <path d="M24 40.6 Q48 37 72 40.6" stroke={c.accent} strokeWidth="0.7" fill="none" opacity="0.6" />
+                <path d="M24 52 Q48 55.4 72 52" stroke="#1F1A3B" strokeWidth="0.6" fill="none" opacity="0.4" />
+                {/* Eye slits */}
+                {slit(38)}
+                {slit(58)}
+                {/* Central nasal bar */}
+                <rect x="46.4" y="40.5" width="3.2" height="13" rx="1.2" fill={c.frame} stroke="#1F1A3B" strokeWidth="0.7" />
+                <path d="M48 41.5 L 48 52.5" stroke={c.accent} strokeWidth="0.6" opacity="0.6" />
+                {/* Rivets */}
+                <circle cx="27" cy="46" r="1.1" fill={c.accent} stroke="#1F1A3B" strokeWidth="0.4" />
+                <circle cx="69" cy="46" r="1.1" fill={c.accent} stroke="#1F1A3B" strokeWidth="0.4" />
+            </g>
+        );
+    },
+
+    // oracleEyes: mystic glowing eyes wreathed in rising vapour. `lens` is the
+    // glow colour, `accent` the vapour wisps, `frame` the soft lid. Both eyes
+    // pulse so the sight reads as actively "seeing".
+    oracleEyes: (c) => {
+        const eye = (cx) => (
+            <g>
+                {/* Outer glow halo */}
+                <ellipse cx={cx} cy="46" rx="6.5" ry="5.2" fill={c.lens} opacity="0.3">
+                    <animate attributeName="opacity" values="0.18;0.42;0.18" dur="2.4s" repeatCount="indefinite" />
+                </ellipse>
+                {/* Almond lid */}
+                <path d={`M${cx - 6} 46 Q ${cx} 41.6 ${cx + 6} 46 Q ${cx} 50.4 ${cx - 6} 46 Z`} fill={c.frame} opacity="0.55" />
+                {/* Glowing iris */}
+                <ellipse cx={cx} cy="46" rx="4.4" ry="3.8" fill={c.lens}>
+                    <animate attributeName="opacity" values="0.8;1;0.8" dur="2.4s" repeatCount="indefinite" />
+                </ellipse>
+                {/* Hot core */}
+                <circle cx={cx} cy="46" r="1.5" fill="#FFFFFF" opacity="0.9" />
+                {/* Upper lid line */}
+                <path d={`M${cx - 6} 46 Q ${cx} 41.6 ${cx + 6} 46`} stroke={c.accent} strokeWidth="0.7" fill="none" opacity="0.8" />
+            </g>
+        );
+        const wisp = (x, begin) => (
+            <path d={`M${x} 41 q -2 -3 0 -6 q 2 -3 0 -6`} stroke={c.accent} strokeWidth="1" fill="none" strokeLinecap="round" opacity="0">
+                <animate attributeName="opacity" values="0;0.7;0" dur="2.6s" begin={`${begin}s`} repeatCount="indefinite" />
+                <animateTransform attributeName="transform" type="translate" values="0 0;0 -5" dur="2.6s" begin={`${begin}s`} repeatCount="indefinite" />
+            </path>
+        );
+        return (
+            <g strokeLinejoin="round">
+                {eye(38)}
+                {eye(58)}
+                {/* Vapour rising from each eye */}
+                {wisp(38, 0)}
+                {wisp(58, 0.9)}
+            </g>
+        );
+    },
 };
 
 // ---- Mouth cosmetics -------------------------------------------------------
@@ -2140,6 +2326,63 @@ const EFFECT_SHAPES = {
             </g>
         );
     },
+
+    // ---- Olympus Ascendant effects (Atlas Pass Season 2) --------------------
+    // lightning: Zeus's bolts crackle down from the top with periodic sky-flash.
+    lightning: () => {
+        const bolt = (d, begin, dur) => (
+            <g opacity="0">
+                <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.05;0.18;0.3" dur={`${dur}s`} begin={`${begin}s`} repeatCount="indefinite" />
+                <path d={d} fill="none" stroke="#FFE8A8" strokeWidth="3.4" strokeLinejoin="round" strokeLinecap="round" opacity="0.5" />
+                <path d={d} fill="none" stroke="#FFFFFF" strokeWidth="1.6" strokeLinejoin="round" strokeLinecap="round" />
+            </g>
+        );
+        return (
+            <g>
+                {/* Cool sky-flash tint pulsing in time with the bolts */}
+                <rect x="-4" y="-4" width="104" height="104" fill="#CFE0FF" opacity="0">
+                    <animate attributeName="opacity" values="0;0.28;0;0.2;0" keyTimes="0;0.06;0.2;0.5;1" dur="3.2s" repeatCount="indefinite" />
+                </rect>
+                {bolt('M40 -4 L 34 26 L 44 24 L 36 54', 0, 3.2)}
+                {bolt('M64 -4 L 58 22 L 67 20 L 60 46', 1.1, 3.2)}
+                {bolt('M50 0 L 45 20 L 53 18 L 47 40', 2.0, 3.2)}
+                {/* Spark flecks at the strike points */}
+                {[[36, 54, 0.18], [60, 46, 1.28], [47, 40, 2.18]].map(([x, y, b], i) => (
+                    <g key={i}>
+                        <circle cx={x} cy={y} r="2.4" fill="#FFFFFF" opacity="0">
+                            <animate attributeName="opacity" values="0;1;0" dur="0.4s" begin={`${b}s`} repeatCount="indefinite" />
+                        </circle>
+                    </g>
+                ))}
+            </g>
+        );
+    },
+
+    // oliveLeaves: a gentle victory shower of laurel/olive leaves drifting down,
+    // each tumbling as it falls.
+    oliveLeaves: () => {
+        const leaf = (sx, dur, begin, fill) => (
+            <g opacity="0.9">
+                <animateTransform attributeName="transform" type="translate" values={`${sx} -8; ${sx - 6} 100`} keyTimes="0;1" dur={`${dur}s`} begin={`${begin}s`} repeatCount="indefinite" />
+                <g>
+                    <animateTransform attributeName="transform" type="rotate" values="0 0 0; 360 0 0" dur={`${dur * 0.5}s`} begin={`${begin}s`} repeatCount="indefinite" />
+                    <path d="M0 0 q 2.4 -3.4 0 -6.8 q -2.4 3.4 0 6.8 Z" fill={fill} stroke="#3F4A1F" strokeWidth="0.5" />
+                    <path d="M0 -0.4 L 0 -6" stroke="#3F4A1F" strokeWidth="0.4" />
+                </g>
+            </g>
+        );
+        return (
+            <g>
+                {leaf(16, 4.4, 0, '#8A9A4F')}
+                {leaf(34, 5.2, 0.8, '#A8B85F')}
+                {leaf(52, 4.0, 1.6, '#6F7F3F')}
+                {leaf(70, 5.6, 0.4, '#8A9A4F')}
+                {leaf(84, 4.8, 1.2, '#A8B85F')}
+                {leaf(26, 5.0, 2.2, '#6F7F3F')}
+                {leaf(62, 4.6, 2.8, '#A8B85F')}
+            </g>
+        );
+    },
 };
 
 export function renderEffect(id) {
@@ -2748,6 +2991,51 @@ const EMOTE_SHAPES = {
                 <g>
                     <animateTransform attributeName="transform" type="scale" values="0.4; 1.4; 1.2; 1.3; 1.15" keyTimes="0; 0.3; 0.55; 0.8; 1" dur={`${EMOTE_DUR}s`} repeatCount="1" fill="freeze" />
                     <text x="48" y="18" textAnchor="middle" fontSize="22" fontWeight="900" fill="#FFD86B" stroke="#8A1F0F" strokeWidth="2.2" paintOrder="stroke">ROAR!</text>
+                </g>
+            </g>
+        </g>
+    ),
+    // Thunderbolt (Atlas Pass S2): the sky darkens, a great forked bolt cracks
+    // down onto Atlas with a white flash, sparks scatter and a "ZEUS!" banner
+    // pops. Pure SMIL one-shot like the other emotes.
+    thunderbolt: () => (
+        <g>
+            {/* Stormy blue darken, then a hot white flash on the strike */}
+            <rect x="-4" y="-4" width="104" height="104" fill="#2A3344" opacity="0">
+                <animate attributeName="opacity" values="0;0.45;0.4;0;0" keyTimes="0;0.18;0.34;0.4;1" dur={`${EMOTE_DUR}s`} repeatCount="1" fill="freeze" />
+            </rect>
+            <rect x="-4" y="-4" width="104" height="104" fill="#FFFFFF" opacity="0">
+                <animate attributeName="opacity" values="0;0;0.85;0;0.3;0" keyTimes="0;0.34;0.38;0.46;0.5;1" dur={`${EMOTE_DUR}s`} repeatCount="1" fill="freeze" />
+            </rect>
+            {/* The forked bolt slamming down the centre */}
+            <g opacity="0">
+                <animate attributeName="opacity" values="0;0;1;1;0" keyTimes="0;0.34;0.4;0.7;1" dur={`${EMOTE_DUR}s`} repeatCount="1" fill="freeze" />
+                <path d="M50 -6 L 40 30 L 51 28 L 42 62" fill="none" stroke="#FFE8A8" strokeWidth="6" strokeLinejoin="round" strokeLinecap="round" opacity="0.5" />
+                <path d="M50 -6 L 40 30 L 51 28 L 42 62" fill="none" stroke="#FFFFFF" strokeWidth="2.6" strokeLinejoin="round" strokeLinecap="round" />
+                {/* a small side fork */}
+                <path d="M44 22 L 36 34 L 43 33" fill="none" stroke="#FFFFFF" strokeWidth="1.6" strokeLinejoin="round" strokeLinecap="round" />
+            </g>
+            {/* Expanding shock rings at the impact point */}
+            {[0.4, 0.52].map((begin, i) => (
+                <circle key={i} cx="44" cy="60" r="6" fill="none" stroke="#CFE0FF" strokeWidth="2.4" opacity="0">
+                    <animate attributeName="r" values="6;40" keyTimes="0;1" begin={`${begin}s`} dur="0.7s" repeatCount="1" fill="freeze" />
+                    <animate attributeName="opacity" values="0;0.9;0" keyTimes="0;0.3;1" begin={`${begin}s`} dur="0.7s" repeatCount="1" fill="freeze" />
+                </circle>
+            ))}
+            {/* Sparks scattering from the strike */}
+            {[[40, 56, 0.42, -18], [50, 58, 0.46, 16], [44, 62, 0.5, -6], [52, 54, 0.54, 24], [36, 60, 0.58, -24]].map(([x, y, begin, dx], i) => (
+                <circle key={i} cx={x} cy={y} r="2" fill="#FFE8A8" stroke="#A07A1A" strokeWidth="0.5" opacity="0">
+                    <animate attributeName="opacity" values="0;1;0" keyTimes="0;0.4;1" begin={`${begin}s`} dur={`${EMOTE_DUR - begin}s`} repeatCount="1" fill="freeze" />
+                    <animateTransform attributeName="transform" type="translate" values={`0 0; ${dx} -14; ${dx * 1.3} -22`} keyTimes="0;0.6;1" begin={`${begin}s`} dur={`${EMOTE_DUR - begin}s`} repeatCount="1" fill="freeze" />
+                </circle>
+            ))}
+            {/* ZEUS! banner — translate (outer) + scale (inner) like dragonRoar */}
+            <g opacity="0">
+                <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.5;0.8;1" dur={`${EMOTE_DUR}s`} repeatCount="1" fill="freeze" />
+                <animateTransform attributeName="transform" type="translate" values="0 8;0 0;0 -8" keyTimes="0;0.5;1" dur={`${EMOTE_DUR}s`} repeatCount="1" fill="freeze" />
+                <g>
+                    <animateTransform attributeName="transform" type="scale" values="0.4;1.4;1.2;1.25" keyTimes="0;0.62;0.82;1" dur={`${EMOTE_DUR}s`} repeatCount="1" fill="freeze" />
+                    <text x="48" y="18" textAnchor="middle" fontSize="22" fontWeight="900" fill="#FFE8A8" stroke="#2A3344" strokeWidth="2.2" paintOrder="stroke">ZEUS!</text>
                 </g>
             </g>
         </g>
@@ -3458,6 +3746,64 @@ const COMPANION_SHAPES = {
                 <rect x="60.6" y="86" width="2" height="0" fill={`url(#${uid}-b)`}>
                     <animate attributeName="height" values="0;0;1.8;0;0" keyTimes="0;0.46;0.5;0.54;1" dur="3.4s" repeatCount="indefinite" />
                 </rect>
+            </g>
+        </g>
+    ),
+
+    // Athena's Owl: a plump round owl with big golden eyes, ear tufts and a
+    // little beak. The head tilts side to side and the eyes blink; the wings
+    // tuck against the body. Volume from a top-left-lit radial gradient.
+    owl: (p, uid) => (
+        <g strokeLinejoin="round">
+            <defs>
+                <radialGradient id={`${uid}-b`} cx="38%" cy="22%" r="92%">
+                    <stop offset="0%" stopColor={p.g0} />
+                    <stop offset="55%" stopColor={p.g1} />
+                    <stop offset="100%" stopColor={p.g2} />
+                </radialGradient>
+            </defs>
+            {/* Contact shadow */}
+            <ellipse cx="78" cy="95" rx="11" ry="2" fill="#1F1A3B" opacity="0.14" />
+            {/* Feet gripping a little perch */}
+            <g stroke="#1F1A3B" strokeWidth="0.8">
+                <path d="M73 92 l 0 2.6 M71.6 95 l 2.8 0" fill="none" stroke={p.tuft} strokeWidth="1.2" strokeLinecap="round" />
+                <path d="M83 92 l 0 2.6 M81.6 95 l 2.8 0" fill="none" stroke={p.tuft} strokeWidth="1.2" strokeLinecap="round" />
+            </g>
+            {/* Body */}
+            <path d="M68 84 Q 68 71 78 71 Q 88 71 88 84 Q 88 93 78 93 Q 68 93 68 84 Z"
+                fill={`url(#${uid}-b)`} stroke="#1F1A3B" strokeWidth="1.2" />
+            {/* Belly plate */}
+            <path d="M72 84 Q 72 76 78 76 Q 84 76 84 84 Q 84 91 78 91 Q 72 91 72 84 Z" fill={p.belly} opacity="0.9" />
+            {/* Folded wings */}
+            <path d="M69 80 Q 67 86 70 90 Q 72 87 72 82 Z" fill={p.g2} stroke="#1F1A3B" strokeWidth="0.8" />
+            <path d="M87 80 Q 89 86 86 90 Q 84 87 84 82 Z" fill={p.g2} stroke="#1F1A3B" strokeWidth="0.8" />
+            {/* Head group — gentle side-to-side tilt */}
+            <g>
+                <animateTransform attributeName="transform" type="rotate" values="-5 78 78; 5 78 78; -5 78 78" dur="4.6s" repeatCount="indefinite" />
+                {/* Ear tufts */}
+                <path d="M70 73 L 72.5 66 L 75 73 Z" fill={p.tuft} stroke="#1F1A3B" strokeWidth="0.7" />
+                <path d="M86 73 L 83.5 66 L 81 73 Z" fill={p.tuft} stroke="#1F1A3B" strokeWidth="0.7" />
+                {/* Face disc */}
+                <ellipse cx="78" cy="79" rx="10" ry="9" fill={`url(#${uid}-b)`} stroke="#1F1A3B" strokeWidth="1.1" />
+                <ellipse cx="78" cy="79.5" rx="7.4" ry="6.8" fill={p.face} opacity="0.85" />
+                {/* Big eyes */}
+                <circle cx="73.6" cy="79" r="3.6" fill="#FCFCEF" stroke="#1F1A3B" strokeWidth="0.8" />
+                <circle cx="82.4" cy="79" r="3.6" fill="#FCFCEF" stroke="#1F1A3B" strokeWidth="0.8" />
+                <circle cx="73.6" cy="79" r="2.2" fill="#C28A1F" />
+                <circle cx="82.4" cy="79" r="2.2" fill="#C28A1F" />
+                <circle cx="73.6" cy="79" r="1.1" fill="#1F1A3B" />
+                <circle cx="82.4" cy="79" r="1.1" fill="#1F1A3B" />
+                <circle cx="74.2" cy="78.4" r="0.4" fill="#fff" />
+                <circle cx="83" cy="78.4" r="0.4" fill="#fff" />
+                {/* Blink lids */}
+                <rect x="70" y="75.4" width="7.2" height="0" rx="1.4" fill={p.face}>
+                    <animate attributeName="height" values="0;0;7.2;0;0" keyTimes="0;0.44;0.5;0.56;1" dur="4s" repeatCount="indefinite" />
+                </rect>
+                <rect x="78.8" y="75.4" width="7.2" height="0" rx="1.4" fill={p.face}>
+                    <animate attributeName="height" values="0;0;7.2;0;0" keyTimes="0;0.44;0.5;0.56;1" dur="4s" repeatCount="indefinite" />
+                </rect>
+                {/* Beak */}
+                <path d="M76.4 81.5 L 79.6 81.5 L 78 85 Z" fill="#E5A018" stroke="#1F1A3B" strokeWidth="0.7" />
             </g>
         </g>
     ),
