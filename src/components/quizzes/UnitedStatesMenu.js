@@ -136,10 +136,7 @@ function UnitedStatesMenu({ setView, setUsDeck, setUsSubMode }) {
                     onClick={() => startQuiz('flags', 'all', null)}
                     index={2}
                 />
-            </div>
-
-            {reviewStats.total > 0 && (
-                <div className="mode-grid">
+                {reviewStats.total > 0 && (
                     <PrimaryDeckButton
                         tone="success"
                         name="Needs Review"
@@ -147,10 +144,10 @@ function UnitedStatesMenu({ setView, setUsDeck, setUsSubMode }) {
                         stats={reviewStats}
                         icon="refresh"
                         onClick={() => startQuiz('mixed', 'review', null)}
-                        index={0}
+                        index={3}
                     />
-                </div>
-            )}
+                )}
+            </div>
 
             <div className="category-section">
                 <h3>Map · By Region</h3>
