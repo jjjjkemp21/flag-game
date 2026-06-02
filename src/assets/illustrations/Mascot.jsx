@@ -297,7 +297,7 @@ export default function Mascot({ size = 96, mood = 'idle', cosmetics, still = fa
     const glassesEl = renderGlasses(cos.glasses);
     const mouthEl = renderMouth(cos.mouth);
     const hideMoodMouth = mouthHidesMood(cos.mouth);
-    const companionEl = renderCompanion(cos.companion);
+    const companionEl = renderCompanion(cos.companion, (cos.companionTints || {})[cos.companion]);
 
     const bobVariants = {
         idle:   { y: [0, -3, 0], transition: { duration: 3.2, repeat: Infinity, ease: 'easeInOut' } },

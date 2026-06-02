@@ -733,6 +733,164 @@ export const COMPANIONS = {
     bp_companion_salamander:  { name: 'Salamander',   xp: 999999, bpOnly: true, kind: 'salamander' },
 };
 
+// ---- Companion colour variants (tints) -------------------------------------
+// A FREE per-companion reskin (like size/position) — owning a companion lets the
+// player flip its whole coat to an alternate palette in the shop, beside the
+// size bar. Stored per-companion-id in `cosmetics.companionTints`; the equipped
+// companion's tint id is read by Mascot and handed to renderCompanion().
+//
+// Each kind ships a `classic` palette (the authored colours, transcribed token
+// for token from the renderer) plus a couple of alternates expressed as HSL
+// transforms (`t`). Transforms recolour every coat token at once while
+// preserving each token's relative lightness, so a 3-stop body gradient stays a
+// coherent light→dark ramp in any colour. Fixed features (eyes, nose, outline
+// `#1F1A3B`, white catchlights) live outside the palette and never change.
+export const DEFAULT_TINT = 'classic';
+
+const hexToRgb = (hex) => {
+    const h = hex.replace('#', '');
+    return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)];
+};
+const rgbToHsl = (r, g, b) => {
+    r /= 255; g /= 255; b /= 255;
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    const l = (max + min) / 2;
+    let h = 0, s = 0;
+    if (max !== min) {
+        const d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        if (max === r) h = (g - b) / d + (g < b ? 6 : 0);
+        else if (max === g) h = (b - r) / d + 2;
+        else h = (r - g) / d + 4;
+        h *= 60;
+    }
+    return [h, s, l];
+};
+const hslToHex = (h, s, l) => {
+    h = ((h % 360) + 360) % 360;
+    const c = (1 - Math.abs(2 * l - 1)) * s;
+    const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+    const m = l - c / 2;
+    let r = 0, g = 0, b = 0;
+    if (h < 60) [r, g, b] = [c, x, 0];
+    else if (h < 120) [r, g, b] = [x, c, 0];
+    else if (h < 180) [r, g, b] = [0, c, x];
+    else if (h < 240) [r, g, b] = [0, x, c];
+    else if (h < 300) [r, g, b] = [x, 0, c];
+    else [r, g, b] = [c, 0, x];
+    const to = (v) => Math.round((v + m) * 255).toString(16).padStart(2, '0');
+    return `#${to(r)}${to(g)}${to(b)}`.toUpperCase();
+};
+const clamp01 = (v) => Math.min(1, Math.max(0, v));
+
+// Recolour one hex via an HSL transform. `h` sets an absolute hue, `dh` rotates
+// it; `sSet`/`sMul` set/scale saturation; `lAdd`/`lMul` shift/scale lightness.
+function tintHex(hex, t) {
+    if (!t) return hex;
+    let [h, s, l] = rgbToHsl(...hexToRgb(hex));
+    if (t.h != null) h = t.h;
+    if (t.dh) h += t.dh;
+    if (t.sSet != null) s = t.sSet;
+    if (t.sMul != null) s *= t.sMul;
+    if (t.lAdd != null) l += t.lAdd;
+    if (t.lMul != null) l *= t.lMul;
+    return hslToHex(h, clamp01(s), clamp01(l));
+}
+
+// Per-kind variants. Entry 0 (`classic`) carries the real palette `p`; the rest
+// carry a transform `t` applied to the classic palette. `g0/g1/g2` are the main
+// body gradient (light→mid→dark) and double as the picker swatch for every kind.
+export const COMPANION_TINTS = {
+    piglet: [
+        { id: 'classic', name: 'Piglet Pink', p: { g0: '#FFDCE8', g1: '#FFB2CC', g2: '#F087AC', tail: '#EB8DB0', hind: '#EE8AAE', front: '#F59AB9', ear: '#F59AB9', snout: '#F58AAE', snoutHi: '#FFC4D7', blush: '#FF6F9E' } },
+        { id: 'lavender', name: 'Lavender',  t: { dh: -50 } },
+        { id: 'mint',     name: 'Mint',      t: { dh: -200 } },
+    ],
+    kitten: [
+        { id: 'classic', name: 'Grey Tabby', p: { g0: '#DDE2E8', g1: '#AEB6C0', g2: '#7B8492', line: '#5B6470', chest: '#F2F5F8', paw: '#EAEEF2', earIn: '#EFF3F7' } },
+        { id: 'ginger',  name: 'Ginger',     t: { h: 28, sSet: 0.55 } },
+        { id: 'shadow',  name: 'Shadow',     t: { sMul: 0.45, lMul: 0.42 } },
+    ],
+    puppy: [
+        { id: 'classic',  name: 'Chocolate', p: { g0: '#C9975E', g1: '#A06B38', g2: '#7E5226', belly: '#E4C49A', dark: '#6E4623' } },
+        { id: 'golden',   name: 'Golden',    t: { dh: 8, sMul: 1.15, lAdd: 0.12 } },
+        { id: 'charcoal', name: 'Charcoal',  t: { sMul: 0.25, lMul: 0.6 } },
+    ],
+    turtle: [
+        { id: 'classic',  name: 'Leaf Green', p: { g0: '#8FD27A', g1: '#5BAE5B', g2: '#3C8A41', sk0: '#7FC36A', sk1: '#49934A', line: '#34803A', scute: '#6FBE63' } },
+        { id: 'sapphire', name: 'Sapphire',   t: { dh: 85 } },
+        { id: 'amethyst', name: 'Amethyst',   t: { dh: 160, sMul: 0.9 } },
+    ],
+    pirateParrot: [
+        { id: 'classic', name: 'Green Macaw', p: { g0: '#3FD08C', g1: '#19A36B', g2: '#0E7E4F' } },
+        { id: 'scarlet', name: 'Scarlet',     t: { dh: -135 } },
+        { id: 'azure',   name: 'Azure',       t: { dh: 60 } },
+    ],
+    foxKit: [
+        { id: 'classic', name: 'Red Fox', p: { g0: '#FFB07A', g1: '#F4873F', g2: '#D9692A', cream: '#FBF1E7', socks: '#352620' } },
+        { id: 'arctic',  name: 'Arctic',  t: { sMul: 0.12, lAdd: 0.28 } },
+        { id: 'silver',  name: 'Silver',  t: { sMul: 0.18, lMul: 0.82 } },
+    ],
+    frog: [
+        { id: 'classic', name: 'Tree Green', p: { g0: '#86D178', g1: '#57AE52', g2: '#3A8A3E', feet: '#4C9C49', belly: '#CDEFB0' } },
+        { id: 'cobalt',  name: 'Cobalt',     t: { dh: 100 } },
+        { id: 'amber',   name: 'Amber',      t: { dh: -65, sMul: 1.1, lAdd: 0.05 } },
+    ],
+    salamander: [
+        { id: 'classic', name: 'Fire Orange', p: { g0: '#FFB07A', g1: '#FF8A3F', g2: '#E2611F', spot: '#FFD24B' } },
+        { id: 'axolotl', name: 'Axolotl',     t: { h: 335, sSet: 0.5, lAdd: 0.1 } },
+        { id: 'cobalt',  name: 'Cobalt',      t: { dh: 185 } },
+    ],
+};
+
+// Resolve a kind+tint to a flat token map (classic palette, transformed by the
+// variant when it isn't the classic one). Unknown kind/tint falls back safely.
+export function companionPalette(kind, tintId) {
+    const variants = COMPANION_TINTS[kind];
+    if (!variants) return null;
+    const base = variants[0].p;
+    const variant = variants.find((v) => v.id === tintId) || variants[0];
+    if (!variant.t) return base;
+    const out = {};
+    for (const [k, v] of Object.entries(base)) out[k] = tintHex(v, variant.t);
+    return out;
+}
+
+// The three body-gradient stops for a kind+tint — used as the picker swatch.
+export function companionTintSwatch(kind, tintId) {
+    const p = companionPalette(kind, tintId);
+    return p ? [p.g0, p.g1, p.g2] : ['#AEB6C0', '#8B93A0', '#6B7280'];
+}
+
+// The variants available for a given companion ID (empty for 'none'/unknown).
+export function companionTintsFor(companionId) {
+    const meta = COMPANIONS[companionId];
+    return (meta && meta.kind && COMPANION_TINTS[meta.kind]) || [];
+}
+
+// The active tint id for the equipped companion (defaults to 'classic').
+export function companionTintFor(cosmetics) {
+    if (!cosmetics) return DEFAULT_TINT;
+    const id = cosmetics.companion;
+    if (!id || id === 'none') return DEFAULT_TINT;
+    const t = cosmetics.companionTints && cosmetics.companionTints[id];
+    const variants = companionTintsFor(id);
+    return (t && variants.some((v) => v.id === t)) ? t : DEFAULT_TINT;
+}
+
+// Coerce a stored tint map to { [knownCompanionId]: validTintId }. Drops unknown
+// companions, unknown tints, and the redundant 'classic' default.
+export function normalizeCompanionTints(raw) {
+    const out = {};
+    if (!raw || typeof raw !== 'object') return out;
+    for (const [id, tintId] of Object.entries(raw)) {
+        if (id === 'none' || typeof tintId !== 'string' || tintId === DEFAULT_TINT) continue;
+        const variants = companionTintsFor(id);
+        if (variants.some((v) => v.id === tintId)) out[id] = tintId;
+    }
+    return out;
+}
+
 export const CATEGORIES = [
     { key: 'color',     label: 'Globe Color', icon: 'palette',        items: COLORS },
     { key: 'hat',       label: 'Hats',        icon: 'theater_comedy', items: HATS },
@@ -761,6 +919,9 @@ export const DEFAULT_COSMETICS = {
     // buys a companion (they're prompted for a name) and shown beside Atlas on
     // leaderboards / the shop. Keyed by id so each owned companion keeps its own.
     companionNames: {},
+    // Per-companion coat colour ({ [companionId]: tintId }). Absent / 'classic'
+    // means the authored default palette. A free reskin like size/position.
+    companionTints: {},
     hatPos: { ...DEFAULT_POS }, glassesPos: { ...DEFAULT_POS },
     mouthPos: { ...DEFAULT_POS }, effectPos: { ...DEFAULT_POS },
     companionPos: { ...DEFAULT_POS },
@@ -847,6 +1008,7 @@ export function normalizeCosmetics(c, ownedKey) {
         // other slots (companionPos).
         companion: pick('companion', c && c.companion, COMPANIONS),
         companionNames: normalizeCompanionNames(c && c.companionNames),
+        companionTints: normalizeCompanionTints(c && c.companionTints),
         emoteLoadout: loadout,
         hatPos: clampPos(c && c.hatPos),
         glassesPos: clampPos(c && c.glassesPos),

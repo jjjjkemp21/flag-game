@@ -49,6 +49,18 @@ function gateCosmetics(userId, c) {
         const t = nm.trim().slice(0, 20);
         if (t) companionNames[id] = t;
     }
+    // Companion coat tints: { [knownCompanionId]: tintId }. A free reskin (no
+    // purchase to gate), so we only bound the shape — drop unknown companions
+    // and non-string / over-long values so a crafted payload can't bloat the
+    // row. The client owns the per-kind list of valid tint ids and re-validates
+    // on load (normalizeCompanionTints), so an unknown id here is harmless.
+    const rawTints = (c.companionTints && typeof c.companionTints === 'object') ? c.companionTints : {};
+    const companionTints = {};
+    for (const [id, tintId] of Object.entries(rawTints)) {
+        if (!CATALOG.companion || !CATALOG.companion[id] || id === 'none') continue;
+        if (typeof tintId !== 'string' || !tintId || tintId.length > 24) continue;
+        companionTints[id] = tintId;
+    }
     return {
         ...c,
         color: gate('color', c.color),
@@ -60,6 +72,7 @@ function gateCosmetics(userId, c) {
         emote: gate('emote', c.emote),
         companion: gate('companion', c.companion),
         companionNames,
+        companionTints,
         emoteLoadout: loadout,
     };
 }

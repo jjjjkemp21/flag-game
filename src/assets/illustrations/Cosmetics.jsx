@@ -1,5 +1,5 @@
 import React from 'react';
-import { HATS, GLASSES, MOUTHS, EFFECTS, EMOTES, COMPANIONS } from '../../lib/cosmetics';
+import { HATS, GLASSES, MOUTHS, EFFECTS, EMOTES, COMPANIONS, companionPalette, DEFAULT_TINT } from '../../lib/cosmetics';
 
 // SVG cosmetic overlays drawn in the Mascot's 96x96 viewBox.
 // Globe is centered at (48,48) with radius 34 (top edge ~y14); eyes sit at y46.
@@ -2954,9 +2954,16 @@ export function renderEmote(id) {
 // floating attachment. They draw LAST in Mascot.jsx (the topmost layer), so the
 // companion always sits in front of Atlas and his cosmetics, even when dragged
 // across his body. Each is given volume by a top-left-lit radial gradient
-// (`comp-<kind>-*` ids, namespaced per kind so two different companions never
-// collide and two of the same kind resolve to identical defs), plus catchlight
-// eyes and a soft contact shadow.
+// (`comp-<kind>-<tint>-*` ids, namespaced per kind AND colour tint so two
+// differently-tinted companions of the same kind never share — and so corrupt —
+// each other's gradient defs in one view), plus catchlight eyes and a soft
+// contact shadow.
+//
+// Each renderer is a pure function of (p, uid): `p` is the resolved colour
+// palette (classic by default, or an alternate coat tint — see COMPANION_TINTS
+// in lib/cosmetics.js) and `uid` is the per-kind+tint gradient-id prefix. All
+// coat colours come from `p`; fixed features (outline #1F1A3B, eyes, white
+// catchlights) stay hard-coded so a recolour only ever touches the coat.
 //
 // Idle loops sit in the 0.8–5s band with staggered durations so two
 // companions sitting on different mascots in the same view don't lock into
@@ -2964,13 +2971,13 @@ export function renderEmote(id) {
 const COMPANION_SHAPES = {
     // Piglet: plump pink piglet with a curly tail, wiggling snout, rosy cheeks
     // and a slow blink. Volume from a top-left-lit radial gradient.
-    piglet: () => (
+    piglet: (p, uid) => (
         <g strokeLinejoin="round">
             <defs>
-                <radialGradient id="comp-pig-b" cx="36%" cy="26%" r="86%">
-                    <stop offset="0%" stopColor="#FFDCE8" />
-                    <stop offset="55%" stopColor="#FFB2CC" />
-                    <stop offset="100%" stopColor="#F087AC" />
+                <radialGradient id={`${uid}-b`} cx="36%" cy="26%" r="86%">
+                    <stop offset="0%" stopColor={p.g0} />
+                    <stop offset="55%" stopColor={p.g1} />
+                    <stop offset="100%" stopColor={p.g2} />
                 </radialGradient>
             </defs>
             {/* Contact shadow */}
@@ -2978,41 +2985,41 @@ const COMPANION_SHAPES = {
             {/* Curly tail — gentle wag */}
             <g>
                 <animateTransform attributeName="transform" type="rotate" values="-6 88 85;9 88 85;-6 88 85" dur="2.6s" repeatCount="indefinite" />
-                <path d="M87 85 q 5 -1 4.4 -4 q -0.6 -2.6 -2.9 -1.6 q 1.7 0.4 1.3 2 q -0.5 1.9 -3 1.5" fill="none" stroke="#EB8DB0" strokeWidth="1.8" strokeLinecap="round" />
+                <path d="M87 85 q 5 -1 4.4 -4 q -0.6 -2.6 -2.9 -1.6 q 1.7 0.4 1.3 2 q -0.5 1.9 -3 1.5" fill="none" stroke={p.tail} strokeWidth="1.8" strokeLinecap="round" />
             </g>
             {/* Hind leg */}
-            <path d="M82.5 90 q 0.3 3.5 -0.4 4.6 l 2.9 0 q 0.6 -2.3 0.2 -4.8 Z" fill="#EE8AAE" stroke="#1F1A3B" strokeWidth="1" />
+            <path d="M82.5 90 q 0.3 3.5 -0.4 4.6 l 2.9 0 q 0.6 -2.3 0.2 -4.8 Z" fill={p.hind} stroke="#1F1A3B" strokeWidth="1" />
             {/* Body */}
-            <ellipse cx="78" cy="87" rx="10.5" ry="7" fill="url(#comp-pig-b)" stroke="#1F1A3B" strokeWidth="1.2" />
+            <ellipse cx="78" cy="87" rx="10.5" ry="7" fill={`url(#${uid}-b)`} stroke="#1F1A3B" strokeWidth="1.2" />
             {/* Belly highlight */}
             <ellipse cx="73.5" cy="83.5" rx="4" ry="2.3" fill="#FFFFFF" opacity="0.35" />
             {/* Front legs */}
-            <path d="M71 90 q -0.4 3.6 0.2 4.7 l 2.7 0 q 0.4 -2.5 0 -4.9 Z" fill="#F59AB9" stroke="#1F1A3B" strokeWidth="1" />
+            <path d="M71 90 q -0.4 3.6 0.2 4.7 l 2.7 0 q 0.4 -2.5 0 -4.9 Z" fill={p.front} stroke="#1F1A3B" strokeWidth="1" />
             {/* Head */}
-            <circle cx="68" cy="83" r="6.6" fill="url(#comp-pig-b)" stroke="#1F1A3B" strokeWidth="1.2" />
+            <circle cx="68" cy="83" r="6.6" fill={`url(#${uid}-b)`} stroke="#1F1A3B" strokeWidth="1.2" />
             {/* Ears */}
-            <path d="M62.5 78.5 Q 61.5 73.5 65.5 75.5 Q 66.5 77.5 65.5 79.5 Z" fill="#F59AB9" stroke="#1F1A3B" strokeWidth="1" />
-            <path d="M72.5 78 Q 75 74.5 75 78.5 Q 74 80.5 72 79.5 Z" fill="#F59AB9" stroke="#1F1A3B" strokeWidth="1" />
+            <path d="M62.5 78.5 Q 61.5 73.5 65.5 75.5 Q 66.5 77.5 65.5 79.5 Z" fill={p.ear} stroke="#1F1A3B" strokeWidth="1" />
+            <path d="M72.5 78 Q 75 74.5 75 78.5 Q 74 80.5 72 79.5 Z" fill={p.ear} stroke="#1F1A3B" strokeWidth="1" />
             {/* Cheek blush */}
-            <ellipse cx="64.5" cy="85.2" rx="1.8" ry="1.1" fill="#FF6F9E" opacity="0.5" />
+            <ellipse cx="64.5" cy="85.2" rx="1.8" ry="1.1" fill={p.blush} opacity="0.5" />
             {/* Eyes with catchlight + slow blink */}
             <g>
                 <ellipse cx="66" cy="81.4" rx="1.15" ry="1.35" fill="#3A2233" />
                 <ellipse cx="71" cy="81.4" rx="1.15" ry="1.35" fill="#3A2233" />
                 <circle cx="66.4" cy="80.9" r="0.4" fill="#fff" />
                 <circle cx="71.4" cy="80.9" r="0.4" fill="#fff" />
-                <rect x="64.7" y="80" width="2.6" height="0" rx="0.6" fill="#FFB2CC">
+                <rect x="64.7" y="80" width="2.6" height="0" rx="0.6" fill={p.g1}>
                     <animate attributeName="height" values="0;0;2.9;0;0" keyTimes="0;0.92;0.95;0.98;1" dur="5s" repeatCount="indefinite" />
                 </rect>
-                <rect x="69.7" y="80" width="2.6" height="0" rx="0.6" fill="#FFB2CC">
+                <rect x="69.7" y="80" width="2.6" height="0" rx="0.6" fill={p.g1}>
                     <animate attributeName="height" values="0;0;2.9;0;0" keyTimes="0;0.92;0.95;0.98;1" dur="5s" repeatCount="indefinite" />
                 </rect>
             </g>
             {/* Snout — gentle nose wiggle */}
             <g>
                 <animateTransform attributeName="transform" type="translate" values="0 0;0.5 0.2;-0.5 0;0 0" dur="2.2s" repeatCount="indefinite" />
-                <ellipse cx="62.5" cy="84.5" rx="3.1" ry="2.4" fill="#F58AAE" stroke="#1F1A3B" strokeWidth="1" />
-                <ellipse cx="62" cy="83.6" rx="1.6" ry="0.7" fill="#FFC4D7" opacity="0.7" />
+                <ellipse cx="62.5" cy="84.5" rx="3.1" ry="2.4" fill={p.snout} stroke="#1F1A3B" strokeWidth="1" />
+                <ellipse cx="62" cy="83.6" rx="1.6" ry="0.7" fill={p.snoutHi} opacity="0.7" />
                 <ellipse cx="61.6" cy="84.6" rx="0.5" ry="0.75" fill="#1F1A3B" />
                 <ellipse cx="63.4" cy="84.6" rx="0.5" ry="0.75" fill="#1F1A3B" />
             </g>
@@ -3022,13 +3029,13 @@ const COMPANION_SHAPES = {
     // Kitten: grey tabby sitting upright, swishing tail, white-tufted chest,
     // light-green eyes, forehead "M" stripes and fine whiskers. Light-grey/white
     // accents on the chest, paws and ear-insides; darker-grey stripes.
-    kitten: () => (
+    kitten: (p, uid) => (
         <g strokeLinejoin="round">
             <defs>
-                <radialGradient id="comp-kit-b" cx="34%" cy="24%" r="92%">
-                    <stop offset="0%" stopColor="#DDE2E8" />
-                    <stop offset="55%" stopColor="#AEB6C0" />
-                    <stop offset="100%" stopColor="#7B8492" />
+                <radialGradient id={`${uid}-b`} cx="34%" cy="24%" r="92%">
+                    <stop offset="0%" stopColor={p.g0} />
+                    <stop offset="55%" stopColor={p.g1} />
+                    <stop offset="100%" stopColor={p.g2} />
                 </radialGradient>
             </defs>
             <ellipse cx="78" cy="94.6" rx="11.5" ry="2.2" fill="#1F1A3B" opacity="0.15" />
@@ -3038,40 +3045,40 @@ const COMPANION_SHAPES = {
                 the tail in a wide arc off the body, so it's omitted. */}
             <g>
                 <animateTransform attributeName="transform" type="rotate" values="-13 87 90;12 87 90;-13 87 90" dur="3.2s" repeatCount="indefinite" />
-                <path d="M87 90 Q 95.5 86 92.5 77.5 Q 90 76.5 90 80 Q 92.5 86 85 89.5 Z" fill="url(#comp-kit-b)" stroke="#1F1A3B" strokeWidth="1.1" />
-                <path d="M90.5 80 Q 92 82.5 90.8 85.5" stroke="#5B6470" strokeWidth="0.8" fill="none" />
+                <path d="M87 90 Q 95.5 86 92.5 77.5 Q 90 76.5 90 80 Q 92.5 86 85 89.5 Z" fill={`url(#${uid}-b)`} stroke="#1F1A3B" strokeWidth="1.1" />
+                <path d="M90.5 80 Q 92 82.5 90.8 85.5" stroke={p.line} strokeWidth="0.8" fill="none" />
             </g>
             {/* Body — sitting */}
-            <path d="M69 94 Q 66.5 84 73 80 Q 79.5 76.5 84.5 82 Q 88.5 88 86 94 Z" fill="url(#comp-kit-b)" stroke="#1F1A3B" strokeWidth="1.2" />
+            <path d="M69 94 Q 66.5 84 73 80 Q 79.5 76.5 84.5 82 Q 88.5 88 86 94 Z" fill={`url(#${uid}-b)`} stroke="#1F1A3B" strokeWidth="1.2" />
             {/* Chest fluff — light accent */}
-            <path d="M74 93.5 Q 76 86.5 79 86.5 Q 82 86.5 82 93.5 Z" fill="#F2F5F8" opacity="0.75" />
+            <path d="M74 93.5 Q 76 86.5 79 86.5 Q 82 86.5 82 93.5 Z" fill={p.chest} opacity="0.75" />
             {/* Front paws — light accent socks */}
-            <ellipse cx="74" cy="93.4" rx="2.3" ry="1.5" fill="#EAEEF2" stroke="#1F1A3B" strokeWidth="0.9" />
-            <ellipse cx="81" cy="93.4" rx="2.3" ry="1.5" fill="#EAEEF2" stroke="#1F1A3B" strokeWidth="0.9" />
+            <ellipse cx="74" cy="93.4" rx="2.3" ry="1.5" fill={p.paw} stroke="#1F1A3B" strokeWidth="0.9" />
+            <ellipse cx="81" cy="93.4" rx="2.3" ry="1.5" fill={p.paw} stroke="#1F1A3B" strokeWidth="0.9" />
             {/* Tabby stripes — darker grey */}
-            <path d="M72 84 q 3 -1.6 6 -0.4" stroke="#5B6470" strokeWidth="0.9" fill="none" strokeLinecap="round" />
-            <path d="M71 88 q 4 -1 8 0" stroke="#5B6470" strokeWidth="0.9" fill="none" strokeLinecap="round" />
+            <path d="M72 84 q 3 -1.6 6 -0.4" stroke={p.line} strokeWidth="0.9" fill="none" strokeLinecap="round" />
+            <path d="M71 88 q 4 -1 8 0" stroke={p.line} strokeWidth="0.9" fill="none" strokeLinecap="round" />
             {/* Head */}
-            <circle cx="74" cy="79" r="6" fill="url(#comp-kit-b)" stroke="#1F1A3B" strokeWidth="1.2" />
+            <circle cx="74" cy="79" r="6" fill={`url(#${uid}-b)`} stroke="#1F1A3B" strokeWidth="1.2" />
             {/* Ears */}
-            <path d="M70 75 L 68 68.8 L 73.5 73.5 Z" fill="url(#comp-kit-b)" stroke="#1F1A3B" strokeWidth="1" />
-            <path d="M78 75 L 80 68.8 L 74.5 73.5 Z" fill="url(#comp-kit-b)" stroke="#1F1A3B" strokeWidth="1" />
-            <path d="M70.6 74 L 69.7 71 L 72 73.3 Z" fill="#EFF3F7" />
-            <path d="M77.4 74 L 78.3 71 L 76 73.3 Z" fill="#EFF3F7" />
+            <path d="M70 75 L 68 68.8 L 73.5 73.5 Z" fill={`url(#${uid}-b)`} stroke="#1F1A3B" strokeWidth="1" />
+            <path d="M78 75 L 80 68.8 L 74.5 73.5 Z" fill={`url(#${uid}-b)`} stroke="#1F1A3B" strokeWidth="1" />
+            <path d="M70.6 74 L 69.7 71 L 72 73.3 Z" fill={p.earIn} />
+            <path d="M77.4 74 L 78.3 71 L 76 73.3 Z" fill={p.earIn} />
             {/* Forehead "M" stripes — darker grey */}
-            <path d="M72 75 l 0.8 -2 M74 74.7 l 0 -2 M76 75 l -0.8 -2" stroke="#5B6470" strokeWidth="0.7" strokeLinecap="round" />
+            <path d="M72 75 l 0.8 -2 M74 74.7 l 0 -2 M76 75 l -0.8 -2" stroke={p.line} strokeWidth="0.7" strokeLinecap="round" />
             {/* Eyes — light green, dark pupil, catchlight + blink */}
             <g>
-                <ellipse cx="71.6" cy="79" rx="1.25" ry="1.55" fill="#B7E4A0" stroke="#5B6470" strokeWidth="0.4" />
-                <ellipse cx="76.4" cy="79" rx="1.25" ry="1.55" fill="#B7E4A0" stroke="#5B6470" strokeWidth="0.4" />
+                <ellipse cx="71.6" cy="79" rx="1.25" ry="1.55" fill="#B7E4A0" stroke={p.line} strokeWidth="0.4" />
+                <ellipse cx="76.4" cy="79" rx="1.25" ry="1.55" fill="#B7E4A0" stroke={p.line} strokeWidth="0.4" />
                 <ellipse cx="71.6" cy="79.05" rx="0.6" ry="1.2" fill="#2B3A22" />
                 <ellipse cx="76.4" cy="79.05" rx="0.6" ry="1.2" fill="#2B3A22" />
                 <circle cx="71.95" cy="78.35" r="0.4" fill="#fff" />
                 <circle cx="76.75" cy="78.35" r="0.4" fill="#fff" />
-                <rect x="70.25" y="77.5" width="2.7" height="0" rx="0.6" fill="#AEB6C0">
+                <rect x="70.25" y="77.5" width="2.7" height="0" rx="0.6" fill={p.g1}>
                     <animate attributeName="height" values="0;0;3;0;0" keyTimes="0;0.9;0.94;0.98;1" dur="4.6s" repeatCount="indefinite" />
                 </rect>
-                <rect x="75.05" y="77.5" width="2.7" height="0" rx="0.6" fill="#AEB6C0">
+                <rect x="75.05" y="77.5" width="2.7" height="0" rx="0.6" fill={p.g1}>
                     <animate attributeName="height" values="0;0;3;0;0" keyTimes="0;0.9;0.94;0.98;1" dur="4.6s" repeatCount="indefinite" />
                 </rect>
             </g>
@@ -3088,13 +3095,13 @@ const COMPANION_SHAPES = {
 
     // Puppy: chubby brown pup, floppy ears, an eye-patch marking, lighter
     // muzzle/belly, lolling tongue and a fast happy tail wag.
-    puppy: () => (
+    puppy: (p, uid) => (
         <g strokeLinejoin="round">
             <defs>
-                <radialGradient id="comp-pup-b" cx="34%" cy="24%" r="92%">
-                    <stop offset="0%" stopColor="#C9975E" />
-                    <stop offset="55%" stopColor="#A06B38" />
-                    <stop offset="100%" stopColor="#7E5226" />
+                <radialGradient id={`${uid}-b`} cx="34%" cy="24%" r="92%">
+                    <stop offset="0%" stopColor={p.g0} />
+                    <stop offset="55%" stopColor={p.g1} />
+                    <stop offset="100%" stopColor={p.g2} />
                 </radialGradient>
             </defs>
             <ellipse cx="78" cy="94.6" rx="12.5" ry="2.2" fill="#1F1A3B" opacity="0.15" />
@@ -3103,15 +3110,15 @@ const COMPANION_SHAPES = {
                 in some browsers — see the kitten tail). */}
             <g>
                 <animateTransform attributeName="transform" type="rotate" values="-24 87 87;18 87 87;-24 87 87" dur="0.8s" repeatCount="indefinite" />
-                <path d="M87 87 Q 93 82.5 94.5 85.5 Q 93.5 89 88 89 Z" fill="url(#comp-pup-b)" stroke="#1F1A3B" strokeWidth="1.1" />
+                <path d="M87 87 Q 93 82.5 94.5 85.5 Q 93.5 89 88 89 Z" fill={`url(#${uid}-b)`} stroke="#1F1A3B" strokeWidth="1.1" />
             </g>
             {/* Body */}
-            <ellipse cx="80" cy="88.5" rx="8.5" ry="6.5" fill="url(#comp-pup-b)" stroke="#1F1A3B" strokeWidth="1.2" />
+            <ellipse cx="80" cy="88.5" rx="8.5" ry="6.5" fill={`url(#${uid}-b)`} stroke="#1F1A3B" strokeWidth="1.2" />
             {/* Belly */}
-            <ellipse cx="80" cy="91" rx="5.5" ry="3" fill="#E4C49A" opacity="0.85" />
+            <ellipse cx="80" cy="91" rx="5.5" ry="3" fill={p.belly} opacity="0.85" />
             {/* Hind legs */}
-            <rect x="76" y="91.6" width="3" height="3.6" rx="1.3" fill="url(#comp-pup-b)" stroke="#1F1A3B" strokeWidth="0.9" />
-            <rect x="82" y="91.6" width="3" height="3.6" rx="1.3" fill="url(#comp-pup-b)" stroke="#1F1A3B" strokeWidth="0.9" />
+            <rect x="76" y="91.6" width="3" height="3.6" rx="1.3" fill={`url(#${uid}-b)`} stroke="#1F1A3B" strokeWidth="0.9" />
+            <rect x="82" y="91.6" width="3" height="3.6" rx="1.3" fill={`url(#${uid}-b)`} stroke="#1F1A3B" strokeWidth="0.9" />
             {/* Head + face — gives an inquisitive head-tilt that holds to one
                 side ~5s, returns upright, then tilts the other way. Rotated as a
                 whole group around the neck (74, 88) so ears/muzzle/eyes track the
@@ -3121,14 +3128,14 @@ const COMPANION_SHAPES = {
                     values="0 74 88;9 74 88;9 74 88;0 74 88;-9 74 88;-9 74 88;0 74 88"
                     keyTimes="0;0.04;0.46;0.5;0.54;0.96;1" dur="12s" repeatCount="indefinite" />
                 {/* Head */}
-                <circle cx="72.5" cy="83" r="6" fill="url(#comp-pup-b)" stroke="#1F1A3B" strokeWidth="1.2" />
+                <circle cx="72.5" cy="83" r="6" fill={`url(#${uid}-b)`} stroke="#1F1A3B" strokeWidth="1.2" />
                 {/* Eye-patch marking */}
-                <path d="M73 78.2 Q 77 78.4 78 82.2 Q 77 86 73 85 Q 71.6 81.4 73 78.2 Z" fill="#6E4623" opacity="0.55" />
+                <path d="M73 78.2 Q 77 78.4 78 82.2 Q 77 86 73 85 Q 71.6 81.4 73 78.2 Z" fill={p.dark} opacity="0.55" />
                 {/* Floppy ears */}
-                <path d="M67 80 Q 61.5 83 64 89 Q 67.5 90 69 84.5 Q 69 81 67 80 Z" fill="#6E4623" stroke="#1F1A3B" strokeWidth="1" />
-                <path d="M78 80 Q 83.5 83 81 89 Q 77.5 90 76 84.5 Q 76 81 78 80 Z" fill="#6E4623" stroke="#1F1A3B" strokeWidth="1" />
+                <path d="M67 80 Q 61.5 83 64 89 Q 67.5 90 69 84.5 Q 69 81 67 80 Z" fill={p.dark} stroke="#1F1A3B" strokeWidth="1" />
+                <path d="M78 80 Q 83.5 83 81 89 Q 77.5 90 76 84.5 Q 76 81 78 80 Z" fill={p.dark} stroke="#1F1A3B" strokeWidth="1" />
                 {/* Muzzle */}
-                <ellipse cx="70" cy="85.6" rx="3.5" ry="2.6" fill="#E4C49A" stroke="#1F1A3B" strokeWidth="0.8" />
+                <ellipse cx="70" cy="85.6" rx="3.5" ry="2.6" fill={p.belly} stroke="#1F1A3B" strokeWidth="0.8" />
                 {/* Tongue — gentle lolling motion */}
                 <path d="M69.4 87 Q 69.2 90 70.6 90 Q 72 90 71.8 87 Z" fill="#FF7CA6" stroke="#1F1A3B" strokeWidth="0.6">
                     <animate attributeName="d"
@@ -3149,33 +3156,33 @@ const COMPANION_SHAPES = {
 
     // Turtle: domed shell with shaded scutes, four padded legs, a stubby tail
     // and a head that bobs out of the shell with a friendly blink.
-    turtle: () => (
+    turtle: (p, uid) => (
         <g strokeLinejoin="round">
             <defs>
-                <radialGradient id="comp-tur-sh" cx="38%" cy="20%" r="86%">
-                    <stop offset="0%" stopColor="#8FD27A" />
-                    <stop offset="55%" stopColor="#5BAE5B" />
-                    <stop offset="100%" stopColor="#3C8A41" />
+                <radialGradient id={`${uid}-sh`} cx="38%" cy="20%" r="86%">
+                    <stop offset="0%" stopColor={p.g0} />
+                    <stop offset="55%" stopColor={p.g1} />
+                    <stop offset="100%" stopColor={p.g2} />
                 </radialGradient>
-                <radialGradient id="comp-tur-sk" cx="40%" cy="28%" r="82%">
-                    <stop offset="0%" stopColor="#7FC36A" />
-                    <stop offset="100%" stopColor="#49934A" />
+                <radialGradient id={`${uid}-sk`} cx="40%" cy="28%" r="82%">
+                    <stop offset="0%" stopColor={p.sk0} />
+                    <stop offset="100%" stopColor={p.sk1} />
                 </radialGradient>
             </defs>
             <ellipse cx="78" cy="94.6" rx="13" ry="2.2" fill="#1F1A3B" opacity="0.15" />
             {/* Legs (4) */}
-            <ellipse cx="69" cy="92.4" rx="2.3" ry="1.7" fill="url(#comp-tur-sk)" stroke="#1F1A3B" strokeWidth="0.9" />
-            <ellipse cx="87" cy="92.4" rx="2.3" ry="1.7" fill="url(#comp-tur-sk)" stroke="#1F1A3B" strokeWidth="0.9" />
-            <ellipse cx="75" cy="93" rx="2" ry="1.5" fill="url(#comp-tur-sk)" stroke="#1F1A3B" strokeWidth="0.8" />
-            <ellipse cx="83" cy="93" rx="2" ry="1.5" fill="url(#comp-tur-sk)" stroke="#1F1A3B" strokeWidth="0.8" />
+            <ellipse cx="69" cy="92.4" rx="2.3" ry="1.7" fill={`url(#${uid}-sk)`} stroke="#1F1A3B" strokeWidth="0.9" />
+            <ellipse cx="87" cy="92.4" rx="2.3" ry="1.7" fill={`url(#${uid}-sk)`} stroke="#1F1A3B" strokeWidth="0.9" />
+            <ellipse cx="75" cy="93" rx="2" ry="1.5" fill={`url(#${uid}-sk)`} stroke="#1F1A3B" strokeWidth="0.8" />
+            <ellipse cx="83" cy="93" rx="2" ry="1.5" fill={`url(#${uid}-sk)`} stroke="#1F1A3B" strokeWidth="0.8" />
             {/* Tail */}
-            <path d="M88.5 90 L 92 91.4 L 88.5 92.2 Z" fill="url(#comp-tur-sk)" stroke="#1F1A3B" strokeWidth="0.8" />
+            <path d="M88.5 90 L 92 91.4 L 88.5 92.2 Z" fill={`url(#${uid}-sk)`} stroke="#1F1A3B" strokeWidth="0.8" />
             {/* Shell — dome */}
-            <path d="M66 91 Q 65 77 78 77 Q 91 77 90 91 Z" fill="url(#comp-tur-sh)" stroke="#1F1A3B" strokeWidth="1.3" />
+            <path d="M66 91 Q 65 77 78 77 Q 91 77 90 91 Z" fill={`url(#${uid}-sh)`} stroke="#1F1A3B" strokeWidth="1.3" />
             {/* Plastron rim line */}
-            <path d="M66 91 Q 78 88.5 90 91" fill="none" stroke="#34803A" strokeWidth="1.1" />
+            <path d="M66 91 Q 78 88.5 90 91" fill="none" stroke={p.line} strokeWidth="1.1" />
             {/* Scutes — central + ring */}
-            <g stroke="#34803A" strokeWidth="0.8" fill="#6FBE63">
+            <g stroke={p.line} strokeWidth="0.8" fill={p.scute}>
                 <path d="M78 79 L 82 81 L 81 85.2 L 75 85.2 L 74 81 Z" />
                 <path d="M74 86 L 80 86 L 79 89 L 73 89 Z" opacity="0.85" />
                 <path d="M82 82 L 86.5 84 L 86 88 L 80.8 87 Z" opacity="0.85" />
@@ -3186,12 +3193,12 @@ const COMPANION_SHAPES = {
             {/* Head — bobs out of the shell with a blink */}
             <g>
                 <animateTransform attributeName="transform" type="translate" values="0 0;-1.8 0.3;0 0" dur="3.4s" repeatCount="indefinite" />
-                <ellipse cx="65" cy="86" rx="3.7" ry="2.9" fill="url(#comp-tur-sk)" stroke="#1F1A3B" strokeWidth="1.1" />
+                <ellipse cx="65" cy="86" rx="3.7" ry="2.9" fill={`url(#${uid}-sk)`} stroke="#1F1A3B" strokeWidth="1.1" />
                 <circle cx="62.6" cy="86.6" r="0.85" fill="#FF9D6B" opacity="0.5" />
                 <circle cx="63" cy="85" r="0.9" fill="#1F1A3B" />
                 <circle cx="63.3" cy="84.7" r="0.3" fill="#fff" />
                 {/* Slow blink */}
-                <rect x="62" y="84.2" width="2" height="0" fill="url(#comp-tur-sk)">
+                <rect x="62" y="84.2" width="2" height="0" fill={`url(#${uid}-sk)`}>
                     <animate attributeName="height" values="0;0;1.8;0;0" keyTimes="0;0.45;0.5;0.55;1" dur="4.4s" repeatCount="indefinite" />
                 </rect>
             </g>
@@ -3200,14 +3207,16 @@ const COMPANION_SHAPES = {
 
     // Pirate Parrot: green macaw on a perch with a red wing, fanned
     // tri-colour tail, hooked beak, gold earring, skull-badge tricorn and a
-    // jaunty eye-patch. Head tilts gently.
-    pirateParrot: () => (
+    // jaunty eye-patch. Head tilts gently. Tints recolour the macaw's body +
+    // head only — the pirate kit (red wing, tri-colour tail, tricorn, gold)
+    // stays put so the costume reads the same in any plumage.
+    pirateParrot: (p, uid) => (
         <g strokeLinejoin="round">
             <defs>
-                <radialGradient id="comp-par-b" cx="36%" cy="24%" r="92%">
-                    <stop offset="0%" stopColor="#3FD08C" />
-                    <stop offset="55%" stopColor="#19A36B" />
-                    <stop offset="100%" stopColor="#0E7E4F" />
+                <radialGradient id={`${uid}-b`} cx="36%" cy="24%" r="92%">
+                    <stop offset="0%" stopColor={p.g0} />
+                    <stop offset="55%" stopColor={p.g1} />
+                    <stop offset="100%" stopColor={p.g2} />
                 </radialGradient>
             </defs>
             <ellipse cx="80" cy="95.2" rx="10" ry="1.7" fill="#1F1A3B" opacity="0.14" />
@@ -3223,7 +3232,7 @@ const COMPANION_SHAPES = {
                 <path d="M84 90 L 93 92 L 87 93.6 Z" fill="#FFC247" stroke="#1F1A3B" strokeWidth="0.8" />
             </g>
             {/* Body */}
-            <ellipse cx="79" cy="87" rx="6.2" ry="7.4" fill="url(#comp-par-b)" stroke="#1F1A3B" strokeWidth="1.2" />
+            <ellipse cx="79" cy="87" rx="6.2" ry="7.4" fill={`url(#${uid}-b)`} stroke="#1F1A3B" strokeWidth="1.2" />
             {/* Belly */}
             <ellipse cx="78.5" cy="89" rx="3.2" ry="4" fill="#FFE08A" opacity="0.5" />
             {/* Wing — red accent */}
@@ -3238,7 +3247,7 @@ const COMPANION_SHAPES = {
             <g>
                 <animateTransform attributeName="transform" type="rotate"
                     values="-7 76 85; 7 76 85; -7 76 85" dur="2.6s" repeatCount="indefinite" />
-                <circle cx="76" cy="81.5" r="4.8" fill="url(#comp-par-b)" stroke="#1F1A3B" strokeWidth="1.2" />
+                <circle cx="76" cy="81.5" r="4.8" fill={`url(#${uid}-b)`} stroke="#1F1A3B" strokeWidth="1.2" />
                 {/* Cheek patch */}
                 <circle cx="74" cy="82.6" r="1.6" fill="#FFFFFF" opacity="0.28" />
                 {/* Hooked beak */}
@@ -3268,41 +3277,41 @@ const COMPANION_SHAPES = {
     // white-tipped tail and perky ears (the near ear twitches). Front-facing
     // seated kit — the tail tucks behind the rump so it reads attached, and the
     // eyes sit centred over a short, wide muzzle.
-    foxKit: () => (
+    foxKit: (p, uid) => (
         <g strokeLinejoin="round">
             <defs>
-                <radialGradient id="comp-fox-b" cx="40%" cy="26%" r="92%">
-                    <stop offset="0%" stopColor="#FFB07A" />
-                    <stop offset="55%" stopColor="#F4873F" />
-                    <stop offset="100%" stopColor="#D9692A" />
+                <radialGradient id={`${uid}-b`} cx="40%" cy="26%" r="92%">
+                    <stop offset="0%" stopColor={p.g0} />
+                    <stop offset="55%" stopColor={p.g1} />
+                    <stop offset="100%" stopColor={p.g2} />
                 </radialGradient>
             </defs>
             <ellipse cx="77" cy="94.6" rx="12" ry="2.2" fill="#1F1A3B" opacity="0.15" />
             {/* Bushy tail — drawn first so its base tucks behind the body and
                 reads attached at the rump; cream tip at the curl's end. */}
-            <path d="M83 91 Q 96 89 95 76 Q 92.5 69.5 85.5 73.5 Q 80.5 77.5 80.5 86 Q 80.5 90.5 83 91 Z" fill="url(#comp-fox-b)" stroke="#1F1A3B" strokeWidth="1.1" />
-            <path d="M85 73.6 Q 93.5 69.5 94.6 76.5 Q 91 78.2 86.4 77 Q 84.5 75 85 73.6 Z" fill="#FBF1E7" stroke="#1F1A3B" strokeWidth="0.6" />
+            <path d="M83 91 Q 96 89 95 76 Q 92.5 69.5 85.5 73.5 Q 80.5 77.5 80.5 86 Q 80.5 90.5 83 91 Z" fill={`url(#${uid}-b)`} stroke="#1F1A3B" strokeWidth="1.1" />
+            <path d="M85 73.6 Q 93.5 69.5 94.6 76.5 Q 91 78.2 86.4 77 Q 84.5 75 85 73.6 Z" fill={p.cream} stroke="#1F1A3B" strokeWidth="0.6" />
             {/* Rounded seated body */}
-            <path d="M67 93 Q 63.5 82.5 71 78 Q 77.5 74.5 84 78.5 Q 90.5 83 87 93 Q 77 95.2 67 93 Z" fill="url(#comp-fox-b)" stroke="#1F1A3B" strokeWidth="1.2" />
+            <path d="M67 93 Q 63.5 82.5 71 78 Q 77.5 74.5 84 78.5 Q 90.5 83 87 93 Q 77 95.2 67 93 Z" fill={`url(#${uid}-b)`} stroke="#1F1A3B" strokeWidth="1.2" />
             {/* Cream chest/belly */}
-            <path d="M72 93.4 Q 70.5 84.5 77 83 Q 83.5 84.5 82 93.4 Q 77 94.8 72 93.4 Z" fill="#FBF1E7" />
+            <path d="M72 93.4 Q 70.5 84.5 77 83 Q 83.5 84.5 82 93.4 Q 77 94.8 72 93.4 Z" fill={p.cream} />
             {/* Black socks / front paws */}
-            <ellipse cx="73.6" cy="92.8" rx="2.5" ry="1.7" fill="#352620" stroke="#1F1A3B" strokeWidth="0.7" />
-            <ellipse cx="80.4" cy="92.8" rx="2.5" ry="1.7" fill="#352620" stroke="#1F1A3B" strokeWidth="0.7" />
+            <ellipse cx="73.6" cy="92.8" rx="2.5" ry="1.7" fill={p.socks} stroke="#1F1A3B" strokeWidth="0.7" />
+            <ellipse cx="80.4" cy="92.8" rx="2.5" ry="1.7" fill={p.socks} stroke="#1F1A3B" strokeWidth="0.7" />
             {/* Head — cranium */}
-            <circle cx="77" cy="79.5" r="6.6" fill="url(#comp-fox-b)" stroke="#1F1A3B" strokeWidth="1.2" />
+            <circle cx="77" cy="79.5" r="6.6" fill={`url(#${uid}-b)`} stroke="#1F1A3B" strokeWidth="1.2" />
             {/* Ears — near (left) ear twitches. Pivot from the SMIL rotate's
                 (angle cx cy) args only; no CSS transform-origin (it
                 double-applied the pivot in some browsers — see the kitten tail). */}
             <g>
                 <animateTransform attributeName="transform" type="rotate" values="0 72 74;-12 72 74;0 72 74;0 72 74" keyTimes="0;0.05;0.11;1" dur="3.8s" repeatCount="indefinite" />
-                <path d="M73 75 L 69 66 L 76.5 73 Z" fill="url(#comp-fox-b)" stroke="#1F1A3B" strokeWidth="1" />
-                <path d="M73.4 73.8 L 70.8 68.6 L 75.2 72.6 Z" fill="#352620" />
+                <path d="M73 75 L 69 66 L 76.5 73 Z" fill={`url(#${uid}-b)`} stroke="#1F1A3B" strokeWidth="1" />
+                <path d="M73.4 73.8 L 70.8 68.6 L 75.2 72.6 Z" fill={p.socks} />
             </g>
-            <path d="M81 75 L 85 66 L 77.5 73 Z" fill="url(#comp-fox-b)" stroke="#1F1A3B" strokeWidth="1" />
-            <path d="M80.6 73.8 L 83.2 68.6 L 78.8 72.6 Z" fill="#352620" />
+            <path d="M81 75 L 85 66 L 77.5 73 Z" fill={`url(#${uid}-b)`} stroke="#1F1A3B" strokeWidth="1" />
+            <path d="M80.6 73.8 L 83.2 68.6 L 78.8 72.6 Z" fill={p.socks} />
             {/* Cream cheek-ruff + short wide muzzle, centred under the eyes */}
-            <path d="M71 80.5 Q 69 87 74.2 88.8 L 77 87.4 L 79.8 88.8 Q 85 87 83 80.5 Q 77 83.2 71 80.5 Z" fill="#FBF1E7" stroke="#1F1A3B" strokeWidth="0.7" />
+            <path d="M71 80.5 Q 69 87 74.2 88.8 L 77 87.4 L 79.8 88.8 Q 85 87 83 80.5 Q 77 83.2 71 80.5 Z" fill={p.cream} stroke="#1F1A3B" strokeWidth="0.7" />
             {/* Nose + mouth */}
             <path d="M75.4 85 L 78.6 85 L 77 87 Z" fill="#241813" stroke="#1F1A3B" strokeWidth="0.4" />
             <path d="M77 87 Q 75.6 88.3 74.4 87.6 M77 87 Q 78.4 88.3 79.6 87.6" stroke="#1F1A3B" strokeWidth="0.5" fill="none" strokeLinecap="round" />
@@ -3316,28 +3325,28 @@ const COMPANION_SHAPES = {
 
     // Frog: green crouched tree-frog with webbed feet, a pale spotted back,
     // a wide grin and bulging eyes that blink. Body puffs as it breathes.
-    frog: () => (
+    frog: (p, uid) => (
         <g strokeLinejoin="round">
             <defs>
-                <radialGradient id="comp-frog-b" cx="38%" cy="22%" r="88%">
-                    <stop offset="0%" stopColor="#86D178" />
-                    <stop offset="55%" stopColor="#57AE52" />
-                    <stop offset="100%" stopColor="#3A8A3E" />
+                <radialGradient id={`${uid}-b`} cx="38%" cy="22%" r="88%">
+                    <stop offset="0%" stopColor={p.g0} />
+                    <stop offset="55%" stopColor={p.g1} />
+                    <stop offset="100%" stopColor={p.g2} />
                 </radialGradient>
             </defs>
             <ellipse cx="78" cy="94.8" rx="12.5" ry="2.2" fill="#1F1A3B" opacity="0.15" />
             {/* Webbed front feet */}
-            <path d="M68 91 Q 64.5 94.4 68 94.8 Q 71.2 94.8 71 92 Z" fill="#4C9C49" stroke="#1F1A3B" strokeWidth="0.9" />
-            <path d="M88 91 Q 91.5 94.4 88 94.8 Q 84.8 94.8 85 92 Z" fill="#4C9C49" stroke="#1F1A3B" strokeWidth="0.9" />
+            <path d="M68 91 Q 64.5 94.4 68 94.8 Q 71.2 94.8 71 92 Z" fill={p.feet} stroke="#1F1A3B" strokeWidth="0.9" />
+            <path d="M88 91 Q 91.5 94.4 88 94.8 Q 84.8 94.8 85 92 Z" fill={p.feet} stroke="#1F1A3B" strokeWidth="0.9" />
             {/* Body — gentle puff for breathing */}
             <g style={{ transformOrigin: '78px 89px' }}>
                 <animateTransform attributeName="transform" type="scale" values="1 1;1.02 1.06;1 1" dur="2.8s" repeatCount="indefinite" additive="sum" />
-                <ellipse cx="78" cy="88" rx="9.5" ry="6.5" fill="url(#comp-frog-b)" stroke="#1F1A3B" strokeWidth="1.2" />
+                <ellipse cx="78" cy="88" rx="9.5" ry="6.5" fill={`url(#${uid}-b)`} stroke="#1F1A3B" strokeWidth="1.2" />
                 {/* Belly */}
-                <ellipse cx="78" cy="90" rx="6.5" ry="3" fill="#CDEFB0" opacity="0.85" />
+                <ellipse cx="78" cy="90" rx="6.5" ry="3" fill={p.belly} opacity="0.85" />
                 {/* Back spots */}
-                <ellipse cx="82.5" cy="84.8" rx="1.4" ry="1" fill="#3A8A3E" />
-                <ellipse cx="74" cy="85.2" rx="1.1" ry="0.8" fill="#3A8A3E" />
+                <ellipse cx="82.5" cy="84.8" rx="1.4" ry="1" fill={p.g2} />
+                <ellipse cx="74" cy="85.2" rx="1.1" ry="0.8" fill={p.g2} />
                 {/* Wide grin */}
                 <path d="M71 88 Q 78 92 85 88" stroke="#1F1A3B" strokeWidth="1.2" fill="none" strokeLinecap="round" />
                 <path d="M73 89.6 Q 75 90.4 76.5 89.8" stroke="#FF8FB3" strokeWidth="0.7" fill="none" opacity="0.55" />
@@ -3345,8 +3354,8 @@ const COMPANION_SHAPES = {
             {/* Eyes — bulging atop the body (nestled low so they read attached),
                 with a slow blink */}
             <g>
-                <ellipse cx="73" cy="82" rx="2.8" ry="3" fill="url(#comp-frog-b)" stroke="#1F1A3B" strokeWidth="1.1" />
-                <ellipse cx="83" cy="82" rx="2.8" ry="3" fill="url(#comp-frog-b)" stroke="#1F1A3B" strokeWidth="1.1" />
+                <ellipse cx="73" cy="82" rx="2.8" ry="3" fill={`url(#${uid}-b)`} stroke="#1F1A3B" strokeWidth="1.1" />
+                <ellipse cx="83" cy="82" rx="2.8" ry="3" fill={`url(#${uid}-b)`} stroke="#1F1A3B" strokeWidth="1.1" />
                 <circle cx="73" cy="82" r="1.7" fill="#FCFCEF" />
                 <circle cx="83" cy="82" r="1.7" fill="#FCFCEF" />
                 <circle cx="73.4" cy="82.4" r="1" fill="#1F1A3B" />
@@ -3354,10 +3363,10 @@ const COMPANION_SHAPES = {
                 <circle cx="73" cy="81.6" r="0.4" fill="#fff" />
                 <circle cx="83" cy="81.6" r="0.4" fill="#fff" />
                 {/* Blink lids */}
-                <rect x="70.2" y="79.2" width="5.6" height="0" rx="1" fill="#57AE52">
+                <rect x="70.2" y="79.2" width="5.6" height="0" rx="1" fill={p.g1}>
                     <animate attributeName="height" values="0;0;5.4;0;0" keyTimes="0;0.43;0.5;0.57;1" dur="3.8s" repeatCount="indefinite" />
                 </rect>
-                <rect x="80.2" y="79.2" width="5.6" height="0" rx="1" fill="#57AE52">
+                <rect x="80.2" y="79.2" width="5.6" height="0" rx="1" fill={p.g1}>
                     <animate attributeName="height" values="0;0;5.4;0;0" keyTimes="0;0.43;0.5;0.57;1" dur="3.8s" repeatCount="indefinite" />
                 </rect>
             </g>
@@ -3404,35 +3413,35 @@ const COMPANION_SHAPES = {
     // Salamander: long spotted amphibian with feathery axolotl-style gills, a
     // friendly smile and a blink. The whole body undulates gently while the
     // stubby legs stay planted.
-    salamander: () => (
+    salamander: (p, uid) => (
         <g strokeLinejoin="round">
             <defs>
-                <radialGradient id="comp-sal-b" cx="42%" cy="18%" r="92%">
-                    <stop offset="0%" stopColor="#FFB07A" />
-                    <stop offset="55%" stopColor="#FF8A3F" />
-                    <stop offset="100%" stopColor="#E2611F" />
+                <radialGradient id={`${uid}-b`} cx="42%" cy="18%" r="92%">
+                    <stop offset="0%" stopColor={p.g0} />
+                    <stop offset="55%" stopColor={p.g1} />
+                    <stop offset="100%" stopColor={p.g2} />
                 </radialGradient>
             </defs>
             <ellipse cx="78" cy="94.6" rx="15" ry="2" fill="#1F1A3B" opacity="0.14" />
             {/* Legs (4 stubby) — planted */}
-            <ellipse cx="70" cy="91.6" rx="1.8" ry="1.5" fill="#E2611F" stroke="#1F1A3B" strokeWidth="0.8" />
-            <ellipse cx="86" cy="91.6" rx="1.8" ry="1.5" fill="#E2611F" stroke="#1F1A3B" strokeWidth="0.8" />
+            <ellipse cx="70" cy="91.6" rx="1.8" ry="1.5" fill={p.g2} stroke="#1F1A3B" strokeWidth="0.8" />
+            <ellipse cx="86" cy="91.6" rx="1.8" ry="1.5" fill={p.g2} stroke="#1F1A3B" strokeWidth="0.8" />
             {/* Undulating body */}
             <g>
                 <animateTransform attributeName="transform" type="translate" values="0 0;0 -0.7;0 0;0 0.5;0 0" dur="2.8s" repeatCount="indefinite" />
                 {/* Tail */}
-                <path d="M88 88 Q 95 85 96 89 Q 95 91 88 90 Z" fill="url(#comp-sal-b)" stroke="#1F1A3B" strokeWidth="1" />
+                <path d="M88 88 Q 95 85 96 89 Q 95 91 88 90 Z" fill={`url(#${uid}-b)`} stroke="#1F1A3B" strokeWidth="1" />
                 {/* Body */}
                 <path d="M62 88 Q 70 84 78 86 Q 86 88 90 87 L 90 90 Q 86 91.6 78 90 Q 70 92 62 90.5 Z"
-                    fill="url(#comp-sal-b)" stroke="#1F1A3B" strokeWidth="1.2" />
+                    fill={`url(#${uid}-b)`} stroke="#1F1A3B" strokeWidth="1.2" />
                 {/* Back ridge */}
-                <path d="M66 86.6 Q 74 83.8 82 86.4" stroke="#E2611F" strokeWidth="0.8" fill="none" />
+                <path d="M66 86.6 Q 74 83.8 82 86.4" stroke={p.g2} strokeWidth="0.8" fill="none" />
                 {/* Spots */}
-                <circle cx="72" cy="87.4" r="0.9" fill="#FFD24B" />
-                <circle cx="78" cy="88.6" r="1" fill="#FFD24B" />
-                <circle cx="84" cy="87.6" r="0.85" fill="#FFD24B" />
+                <circle cx="72" cy="87.4" r="0.9" fill={p.spot} />
+                <circle cx="78" cy="88.6" r="1" fill={p.spot} />
+                <circle cx="84" cy="87.6" r="0.85" fill={p.spot} />
                 {/* Head (left) */}
-                <ellipse cx="63" cy="88" rx="4" ry="3.2" fill="url(#comp-sal-b)" stroke="#1F1A3B" strokeWidth="1.1" />
+                <ellipse cx="63" cy="88" rx="4" ry="3.2" fill={`url(#${uid}-b)`} stroke="#1F1A3B" strokeWidth="1.1" />
                 {/* Feathery gills */}
                 <g stroke="#FF9DBA" strokeWidth="1.4" strokeLinecap="round" fill="none">
                     <path d="M64.5 85 q 2 -2 1 -3.6" />
@@ -3446,7 +3455,7 @@ const COMPANION_SHAPES = {
                 {/* Smile */}
                 <path d="M60 89.4 Q 62 90.6 64.5 89.6" stroke="#1F1A3B" strokeWidth="0.7" fill="none" strokeLinecap="round" />
                 {/* Blink lid */}
-                <rect x="60.6" y="86" width="2" height="0" fill="url(#comp-sal-b)">
+                <rect x="60.6" y="86" width="2" height="0" fill={`url(#${uid}-b)`}>
                     <animate attributeName="height" values="0;0;1.8;0;0" keyTimes="0;0.46;0.5;0.54;1" dur="3.4s" repeatCount="indefinite" />
                 </rect>
             </g>
@@ -3454,14 +3463,21 @@ const COMPANION_SHAPES = {
     ),
 };
 
-export function renderCompanion(id) {
+export function renderCompanion(id, tintId) {
     // Same dispatch shape as renderEmote: lookup metadata then resolve `kind`,
     // so the BP-exclusive `bp_companion_salamander` maps to the `salamander`
-    // renderer without giving the kind away to the player.
+    // renderer without giving the kind away to the player. The resolved colour
+    // palette + a per-kind+tint gradient-id prefix are handed to the renderer;
+    // the prefix keeps two differently-tinted companions of the same kind from
+    // colliding on shared gradient defs in one view (e.g. a leaderboard).
     const meta = COMPANIONS[id];
     if (!meta || !meta.kind) return null;
     const draw = COMPANION_SHAPES[meta.kind];
-    return draw ? draw() : null;
+    if (!draw) return null;
+    const tint = tintId || DEFAULT_TINT;
+    const palette = companionPalette(meta.kind, tint);
+    if (!palette) return null;
+    return draw(palette, `comp-${meta.kind}-${tint}`);
 }
 
 // Total length the emote animation plays for (seconds). Mascot uses this to

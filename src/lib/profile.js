@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from 'react';
 import { api } from '../api/client';
-import { DEFAULT_COSMETICS, EMOTE_LOADOUT_SIZE, EMOTES, normalizeCosmetics, clampPos, isDefaultItem } from './cosmetics';
+import { DEFAULT_COSMETICS, DEFAULT_TINT, EMOTE_LOADOUT_SIZE, EMOTES, normalizeCosmetics, clampPos, isDefaultItem } from './cosmetics';
 import { isOwnedKey } from './currency';
 import { topAchievements } from './achievements';
 
@@ -165,6 +165,20 @@ export function setCompanionName(companionId, name) {
     if (t) names[companionId] = t;
     else delete names[companionId];
     state = { ...state, cosmetics: { ...state.cosmetics, companionNames: names } };
+    notify();
+    persist();
+}
+
+// Recolour a companion's coat. Stored per-companion-id under
+// cosmetics.companionTints so each owned companion keeps its own colour. The
+// 'classic' default is stored as a deletion (absence == default palette). A
+// free customization like size/position — gated only by owning the companion.
+export function setCompanionTint(companionId, tintId) {
+    if (!companionId || companionId === 'none') return;
+    const tints = { ...(state.cosmetics.companionTints || {}) };
+    if (tintId && tintId !== DEFAULT_TINT) tints[companionId] = tintId;
+    else delete tints[companionId];
+    state = { ...state, cosmetics: { ...state.cosmetics, companionTints: tints } };
     notify();
     persist();
 }

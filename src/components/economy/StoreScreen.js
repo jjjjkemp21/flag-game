@@ -7,8 +7,8 @@ import Scene from '../../assets/illustrations/Scene';
 import AtlasBucksIcon from '../../assets/illustrations/AtlasBucks';
 import { useAuth } from '../../auth/AuthProvider';
 import { usePet, setPetName } from '../../lib/pet';
-import { useProfile, setRegion, setCosmetic, setCosmeticPos, toggleEmoteInLoadout, setCompanionName } from '../../lib/profile';
-import { CATEGORIES, COMPANIONS, EMOTES, EMOTE_LOADOUT_SIZE, priceOf, isDefaultItem, isEffectSizable, DEFAULT_POS, companionNameFor, COMPANION_NAME_MAX } from '../../lib/cosmetics';
+import { useProfile, setRegion, setCosmetic, setCosmeticPos, toggleEmoteInLoadout, setCompanionName, setCompanionTint } from '../../lib/profile';
+import { CATEGORIES, COMPANIONS, EMOTES, EMOTE_LOADOUT_SIZE, priceOf, isDefaultItem, isEffectSizable, DEFAULT_POS, companionNameFor, COMPANION_NAME_MAX, companionTintsFor, companionTintSwatch, companionTintFor } from '../../lib/cosmetics';
 import { EMOTE_DURATION_S } from '../../assets/illustrations/Cosmetics';
 import { useCurrency, loadCurrency, buyCosmetic, isOwnedKey } from '../../lib/currency';
 
@@ -62,6 +62,14 @@ function StoreScreen({ setView, flagsData }) {
     const [companionDraft, setCompanionDraft] = useState(currentCompanionName);
     useEffect(() => { setCompanionDraft(currentCompanionName); }, [currentCompanionName, equippedCompanion]);
     const [namePrompt, setNamePrompt] = useState(null); // { id, label, draft }
+
+    // Companion coat colour. Owning a companion unlocks a few free reskins
+    // (alternate palettes) chosen beside the size bar — like size/position, it's
+    // a customization, not a purchase. `companionKind` resolves the SVG kind so
+    // the swatches can preview each variant's body gradient.
+    const companionKind = COMPANIONS[equippedCompanion] && COMPANIONS[equippedCompanion].kind;
+    const companionTints = companionTintsFor(equippedCompanion);
+    const activeTint = companionTintFor(profile.cosmetics);
 
     const countries = useMemo(
         () => (flagsData || [])
@@ -373,17 +381,45 @@ function StoreScreen({ setView, flagsData }) {
                                 )}
                             </div>
                         )}
-                        <label className="adjust-size">
-                            <Icon name="zoom_out_map" /> Size
-                            <input
-                                type="range"
-                                min="0.6"
-                                max="1.7"
-                                step="0.05"
-                                value={posOf(slot).s == null ? 1 : posOf(slot).s}
-                                onChange={onSize}
-                            />
-                        </label>
+                        <div className="adjust-row">
+                            <label className="adjust-size">
+                                <Icon name="zoom_out_map" /> Size
+                                <input
+                                    type="range"
+                                    min="0.6"
+                                    max="1.7"
+                                    step="0.05"
+                                    value={posOf(slot).s == null ? 1 : posOf(slot).s}
+                                    onChange={onSize}
+                                />
+                            </label>
+                            {slot === 'companion' && companionKind && companionTints.length > 1 && (
+                                <div className="adjust-tint" role="radiogroup" aria-label={`${companionLabel} color`}>
+                                    <span className="adjust-tint__label"><Icon name="palette" /> Color</span>
+                                    <div className="adjust-tint__swatches">
+                                        {companionTints.map((v) => {
+                                            const [c0, c1, c2] = companionTintSwatch(companionKind, v.id);
+                                            const active = activeTint === v.id;
+                                            return (
+                                                <button
+                                                    key={v.id}
+                                                    type="button"
+                                                    role="radio"
+                                                    aria-checked={active}
+                                                    aria-label={v.name}
+                                                    title={v.name}
+                                                    className={`tint-swatch ${active ? 'is-active' : ''}`}
+                                                    style={{ background: `linear-gradient(135deg, ${c0} 0%, ${c1} 55%, ${c2} 100%)` }}
+                                                    onClick={() => setCompanionTint(equippedCompanion, v.id)}
+                                                >
+                                                    {active && <Icon name="check" />}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 )}
             </div>
