@@ -325,68 +325,68 @@ export const COLORS = {
         // Parian marble — cool white stone with faint grey veining.
         name: 'Parian Marble', xp: 999999, bpOnly: true, stroke: '#8A93A0',
         stops: ['#FBFCFE', '#DDE3EA', '#A9B4C2'],
-        pattern: { kind: 'cow', base: '#F2F5F9', accent: '#C2CAD6' },
+        pattern: { kind: 'marble', base: '#F2F5F9', accent: '#AEB9C8' },
     },
     bp_terracotta: {
-        // Terracotta — warm fired clay, the colour of a Greek amphora.
+        // Terracotta — warm fired clay banded with a painted Greek key.
         name: 'Terracotta', xp: 999999, bpOnly: true, stroke: '#7A3318',
         stops: ['#F0C49A', '#C8682E', '#7A3318'],
-        pattern: { kind: 'scales', base: '#B5531F', accent: '#C8682E', accent2: '#F0C49A' },
+        pattern: { kind: 'meander', base: '#C8682E', accent: '#3A1A0E' },
     },
     bp_black_figure: {
-        // Black-figure vase — terracotta ground with black serpentine figures.
+        // Black-figure vase — terracotta ground with black palmette friezes.
         name: 'Black-Figure Vase', xp: 999999, bpOnly: true, stroke: '#1A0E08',
         stops: ['#E8B488', '#B5531F', '#5A2410'],
-        pattern: { kind: 'serpent', base: '#C8682E', accent: '#1A0E08', accent2: '#F0C49A' },
+        pattern: { kind: 'vaseFigure', base: '#C8682E', accent: '#1A0E08', accent2: '#5A2410' },
     },
     bp_olive: {
-        // Olive grove — muted silvery green of an olive tree's leaves.
+        // Olive grove — muted silvery green sprigged with olive leaves.
         name: 'Olive Grove', xp: 999999, bpOnly: true, stroke: '#3F4A1F',
         stops: ['#DCE6B5', '#8A9A4F', '#3F4A1F'],
-        pattern: { kind: 'scales', base: '#6F7F3F', accent: '#8A9A4F', accent2: '#DCE6B5' },
+        pattern: { kind: 'laurel', base: '#7C8C48', accent: '#41501F', accent2: '#C8D88A' },
     },
     bp_sea_foam: {
-        // Nereid foam — pale sea-green crests over Aegean teal.
+        // Nereid foam — pale sea-green crests breaking over Aegean teal.
         name: 'Nereid Foam', xp: 999999, bpOnly: true, stroke: '#1F6A6A',
         stops: ['#E0F7F2', '#5BD0C0', '#1F8A8A'],
-        pattern: { kind: 'jewelScales', base: '#1F8A8A', accent: '#5BD0C0', accent2: '#FFFFFF' },
+        pattern: { kind: 'waves', base: '#1F8A8A', accent: '#E6F9F4', accent2: '#5BD0C0' },
     },
     bp_aegean: {
-        // Aegean sea — deep Mediterranean blue jewel scales.
+        // Aegean sea — running waves over deep Mediterranean blue.
         name: 'Aegean Sea', xp: 999999, bpOnly: true, stroke: '#103A6A',
         stops: ['#B5D8F5', '#2E7AD3', '#103A6A'],
-        pattern: { kind: 'jewelScales', base: '#103A6A', accent: '#2E7AD3', accent2: '#CFE6FF' },
+        pattern: { kind: 'waves', base: '#163F72', accent: '#CFE6FF', accent2: '#2E7AD3' },
     },
     bp_bronze: {
-        // Hoplite bronze — burnished war-shield metal.
+        // Hoplite bronze — burnished war-shield metal engraved with a key band.
         name: 'Hoplite Bronze', xp: 999999, bpOnly: true, stroke: '#5A360F',
         stops: ['#F0D8A0', '#C28A3F', '#7A4E1A'],
-        pattern: { kind: 'scales', base: '#A8702F', accent: '#C28A3F', accent2: '#F5E5B5' },
+        pattern: { kind: 'meander', base: '#A8702F', accent: '#4A2C0C', accent2: '#F5E5B5' },
     },
     bp_wine: {
         // Wine-dark sea — Homer's oinops pontos, deep blood-purple swell.
         name: 'Wine-Dark Sea', xp: 999999, bpOnly: true, stroke: '#3A0F2A',
         stops: ['#C87A9A', '#7A1F4A', '#3A0F2A'],
-        pattern: { kind: 'serpent', base: '#7A1F4A', accent: '#C04F80', accent2: '#3A0F2A' },
+        pattern: { kind: 'waves', base: '#7A1F4A', accent: '#E6B6CC', accent2: '#C04F80' },
     },
     bp_chiton: {
-        // Royal chiton — Tyrian-purple cloth, the dye of kings.
+        // Royal chiton — Tyrian-purple cloth falling in pleated folds.
         name: 'Royal Chiton', xp: 999999, bpOnly: true, stroke: '#3A1A5A',
         stops: ['#D8C0F0', '#7A4FD0', '#3A1A5A'],
-        pattern: { kind: 'scales', base: '#5B3FA0', accent: '#7A4FD0', accent2: '#E8D8FF' },
+        pattern: { kind: 'fluting', base: '#6A45C0', accent: '#3A1A5A', accent2: '#E8D8FF' },
     },
     bp_storm: {
-        // Storm of Zeus — thunderhead grey shot through with electric blue.
+        // Storm of Zeus — thunderhead grey torn through with electric streaks.
         name: 'Storm of Zeus', xp: 999999, bpOnly: true, stroke: '#2A3344',
         stops: ['#C7D2E0', '#5B6A82', '#2A3344'],
-        pattern: { kind: 'jewelScales', base: '#3F4A60', accent: '#5BB0FF', accent2: '#E0ECFF' },
+        pattern: { kind: 'marble', base: '#5B6A82', accent: '#D6E4FA' },
         glow: { color: '#5BB0FF' },
     },
     bp_underworld: {
-        // Underworld — Hades' realm: violet gloom with a cold starfield.
+        // Underworld — Hades' realm: the dark rivers Styx and Lethe under stars.
         name: 'Underworld', xp: 999999, bpOnly: true, stroke: '#1A1030', overlay: 'stars',
         stops: ['#9A7FD0', '#4A2A7A', '#1A1030'],
-        pattern: { kind: 'jewelScales', base: '#1A1030', accent: '#7A4FD0', accent2: '#3FE0A8' },
+        pattern: { kind: 'waves', base: '#1A1030', accent: '#7A4FD0', accent2: '#3FE0A8' },
         glow: { color: '#7A4FD0' },
     },
     bp_nectar: {
@@ -401,10 +401,11 @@ export const COLORS = {
         glow: { color: '#FFD86B' },
     },
     bp_ambrosia: {
-        // Ambrosia — food of immortals: gold cycling into rose and violet.
+        // Ambrosia — food of immortals: gilded rosettes over gold cycling into
+        // rose and violet.
         name: 'Ambrosia', xp: 999999, bpOnly: true, stroke: '#7A3F5A',
         stops: ['#FFE8C2', '#FFB0C0', '#C04F80'],
-        pattern: { kind: 'jewelScales', base: '#C04F80', accent: '#FFB0C0', accent2: '#FFE8C2' },
+        pattern: { kind: 'coffer', base: '#C04F80', accent: '#FFE8C2', accent2: '#FFF1C2' },
         anim: { dur: '5s', frames: [
             ['#FFE8C2', '#FFB0C0', '#C04F80'],
             ['#FFF1C2', '#FFD86B', '#C28A3F'],
@@ -416,7 +417,7 @@ export const COLORS = {
         // Celestial bronze — mythic metal that shimmers between bronze and gold.
         name: 'Celestial Bronze', xp: 999999, bpOnly: true, stroke: '#5A360F', overlay: 'stars',
         stops: ['#FFE8A8', '#C28A3F', '#5A360F'],
-        pattern: { kind: 'jewelScales', base: '#7A4E1A', accent: '#C28A3F', accent2: '#FFF1C2' },
+        pattern: { kind: 'meander', base: '#7A4E1A', accent: '#3A2008', accent2: '#FFF1C2' },
         anim: { dur: '6s', frames: [
             ['#FFE8A8', '#C28A3F', '#5A360F'],
             ['#FFF6D0', '#E5B25B', '#7A4E1A'],
@@ -439,7 +440,7 @@ export const COLORS = {
         // Tier 25 capstone — the Golden Touch: molten gold with ember sparks.
         name: 'Golden Touch', xp: 999999, bpOnly: true, stroke: '#7A5210', overlay: 'embers',
         stops: ['#FFF6D0', '#FFC247', '#A0681A'],
-        pattern: { kind: 'jewelScales', base: '#A0681A', accent: '#FFC247', accent2: '#FFF6D0' },
+        pattern: { kind: 'coffer', base: '#A0681A', accent: '#FFF6D0', accent2: '#FFC247' },
         anim: { dur: '4s', frames: [
             ['#FFF6D0', '#FFC247', '#A0681A'],
             ['#FFFDF0', '#FFD86B', '#C28A3F'],
@@ -452,7 +453,7 @@ export const COLORS = {
         // over a starfield with a divine glow. The richest skin of the pass.
         name: 'Olympian Glory', xp: 999999, bpOnly: true, stroke: '#1F3A6A', overlay: 'stars',
         stops: ['#FFF6D0', '#FFC247', '#2E7AD3'],
-        pattern: { kind: 'jewelScales', base: '#1F3A6A', accent: '#FFC247', accent2: '#FFFFFF' },
+        pattern: { kind: 'coffer', base: '#1F3A6A', accent: '#FFE8A8', accent2: '#FFC247' },
         anim: { dur: '6s', frames: [
             ['#FFF6D0', '#FFC247', '#2E7AD3'],
             ['#FFFFFF', '#9DB8FF', '#1F3A6A'],

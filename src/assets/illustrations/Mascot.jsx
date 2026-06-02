@@ -253,6 +253,158 @@ function renderPatternDef(id, p) {
             </pattern>
         );
     }
+
+    // ---- Olympus Ascendant (Season 2) — Greek-mythology patterns -------------
+    // Hand-drawn classical motifs (marble veining, the Greek key, palmette
+    // friezes, olive sprigs, running waves, column fluting, gilded rosettes) so
+    // the Season 2 globe skins read as antiquity rather than reptile hide.
+    if (kind === 'marble') {
+        // Veined stone — soft branching veins drifting across a pale ground.
+        // `base` is the polished stone, `accent` the vein. (Also doubles as
+        // wind-torn storm cloud when given a grey palette.)
+        return (
+            <pattern id={id} patternUnits="userSpaceOnUse" width="64" height="64">
+                <rect width="64" height="64" fill={base} />
+                <g fill="none" stroke={accent} strokeLinecap="round">
+                    <path d="M-6 16 q16 8 30 -2 q14 -10 28 0 q8 6 18 2" strokeWidth="1.5" opacity="0.5" />
+                    <path d="M8 -4 q6 16 -2 28 q-8 12 2 28 q4 7 -2 16" strokeWidth="1.1" opacity="0.4" />
+                    <path d="M44 -6 q-4 14 5 26 q8 12 -2 24 q-5 10 3 22" strokeWidth="1.1" opacity="0.4" />
+                    <path d="M-4 46 q18 -6 30 4 q14 8 32 -2" strokeWidth="1.3" opacity="0.45" />
+                    <path d="M20 6 q5 9 -1 18 M50 22 q-6 9 1 18 M30 42 q9 6 2 17" strokeWidth="0.55" opacity="0.3" />
+                </g>
+            </pattern>
+        );
+    }
+    if (kind === 'meander') {
+        // Greek key (meander) fret — interlocking square spirals in horizontal
+        // bands tied by a baseline rail. `accent` is the fret line painted over
+        // the `base` ground.
+        const rows = [4, 26, 48];
+        const cols = [-14, 0, 14, 28, 42, 56, 70];
+        const hook = (x, y) => `M${x + 1} ${y} H${x + 12} V${y + 12} H${x + 4} V${y + 4} H${x + 9} V${y + 9} H${x + 6}`;
+        return (
+            <pattern id={id} patternUnits="userSpaceOnUse" width="56" height="66">
+                <rect width="56" height="66" fill={base} />
+                <g fill="none" stroke={accent} strokeWidth="1.6" strokeLinecap="square" strokeLinejoin="miter">
+                    {rows.map((y, r) => cols.map((x, c) => <path key={`${r}-${c}`} d={hook(x, y)} />))}
+                    {rows.map((y, r) => <path key={`rail-${r}`} d={`M-14 ${y + 14} H70`} strokeWidth="1.2" opacity="0.8" />)}
+                </g>
+            </pattern>
+        );
+    }
+    if (kind === 'vaseFigure') {
+        // Black-figure pottery frieze — alternating upright + inverted palmette
+        // fans between register lines, as painted on an amphora. `accent` is the
+        // black slip, `accent2` the rim line.
+        const rim = accent2 || accent;
+        const palmette = (x, y, down) => (
+            <g key={`${x}-${y}-${down}`} transform={`translate(${x} ${y}) scale(1 ${down ? -1 : 1})`} fill={accent}>
+                {[-52, -34, -17, 0, 17, 34, 52].map((deg, i) => (
+                    <path key={i} d="M0 -2 Q1.5 -7 0 -11 Q-1.5 -7 0 -2 Z" transform={`rotate(${deg})`} />
+                ))}
+                {/* heart base the petals spring from */}
+                <path d="M0 0 q-5 -1 -6 -6 q3 2 6 1 q3 1 6 -1 q-1 5 -6 6 Z" />
+                {/* volute scrolls flanking the base */}
+                <circle cx="-6" cy="-1" r="1.7" fill="none" stroke={accent} strokeWidth="1.2" />
+                <circle cx="6" cy="-1" r="1.7" fill="none" stroke={accent} strokeWidth="1.2" />
+            </g>
+        );
+        return (
+            <pattern id={id} patternUnits="userSpaceOnUse" width="48" height="44">
+                <rect width="48" height="44" fill={base} />
+                <g stroke={rim} fill="none">
+                    <path d="M0 4 H48 M0 40 H48" strokeWidth="1.5" />
+                    <path d="M0 7 H48 M0 37 H48" strokeWidth="0.7" opacity="0.55" />
+                </g>
+                {palmette(12, 30, false)}
+                {palmette(36, 14, true)}
+            </pattern>
+        );
+    }
+    if (kind === 'laurel') {
+        // Olive / laurel sprigs — paired leaves along gently waving stems with
+        // the odd olive. `accent` is the leaf, `accent2` the olive/highlight.
+        const leaf = accent;
+        const olive = accent2 || accent;
+        const sprig = (x, y, flip) => (
+            <g key={`${x}-${y}-${flip}`} transform={`translate(${x} ${y}) scale(${flip ? -1 : 1} 1)`}>
+                <path d="M0 6 q12 -3 24 2" fill="none" stroke={leaf} strokeWidth="1.1" opacity="0.7" />
+                {[2, 9, 16, 22].map((dx, i) => (
+                    <g key={i}>
+                        <path d={`M${dx} ${6 - i * 0.3} q3 -6 9 -5 q-2 5 -9 5 Z`} fill={leaf} />
+                        <path d={`M${dx + 2} ${7 + i * 0.3} q4 4 9 4 q-3 -5 -9 -4 Z`} fill={leaf} opacity="0.85" />
+                    </g>
+                ))}
+                <circle cx="24" cy="8" r="1.9" fill={olive} />
+            </g>
+        );
+        return (
+            <pattern id={id} patternUnits="userSpaceOnUse" width="48" height="32">
+                <rect width="48" height="32" fill={base} />
+                {sprig(2, 2, false)}
+                {sprig(26, 17, false)}
+                {sprig(4, 24, true)}
+            </pattern>
+        );
+    }
+    if (kind === 'waves') {
+        // Running-wave (Vitruvian) scroll — rows of curling crests, the classic
+        // Greek sea border. `accent` is the crest line, `accent2` the foam.
+        const crest = accent;
+        const foam = accent2 || base;
+        const rows = [10, 26, 42, 58];
+        const wave = (y) => `M-8 ${y} q8 -11 16 0 q8 -11 16 0 q8 -11 16 0 q8 -11 16 0 q8 -11 16 0`;
+        return (
+            <pattern id={id} patternUnits="userSpaceOnUse" width="64" height="64">
+                <rect width="64" height="64" fill={base} />
+                {rows.map((y, r) => (
+                    <g key={r}>
+                        <path d={wave(y)} fill="none" stroke={crest} strokeWidth="2.4" strokeLinecap="round" opacity="0.75" />
+                        <path d={wave(y + 2)} fill="none" stroke={foam} strokeWidth="1" strokeLinecap="round" opacity="0.5" />
+                    </g>
+                ))}
+            </pattern>
+        );
+    }
+    if (kind === 'fluting') {
+        // Vertical fluting — the parallel grooves of a marble column (also reads
+        // as the pleats of a chiton). `accent` is the groove shadow, `accent2`
+        // the ridge highlight.
+        const shadow = accent;
+        const ridge = accent2 || base;
+        return (
+            <pattern id={id} patternUnits="userSpaceOnUse" width="12" height="16">
+                <rect width="12" height="16" fill={base} />
+                <rect x="1.4" y="0" width="4" height="16" rx="2" fill={shadow} opacity="0.42" />
+                <rect x="6.6" y="0" width="1.4" height="16" rx="0.7" fill={ridge} opacity="0.6" />
+            </pattern>
+        );
+    }
+    if (kind === 'coffer') {
+        // Gilded rosettes — radiant sunburst medallions in a grid, evoking a
+        // coffered temple ceiling or beaten-gold relief. `accent` is the ray,
+        // `accent2` the bright centre. The richest, most ornate Greek pattern.
+        const ray = accent;
+        const core = accent2 || base;
+        const star = (cx, cy) => (
+            <g key={`${cx}-${cy}`} transform={`translate(${cx} ${cy})`}>
+                {Array.from({ length: 8 }).map((_, i) => (
+                    <path key={i} d="M0 -2 L1.7 -9.5 L-1.7 -9.5 Z" fill={ray} opacity="0.85" transform={`rotate(${i * 45})`} />
+                ))}
+                <circle r="3.1" fill={core} />
+                <circle r="1.3" fill={ray} />
+            </g>
+        );
+        return (
+            <pattern id={id} patternUnits="userSpaceOnUse" width="48" height="48">
+                <rect width="48" height="48" fill={base} />
+                <g stroke={ray} strokeWidth="0.6" opacity="0.28" fill="none">
+                    <path d="M0 24 H48 M24 0 V48 M0 0 H48 M0 48 H48 M0 0 V48 M48 0 V48" />
+                </g>
+                {star(12, 12)}{star(36, 12)}{star(12, 36)}{star(36, 36)}{star(24, 24)}
+            </pattern>
+        );
+    }
     return null;
 }
 
