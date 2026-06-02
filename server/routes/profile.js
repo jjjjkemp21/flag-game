@@ -38,6 +38,17 @@ function gateCosmetics(userId, c) {
         if (typeof id !== 'string' || !CATALOG.emote || !(id in CATALOG.emote)) return 'none';
         return isOwned('emote', id) ? id : 'none';
     });
+    // Companion names: { [knownCompanionId]: name }. Drop unknown ids /
+    // non-string values, trim and cap length so a crafted payload can't bloat
+    // the row or store a name for a companion that isn't in the catalog.
+    const rawNames = (c.companionNames && typeof c.companionNames === 'object') ? c.companionNames : {};
+    const companionNames = {};
+    for (const [id, nm] of Object.entries(rawNames)) {
+        if (!CATALOG.companion || !CATALOG.companion[id] || id === 'none') continue;
+        if (typeof nm !== 'string') continue;
+        const t = nm.trim().slice(0, 20);
+        if (t) companionNames[id] = t;
+    }
     return {
         ...c,
         color: gate('color', c.color),
@@ -48,6 +59,7 @@ function gateCosmetics(userId, c) {
         scene: gate('scene', c.scene),
         emote: gate('emote', c.emote),
         companion: gate('companion', c.companion),
+        companionNames,
         emoteLoadout: loadout,
     };
 }

@@ -2646,12 +2646,24 @@
 }
 .leaderboard-avatar {
     flex: none;
-    width: 40px;
-    height: 40px;
+    width: 46px;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
+    gap: 1px;
+}
+/* Equipped-companion name, shown under the Atlas avatar on the leaderboard. */
+.leaderboard-companion-name {
+    max-width: 46px;
+    font-size: 9px;
+    font-weight: 700;
+    line-height: 1.1;
+    color: var(--color-ink-soft, var(--color-ink));
+    text-align: center;
+    white-space: nowrap;
     overflow: hidden;
+    text-overflow: ellipsis;
 }
 .leaderboard-id { flex: 1; display: flex; flex-direction: column; min-width: 0; }
 .leaderboard-name { display: flex; align-items: center; gap: 6px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -3248,6 +3260,27 @@
 }
 .store-preview-banner__clear:hover { background: var(--color-bg-soft); color: var(--color-ink); }
 
+/* Companion name pill — shown beside Atlas in the shop preview and the
+   post-purchase naming modal. */
+.companion-name-caption {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 10px;
+    background: var(--color-bg-elev-1);
+    border: 1px solid var(--color-border, rgba(0,0,0,0.12));
+    border-radius: 999px;
+    color: var(--color-ink);
+    font-size: var(--fs-xs); font-weight: 800;
+}
+.companion-name-caption .app-icon { font-size: 14px; color: var(--color-accent, var(--color-primary)); }
+
+/* Post-purchase "name your companion" modal body. */
+.companion-name-prompt { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.companion-name-prompt__stage { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.companion-name-prompt__hint { margin: 0; text-align: center; color: var(--color-ink-soft); font-size: var(--fs-sm); }
+.companion-name-prompt .auth-field__input { width: 100%; text-align: center; }
+.companion-name-prompt__actions { display: flex; gap: 8px; width: 100%; }
+.companion-name-prompt__actions > * { flex: 1; }
+
 /* -------- Buy-confirm modal --------
    Clicking an unowned cosmetic opens a confirmation modal with a live preview
    of the item on Atlas + price/balance lines + Cancel/Buy buttons. The modal
@@ -3709,6 +3742,11 @@
 .profile-card { display: flex; flex-direction: column; align-items: center; gap: var(--space-sm); text-align: center; }
 .profile-card__atlas { display: flex; flex-direction: column; align-items: center; gap: 2px; }
 .profile-card__petname { font-weight: 800; color: var(--color-ink); font-size: var(--fs-sm); }
+.profile-card__companion {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-weight: 700; font-size: var(--fs-xs); color: var(--color-ink-soft);
+}
+.profile-card__companion .app-icon { font-size: 15px; color: var(--color-accent, var(--color-primary)); }
 .profile-card__meta { display: inline-flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: var(--space-sm); }
 .profile-card__region .leaderboard-flag { width: 26px; height: auto; border-radius: 3px; }
 .profile-card__stats { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space-xs); }

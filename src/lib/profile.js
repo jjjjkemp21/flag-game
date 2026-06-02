@@ -155,6 +155,20 @@ export function toggleEmoteInLoadout(id) {
     persist();
 }
 
+// Name (or rename) a companion. Stored per-companion-id under
+// cosmetics.companionNames so each owned companion keeps its own name. An empty
+// name clears it (falls back to the catalog label). Capped to 20 chars.
+export function setCompanionName(companionId, name) {
+    if (!companionId || companionId === 'none') return;
+    const t = (name == null ? '' : String(name)).trim().slice(0, 20);
+    const names = { ...(state.cosmetics.companionNames || {}) };
+    if (t) names[companionId] = t;
+    else delete names[companionId];
+    state = { ...state, cosmetics: { ...state.cosmetics, companionNames: names } };
+    notify();
+    persist();
+}
+
 // Move/scale a cosmetic slot ('hat' | 'glasses' | 'mouth' | 'effect' |
 // 'companion'). Clamped to canvas bounds.
 export function setCosmeticPos(slot, pos) {

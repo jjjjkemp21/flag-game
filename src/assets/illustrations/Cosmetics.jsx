@@ -3019,15 +3019,16 @@ const COMPANION_SHAPES = {
         </g>
     ),
 
-    // Kitten: orange tabby sitting upright, swishing tail, tufted chest,
-    // catchlight eyes, forehead "M" stripes and fine whiskers.
+    // Kitten: grey tabby sitting upright, swishing tail, white-tufted chest,
+    // light-green eyes, forehead "M" stripes and fine whiskers. Light-grey/white
+    // accents on the chest, paws and ear-insides; darker-grey stripes.
     kitten: () => (
         <g strokeLinejoin="round">
             <defs>
                 <radialGradient id="comp-kit-b" cx="34%" cy="24%" r="92%">
-                    <stop offset="0%" stopColor="#FFD49B" />
-                    <stop offset="55%" stopColor="#FBA94E" />
-                    <stop offset="100%" stopColor="#E2802A" />
+                    <stop offset="0%" stopColor="#DDE2E8" />
+                    <stop offset="55%" stopColor="#AEB6C0" />
+                    <stop offset="100%" stopColor="#7B8492" />
                 </radialGradient>
             </defs>
             <ellipse cx="78" cy="94.6" rx="11.5" ry="2.2" fill="#1F1A3B" opacity="0.15" />
@@ -3038,42 +3039,44 @@ const COMPANION_SHAPES = {
             <g>
                 <animateTransform attributeName="transform" type="rotate" values="-13 87 90;12 87 90;-13 87 90" dur="3.2s" repeatCount="indefinite" />
                 <path d="M87 90 Q 95.5 86 92.5 77.5 Q 90 76.5 90 80 Q 92.5 86 85 89.5 Z" fill="url(#comp-kit-b)" stroke="#1F1A3B" strokeWidth="1.1" />
-                <path d="M90.5 80 Q 92 82.5 90.8 85.5" stroke="#C26822" strokeWidth="0.8" fill="none" />
+                <path d="M90.5 80 Q 92 82.5 90.8 85.5" stroke="#5B6470" strokeWidth="0.8" fill="none" />
             </g>
             {/* Body — sitting */}
             <path d="M69 94 Q 66.5 84 73 80 Q 79.5 76.5 84.5 82 Q 88.5 88 86 94 Z" fill="url(#comp-kit-b)" stroke="#1F1A3B" strokeWidth="1.2" />
-            {/* Chest fluff */}
-            <path d="M74 93.5 Q 76 86.5 79 86.5 Q 82 86.5 82 93.5 Z" fill="#FFE6C2" opacity="0.6" />
-            {/* Front paws */}
-            <ellipse cx="74" cy="93.4" rx="2.3" ry="1.5" fill="url(#comp-kit-b)" stroke="#1F1A3B" strokeWidth="0.9" />
-            <ellipse cx="81" cy="93.4" rx="2.3" ry="1.5" fill="url(#comp-kit-b)" stroke="#1F1A3B" strokeWidth="0.9" />
-            {/* Tabby stripes */}
-            <path d="M72 84 q 3 -1.6 6 -0.4" stroke="#C26822" strokeWidth="0.9" fill="none" strokeLinecap="round" />
-            <path d="M71 88 q 4 -1 8 0" stroke="#C26822" strokeWidth="0.9" fill="none" strokeLinecap="round" />
+            {/* Chest fluff — light accent */}
+            <path d="M74 93.5 Q 76 86.5 79 86.5 Q 82 86.5 82 93.5 Z" fill="#F2F5F8" opacity="0.75" />
+            {/* Front paws — light accent socks */}
+            <ellipse cx="74" cy="93.4" rx="2.3" ry="1.5" fill="#EAEEF2" stroke="#1F1A3B" strokeWidth="0.9" />
+            <ellipse cx="81" cy="93.4" rx="2.3" ry="1.5" fill="#EAEEF2" stroke="#1F1A3B" strokeWidth="0.9" />
+            {/* Tabby stripes — darker grey */}
+            <path d="M72 84 q 3 -1.6 6 -0.4" stroke="#5B6470" strokeWidth="0.9" fill="none" strokeLinecap="round" />
+            <path d="M71 88 q 4 -1 8 0" stroke="#5B6470" strokeWidth="0.9" fill="none" strokeLinecap="round" />
             {/* Head */}
             <circle cx="74" cy="79" r="6" fill="url(#comp-kit-b)" stroke="#1F1A3B" strokeWidth="1.2" />
             {/* Ears */}
             <path d="M70 75 L 68 68.8 L 73.5 73.5 Z" fill="url(#comp-kit-b)" stroke="#1F1A3B" strokeWidth="1" />
             <path d="M78 75 L 80 68.8 L 74.5 73.5 Z" fill="url(#comp-kit-b)" stroke="#1F1A3B" strokeWidth="1" />
-            <path d="M70.6 74 L 69.7 71 L 72 73.3 Z" fill="#FF9DBA" />
-            <path d="M77.4 74 L 78.3 71 L 76 73.3 Z" fill="#FF9DBA" />
-            {/* Forehead "M" stripes */}
-            <path d="M72 75 l 0.8 -2 M74 74.7 l 0 -2 M76 75 l -0.8 -2" stroke="#C26822" strokeWidth="0.7" strokeLinecap="round" />
-            {/* Eyes with catchlight + blink */}
+            <path d="M70.6 74 L 69.7 71 L 72 73.3 Z" fill="#EFF3F7" />
+            <path d="M77.4 74 L 78.3 71 L 76 73.3 Z" fill="#EFF3F7" />
+            {/* Forehead "M" stripes — darker grey */}
+            <path d="M72 75 l 0.8 -2 M74 74.7 l 0 -2 M76 75 l -0.8 -2" stroke="#5B6470" strokeWidth="0.7" strokeLinecap="round" />
+            {/* Eyes — light green, dark pupil, catchlight + blink */}
             <g>
-                <ellipse cx="71.6" cy="79" rx="1.3" ry="1.6" fill="#3B2A1B" />
-                <ellipse cx="76.4" cy="79" rx="1.3" ry="1.6" fill="#3B2A1B" />
-                <circle cx="72" cy="78.3" r="0.45" fill="#fff" />
-                <circle cx="76.8" cy="78.3" r="0.45" fill="#fff" />
-                <rect x="70.3" y="77.5" width="2.6" height="0" rx="0.6" fill="#FBA94E">
-                    <animate attributeName="height" values="0;0;3;0;0" keyTimes="0;0.9;0.94;0.98;1" dur="4.6s" repeatCount="indefinite" />
+                <ellipse cx="71.6" cy="79" rx="1.5" ry="1.85" fill="#B7E4A0" stroke="#5B6470" strokeWidth="0.4" />
+                <ellipse cx="76.4" cy="79" rx="1.5" ry="1.85" fill="#B7E4A0" stroke="#5B6470" strokeWidth="0.4" />
+                <ellipse cx="71.6" cy="79.1" rx="0.7" ry="1.45" fill="#2B3A22" />
+                <ellipse cx="76.4" cy="79.1" rx="0.7" ry="1.45" fill="#2B3A22" />
+                <circle cx="72" cy="78.2" r="0.45" fill="#fff" />
+                <circle cx="76.8" cy="78.2" r="0.45" fill="#fff" />
+                <rect x="70.1" y="77.2" width="3" height="0" rx="0.6" fill="#AEB6C0">
+                    <animate attributeName="height" values="0;0;3.4;0;0" keyTimes="0;0.9;0.94;0.98;1" dur="4.6s" repeatCount="indefinite" />
                 </rect>
-                <rect x="75.1" y="77.5" width="2.6" height="0" rx="0.6" fill="#FBA94E">
-                    <animate attributeName="height" values="0;0;3;0;0" keyTimes="0;0.9;0.94;0.98;1" dur="4.6s" repeatCount="indefinite" />
+                <rect x="74.9" y="77.2" width="3" height="0" rx="0.6" fill="#AEB6C0">
+                    <animate attributeName="height" values="0;0;3.4;0;0" keyTimes="0;0.9;0.94;0.98;1" dur="4.6s" repeatCount="indefinite" />
                 </rect>
             </g>
             {/* Nose + muzzle */}
-            <path d="M73.2 80.4 L 74.8 80.4 L 74 81.3 Z" fill="#FF9DBA" stroke="#1F1A3B" strokeWidth="0.5" />
+            <path d="M73.2 80.4 L 74.8 80.4 L 74 81.3 Z" fill="#EFA9BA" stroke="#1F1A3B" strokeWidth="0.5" />
             <path d="M74 81.3 q -1.1 1 -2.1 0.2 M74 81.3 q 1.1 1 2.1 0.2" stroke="#1F1A3B" strokeWidth="0.55" fill="none" strokeLinecap="round" />
             {/* Whiskers */}
             <g stroke="#1F1A3B" strokeWidth="0.4" opacity="0.45" strokeLinecap="round">
@@ -3109,29 +3112,38 @@ const COMPANION_SHAPES = {
             {/* Hind legs */}
             <rect x="76" y="91.6" width="3" height="3.6" rx="1.3" fill="url(#comp-pup-b)" stroke="#1F1A3B" strokeWidth="0.9" />
             <rect x="82" y="91.6" width="3" height="3.6" rx="1.3" fill="url(#comp-pup-b)" stroke="#1F1A3B" strokeWidth="0.9" />
-            {/* Head */}
-            <circle cx="72.5" cy="83" r="6" fill="url(#comp-pup-b)" stroke="#1F1A3B" strokeWidth="1.2" />
-            {/* Eye-patch marking */}
-            <path d="M73 78.2 Q 77 78.4 78 82.2 Q 77 86 73 85 Q 71.6 81.4 73 78.2 Z" fill="#6E4623" opacity="0.55" />
-            {/* Floppy ears */}
-            <path d="M67 80 Q 61.5 83 64 89 Q 67.5 90 69 84.5 Q 69 81 67 80 Z" fill="#6E4623" stroke="#1F1A3B" strokeWidth="1" />
-            <path d="M78 80 Q 83.5 83 81 89 Q 77.5 90 76 84.5 Q 76 81 78 80 Z" fill="#6E4623" stroke="#1F1A3B" strokeWidth="1" />
-            {/* Muzzle */}
-            <ellipse cx="70" cy="85.6" rx="3.5" ry="2.6" fill="#E4C49A" stroke="#1F1A3B" strokeWidth="0.8" />
-            {/* Tongue — gentle lolling motion */}
-            <path d="M69.4 87 Q 69.2 90 70.6 90 Q 72 90 71.8 87 Z" fill="#FF7CA6" stroke="#1F1A3B" strokeWidth="0.6">
-                <animate attributeName="d"
-                    values="M69.4 87 Q 69.2 90 70.6 90 Q 72 90 71.8 87 Z;M69.4 87 Q 69.2 90.8 70.6 90.8 Q 72 90.8 71.8 87 Z;M69.4 87 Q 69.2 90 70.6 90 Q 72 90 71.8 87 Z"
-                    dur="1.6s" repeatCount="indefinite" />
-            </path>
-            {/* Nose */}
-            <ellipse cx="68.2" cy="84.6" rx="1.4" ry="1.1" fill="#231A12" />
-            <circle cx="67.7" cy="84.1" r="0.4" fill="#fff" opacity="0.7" />
-            {/* Eyes */}
-            <ellipse cx="71" cy="82" rx="1.2" ry="1.4" fill="#2A1B0E" />
-            <ellipse cx="75" cy="82" rx="1.2" ry="1.4" fill="#2A1B0E" />
-            <circle cx="71.4" cy="81.5" r="0.4" fill="#fff" />
-            <circle cx="75.4" cy="81.5" r="0.4" fill="#fff" />
+            {/* Head + face — gives an inquisitive head-tilt that holds to one
+                side ~5s, returns upright, then tilts the other way. Rotated as a
+                whole group around the neck (74, 88) so ears/muzzle/eyes track the
+                tilt. Pivot from the SMIL rotate's (angle cx cy) args only. */}
+            <g>
+                <animateTransform attributeName="transform" type="rotate"
+                    values="0 74 88;9 74 88;9 74 88;0 74 88;-9 74 88;-9 74 88;0 74 88"
+                    keyTimes="0;0.04;0.46;0.5;0.54;0.96;1" dur="12s" repeatCount="indefinite" />
+                {/* Head */}
+                <circle cx="72.5" cy="83" r="6" fill="url(#comp-pup-b)" stroke="#1F1A3B" strokeWidth="1.2" />
+                {/* Eye-patch marking */}
+                <path d="M73 78.2 Q 77 78.4 78 82.2 Q 77 86 73 85 Q 71.6 81.4 73 78.2 Z" fill="#6E4623" opacity="0.55" />
+                {/* Floppy ears */}
+                <path d="M67 80 Q 61.5 83 64 89 Q 67.5 90 69 84.5 Q 69 81 67 80 Z" fill="#6E4623" stroke="#1F1A3B" strokeWidth="1" />
+                <path d="M78 80 Q 83.5 83 81 89 Q 77.5 90 76 84.5 Q 76 81 78 80 Z" fill="#6E4623" stroke="#1F1A3B" strokeWidth="1" />
+                {/* Muzzle */}
+                <ellipse cx="70" cy="85.6" rx="3.5" ry="2.6" fill="#E4C49A" stroke="#1F1A3B" strokeWidth="0.8" />
+                {/* Tongue — gentle lolling motion */}
+                <path d="M69.4 87 Q 69.2 90 70.6 90 Q 72 90 71.8 87 Z" fill="#FF7CA6" stroke="#1F1A3B" strokeWidth="0.6">
+                    <animate attributeName="d"
+                        values="M69.4 87 Q 69.2 90 70.6 90 Q 72 90 71.8 87 Z;M69.4 87 Q 69.2 90.8 70.6 90.8 Q 72 90.8 71.8 87 Z;M69.4 87 Q 69.2 90 70.6 90 Q 72 90 71.8 87 Z"
+                        dur="1.6s" repeatCount="indefinite" />
+                </path>
+                {/* Nose */}
+                <ellipse cx="68.2" cy="84.6" rx="1.4" ry="1.1" fill="#231A12" />
+                <circle cx="67.7" cy="84.1" r="0.4" fill="#fff" opacity="0.7" />
+                {/* Eyes */}
+                <ellipse cx="71" cy="82" rx="1.2" ry="1.4" fill="#2A1B0E" />
+                <ellipse cx="75" cy="82" rx="1.2" ry="1.4" fill="#2A1B0E" />
+                <circle cx="71.4" cy="81.5" r="0.4" fill="#fff" />
+                <circle cx="75.4" cy="81.5" r="0.4" fill="#fff" />
+            </g>
         </g>
     ),
 
@@ -3252,51 +3264,53 @@ const COMPANION_SHAPES = {
         </g>
     ),
 
-    // Fox kit: orange with a cream muzzle/belly, black socks, a bushy
-    // white-tipped tail and perky ears (the near ear twitches). Pointed snout.
+    // Fox kit: orange with a cream cheek-ruff/belly, black socks, a bushy
+    // white-tipped tail and perky ears (the near ear twitches). Front-facing
+    // seated kit — the tail tucks behind the rump so it reads attached, and the
+    // eyes sit centred over a short, wide muzzle.
     foxKit: () => (
         <g strokeLinejoin="round">
             <defs>
-                <radialGradient id="comp-fox-b" cx="34%" cy="24%" r="92%">
+                <radialGradient id="comp-fox-b" cx="40%" cy="26%" r="92%">
                     <stop offset="0%" stopColor="#FFB07A" />
                     <stop offset="55%" stopColor="#F4873F" />
                     <stop offset="100%" stopColor="#D9692A" />
                 </radialGradient>
             </defs>
-            <ellipse cx="78" cy="94.6" rx="12.5" ry="2.2" fill="#1F1A3B" opacity="0.15" />
-            {/* Bushy tail with white tip */}
-            <path d="M85 90 Q 95 88 94 79.5 Q 91 76.5 87 81 Q 84 85 85 90 Z" fill="url(#comp-fox-b)" stroke="#1F1A3B" strokeWidth="1.1" />
-            <path d="M88.5 78.5 Q 95 77.5 93.5 83 Q 91 83 88.8 80.8 Z" fill="#FBF1E7" stroke="#1F1A3B" strokeWidth="0.6" />
-            {/* Body */}
-            <path d="M70 94 Q 67.5 86 73 83 Q 80 79.5 85 84 Q 88.5 89 86 94 Z" fill="url(#comp-fox-b)" stroke="#1F1A3B" strokeWidth="1.2" />
-            {/* White belly */}
-            <path d="M73 94 Q 73 88 78 87 Q 83 88 83 94 Z" fill="#FBF1E7" />
-            {/* Black socks */}
-            <rect x="73" y="92" width="2.7" height="3" rx="1" fill="#352620" />
-            <rect x="81" y="92" width="2.7" height="3" rx="1" fill="#352620" />
+            <ellipse cx="77" cy="94.6" rx="12" ry="2.2" fill="#1F1A3B" opacity="0.15" />
+            {/* Bushy tail — drawn first so its base tucks behind the body and
+                reads attached at the rump; cream tip at the curl's end. */}
+            <path d="M83 91 Q 96 89 95 76 Q 92.5 69.5 85.5 73.5 Q 80.5 77.5 80.5 86 Q 80.5 90.5 83 91 Z" fill="url(#comp-fox-b)" stroke="#1F1A3B" strokeWidth="1.1" />
+            <path d="M85 73.6 Q 93.5 69.5 94.6 76.5 Q 91 78.2 86.4 77 Q 84.5 75 85 73.6 Z" fill="#FBF1E7" stroke="#1F1A3B" strokeWidth="0.6" />
+            {/* Rounded seated body */}
+            <path d="M67 93 Q 63.5 82.5 71 78 Q 77.5 74.5 84 78.5 Q 90.5 83 87 93 Q 77 95.2 67 93 Z" fill="url(#comp-fox-b)" stroke="#1F1A3B" strokeWidth="1.2" />
+            {/* Cream chest/belly */}
+            <path d="M72 93.4 Q 70.5 84.5 77 83 Q 83.5 84.5 82 93.4 Q 77 94.8 72 93.4 Z" fill="#FBF1E7" />
+            {/* Black socks / front paws */}
+            <ellipse cx="73.6" cy="92.8" rx="2.5" ry="1.7" fill="#352620" stroke="#1F1A3B" strokeWidth="0.7" />
+            <ellipse cx="80.4" cy="92.8" rx="2.5" ry="1.7" fill="#352620" stroke="#1F1A3B" strokeWidth="0.7" />
             {/* Head — cranium */}
-            <circle cx="74.5" cy="82" r="5.4" fill="url(#comp-fox-b)" stroke="#1F1A3B" strokeWidth="1.2" />
-            {/* Ears — near ear twitches. Pivot from the SMIL rotate's
+            <circle cx="77" cy="79.5" r="6.6" fill="url(#comp-fox-b)" stroke="#1F1A3B" strokeWidth="1.2" />
+            {/* Ears — near (left) ear twitches. Pivot from the SMIL rotate's
                 (angle cx cy) args only; no CSS transform-origin (it
                 double-applied the pivot in some browsers — see the kitten tail). */}
             <g>
-                <animateTransform attributeName="transform" type="rotate" values="0 72 79;-13 72 79;0 72 79;0 72 79" keyTimes="0;0.05;0.11;1" dur="3.8s" repeatCount="indefinite" />
-                <path d="M70 78.5 L 69 71.5 L 75 77 Z" fill="url(#comp-fox-b)" stroke="#1F1A3B" strokeWidth="1" />
-                <path d="M71 77.4 L 70.8 73.8 L 73.6 76.6 Z" fill="#352620" />
+                <animateTransform attributeName="transform" type="rotate" values="0 72 74;-12 72 74;0 72 74;0 72 74" keyTimes="0;0.05;0.11;1" dur="3.8s" repeatCount="indefinite" />
+                <path d="M73 75 L 69 66 L 76.5 73 Z" fill="url(#comp-fox-b)" stroke="#1F1A3B" strokeWidth="1" />
+                <path d="M73.4 73.8 L 70.8 68.6 L 75.2 72.6 Z" fill="#352620" />
             </g>
-            <path d="M79 78 L 80.5 71.5 L 82 78 Z" fill="url(#comp-fox-b)" stroke="#1F1A3B" strokeWidth="1" />
-            <path d="M79.7 77 L 80.4 73.9 L 81.2 77 Z" fill="#352620" />
-            {/* Pointed snout — clean wedge off the lower-left of the cranium */}
-            <path d="M70.5 80.5 L 63.4 85 L 71 87 Q 73.6 83.6 70.5 80.5 Z" fill="url(#comp-fox-b)" stroke="#1F1A3B" strokeWidth="1.1" />
-            {/* Cream blaze running down the snout to the nose */}
-            <path d="M70.4 81 L 64 85 L 69.6 86.4 Q 71 83.8 70.4 81 Z" fill="#FBF1E7" />
-            {/* Nose */}
-            <path d="M63.4 85 L 65.5 84.2 L 65.4 86.1 Z" fill="#241813" />
-            {/* Eyes with catchlight */}
-            <ellipse cx="72.4" cy="81.4" rx="1.1" ry="1.3" fill="#2A1B0E" />
-            <ellipse cx="76.8" cy="81.1" rx="1.1" ry="1.3" fill="#2A1B0E" />
-            <circle cx="72.7" cy="80.9" r="0.35" fill="#fff" />
-            <circle cx="77.1" cy="80.6" r="0.35" fill="#fff" />
+            <path d="M81 75 L 85 66 L 77.5 73 Z" fill="url(#comp-fox-b)" stroke="#1F1A3B" strokeWidth="1" />
+            <path d="M80.6 73.8 L 83.2 68.6 L 78.8 72.6 Z" fill="#352620" />
+            {/* Cream cheek-ruff + short wide muzzle, centred under the eyes */}
+            <path d="M71 80.5 Q 69 87 74.2 88.8 L 77 87.4 L 79.8 88.8 Q 85 87 83 80.5 Q 77 83.2 71 80.5 Z" fill="#FBF1E7" stroke="#1F1A3B" strokeWidth="0.7" />
+            {/* Nose + mouth */}
+            <path d="M75.4 85 L 78.6 85 L 77 87 Z" fill="#241813" stroke="#1F1A3B" strokeWidth="0.4" />
+            <path d="M77 87 Q 75.6 88.3 74.4 87.6 M77 87 Q 78.4 88.3 79.6 87.6" stroke="#1F1A3B" strokeWidth="0.5" fill="none" strokeLinecap="round" />
+            {/* Eyes — centred over the muzzle, with catchlight */}
+            <ellipse cx="73.8" cy="80.4" rx="1.3" ry="1.5" fill="#2A1B0E" />
+            <ellipse cx="80.2" cy="80.4" rx="1.3" ry="1.5" fill="#2A1B0E" />
+            <circle cx="74.2" cy="79.8" r="0.42" fill="#fff" />
+            <circle cx="80.6" cy="79.8" r="0.42" fill="#fff" />
         </g>
     ),
 
@@ -3347,6 +3361,39 @@ const COMPANION_SHAPES = {
                     <animate attributeName="height" values="0;0;5.4;0;0" keyTimes="0;0.43;0.5;0.57;1" dur="3.8s" repeatCount="indefinite" />
                 </rect>
             </g>
+            {/* Buzzing flies. One drifts top-left and is never caught; the other
+                hovers upper-right and gets snatched by the tongue once per ~6s
+                cycle (SMIL can't roll dice, so the catch is periodic — it just
+                reads as "the frog grabbed a fly"). The catch fly's vanish is
+                timed to the tongue's full extension below. */}
+            <g>
+                <animateTransform attributeName="transform" type="translate"
+                    values="0 0;1.6 -1.1;-1 0.9;0.9 1.3;0 0" dur="1.7s" repeatCount="indefinite" />
+                <ellipse cx="64" cy="71" rx="1.2" ry="0.8" fill="#2B2B33" />
+                <ellipse cx="63.4" cy="70.1" rx="1" ry="0.55" fill="#CFE3FF" opacity="0.6" />
+                <ellipse cx="64.6" cy="70.1" rx="1" ry="0.55" fill="#CFE3FF" opacity="0.6" />
+            </g>
+            <g>
+                <animateTransform attributeName="transform" type="translate"
+                    values="0 0;0.9 -0.7;-0.6 0.6;0 0" dur="1.3s" repeatCount="indefinite" />
+                <animate attributeName="opacity" values="1;1;0;0;1" keyTimes="0;0.59;0.62;0.93;1" dur="6s" repeatCount="indefinite" />
+                <ellipse cx="87" cy="72" rx="1.2" ry="0.8" fill="#2B2B33" />
+                <ellipse cx="86.4" cy="71.1" rx="1" ry="0.55" fill="#CFE3FF" opacity="0.6" />
+                <ellipse cx="87.6" cy="71.1" rx="1" ry="0.55" fill="#CFE3FF" opacity="0.6" />
+            </g>
+            {/* Tongue — flicks out of the grin to the upper-right fly, then
+                retracts. Tip ball appears only while extended so the snatch reads. */}
+            <path fill="none" stroke="#E8638A" strokeWidth="1.7" strokeLinecap="round"
+                d="M78 88.6 Q 78.4 88.9 78.8 89">
+                <animate attributeName="d"
+                    values="M78 88.6 Q 78.4 88.9 78.8 89;M78 88.6 Q 78.4 88.9 78.8 89;M78 88.6 Q 83 80 87 72.4;M78 88.6 Q 83 80 87 72.4;M78 88.6 Q 78.4 88.9 78.8 89;M78 88.6 Q 78.4 88.9 78.8 89"
+                    keyTimes="0;0.55;0.59;0.62;0.66;1" dur="6s" repeatCount="indefinite" />
+            </path>
+            <circle cx="78" cy="88.6" r="1.3" fill="#E8638A" opacity="0">
+                <animate attributeName="cx" values="78;78;87;87;78;78" keyTimes="0;0.55;0.59;0.62;0.66;1" dur="6s" repeatCount="indefinite" />
+                <animate attributeName="cy" values="88.6;88.6;72.4;72.4;88.6;88.6" keyTimes="0;0.55;0.59;0.62;0.66;1" dur="6s" repeatCount="indefinite" />
+                <animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.55;0.59;0.62;0.66;1" dur="6s" repeatCount="indefinite" />
+            </circle>
         </g>
     ),
 

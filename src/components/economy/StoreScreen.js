@@ -7,8 +7,8 @@ import Scene from '../../assets/illustrations/Scene';
 import AtlasBucksIcon from '../../assets/illustrations/AtlasBucks';
 import { useAuth } from '../../auth/AuthProvider';
 import { usePet, setPetName } from '../../lib/pet';
-import { useProfile, setRegion, setCosmetic, setCosmeticPos, toggleEmoteInLoadout } from '../../lib/profile';
-import { CATEGORIES, EMOTES, EMOTE_LOADOUT_SIZE, priceOf, isDefaultItem, isEffectSizable, DEFAULT_POS } from '../../lib/cosmetics';
+import { useProfile, setRegion, setCosmetic, setCosmeticPos, toggleEmoteInLoadout, setCompanionName } from '../../lib/profile';
+import { CATEGORIES, COMPANIONS, EMOTES, EMOTE_LOADOUT_SIZE, priceOf, isDefaultItem, isEffectSizable, DEFAULT_POS, companionNameFor, COMPANION_NAME_MAX } from '../../lib/cosmetics';
 import { EMOTE_DURATION_S } from '../../assets/illustrations/Cosmetics';
 import { useCurrency, loadCurrency, buyCosmetic, isOwnedKey } from '../../lib/currency';
 
@@ -52,6 +52,16 @@ function StoreScreen({ setView, flagsData }) {
     // (and pressing Rename would re-save the stale name).
     useEffect(() => { setNameDraft(pet.name); }, [pet.name]);
     const bucks = currency.bucks;
+
+    // Companion naming. `companionDraft` mirrors the equipped companion's stored
+    // name for the inline rename field; `namePrompt` holds the just-bought
+    // companion so we can pop the "name your new companion" modal after a buy.
+    const equippedCompanion = profile.cosmetics.companion;
+    const companionLabel = (COMPANIONS[equippedCompanion] && COMPANIONS[equippedCompanion].name) || 'companion';
+    const currentCompanionName = companionNameFor(profile.cosmetics) || '';
+    const [companionDraft, setCompanionDraft] = useState(currentCompanionName);
+    useEffect(() => { setCompanionDraft(currentCompanionName); }, [currentCompanionName, equippedCompanion]);
+    const [namePrompt, setNamePrompt] = useState(null); // { id, label, draft }
 
     const countries = useMemo(
         () => (flagsData || [])
@@ -146,6 +156,22 @@ function StoreScreen({ setView, flagsData }) {
         toast.success(`Renamed to ${n}!`);
     };
 
+    const onRenameCompanion = () => {
+        if (!equippedCompanion || equippedCompanion === 'none') return;
+        const n = companionDraft.trim();
+        setCompanionName(equippedCompanion, n);
+        toast.success(n ? `Your ${companionLabel} is now ${n}!` : `Cleared your ${companionLabel}'s name.`);
+    };
+
+    // Save from the post-purchase name modal, then close it.
+    const onSaveNamePrompt = () => {
+        if (!namePrompt) return;
+        setCompanionName(namePrompt.id, namePrompt.draft);
+        const n = namePrompt.draft.trim();
+        if (n) toast.success(`Say hello to ${n}!`);
+        setNamePrompt(null);
+    };
+
     // Economy v2: the XP→Bucks trade-in is gone. Bucks now land directly as the
     // player answers correctly, finishes runs, sets new high scores, and claims
     // login / quest rewards. patchUser is still relied on by purchases below.
@@ -200,6 +226,11 @@ function StoreScreen({ setView, flagsData }) {
             setConfirmBuy(null);
             setPreviewItem(null);
             toast.success(`Bought ${item.name}!`);
+            // A freshly-bought companion gets a name right away — pop the prompt
+            // (pre-filled with any name it already had, e.g. a re-buy edge case).
+            if (cat === 'companion') {
+                setNamePrompt({ id, label: item.name, draft: companionNameFor({ companion: id, companionNames: profile.cosmetics.companionNames }) || '' });
+            }
         } catch (err) {
             toast.danger(err.message || 'Could not buy that.');
         } finally {
@@ -266,6 +297,12 @@ function StoreScreen({ setView, flagsData }) {
                         emotePlay={isEmotePreview ? { id: previewItem.id, playId: previewPlayId } : null}
                     />
                 </div>
+
+                {companionNameFor(displayCosmetics) && (
+                    <div className="companion-name-caption">
+                        <Icon name="pets" /> {companionNameFor(displayCosmetics)}
+                    </div>
+                )}
 
                 {previewMeta && (
                     <div className="store-preview-banner" role="status">
@@ -351,19 +388,31 @@ function StoreScreen({ setView, flagsData }) {
                 )}
             </div>
 
-            {/* Rename */}
+            {/* Names — Atlas, plus the equipped companion (if any). */}
             <div className="store-section">
-                <h3 className="store-section-title"><Icon name="badge" /> Name</h3>
+                <h3 className="store-section-title"><Icon name="badge" /> Names</h3>
                 <div className="friend-add">
                     <input
                         className="auth-field__input"
                         value={nameDraft}
                         maxLength={20}
                         onChange={(e) => setNameDraft(e.target.value)}
-                        placeholder="Name your companion"
+                        placeholder="Name your Atlas"
                     />
                     <Button variant="primary" icon="edit" onClick={onRename} disabled={!nameDraft.trim() || nameDraft.trim() === pet.name}>Rename</Button>
                 </div>
+                {hasCompanion && (
+                    <div className="friend-add" style={{ marginTop: 8 }}>
+                        <input
+                            className="auth-field__input"
+                            value={companionDraft}
+                            maxLength={COMPANION_NAME_MAX}
+                            onChange={(e) => setCompanionDraft(e.target.value)}
+                            placeholder={`Name your ${companionLabel}`}
+                        />
+                        <Button variant="primary" icon="pets" onClick={onRenameCompanion} disabled={companionDraft.trim() === currentCompanionName}>Name</Button>
+                    </div>
+                )}
             </div>
 
             {/* Region */}
@@ -599,6 +648,53 @@ function StoreScreen({ setView, flagsData }) {
                         </div>
                     );
                 })()}
+            </Modal>
+
+            {/* Post-purchase: name your new companion. Closing without a name
+                just leaves it unnamed (the catalog label is used as a fallback);
+                the player can always set one later in the Names section. */}
+            <Modal
+                open={!!namePrompt}
+                onClose={() => setNamePrompt(null)}
+                title={namePrompt ? `Name your ${namePrompt.label}` : 'Name your companion'}
+            >
+                {namePrompt && (
+                    <div className="companion-name-prompt">
+                        <div className="companion-name-prompt__stage">
+                            <Mascot
+                                size={120}
+                                mood="cheer"
+                                cosmetics={{ ...profile.cosmetics, companion: namePrompt.id }}
+                                still
+                            />
+                            {namePrompt.draft.trim() && (
+                                <div className="companion-name-caption">
+                                    <Icon name="pets" /> {namePrompt.draft.trim()}
+                                </div>
+                            )}
+                        </div>
+                        <p className="companion-name-prompt__hint">
+                            What should we call your new {namePrompt.label}?
+                        </p>
+                        <input
+                            className="auth-field__input"
+                            autoFocus
+                            value={namePrompt.draft}
+                            maxLength={COMPANION_NAME_MAX}
+                            onChange={(e) => setNamePrompt((p) => ({ ...p, draft: e.target.value }))}
+                            onKeyDown={(e) => { if (e.key === 'Enter') onSaveNamePrompt(); }}
+                            placeholder={`e.g. ${namePrompt.label}`}
+                        />
+                        <div className="companion-name-prompt__actions">
+                            <Button variant="secondary" icon="schedule" onClick={() => setNamePrompt(null)}>
+                                Later
+                            </Button>
+                            <Button variant="primary" icon="check" onClick={onSaveNamePrompt} disabled={!namePrompt.draft.trim()}>
+                                Save name
+                            </Button>
+                        </div>
+                    </div>
+                )}
             </Modal>
         </div>
     );

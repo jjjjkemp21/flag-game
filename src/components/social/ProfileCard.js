@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Icon from '../common/Icon';
 import { Modal, Button, Pill } from '../ui/index';
 import { useToast } from '../ui/Toast';
 import Mascot from '../../assets/illustrations/Mascot';
@@ -8,6 +9,7 @@ import { useAuth } from '../../auth/AuthProvider';
 import { api } from '../../api/client';
 import { masteryRank, geoMasteryRank } from '../../lib/mastery';
 import { ACHIEVEMENTS, ACHIEVEMENTS_BY_ID } from '../../lib/achievements';
+import { companionNameFor } from '../../lib/cosmetics';
 
 const FLAG_BASE = './assets/flags/';
 
@@ -85,6 +87,11 @@ function ProfileCard({ row, flagsData, onClose }) {
                     <span className="profile-card__petname">
                         {petName} · {row.petStage || 'Hatchling'} · Lv {row.petLevel || 1}
                     </span>
+                    {companionNameFor(row.cosmetics) && (
+                        <span className="profile-card__companion">
+                            <Icon name="pets" /> {companionNameFor(row.cosmetics)}
+                        </span>
+                    )}
                 </div>
 
                 <div className="profile-card__meta">

@@ -757,10 +757,17 @@ export const DEFAULT_COSMETICS = {
     emoteLoadout: ['wave', 'none', 'none', 'none'],
     // Companion: animal character standing beside Atlas. No companion by default.
     companion: 'none',
+    // Per-companion display names ({ [companionId]: name }). Set when the player
+    // buys a companion (they're prompted for a name) and shown beside Atlas on
+    // leaderboards / the shop. Keyed by id so each owned companion keeps its own.
+    companionNames: {},
     hatPos: { ...DEFAULT_POS }, glassesPos: { ...DEFAULT_POS },
     mouthPos: { ...DEFAULT_POS }, effectPos: { ...DEFAULT_POS },
     companionPos: { ...DEFAULT_POS },
 };
+
+// Longest companion name we store / display.
+export const COMPANION_NAME_MAX = 20;
 
 const clampNum = (v, min, max, d) => (Number.isFinite(+v) ? Math.min(max, Math.max(min, +v)) : d);
 
@@ -839,6 +846,7 @@ export function normalizeCosmetics(c, ownedKey) {
         // his silhouette on overlap. Has its own move/scale placement like the
         // other slots (companionPos).
         companion: pick('companion', c && c.companion, COMPANIONS),
+        companionNames: normalizeCompanionNames(c && c.companionNames),
         emoteLoadout: loadout,
         hatPos: clampPos(c && c.hatPos),
         glassesPos: clampPos(c && c.glassesPos),
@@ -846,4 +854,27 @@ export function normalizeCosmetics(c, ownedKey) {
         effectPos: clampPos(c && c.effectPos),
         companionPos: clampPos(c && c.companionPos, 'companion'),
     };
+}
+
+// Coerce a stored companion-name map to { [knownCompanionId]: trimmedName }.
+// Drops unknown ids, non-string values, and empty names; caps length.
+export function normalizeCompanionNames(raw) {
+    const out = {};
+    if (!raw || typeof raw !== 'object') return out;
+    for (const [id, nm] of Object.entries(raw)) {
+        if (!COMPANIONS[id] || id === 'none' || typeof nm !== 'string') continue;
+        const t = nm.trim().slice(0, COMPANION_NAME_MAX);
+        if (t) out[id] = t;
+    }
+    return out;
+}
+
+// The display name of the currently-equipped companion, or null when none is
+// equipped / unnamed. Shared by the shop, leaderboard, and profile card.
+export function companionNameFor(cosmetics) {
+    if (!cosmetics) return null;
+    const id = cosmetics.companion;
+    if (!id || id === 'none') return null;
+    const nm = cosmetics.companionNames && cosmetics.companionNames[id];
+    return (typeof nm === 'string' && nm.trim()) ? nm.trim() : null;
 }

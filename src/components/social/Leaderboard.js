@@ -9,6 +9,7 @@ import { useAuth } from '../../auth/AuthProvider';
 import { api } from '../../api/client';
 import { scopeRank } from '../../lib/mastery';
 import { ACHIEVEMENTS_BY_ID } from '../../lib/achievements';
+import { companionNameFor } from '../../lib/cosmetics';
 
 const FLAG_BASE = './assets/flags/';
 
@@ -268,6 +269,11 @@ function Leaderboard({ setView, flagsData }) {
                             </span>
                             <span className="leaderboard-avatar">
                                 <Mascot size={40} mood="idle" cosmetics={row.cosmetics} still />
+                                {companionNameFor(row.cosmetics) && (
+                                    <span className="leaderboard-companion-name" title={companionNameFor(row.cosmetics)}>
+                                        {companionNameFor(row.cosmetics)}
+                                    </span>
+                                )}
                             </span>
                             <span className="leaderboard-id">
                                 <span className="leaderboard-name">
